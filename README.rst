@@ -2,6 +2,17 @@
 Testinfra test your infrastructure
 ##################################
 
+.. image:: https://readthedocs.org/projects/testinfra/badge/?version=latest
+   :target: https://readthedocs.org/projects/testinfra/?badge=latest
+   :alt: Documentation Status
+
+
+.. image:: https://travis-ci.org/philpep/testinfra.svg?branch=master
+   :target: https://travis-ci.org/philpep/testinfra
+
+
+Latest documentation: http://testinfra.readthedocs.org/en/latest
+
 About
 =====
 
