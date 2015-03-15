@@ -65,3 +65,12 @@ And run it::
 
     =================== 3 passed in 0.66 seconds ====================
 
+
+.. _Salt: http://saltstack.com/
+.. _Ansible: http://www.ansible.com/
+.. _Puppet: https://puppetlabs.com/
+.. _Chef: https://www.chef.io/
+.. _ServerSpec: http://serverspec.org/
+.. _Pytest: http://pytest.org
+.. _paramiko: http://www.paramiko.org/
+.. _pytest-xdist: http://pytest.org/latest/xdist.html
