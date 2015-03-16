@@ -32,7 +32,7 @@ Quick start
 
 Install testinfra using pip::
 
-    pip install testinfra
+    pip install --pre testinfra
 
     # or install the devel version
     pip install 'git+https://github.com/philpep/testinfra@master#egg=testinfra'
