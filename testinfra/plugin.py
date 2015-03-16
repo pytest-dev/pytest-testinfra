@@ -46,11 +46,11 @@ def pytest_addoption(parser):
 
 def pytest_generate_tests(metafunc):
     if "_testinfra_host" in metafunc.fixturenames:
-        if hasattr(metafunc.module, "hosts"):
-            params = metafunc.module.hosts
-            ids = params
-        elif metafunc.config.option.hosts is not None:
+        if metafunc.config.option.hosts is not None:
             params = metafunc.config.option.hosts.split(",")
+            ids = params
+        elif hasattr(metafunc.module, "hosts"):
+            params = metafunc.module.hosts
             ids = params
         else:
             params = [None]
