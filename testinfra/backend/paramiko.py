@@ -30,9 +30,8 @@ logger = logging.getLogger("testinfra.backend")
 
 class ParamikoBakend(base.BaseBackend):
 
-    def __init__(self, host, user="root", *args, **kwargs):
-        self.host = host
-        self.user = user
+    def __init__(self, hostspec, *args, **kwargs):
+        self.host, self.user, self.port = self.parse_hostspec(hostspec)
         self._client = None
         super(ParamikoBakend, self).__init__(*args, **kwargs)
 
@@ -45,7 +44,11 @@ class ParamikoBakend(base.BaseBackend):
                     "to use the paramiko backend"))
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.WarningPolicy())
-            client.connect(self.host, username=self.user)
+            client.connect(
+                self.host,
+                port=int(self.port) if self.port else 22,
+                username=self.user,
+            )
             self._client = client
         return self._client
 

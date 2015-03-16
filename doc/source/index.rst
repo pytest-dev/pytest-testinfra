@@ -10,7 +10,7 @@ Test multiples hosts
 By default Testinfra launch tests on local machine, but you can also test
 remotes systems::
 
-    py.test -v --hosts=localhost,webserver test_myinfra.py
+    py.test -v --hosts=localhost,root@webserver:2222 test_myinfra.py
 
     ====================== test session starts ======================
     platform linux -- Python 2.7.3 -- py-1.4.26 -- pytest-2.6.4
@@ -20,16 +20,16 @@ remotes systems::
     test_myinfra.py::test_passwd_file[localhost] PASSED
     test_myinfra.py::test_nginx_is_installed[localhost] PASSED
     test_myinfra.py::test_nginx_running_and_enabled[localhost] PASSED
-    test_myinfra.py::test_passwd_file[webserver] PASSED
-    test_myinfra.py::test_nginx_is_installed[webserver] PASSED
-    test_myinfra.py::test_nginx_running_and_enabled[webserver] PASSED
+    test_myinfra.py::test_passwd_file[root@webserver:2222] PASSED
+    test_myinfra.py::test_nginx_is_installed[root@webserver:2222] PASSED
+    test_myinfra.py::test_nginx_running_and_enabled[root@webserver:2222] PASSED
 
     =================== 6 passed in 8.49 seconds ====================
 
 
 You can also set hosts per test module::
 
-    hosts = ["localhost", "webserver"]
+    hosts = ["localhost", "root@webserver:2222"]
 
     def test_foo():
         [...]
@@ -41,7 +41,7 @@ should be faster::
 
     pip install paramiko
 
-    py.test -v --hosts=localhost,webserver --connection=paramiko test_myinfra.py
+    py.test -v --hosts=localhost,root@webserver:2222 --connection=paramiko test_myinfra.py
 
 
 If you have a lot a hosts to test, you can also use the pytest-xdist_ plugin to run tests using multiples process::

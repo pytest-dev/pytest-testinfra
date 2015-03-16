@@ -29,5 +29,16 @@ class BaseBackend(object):
     def quote(self, command, *args):
         return command % tuple(pipes.quote(a) for a in args)
 
+    @staticmethod
+    def parse_hostspec(hostspec):
+        host = hostspec
+        user = None
+        port = None
+        if "@" in host:
+            user, host = host.split("@", 1)
+        if ":" in host:
+            host, port = host.split(":", 1)
+        return host, user, port
+
     def run(self, command, *args):
         raise NotImplementedError
