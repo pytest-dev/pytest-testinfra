@@ -45,6 +45,5 @@ def test_check_output_error(mock_subprocess):
         "communicate.return_value": ("", ""),
         "returncode": 127,
     })
-    with pytest.raises(RuntimeError) as excinfo:
+    with pytest.raises(AssertionError):
         Command.check_output("zzzzzzz")
-    assert "Unexpected exit code 127 for command" in str(excinfo.value)

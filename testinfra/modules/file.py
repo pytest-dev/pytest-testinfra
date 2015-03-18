@@ -17,11 +17,10 @@ from __future__ import unicode_literals
 
 import datetime
 
-from testinfra import check_output
-from testinfra import run
+from testinfra.modules.base import Module
 
 
-class File(object):
+class File(Module):
     """Test various files attributes"""
 
     def __init__(self, path):
@@ -38,27 +37,27 @@ class File(object):
         False
 
         """
-        return run("test -e %s", self.path).rc == 0
+        return self.run_test("test -e %s", self.path).rc == 0
 
     @property
     def is_file(self):
-        return run("test -f %s", self.path).rc == 0
+        return self.run_test("test -f %s", self.path).rc == 0
 
     @property
     def is_directory(self):
-        return run("test -d %s", self.path).rc == 0
+        return self.run_test("test -d %s", self.path).rc == 0
 
     @property
     def is_pipe(self):
-        return run("test -p %s", self.path).rc == 0
+        return self.run_test("test -p %s", self.path).rc == 0
 
     @property
     def is_socket(self):
-        return run("test -S %s", self.path).rc == 0
+        return self.run_test("test -S %s", self.path).rc == 0
 
     @property
     def is_symlink(self):
-        return run("test -L %s", self.path).rc == 0
+        return self.run_test("test -L %s", self.path).rc == 0
 
     @property
     def linked_to(self):
@@ -67,7 +66,7 @@ class File(object):
         >>> File("/var/lock").linked_to
         '/run/lock'
         """
-        return check_output("readlink -f %s", self.path)
+        return self.check_output("readlink -f %s", self.path)
 
     @property
     def user(self):
@@ -76,7 +75,7 @@ class File(object):
         >>> File("/etc/passwd").group
         'root'
         """
-        return check_output("stat -c %%U %s", self.path)
+        return self.check_output("stat -c %%U %s", self.path)
 
     @property
     def uid(self):
@@ -85,15 +84,15 @@ class File(object):
         >>> File("/etc/passwd").uid
         0
         """
-        return int(check_output("stat -c %%u %s", self.path))
+        return int(self.check_output("stat -c %%u %s", self.path))
 
     @property
     def group(self):
-        return check_output("stat -c %%G %s", self.path)
+        return self.check_output("stat -c %%G %s", self.path)
 
     @property
     def gid(self):
-        return int(check_output("stat -c %%g %s", self.path))
+        return int(self.check_output("stat -c %%g %s", self.path))
 
     @property
     def mode(self):
@@ -102,22 +101,22 @@ class File(object):
         >>> File("/etc/passwd").mode
         644
         """
-        return int(check_output("stat -c %%a %s", self.path))
+        return int(self.check_output("stat -c %%a %s", self.path))
 
     def contains(self, pattern):
-        return run("grep -qs -- %s %s", pattern, self.path).rc == 0
+        return self.run_test("grep -qs -- %s %s", pattern, self.path).rc == 0
 
     @property
     def md5sum(self):
-        return check_output("md5sum %s | cut -d' ' -f1", self.path)
+        return self.check_output("md5sum %s | cut -d' ' -f1", self.path)
 
     @property
     def sha256sum(self):
-        return check_output(
+        return self.check_output(
             "sha256sum %s | cut -d ' ' -f 1", self.path)
 
     def _get_content(self, decode):
-        out = run("cat -- %s", self.path, decode=decode)
+        out = self.run_test("cat -- %s", self.path, decode=decode)
         if out.rc != 0:
             raise RuntimeError("Unexpected output %s" % (out,))
         return out.stdout
@@ -147,13 +146,13 @@ class File(object):
         >>> File("/etc/passwd").mtime
         datetime.datetime(2015, 3, 15, 20, 25, 40)
         """
-        ts = check_output("stat -c %%Y %s", self.path)
+        ts = self.check_output("stat -c %%Y %s", self.path)
         return datetime.datetime.fromtimestamp(float(ts))
 
     @property
     def size(self):
         """Return size of file in bytes"""
-        return int(check_output("stat -c %%s %s", self.path))
+        return int(self.check_output("stat -c %%s %s", self.path))
 
     def __repr__(self):
         return "<file %s>" % (self.path,)

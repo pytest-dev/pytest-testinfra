@@ -19,7 +19,7 @@ import threading
 
 from testinfra import backend
 
-__all__ = ["set_backend", "run", "check_output"]
+__all__ = ["set_backend", "run"]
 
 g = threading.local()
 g.backend = None
@@ -30,11 +30,6 @@ def run(command, *args, **kwargs):
     if g.backend is None:
         raise RuntimeError("No runner available")
     return g.backend.run(command, *args, **kwargs)
-
-
-def check_output(command, *args, **kwargs):
-    from testinfra.modules.command import Command
-    return Command.check_output(command, *args, **kwargs)
 
 
 def get_system_info():

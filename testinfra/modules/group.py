@@ -15,11 +15,10 @@
 
 from __future__ import unicode_literals
 
-from testinfra import check_output
-from testinfra import run
+from testinfra.modules.base import Module
 
 
-class Group(object):
+class Group(Module):
 
     def __init__(self, name):
         self.name = name
@@ -27,11 +26,11 @@ class Group(object):
 
     @property
     def exists(self):
-        return run("getent group %s", self.name).rc == 0
+        return self.run_expect([0, 2], "getent group %s", self.name).rc == 0
 
     @property
     def gid(self):
-        return int(check_output(
+        return int(self.check_output(
             "getent group %s | cut -d':' -f3", self.name))
 
     def __repr__(self):

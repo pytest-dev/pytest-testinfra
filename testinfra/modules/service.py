@@ -15,10 +15,10 @@
 
 from __future__ import unicode_literals
 
-from testinfra import run
+from testinfra.modules.base import Module
 
 
-class Service(object):
+class Service(Module):
 
     def __init__(self, name):
         self.name = name
@@ -26,7 +26,9 @@ class Service(object):
 
     @property
     def is_running(self):
-        return run("service %s status", self.name).rc == 0
+        out = self.run("service %s status", self.name)
+        assert out.rc != 127, "Unexpected exit status 127"
+        return out.rc == 0
 
     @property
     def is_enabled(self):
@@ -34,11 +36,15 @@ class Service(object):
 
     def is_enabled_with_level(self, level):
         # sysv
-        if run("ls /etc/rc%s.d | grep -q 'S..%s'",
-               str(level), self.name).rc == 0:
+        if self.run_test(
+            "ls /etc/rc%s.d | grep -q 'S..%s'",
+            str(level), self.name
+        ).rc == 0:
             return True
         # systemd
-        elif run("grep -q 'start on' /etc/init/%s.conf", self.name).rc == 0:
+        elif self.run(
+            "grep -q 'start on' /etc/init/%s.conf", self.name
+        ).rc == 0:
             return True
         else:
             return False

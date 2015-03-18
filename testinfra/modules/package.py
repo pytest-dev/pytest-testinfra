@@ -15,12 +15,11 @@
 
 from __future__ import unicode_literals
 
-from testinfra import check_output
 from testinfra import get_system_info
-from testinfra import run
+from testinfra.modules.base import Module
 
 
-class BasePackage(object):
+class BasePackage(Module):
 
     def __init__(self, name):
         self.name = name
@@ -42,13 +41,13 @@ class DebianPackage(BasePackage):
 
     @property
     def is_installed(self):
-        return run((
+        return self.run_test((
             "dpkg-query -f '${Status}' -W %s | "
-            "grep -E '^(install|hold) ok installed$'"), self.name).rc == 0
+            "grep -qE '^(install|hold) ok installed$'"), self.name).rc == 0
 
     @property
     def version(self):
-        return check_output((
+        return self.check_output((
             "dpkg-query -f '${Status} ${Version}' -W %s | "
             "sed -n 's/^install ok installed //p'"), self.name)
 

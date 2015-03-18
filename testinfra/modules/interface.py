@@ -15,12 +15,11 @@
 
 from __future__ import unicode_literals
 
-from testinfra import check_output
 from testinfra import get_system_info
-from testinfra import run
+from testinfra.modules.base import Module
 
 
-class BaseInterface(object):
+class BaseInterface(Module):
 
     def __init__(self, name):
         self.name = name
@@ -38,16 +37,16 @@ class LinuxInterface(BaseInterface):
 
     @property
     def exists(self):
-        return run("ip link show %s", self.name).rc == 0
+        return self.run_test("ip link show %s", self.name).rc == 0
 
     @property
     def speed(self):
-        return int(check_output(
+        return int(self.check_output(
             "cat /sys/class/net/%s/speed", self.name))
 
     @property
     def addresses(self):
-        stdout = check_output("ip addr show %s", self.name)
+        stdout = self.check_output("ip addr show %s", self.name)
         addrs = []
         for line in stdout.splitlines():
             splitted = [e.strip() for e in line.split(" ") if e]

@@ -15,26 +15,13 @@
 
 from __future__ import unicode_literals
 
-from testinfra import run
+from testinfra.modules.base import Module
 
 
-class _Command(object):
+class _Command(Module):
 
     def __call__(self, command, *args, **kwargs):
-        return run(command, *args, **kwargs)
-
-    def check_output(self, command, *args, **kwargs):
-        out = self(command, *args, **kwargs)
-        if out.rc != 0:
-            raise RuntimeError(
-                "Unexpected exit code %s for command %s" % (
-                    out.rc, out))
-
-        stdout = out.stdout
-        if stdout[-1] == "\n":
-            return stdout[:-1]
-        else:
-            return stdout
+        return self.run(command, *args, **kwargs)
 
     def __repr__(self):
         return "<command>"
