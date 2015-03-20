@@ -116,10 +116,13 @@ class File(Module):
             "sha256sum %s | cut -d ' ' -f 1", self.path)
 
     def _get_content(self, decode):
-        out = self.run_test("cat -- %s", self.path, decode=decode)
+        out = self.run_test("cat -- %s", self.path)
         if out.rc != 0:
             raise RuntimeError("Unexpected output %s" % (out,))
-        return out.stdout
+        if decode:
+            return out.stdout
+        else:
+            return out.stdout_bytes
 
     @property
     def content(self):

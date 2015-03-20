@@ -15,13 +15,50 @@
 
 from __future__ import unicode_literals
 
-import collections
+import locale
 import pipes
 
 
-CommandResult = collections.namedtuple('CommandResult', [
-    'rc', 'stdout', 'stderr', 'command',
-])
+ENCODING = locale.getpreferredencoding()
+
+
+class CommandResult(object):
+
+    def __init__(self, exit_status, stdout_bytes, stderr_bytes, command):
+        self.exit_status = exit_status
+        self.stdout_bytes = stdout_bytes
+        self.stderr_bytes = stderr_bytes
+        self._stdout = None
+        self._stderr = None
+        self.command = command
+        super(CommandResult, self).__init__()
+
+    @property
+    def rc(self):
+        return self.exit_status
+
+    @property
+    def stdout(self):
+        if self._stdout is None:
+            self._stdout = self.stdout_bytes.decode(ENCODING)
+        return self._stdout
+
+    @property
+    def stderr(self):
+        if self._stderr is None:
+            self._stderr = self.stderr_bytes.decode(ENCODING)
+        return self._stderr
+
+    def __repr__(self):
+        return (
+            "CommandResult(exit_status=%s, stdout=%s, "
+            "stderr=%s, command=%s)"
+        ) % (
+            self.exit_status,
+            repr(self.stdout_bytes),
+            repr(self.stderr_bytes),
+            repr(self.command),
+        )
 
 
 class BaseBackend(object):

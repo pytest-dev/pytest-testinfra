@@ -72,10 +72,7 @@ class SafeSshBackend(SshBackend):
         start = out.stdout.find("TESTINFRA_START;") + len("TESTINFRA_START;")
         end = out.stdout.find("TESTINFRA_END") - 1
         rc, stdout, stderr = out.stdout[start:end].split(";")
-
-        return base.CommandResult(
-            rc=int(rc),
-            stdout=base64.b64decode(stdout),
-            stderr=base64.b64decode(stderr),
-            command=orig_command,
-        )
+        rc = int(rc)
+        stdout = base64.b64decode(stdout)
+        stderr = base64.b64decode(stderr)
+        return base.CommandResult(rc, stdout, stderr, orig_command)

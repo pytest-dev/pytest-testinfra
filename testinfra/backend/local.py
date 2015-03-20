@@ -32,6 +32,6 @@ class LocalBackend(base.BaseBackend):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            universal_newlines=kwargs.get("decode", True))
+        )
         stdout, stderr = p.communicate()
         return base.CommandResult(p.returncode, stdout, stderr, command)

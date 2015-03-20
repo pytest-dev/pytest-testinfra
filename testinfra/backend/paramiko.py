@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
+
 from testinfra.backend import base
 
 try:
@@ -58,6 +59,6 @@ class ParamikoBakend(base.BaseBackend):
         logger.info("RUN %s", command)
         chan.exec_command(command)
         rc = chan.recv_exit_status()
-        stdout = ''.join(chan.makefile('rb'))
-        stderr = ''.join(chan.makefile_stderr('rb'))
+        stdout = b''.join(chan.makefile('rb'))
+        stderr = b''.join(chan.makefile_stderr('rb'))
         return base.CommandResult(rc, stdout, stderr, command)
