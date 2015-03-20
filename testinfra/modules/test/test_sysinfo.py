@@ -22,14 +22,14 @@ from testinfra import get_system_info
 def test_osinfo(mock_subprocess):
     values = [
         # uname -s
-        ("Linux\n", ""),
+        (b"Linux\n", b""),
         # lsb_release -a
         ((
-            "Distributor ID: Debian\n"
-            "Description:    Debian GNU/Linux 7.8 (wheezy)\n"
-            "Release:        7.8\n"
-            "Codename:       wheezy\n"
-        ), "No LSB modules are available.\n"),
+            b"Distributor ID: Debian\n"
+            b"Description:    Debian GNU/Linux 7.8 (wheezy)\n"
+            b"Release:        7.8\n"
+            b"Codename:       wheezy\n"
+        ), b"No LSB modules are available.\n"),
     ]
     mock_subprocess().configure_mock(**{
         "communicate.side_effect": values,

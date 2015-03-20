@@ -22,7 +22,7 @@ from testinfra.modules import Command
 
 def test_run(mock_subprocess):
     mock_subprocess().configure_mock(**{
-        "communicate.return_value": ("out", "err"),
+        "communicate.return_value": (b"out", b"err"),
         "returncode": 42,
     })
     cmd = Command("ls %s", "; rm -rf /foo")
@@ -34,7 +34,7 @@ def test_run(mock_subprocess):
 
 def test_check_output(mock_subprocess):
     mock_subprocess().configure_mock(**{
-        "communicate.return_value": ("out", ""),
+        "communicate.return_value": (b"out", b""),
         "returncode": 0,
     })
     assert Command.check_output("zzzzzzz") == "out"
@@ -42,7 +42,7 @@ def test_check_output(mock_subprocess):
 
 def test_check_output_error(mock_subprocess):
     mock_subprocess().configure_mock(**{
-        "communicate.return_value": ("", ""),
+        "communicate.return_value": (b"", b""),
         "returncode": 127,
     })
     with pytest.raises(AssertionError):
