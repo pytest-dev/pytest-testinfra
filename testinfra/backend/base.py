@@ -27,7 +27,10 @@ CommandResult = collections.namedtuple('CommandResult', [
 class BaseBackend(object):
 
     def quote(self, command, *args):
-        return command % tuple(pipes.quote(a) for a in args)
+        if args:
+            return command % tuple(pipes.quote(a) for a in args)
+        else:
+            return command
 
     @staticmethod
     def parse_hostspec(hostspec):
