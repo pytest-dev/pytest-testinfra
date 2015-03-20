@@ -34,7 +34,7 @@ def pytest_addoption(parser):
         "--connection",
         action="store",
         dest="connection",
-        help="Remote connection backend ssh|paramiko",
+        help="Remote connection backend ssh|paramiko|safe_ssh",
     )
     group._addoption(
         "--hosts",

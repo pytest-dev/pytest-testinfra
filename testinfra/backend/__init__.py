@@ -25,6 +25,7 @@ def get_backend(backend_type, *args, **kwargs):
         backend_class = {
             "local": local.LocalBackend,
             "ssh": ssh.SshBackend,
+            "safe_ssh": ssh.SafeSshBackend,
             "paramiko": paramiko.ParamikoBakend,
         }[backend_type]
     except KeyError:
