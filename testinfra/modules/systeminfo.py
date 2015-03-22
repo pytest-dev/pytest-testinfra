@@ -59,7 +59,7 @@ class SystemInfo(Module):
     def type(self):
         """OS type
 
-        >>> Sysinfo.type
+        >>> SystemInfo.type
         'linux'
         """
         return self.sysinfo["type"]
@@ -68,7 +68,7 @@ class SystemInfo(Module):
     def distribution(self):
         """Distribution name
 
-        >>> Sysinfo.distribution
+        >>> SystemInfo.distribution
         'debian'
         """
         return self.sysinfo["distribution"]
@@ -77,7 +77,7 @@ class SystemInfo(Module):
     def release(self):
         """Distribution release number
 
-        >>> Sysinfo.release
+        >>> SystemInfo.release
         '7.8'
         """
         return self.sysinfo["release"]
@@ -86,7 +86,7 @@ class SystemInfo(Module):
     def codename(self):
         """Relase code name
 
-        >>> Sysinfo.codename
+        >>> SystemInfo.codename
         'wheezy'
         """
         return self.sysinfo["codename"]
