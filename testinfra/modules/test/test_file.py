@@ -21,11 +21,8 @@ import os
 import pwd
 import six
 
-from testinfra.modules import Command
-from testinfra.modules import File
 
-
-def test_file_content(mock_subprocess):
+def test_file_content(mock_subprocess, Command, File):
     content = b"".join([six.int2byte(x) for x in range(255)])
     mock_subprocess().configure_mock(**{
         "communicate.return_value": (content, b""),
@@ -34,7 +31,7 @@ def test_file_content(mock_subprocess):
     assert File("/foo").content == content
 
 
-def test_file(tmpdir):
+def test_file(tmpdir, File):
     path = tmpdir.join("f")
     path.write(b"foo")
     path.chmod(0o600)
@@ -63,7 +60,7 @@ def test_file(tmpdir):
         path.mtime()).replace(microsecond=0)
 
 
-def test_link(tmpdir):
+def test_link(tmpdir, File):
     tmpdir.ensure("f")
     tmpdir.join("l").mksymlinkto(tmpdir.join("f"))
     l = File(tmpdir.join("l").strpath)
@@ -72,13 +69,13 @@ def test_link(tmpdir):
     assert l.linked_to == tmpdir.join("f").strpath
 
 
-def test_directory(tmpdir):
+def test_directory(tmpdir, File):
     f = File(tmpdir.mkdir("sub").strpath)
     assert f.is_directory
     assert not f.is_file
 
 
-def test_pipe(tmpdir):
+def test_pipe(tmpdir, Command, File):
     assert Command("mkfifo %s", tmpdir.join("f").strpath).rc == 0
     f = File(tmpdir.join("f").strpath)
     assert f.is_pipe

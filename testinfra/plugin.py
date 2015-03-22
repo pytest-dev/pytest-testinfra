@@ -18,6 +18,16 @@ from __future__ import unicode_literals
 import pytest
 import testinfra
 
+from testinfra import modules
+
+File = modules.File.as_fixture()
+Command = modules.Command.as_fixture()
+Package = modules.Package.as_fixture()
+Group = modules.Group.as_fixture()
+Interface = modules.Interface.as_fixture()
+Command = modules.Command.as_fixture()
+Service = modules.Service.as_fixture()
+
 
 @pytest.fixture(autouse=True, scope="session")
 def _testinfra_set_backend(pytestconfig, _testinfra_host):

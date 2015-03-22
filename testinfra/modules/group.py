@@ -19,6 +19,7 @@ from testinfra.modules.base import Module
 
 
 class Group(Module):
+    """Test unix group"""
 
     def __init__(self, name):
         self.name = name

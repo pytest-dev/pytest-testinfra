@@ -15,15 +15,18 @@
 
 from __future__ import unicode_literals
 
+import pytest
+
 from testinfra import get_system_info
 from testinfra.modules.base import Module
 
 
-class BaseInterface(Module):
+class Interface(Module):
+    """Test network interfaces"""
 
     def __init__(self, name):
         self.name = name
-        super(BaseInterface, self).__init__()
+        super(Interface, self).__init__()
 
     @property
     def exists(self):
@@ -32,8 +35,19 @@ class BaseInterface(Module):
     def __repr__(self):
         return "<interface %s>" % (self.name,)
 
+    @classmethod
+    def as_fixture(cls):
+        @pytest.fixture(scope="session")
+        def f():
+            if get_system_info().type == "linux":
+                return LinuxInterface
+            else:
+                raise NotImplementedError
+        f.__doc__ = cls.__doc__
+        return f
 
-class LinuxInterface(BaseInterface):
+
+class LinuxInterface(Interface):
 
     @property
     def exists(self):
@@ -53,10 +67,3 @@ class LinuxInterface(BaseInterface):
             if splitted and splitted[0] in ("inet", "inet6"):
                 addrs.append(splitted[1].split("/", 1)[0])
         return addrs
-
-
-def Interface(name):
-    if get_system_info().type == "linux":
-        return LinuxInterface(name)
-    else:
-        raise NotImplementedError

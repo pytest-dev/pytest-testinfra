@@ -19,6 +19,7 @@ from testinfra.modules.base import Module
 
 
 class Service(Module):
+    """Test services"""
 
     def __init__(self, name):
         self.name = name

@@ -15,15 +15,17 @@
 
 from __future__ import unicode_literals
 
-from testinfra import get_system_info
+import pytest
+
 from testinfra.modules.base import Module
 
 
-class BasePackage(Module):
+class Package(Module):
+    """Test packages status and version"""
 
     def __init__(self, name):
         self.name = name
-        super(BasePackage, self).__init__()
+        super(Package, self).__init__()
 
     @property
     def is_installed(self):
@@ -36,8 +38,19 @@ class BasePackage(Module):
     def __repr__(self):
         return "<package %s>" % (self.name,)
 
+    @classmethod
+    def as_fixture(cls):
+        @pytest.fixture(scope="session")
+        def f():
+            if cls.run_test("which apt-get").rc == 0:
+                return DebianPackage
+            else:
+                raise NotImplementedError
+        f.__doc__ = cls.__doc__
+        return f
 
-class DebianPackage(BasePackage):
+
+class DebianPackage(Package):
 
     @property
     def is_installed(self):
@@ -50,10 +63,3 @@ class DebianPackage(BasePackage):
         return self.check_output((
             "dpkg-query -f '${Status} ${Version}' -W %s | "
             "sed -n 's/^install ok installed //p'"), self.name)
-
-
-def Package(name):
-    if get_system_info().distribution == "debian":
-        return DebianPackage(name)
-    else:
-        raise NotImplementedError

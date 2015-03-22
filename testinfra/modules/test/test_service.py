@@ -17,12 +17,10 @@ from __future__ import unicode_literals
 
 import pytest
 
-from testinfra.modules import Service
-
 
 @pytest.mark.parametrize("rc,expected", [(0, True), (3, False)],
                          ids=["running", "not running"])
-def test_is_running(mock_subprocess, rc, expected):
+def test_is_running(Service, mock_subprocess, rc, expected):
     mock_subprocess().configure_mock(**{
         "communicate.return_value": (b"", b""),
         "returncode": rc,
@@ -32,7 +30,7 @@ def test_is_running(mock_subprocess, rc, expected):
 
 @pytest.mark.parametrize("rc,expected", [(0, True), (1, False)],
                          ids=["enabled", "not enabled"])
-def test_is_enabled(mock_subprocess, rc, expected):
+def test_is_enabled(Service, mock_subprocess, rc, expected):
     mock_subprocess().configure_mock(**{
         "communicate.return_value": (b"", b""),
         "returncode": rc,

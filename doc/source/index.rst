@@ -31,7 +31,7 @@ You can also set hosts per test module::
 
     hosts = ["localhost", "root@webserver:2222"]
 
-    def test_foo():
+    def test_foo(File, Package, Service):
         [...]
 
 
@@ -69,6 +69,9 @@ For more usages and features, see the Pytest_ documentation.
 
 Modules
 =======
+
+Testinfra modules are provided as `pytest fixtures`_, declare them as arguments
+of your test function to make them available;
 
 Command
 ~~~~~~~
@@ -169,3 +172,5 @@ Service
 
 .. toctree::
    :maxdepth: 2
+
+.. _pytest fixtures: https://pytest.org/latest/fixture.html

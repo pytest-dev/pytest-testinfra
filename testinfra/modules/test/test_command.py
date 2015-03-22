@@ -17,10 +17,8 @@ from __future__ import unicode_literals
 
 import pytest
 
-from testinfra.modules import Command
 
-
-def test_run(mock_subprocess):
+def test_run(mock_subprocess, Command):
     mock_subprocess().configure_mock(**{
         "communicate.return_value": (b"out", b"err"),
         "returncode": 42,
@@ -32,7 +30,7 @@ def test_run(mock_subprocess):
     assert cmd.rc == 42
 
 
-def test_check_output(mock_subprocess):
+def test_check_output(mock_subprocess, Command):
     mock_subprocess().configure_mock(**{
         "communicate.return_value": (b"out", b""),
         "returncode": 0,
@@ -40,7 +38,7 @@ def test_check_output(mock_subprocess):
     assert Command.check_output("zzzzzzz") == "out"
 
 
-def test_check_output_error(mock_subprocess):
+def test_check_output_error(mock_subprocess, Command):
     mock_subprocess().configure_mock(**{
         "communicate.return_value": (b"", b""),
         "returncode": 127,

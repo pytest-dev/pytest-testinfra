@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals
 
+import pytest
 from testinfra import run
 
 
@@ -24,19 +25,30 @@ class Module(object):
     def run(command, *args, **kwargs):
         return run(command, *args, **kwargs)
 
-    def run_expect(self, exit_status, command, *args, **kwargs):
-        out = self.run(command, *args, **kwargs)
+    @classmethod
+    def run_expect(cls, exit_status, command, *args, **kwargs):
+        out = cls.run(command, *args, **kwargs)
         assert out.rc in exit_status
         return out
 
-    def run_test(self, command, *args, **kwargs):
-        return self.run_expect([0, 1], command, *args, **kwargs)
+    @classmethod
+    def run_test(cls, command, *args, **kwargs):
+        return cls.run_expect([0, 1], command, *args, **kwargs)
 
-    def check_output(self, command, *args, **kwargs):
-        out = self.run(command, *args, **kwargs)
+    @classmethod
+    def check_output(cls, command, *args, **kwargs):
+        out = cls.run(command, *args, **kwargs)
         assert out.rc == 0
 
         if out.stdout[-1] == "\n":
             return out.stdout[:-1]
         else:
             return out.stdout
+
+    @classmethod
+    def as_fixture(cls):
+        @pytest.fixture(scope="session")
+        def f():
+            return cls
+        f.__doc__ = cls.__doc__
+        return f

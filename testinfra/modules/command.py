@@ -15,10 +15,13 @@
 
 from __future__ import unicode_literals
 
+import pytest
+
 from testinfra.modules.base import Module
 
 
-class _Command(Module):
+class Command(Module):
+    """Run commands and test stdout/stderr and exit status"""
 
     def __call__(self, command, *args, **kwargs):
         return self.run(command, *args, **kwargs)
@@ -26,4 +29,10 @@ class _Command(Module):
     def __repr__(self):
         return "<command>"
 
-Command = _Command()
+    @classmethod
+    def as_fixture(cls):
+        @pytest.fixture(scope="session")
+        def f():
+            return Command()
+        f.__doc__ = cls.__doc__
+        return f
