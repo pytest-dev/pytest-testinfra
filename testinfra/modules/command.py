@@ -32,7 +32,7 @@ class Command(Module):
     @classmethod
     def as_fixture(cls):
         @pytest.fixture(scope="session")
-        def f():
+        def f(testinfra_backend):
             return Command()
         f.__doc__ = cls.__doc__
         return f

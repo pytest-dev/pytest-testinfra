@@ -30,8 +30,8 @@ Service = modules.Service.as_fixture()
 SystemInfo = modules.SystemInfo.as_fixture()
 
 
-@pytest.fixture(autouse=True, scope="session")
-def _testinfra_set_backend(pytestconfig, _testinfra_host):
+@pytest.fixture(scope="session")
+def testinfra_backend(pytestconfig, _testinfra_host):
     if _testinfra_host is not None:
         backend_type = pytestconfig.option.connection or "ssh"
         testinfra.set_backend(backend_type, _testinfra_host)

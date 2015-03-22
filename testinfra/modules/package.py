@@ -41,8 +41,8 @@ class Package(Module):
     @classmethod
     def as_fixture(cls):
         @pytest.fixture(scope="session")
-        def f():
-            if cls.run_test("which apt-get").rc == 0:
+        def f(Command):
+            if Command.run_test("which apt-get").rc == 0:
                 return DebianPackage
             else:
                 raise NotImplementedError
