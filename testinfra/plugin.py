@@ -27,6 +27,7 @@ Group = modules.Group.as_fixture()
 Interface = modules.Interface.as_fixture()
 Command = modules.Command.as_fixture()
 Service = modules.Service.as_fixture()
+SystemInfo = modules.SystemInfo.as_fixture()
 
 
 @pytest.fixture(autouse=True, scope="session")

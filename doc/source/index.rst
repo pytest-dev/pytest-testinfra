@@ -170,6 +170,15 @@ Service
     .. attribute:: is_enabled
 
 
+SystemInfo
+~~~~~~~~~~
+
+
+.. autoclass:: testinfra.modules.SystemInfo
+   :members:
+
+
+
 .. toctree::
    :maxdepth: 2
 

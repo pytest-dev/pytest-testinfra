@@ -21,18 +21,10 @@ from testinfra.modules.group import Group
 from testinfra.modules.interface import Interface
 from testinfra.modules.package import Package
 from testinfra.modules.service import Service
-
-
-class _SystemInfo(object):
-
-    def __getattr__(self, attr):
-        from testinfra import get_system_info
-        return getattr(get_system_info(), attr)
-
-system = _SystemInfo()
+from testinfra.modules.systeminfo import SystemInfo
 
 
 __all__ = [
     "Command", "File", "Package", "Group", "Interface",
-    "Service", "system",
+    "Service", "SystemInfo",
 ]

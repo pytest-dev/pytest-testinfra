@@ -16,10 +16,7 @@
 from __future__ import unicode_literals
 
 
-from testinfra import get_system_info
-
-
-def test_osinfo(mock_subprocess):
+def test_osinfo(mock_subprocess, SystemInfo):
     values = [
         # uname -s
         (b"Linux\n", b""),
@@ -35,8 +32,7 @@ def test_osinfo(mock_subprocess):
         "communicate.side_effect": values,
         "returncode": 0,
     })
-    info = get_system_info()
-    assert info.type == "linux"
-    assert info.distribution == "debian"
-    assert info.release == "7.8"
-    assert info.codename == "wheezy"
+    assert SystemInfo.type == "linux"
+    assert SystemInfo.distribution == "debian"
+    assert SystemInfo.release == "7.8"
+    assert SystemInfo.codename == "wheezy"

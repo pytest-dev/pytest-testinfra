@@ -17,7 +17,6 @@ from __future__ import unicode_literals
 
 import pytest
 
-from testinfra import get_system_info
 from testinfra.modules.base import Module
 
 
@@ -38,8 +37,8 @@ class Interface(Module):
     @classmethod
     def as_fixture(cls):
         @pytest.fixture(scope="session")
-        def f():
-            if get_system_info().type == "linux":
+        def f(SystemInfo):
+            if SystemInfo.type == "linux":
                 return LinuxInterface
             else:
                 raise NotImplementedError

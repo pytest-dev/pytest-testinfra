@@ -23,7 +23,6 @@ __all__ = ["set_backend", "run"]
 
 g = threading.local()
 g.backend = None
-g.sysinfo = None
 
 
 def run(command, *args, **kwargs):
@@ -32,13 +31,5 @@ def run(command, *args, **kwargs):
     return g.backend.run(command, *args, **kwargs)
 
 
-def get_system_info():
-    if g.sysinfo is None:
-        import testinfra.sysinfo
-        g.sysinfo = testinfra.sysinfo.get_system_info()
-    return g.sysinfo
-
-
 def set_backend(backend_type, *args, **kwargs):
     g.backend = backend.get_backend(backend_type, *args, **kwargs)
-    g.sysinfo = None
