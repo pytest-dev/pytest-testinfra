@@ -17,6 +17,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+import pytest
+
 from testinfra.modules.base import Module
 
 
@@ -75,7 +77,7 @@ class File(Module):
         >>> File("/etc/passwd").group
         'root'
         """
-        return self.check_output("stat -c %%U %s", self.path)
+        raise NotImplementedError
 
     @property
     def uid(self):
@@ -84,15 +86,15 @@ class File(Module):
         >>> File("/etc/passwd").uid
         0
         """
-        return int(self.check_output("stat -c %%u %s", self.path))
+        raise NotImplementedError
 
     @property
     def group(self):
-        return self.check_output("stat -c %%G %s", self.path)
+        raise NotImplementedError
 
     @property
     def gid(self):
-        return int(self.check_output("stat -c %%g %s", self.path))
+        raise NotImplementedError
 
     @property
     def mode(self):
@@ -101,19 +103,18 @@ class File(Module):
         >>> File("/etc/passwd").mode
         644
         """
-        return int(self.check_output("stat -c %%a %s", self.path))
+        raise NotImplementedError
 
     def contains(self, pattern):
         return self.run_test("grep -qs -- %s %s", pattern, self.path).rc == 0
 
     @property
     def md5sum(self):
-        return self.check_output("md5sum %s | cut -d' ' -f1", self.path)
+        raise NotImplementedError
 
     @property
     def sha256sum(self):
-        return self.check_output(
-            "sha256sum %s | cut -d ' ' -f 1", self.path)
+        raise NotImplementedError
 
     def _get_content(self, decode):
         out = self.run_test("cat -- %s", self.path)
@@ -149,13 +150,115 @@ class File(Module):
         >>> File("/etc/passwd").mtime
         datetime.datetime(2015, 3, 15, 20, 25, 40)
         """
+        raise NotImplementedError
+
+    @property
+    def size(self):
+        """Return size of file in bytes"""
+        raise NotImplementedError
+
+    def __repr__(self):
+        return "<file %s>" % (self.path,)
+
+    @classmethod
+    def as_fixture(cls):
+        @pytest.fixture(scope="session")
+        def f(SystemInfo):
+            if SystemInfo.type == "linux":
+                return GNUFile
+            elif SystemInfo.type == "netbsd":
+                return NetBSDFile
+            elif SystemInfo.type.endswith("bsd"):
+                return BSDFile
+            else:
+                raise NotImplementedError
+        f.__doc__ = cls.__doc__
+        return f
+
+
+class GNUFile(File):
+    @property
+    def user(self):
+        return self.check_output("stat -c %%U %s", self.path)
+
+    @property
+    def uid(self):
+        return int(self.check_output("stat -c %%u %s", self.path))
+
+    @property
+    def group(self):
+        return self.check_output("stat -c %%G %s", self.path)
+
+    @property
+    def gid(self):
+        return int(self.check_output("stat -c %%g %s", self.path))
+
+    @property
+    def mode(self):
+        return int(self.check_output("stat -c %%a %s", self.path))
+
+    @property
+    def mtime(self):
         ts = self.check_output("stat -c %%Y %s", self.path)
         return datetime.datetime.fromtimestamp(float(ts))
 
     @property
     def size(self):
-        """Return size of file in bytes"""
         return int(self.check_output("stat -c %%s %s", self.path))
 
-    def __repr__(self):
-        return "<file %s>" % (self.path,)
+    @property
+    def md5sum(self):
+        return self.check_output("md5sum %s | cut -d' ' -f1", self.path)
+
+    @property
+    def sha256sum(self):
+        return self.check_output(
+            "sha256sum %s | cut -d ' ' -f 1", self.path)
+
+
+class BSDFile(File):
+    @property
+    def user(self):
+        return self.check_output("stat -f %%Su %s", self.path)
+
+    @property
+    def uid(self):
+        return int(self.check_output("stat -f %%u %s", self.path))
+
+    @property
+    def group(self):
+        return self.check_output("stat -f %%Sg %s", self.path)
+
+    @property
+    def gid(self):
+        return int(self.check_output("stat -f %%g %s", self.path))
+
+    @property
+    def mode(self):
+        return int(self.check_output("stat -f %%Lp %s", self.path))
+
+    @property
+    def mtime(self):
+        ts = self.check_output("stat -f %%m %s", self.path)
+        return datetime.datetime.fromtimestamp(float(ts))
+
+    @property
+    def size(self):
+        return int(self.check_output("stat -f %%z %s", self.path))
+
+    @property
+    def md5sum(self):
+        return self.check_output("md5 < %s", self.path)
+
+    @property
+    def sha256sum(self):
+        return self.check_output(
+            "sha256 < %s", self.path)
+
+
+class NetBSDFile(BSDFile):
+
+    @property
+    def sha256sum(self):
+        return self.check_output(
+            "cksum -a sha256 < %s", self.path)

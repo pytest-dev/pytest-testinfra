@@ -145,8 +145,6 @@ Interface
 Package
 ~~~~~~~
 
-.. warning:: Support is currently limited to APT based distributions
-
 .. class:: testinfra.modules.Package(name)
 
     .. attribute:: is_installed

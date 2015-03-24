@@ -33,7 +33,7 @@ SystemInfo = modules.SystemInfo.as_fixture()
 @pytest.fixture(scope="session")
 def testinfra_backend(pytestconfig, _testinfra_host):
     if _testinfra_host is not None:
-        backend_type = pytestconfig.option.connection or "ssh"
+        backend_type = pytestconfig.option.connection or "paramiko"
         testinfra.set_backend(backend_type, _testinfra_host)
     else:
         testinfra.set_backend("local")

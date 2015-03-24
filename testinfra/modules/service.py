@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals
 
+import pytest
+
 from testinfra.modules.base import Module
 
 
@@ -27,9 +29,40 @@ class Service(Module):
 
     @property
     def is_running(self):
-        out = self.run("service %s status", self.name)
-        assert out.rc != 127, "Unexpected exit status 127"
-        return out.rc == 0
+        """Check if service is running"""
+        raise NotImplementedError
+
+    @property
+    def is_enabled(self):
+        """Check if service is enabled"""
+        raise NotImplementedError
+
+    @classmethod
+    def as_fixture(cls):
+        @pytest.fixture(scope="session")
+        def f(SystemInfo):
+            if SystemInfo.type == "linux":
+                return LinuxService
+            elif SystemInfo.type == "freebsd":
+                return FreeBSDService
+            elif SystemInfo.type == "openbsd":
+                return OpenBSDService
+            elif SystemInfo.type == "netbsd":
+                return NetBSDService
+            else:
+                raise NotImplementedError
+        f.__doc__ = cls.__doc__
+        return f
+
+    def __repr__(self):
+        return "<service %s>" % (self.name,)
+
+
+class LinuxService(Service):
+
+    @property
+    def is_running(self):
+        return self.run_test("service %s status", self.name).rc == 0
 
     @property
     def is_enabled(self):
@@ -50,5 +83,33 @@ class Service(Module):
         else:
             return False
 
-    def __repr__(self):
-        return "<service %s>" % (self.name,)
+
+class FreeBSDService(Service):
+
+    @property
+    def is_running(self):
+        return self.run_test("service %s onestatus", self.name).rc == 0
+
+    @property
+    def is_enabled(self):
+        # Return list of enabled services like
+        # /etc/rc.d/sshd
+        # /etc/rc.d/sendmail
+        for path in self.check_output("service -e").splitlines():
+            if path and path.rsplit("/", 1)[1] == self.name:
+                return True
+        return False
+
+
+class OpenBSDService(Service):
+
+    @property
+    def is_running(self):
+        return self.run_test("/etc/rc.d/%s check", self.name).rc == 0
+
+
+class NetBSDService(Service):
+
+    @property
+    def is_running(self):
+        return self.run_test("/etc/rc.d/%s onestatus", self.name).rc == 0

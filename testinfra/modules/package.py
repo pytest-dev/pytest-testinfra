@@ -41,8 +41,12 @@ class Package(Module):
     @classmethod
     def as_fixture(cls):
         @pytest.fixture(scope="session")
-        def f(Command):
-            if Command.run_test("which apt-get").rc == 0:
+        def f(Command, SystemInfo):
+            if SystemInfo.type == "freebsd":
+                return FreeBSDPackage
+            elif SystemInfo.type in ("openbsd", "netbsd"):
+                return OpenBSDPackage
+            elif Command.run_test("which apt-get").rc == 0:
                 return DebianPackage
             else:
                 raise NotImplementedError
@@ -63,3 +67,30 @@ class DebianPackage(Package):
         return self.check_output((
             "dpkg-query -f '${Status} ${Version}' -W %s | "
             "sed -n 's/^install ok installed //p'"), self.name)
+
+
+class FreeBSDPackage(Package):
+
+    @property
+    def is_installed(self):
+        EX_UNAVAILABLE = 69
+        return self.run_expect(
+            [0, EX_UNAVAILABLE], "pkg query %%n %s", self.name).rc == 0
+
+    @property
+    def version(self):
+        return self.check_output("pkg query %%v %s", self.name)
+
+
+class OpenBSDPackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test("pkg_info -e %s", "%s-*" % (self.name,)).rc == 0
+
+    @property
+    def version(self):
+        out = self.check_output("pkg_info -e %s", "%s-*" % (self.name,))
+        # OpenBSD: inst:zsh-5.0.5p0
+        # NetBSD: zsh-5.0.7nb1
+        return out.split(self.name + "-", 1)[1]

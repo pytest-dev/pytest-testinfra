@@ -13,22 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+import uuid
 
-import mock
 import pytest
-
-import testinfra
 
 
 @pytest.fixture(scope="function")
-def mock_subprocess(request):
-    testinfra.set_backend("local")
-    patch = mock.patch("subprocess.Popen")
-    m = patch.start()
+def remote_tempdir(request, Command):
+    dirname = "/tmp/testinfra-%s" % uuid.uuid4().hex
+    assert Command("rm -rf %s; mkdir -p %s", dirname, dirname).rc == 0
 
-    def stop():
-        patch.stop()
+    def fin():
+        Command("rm -rf %s", dirname)
 
-    request.addfinalizer(stop)
-    return m
+    request.addfinalizer(fin)
+    return dirname
+
+
+def pytest_addoption(parser):
+    parser.addoption("--integration", action="store_true",
+                     help="Run integration tests")
+
+
+def pytest_runtest_setup(item):
+    if (
+        "integration" in item.keywords
+        and not item.config.getoption("--integration")
+    ):
+        pytest.skip("integration test not selected")

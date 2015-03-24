@@ -36,23 +36,28 @@ class SystemInfo(Module):
     def get_system_info(self):
         sysinfo = {}
         sysinfo["type"] = self.check_output("uname -s").lower()
-        lsb = self.run("lsb_release -a")
-        if lsb.rc == 0:
-            for line in lsb.stdout.splitlines():
-                key, value = line.split(":", 1)
-                key = key.strip().lower()
-                value = value.strip().lower()
-                if key == "distributor id":
-                    sysinfo["distribution"] = value
-                elif key == "release":
-                    sysinfo["release"] = value
-                elif key == "codename":
-                    sysinfo["codename"] = value
+        if sysinfo["type"] == "linux":
+            lsb = self.run("lsb_release -a")
+            if lsb.rc == 0:
+                for line in lsb.stdout.splitlines():
+                    key, value = line.split(":", 1)
+                    key = key.strip().lower()
+                    value = value.strip().lower()
+                    if key == "distributor id":
+                        sysinfo["distribution"] = value
+                    elif key == "release":
+                        sysinfo["release"] = value
+                    elif key == "codename":
+                        sysinfo["codename"] = value
+            else:
+                version = self.run("cat /etc/debian_version")
+                if version.rc == 0:
+                    sysinfo["distribution"] = "debian"
+                    sysinfo["release"] = version.stdout.splitlines()[0]
         else:
-            version = self.run("cat /etc/debian_version")
-            if version.rc == 0:
-                sysinfo["distribution"] = "debian"
-                sysinfo["release"] = version.stdout.splitlines()[0]
+            sysinfo["release"] = self.check_output("uname -r")
+            sysinfo["distribution"] = sysinfo["type"]
+            sysinfo["codename"] = ""
         return sysinfo
 
     @property
@@ -90,6 +95,26 @@ class SystemInfo(Module):
         'wheezy'
         """
         return self.sysinfo["codename"]
+
+    @property
+    def user(self):
+        return self.check_output("id -nu")
+
+    @property
+    def uid(self):
+        return int(self.check_output("id -u"))
+
+    @property
+    def group(self):
+        return self.check_output("id -ng")
+
+    @property
+    def gid(self):
+        return int(self.check_output("id -g"))
+
+    @property
+    def hostname(self):
+        return self.check_output("hostname -s")
 
     @classmethod
     def as_fixture(cls):
