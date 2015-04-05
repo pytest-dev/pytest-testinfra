@@ -31,6 +31,14 @@ class Interface(Module):
     def exists(self):
         raise NotImplementedError
 
+    @property
+    def speed(self):
+        raise NotImplementedError
+
+    @property
+    def addresses(self):
+        raise NotImplementedError
+
     def __repr__(self):
         return "<interface %s>" % (self.name,)
 
@@ -40,6 +48,8 @@ class Interface(Module):
         def f(SystemInfo):
             if SystemInfo.type == "linux":
                 return LinuxInterface
+            elif SystemInfo.type.endswith("bsd"):
+                return BSDInterface
             else:
                 raise NotImplementedError
         f.__doc__ = cls.__doc__
@@ -65,4 +75,25 @@ class LinuxInterface(Interface):
             splitted = [e.strip() for e in line.split(" ") if e]
             if splitted and splitted[0] in ("inet", "inet6"):
                 addrs.append(splitted[1].split("/", 1)[0])
+        return addrs
+
+
+class BSDInterface(Interface):
+
+    @property
+    def exists(self):
+        return self.run_test("ifconfig %s", self.name).rc == 0
+
+    @property
+    def addresses(self):
+        stdout = self.check_output("ifconfig %s", self.name)
+        addrs = []
+        for line in stdout.splitlines():
+            if line.startswith("\tinet "):
+                addrs.append(line.split(" ", 2)[1])
+            elif line.startswith("\tinet6 "):
+                addr = line.split(" ", 2)[1]
+                if "%" in addr:
+                    addr = addr.split("%", 1)[0]
+                addrs.append(addr)
         return addrs
