@@ -10,7 +10,7 @@ Test multiples hosts
 By default Testinfra launch tests on local machine, but you can also test
 remotes systems::
 
-    py.test -v --hosts=localhost,root@webserver:2222 test_myinfra.py
+    testinfra -v --hosts=localhost,root@webserver:2222 test_myinfra.py
 
     ====================== test session starts ======================
     platform linux -- Python 2.7.3 -- py-1.4.26 -- pytest-2.6.4
@@ -41,7 +41,7 @@ should be faster::
 
     pip install paramiko
 
-    py.test -v --hosts=localhost,root@webserver:2222 --connection=paramiko test_myinfra.py
+    testinfra -v --hosts=localhost,root@webserver:2222 --connection=paramiko test_myinfra.py
 
 
 If you have a lot a hosts to test, you can also use the pytest-xdist_ plugin to run tests using multiples process::
@@ -49,7 +49,7 @@ If you have a lot a hosts to test, you can also use the pytest-xdist_ plugin to 
 
     pip install pytest-xdist
 
-    py.test -v --host=web1,web2,web3,web4,web5,web6 -n 3 test_myinfra.py
+    testinfra -v --host=web1,web2,web3,web4,web5,web6 -n 3 test_myinfra.py
 
 
 Advanced invocation
@@ -58,13 +58,24 @@ Advanced invocation
 ::
 
     # Test recursively all test files (starting with `test_`) in current directory
-    py.test
+    testinfra
 
     # Filter function/hosts with pytest -k option
-    py.test -k webserver -k nginx
+    testinfra -k webserver -k nginx
 
 
 For more usages and features, see the Pytest_ documentation.
+
+
+Nagios plugin
+~~~~~~~~~~~~~
+
+You can turn your test session into a nagios check::
+
+    testinfra test_myinfra.py --nagios -qq
+
+    TESTINFRA OK - 3 passed, 0 failed, 0 skipped in 0.14 seconds
+    ...
 
 
 Modules

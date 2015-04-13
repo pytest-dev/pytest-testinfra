@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals
 
+import sys
+
 import pytest
 import testinfra
 
@@ -52,6 +54,12 @@ def pytest_addoption(parser):
         action="store",
         dest="hosts",
         help="Hosts list (comma separated)",
+    )
+    group._addoption(
+        "--nagios",
+        action="store_true",
+        dest="nagios",
+        help="Nagios plugin",
     )
 
 

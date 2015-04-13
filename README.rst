@@ -47,10 +47,12 @@ Write your first tests to `test_myinfra.py`::
         assert passwd.group == "root"
         assert passwd.mode == 644
 
+
     def test_nginx_is_installed(Package):
         nginx = Package("nginx")
         assert nginx.is_installed
         assert nginx.version.startswith("1.2")
+
 
     def test_nginx_running_and_enabled(Service):
         nginx = Service("nginx")
@@ -60,7 +62,7 @@ Write your first tests to `test_myinfra.py`::
 
 And run it::
 
-    py.test -v test_myinfra.py
+    testinfra -v test_myinfra.py
 
 
     ====================== test session starts ======================

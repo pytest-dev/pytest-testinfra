@@ -37,7 +37,7 @@ def pytest_addoption(parser):
 
 def pytest_runtest_setup(item):
     if (
-        "integration" in item.keywords
-        and not item.config.getoption("--integration")
+        "integration" in item.keywords and
+        not item.config.getoption("--integration")
     ):
         pytest.skip("integration test not selected")

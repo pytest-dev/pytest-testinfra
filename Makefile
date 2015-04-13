@@ -1,7 +1,7 @@
 all: test
 
 test:
-	py.test -vs --cov testinfra --cov-report term testinfra
+	testinfra -vs --cov testinfra --cov-report term testinfra
 	flake8 testinfra
 
 doc:
