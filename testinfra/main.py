@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import shutil
 import sys
 import tempfile
-import shutil
 import time
 
 import pytest
