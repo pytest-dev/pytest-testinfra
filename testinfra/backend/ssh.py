@@ -24,13 +24,17 @@ from testinfra.backend import local
 class SshBackend(local.LocalBackend):
     """Run command through ssh command"""
 
-    def __init__(self, hostspec, *args, **kwargs):
+    def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
+        self.ssh_config = ssh_config
         super(SshBackend, self).__init__(*args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = ["ssh"]
         cmd_args = []
+        if self.ssh_config:
+            cmd.append("-F %s")
+            cmd_args.append(self.ssh_config)
         if self.user:
             cmd.append("-o User=%s")
             cmd_args.append(self.user)

@@ -34,7 +34,11 @@ SystemInfo = modules.SystemInfo.as_fixture()
 def testinfra_backend(pytestconfig, _testinfra_host):
     if _testinfra_host is not None:
         backend_type = pytestconfig.option.connection or "paramiko"
-        testinfra.set_backend(backend_type, _testinfra_host)
+        testinfra.set_backend(
+            backend_type,
+            _testinfra_host,
+            ssh_config=pytestconfig.option.ssh_config,
+        )
     else:
         testinfra.set_backend("local")
 
@@ -52,6 +56,12 @@ def pytest_addoption(parser):
         action="store",
         dest="hosts",
         help="Hosts list (comma separated)",
+    )
+    group._addoption(
+        "--ssh-config",
+        action="store",
+        dest="ssh_config",
+        help="SSH config file",
     )
     group._addoption(
         "--nagios",

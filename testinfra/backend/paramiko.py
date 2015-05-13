@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
+import os
 
 from testinfra.backend import base
 
@@ -31,8 +32,9 @@ logger = logging.getLogger("testinfra.backend")
 
 class ParamikoBakend(base.BaseBackend):
 
-    def __init__(self, hostspec, *args, **kwargs):
+    def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
+        self.ssh_config = ssh_config
         self._client = None
         super(ParamikoBakend, self).__init__(*args, **kwargs)
 
@@ -45,11 +47,27 @@ class ParamikoBakend(base.BaseBackend):
                     "to use the paramiko backend"))
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.WarningPolicy())
-            client.connect(
-                self.host,
-                port=int(self.port) if self.port else 22,
-                username=self.user,
-            )
+            cfg = {
+                "hostname": self.host,
+                "port": int(self.port) if self.port else 22,
+                "username": self.user,
+            }
+            if self.ssh_config:
+                ssh_config = paramiko.SSHConfig()
+                with open(self.ssh_config) as f:
+                    ssh_config.parse(f)
+
+                for key, value in ssh_config.lookup(self.host).items():
+                    if key == "hostname":
+                        cfg[key] = value
+                    elif key == "user":
+                        cfg["username"] = value
+                    elif key == "port":
+                        cfg[key] = int(value)
+                    elif key == "identityfile":
+                        cfg["key_filename"] = os.path.expanduser(value[0])
+
+            client.connect(**cfg)
             self._client = client
         return self._client
 

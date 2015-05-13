@@ -17,16 +17,12 @@ import pytest
 
 
 @pytest.mark.integration
-def test_ssh_service(Service, SystemInfo):
-    if SystemInfo.type == "linux":
-        name = "ssh"
-    elif SystemInfo.type.endswith("bsd"):
-        name = "sshd"
+def test_ssh_service(_testinfra_host, Service, SystemInfo):
+    if _testinfra_host in (
+        "ubuntu_trusty", "debian_wheezy", "debian_jessie",
+    ):
+        ssh = Service("ssh")
+        assert ssh.is_running
+        assert ssh.is_enabled
     else:
-        pytest.skip("unsupported system")
-    assert Service(name).is_running
-    if SystemInfo.type in ("netbsd", "openbsd"):
-        with pytest.raises(NotImplementedError):
-            assert Service(name).is_enabled
-    else:
-        assert Service(name).is_enabled
+        pytest.skip()

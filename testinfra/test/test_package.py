@@ -17,25 +17,14 @@ import pytest
 
 
 @pytest.mark.integration
-def test_package(Package, SystemInfo):
-    assert Package("zsh").is_installed
-    if (
-        SystemInfo.type, SystemInfo.distribution, SystemInfo.codename,
-    ) == ("linux", "debian", "wheezy"):
-        version = "4.3.17-1"
-    elif (
-        SystemInfo.type, SystemInfo.release,
-    ) == ("freebsd", "10.1-RELEASE"):
-        version = "5.0.7_2"
-    elif (
-        SystemInfo.type, SystemInfo.release,
-    ) == ("netbsd", "6.1.5"):
-        version = "5.0.7nb1"
-    elif (
-        SystemInfo.type, SystemInfo.release,
-    ) == ("openbsd", "5.6"):
-        version = "5.0.5p0"
-    else:
-        pytest.skip()
-
-    assert Package("zsh").version == version
+def test_package_bash(_testinfra_host, Package):
+    bash = Package("bash")
+    version = {
+        "debian_wheezy": "4.2+dfsg-0.1+deb7u3",
+        "debian_jessie": "4.3-11+b1",
+        "ubuntu_trusty": "4.3-7ubuntu1.5",
+        "centos_7": "4.2.46",
+        "fedora_21": "4.3.33",
+    }[_testinfra_host]
+    assert bash.is_installed
+    assert bash.version == version
