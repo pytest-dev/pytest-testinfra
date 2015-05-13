@@ -48,6 +48,8 @@ class Package(Module):
                 return OpenBSDPackage
             elif Command.run_test("which apt-get").rc == 0:
                 return DebianPackage
+            elif Command.run_test("which rpm").rc == 0:
+                return RpmPackage
             else:
                 raise NotImplementedError
         f.__doc__ = cls.__doc__
@@ -94,3 +96,22 @@ class OpenBSDPackage(Package):
         # OpenBSD: inst:zsh-5.0.5p0
         # NetBSD: zsh-5.0.7nb1
         return out.split(self.name + "-", 1)[1]
+
+
+class RpmPackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test("rpm -q %s", self.name)
+
+    @property
+    def version(self):
+        out = self.check_output("rpm -qi %s", self.name)
+
+        # Name        : bash
+        # Version     : 4.2.46
+        # ...
+        for line in out.splitlines():
+            if line.startswith("Version"):
+                return line.split(":", 1)[1].strip()
+        raise RuntimeError("Cannot parse output '%s'" % (out,))
