@@ -126,6 +126,7 @@ File
 .. autoclass:: testinfra.modules.File
    :members:
    :undoc-members:
+   :exclude-members: as_fixture
 
 
 Group
@@ -138,8 +139,6 @@ Group
 
 Interface
 ~~~~~~~~~
-
-.. warning:: Support is currently limited to Linux systems
 
 .. class:: testinfra.modules.Interface(name)
 
