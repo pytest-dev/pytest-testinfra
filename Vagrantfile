@@ -11,6 +11,7 @@ Vagrant.configure("2") do |config|
       vm.vm.provider "docker" do |docker|
         docker.build_dir = "images/#{vmname}"
         docker.has_ssh = true
+        docker.create_args = ["-h", vmname]
       end
     end
   end
