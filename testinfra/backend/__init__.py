@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 
 from testinfra.backend import local
 from testinfra.backend import paramiko
+from testinfra.backend import salt
 from testinfra.backend import ssh
 
 
@@ -27,6 +28,7 @@ def get_backend(backend_type, *args, **kwargs):
             "ssh": ssh.SshBackend,
             "safe_ssh": ssh.SafeSshBackend,
             "paramiko": paramiko.ParamikoBakend,
+            "salt": salt.SaltBackend,
         }[backend_type]
     except KeyError:
         raise RuntimeError("Unknown backend '%s'" % (backend_type,))

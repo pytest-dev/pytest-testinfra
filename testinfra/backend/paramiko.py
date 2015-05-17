@@ -23,9 +23,10 @@ from testinfra.backend import base
 
 try:
     import paramiko
-    HAS_PARAMIKO = True
 except ImportError:
     HAS_PARAMIKO = False
+else:
+    HAS_PARAMIKO = True
 
 logger = logging.getLogger("testinfra.backend")
 
