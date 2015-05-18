@@ -30,7 +30,7 @@ Service = modules.Service.as_fixture()
 SystemInfo = modules.SystemInfo.as_fixture()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def testinfra_backend(pytestconfig, _testinfra_host):
     if _testinfra_host is not None:
         backend_type = pytestconfig.option.connection or "paramiko"
@@ -85,4 +85,4 @@ def pytest_generate_tests(metafunc):
             params = [None]
             ids = ["local"]
         metafunc.parametrize(
-            "_testinfra_host", params, ids=ids, scope="session")
+            "_testinfra_host", params, ids=ids, scope="module")

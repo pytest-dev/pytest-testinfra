@@ -39,7 +39,7 @@ class Service(Module):
 
     @classmethod
     def as_fixture(cls):
-        @pytest.fixture(scope="session")
+        @pytest.fixture(scope="module")
         def f(SystemInfo):
             if SystemInfo.type == "linux":
                 return LinuxService
