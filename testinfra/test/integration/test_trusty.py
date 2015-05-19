@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
+
 import pytest
 
+pytestmark = pytest.mark.integration
 
-@pytest.mark.integration
-def test_ssh_service(_testinfra_host, Service, SystemInfo):
-    if _testinfra_host in (
-        "ubuntu_trusty", "debian_wheezy", "debian_jessie",
-    ):
-        name = "ssh"
-    elif _testinfra_host in (
-        "centos_7", "fedora_21",
-    ):
-        name = "sshd"
-    else:
-        pytest.skip()
+hosts = ["ubuntu_trusty"]
 
-    ssh = Service(name)
+
+def test_ssh_package(Package):
+    ssh = Package("openssh-server")
+    assert ssh.is_installed
+    assert ssh.version == "1:6.6p1-2ubuntu2"
+
+
+def test_ssh_service(Service):
+    ssh = Service("ssh")
     assert ssh.is_running
     assert ssh.is_enabled

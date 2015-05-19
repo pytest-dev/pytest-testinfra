@@ -7,7 +7,7 @@ test:
 integration-test:
 	vagrant up
 	vagrant ssh-config > .vagrant/ssh_config
-	testinfra -vs --cov testinfra --cov-report term --integration --hosts=debian_wheezy,debian_jessie,centos_7,ubuntu_trusty,fedora_21 --ssh-config=.vagrant/ssh_config -n 4 testinfra
+	testinfra -vs --cov testinfra --cov-report term --integration --ssh-config=.vagrant/ssh_config -n 4 testinfra
 
 doc:
 	$(MAKE) -C doc html

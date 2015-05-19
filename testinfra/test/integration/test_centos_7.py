@@ -13,18 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
+
 import pytest
 
+pytestmark = pytest.mark.integration
 
-@pytest.mark.integration
-def test_package_bash(_testinfra_host, Package):
-    bash = Package("bash")
-    version = {
-        "debian_wheezy": "4.2+dfsg-0.1+deb7u3",
-        "debian_jessie": "4.3-11+b1",
-        "ubuntu_trusty": "4.3-7ubuntu1.5",
-        "centos_7": "4.2.46",
-        "fedora_21": "4.3.33",
-    }[_testinfra_host]
-    assert bash.is_installed
-    assert bash.version == version
+hosts = ["centos_7"]
+
+
+def test_ssh_package(Package):
+    ssh = Package("openssh-server")
+    assert ssh.is_installed
+    assert ssh.version == "6.6.1p1"
+
+
+def test_ssh_service(Service):
+    ssh = Service("sshd")
+    assert ssh.is_running
+    assert ssh.is_enabled
