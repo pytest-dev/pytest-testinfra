@@ -40,9 +40,15 @@ class Service(Module):
     @classmethod
     def as_fixture(cls):
         @pytest.fixture(scope="module")
-        def f(SystemInfo):
+        def f(SystemInfo, Command, File):
             if SystemInfo.type == "linux":
-                return LinuxService
+                if (
+                    Command.run_test("which systemctl").rc == 0
+                    and "systemd" in File("/sbin/init").linked_to
+                ):
+                    return SystemdService
+                else:
+                    return LinuxService
             elif SystemInfo.type == "freebsd":
                 return FreeBSDService
             elif SystemInfo.type == "openbsd":
@@ -82,6 +88,18 @@ class LinuxService(Service):
             return True
         else:
             return False
+
+
+class SystemdService(Service):
+
+    @property
+    def is_running(self):
+        return self.run_expect(
+            [0, 3], "systemctl is-active %s", self.name).rc == 0
+
+    @property
+    def is_enabled(self):
+        return self.run_test("systemctl is-enabled %s", self.name).rc == 0
 
 
 class FreeBSDService(Service):

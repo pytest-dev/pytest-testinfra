@@ -21,8 +21,14 @@ def test_ssh_service(_testinfra_host, Service, SystemInfo):
     if _testinfra_host in (
         "ubuntu_trusty", "debian_wheezy", "debian_jessie",
     ):
-        ssh = Service("ssh")
-        assert ssh.is_running
-        assert ssh.is_enabled
+        name = "ssh"
+    elif _testinfra_host in (
+        "centos_7", "fedora_21",
+    ):
+        name = "sshd"
     else:
         pytest.skip()
+
+    ssh = Service(name)
+    assert ssh.is_running
+    assert ssh.is_enabled
