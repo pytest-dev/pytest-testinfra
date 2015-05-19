@@ -5,7 +5,7 @@
 .eggs
 *.swp
 .local
-.coverage
+.coverage*
 .tox
 .python-version
 build
