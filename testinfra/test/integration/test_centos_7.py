@@ -32,3 +32,10 @@ def test_ssh_service(Service):
     ssh = Service("sshd")
     assert ssh.is_running
     assert ssh.is_enabled
+
+
+def test_systeminfo(SystemInfo):
+    assert SystemInfo.type == "linux"
+    assert SystemInfo.release == "7"
+    assert SystemInfo.distribution == "centos"
+    assert SystemInfo.codename is None

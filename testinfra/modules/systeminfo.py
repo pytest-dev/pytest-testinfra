@@ -34,7 +34,12 @@ class SystemInfo(Module):
         return self._sysinfo
 
     def get_system_info(self):
-        sysinfo = {}
+        sysinfo = {
+            "type": None,
+            "distribution": None,
+            "codename": None,
+            "release": None,
+        }
         sysinfo["type"] = self.check_output("uname -s").lower()
         if sysinfo["type"] == "linux":
             lsb = self.run("lsb_release -a")
@@ -50,14 +55,21 @@ class SystemInfo(Module):
                     elif key == "codename":
                         sysinfo["codename"] = value
             else:
-                version = self.run("cat /etc/debian_version")
-                if version.rc == 0:
-                    sysinfo["distribution"] = "debian"
-                    sysinfo["release"] = version.stdout.splitlines()[0]
+                os_release = self.run("cat /etc/os-release")
+                if os_release.rc == 0:
+                    for line in os_release.stdout.splitlines():
+                        for key, attname in (
+                            ("ID=", "distribution"),
+                            ("VERSION_ID=", "release"),
+                        ):
+                            if line.startswith(key):
+                                sysinfo[attname] = (
+                                    line[len(key):].replace('"', "").
+                                    replace("'", "").strip())
         else:
             sysinfo["release"] = self.check_output("uname -r")
             sysinfo["distribution"] = sysinfo["type"]
-            sysinfo["codename"] = ""
+            sysinfo["codename"] = None
         return sysinfo
 
     @property
