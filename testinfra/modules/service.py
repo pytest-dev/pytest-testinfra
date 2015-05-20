@@ -68,7 +68,13 @@ class LinuxService(Service):
 
     @property
     def is_running(self):
-        return self.run_test("service %s status", self.name).rc == 0
+        # based on /lib/lsb/init-functions
+        # 0: program running
+        # 1: program is dead and pid file exists
+        # 3: not running and pid file does not exists
+        # 4: Unable to determine status
+        return self.run_expect(
+            [0, 1, 3], "service %s status", self.name).rc == 0
 
     @property
     def is_enabled(self):
