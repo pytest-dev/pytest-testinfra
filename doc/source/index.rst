@@ -129,6 +129,14 @@ File
    :exclude-members: as_fixture
 
 
+User
+~~~~
+
+.. autoclass:: testinfra.modules.User
+   :members:
+   :undoc-members:
+
+
 Group
 ~~~~~
 

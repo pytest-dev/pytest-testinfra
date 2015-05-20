@@ -22,9 +22,10 @@ from testinfra.modules.interface import Interface
 from testinfra.modules.package import Package
 from testinfra.modules.service import Service
 from testinfra.modules.systeminfo import SystemInfo
+from testinfra.modules.user import User
 
 
 __all__ = [
     "Command", "File", "Package", "Group", "Interface",
-    "Service", "SystemInfo",
+    "Service", "SystemInfo", "User",
 ]

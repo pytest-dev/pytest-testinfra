@@ -28,6 +28,7 @@ Interface = modules.Interface.as_fixture()
 Command = modules.Command.as_fixture()
 Service = modules.Service.as_fixture()
 SystemInfo = modules.SystemInfo.as_fixture()
+User = modules.User.as_fixture()
 
 
 @pytest.fixture(scope="module")

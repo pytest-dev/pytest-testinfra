@@ -39,3 +39,24 @@ def test_systeminfo(SystemInfo):
     assert SystemInfo.release == "7"
     assert SystemInfo.distribution == "debian"
     assert SystemInfo.codename is None
+
+
+def test_user(User):
+    user = User("sshd")
+    assert user.exists
+    assert user.name == "sshd"
+    assert user.uid == 101
+    assert user.gid == 65534
+    assert user.group == "nogroup"
+    assert user.gids == [65534]
+    assert user.groups == ["nogroup"]
+    assert user.shell == "/usr/sbin/nologin"
+    assert user.home == "/var/run/sshd"
+
+
+def test_nonexistent_user(User):
+    assert not User("zzzzzzzzzz").exists
+
+
+def test_current_user(User):
+    assert User().name == "root"
