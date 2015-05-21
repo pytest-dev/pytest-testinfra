@@ -33,9 +33,10 @@ logger = logging.getLogger("testinfra.backend")
 
 class ParamikoBakend(base.BaseBackend):
 
-    def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
+    def __init__(self, hostspec, ssh_config=None, sudo=False, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
+        self.sudo = sudo
         self._client = None
         super(ParamikoBakend, self).__init__(*args, **kwargs)
 
@@ -73,6 +74,8 @@ class ParamikoBakend(base.BaseBackend):
         return self._client
 
     def run(self, command, *args, **kwargs):
+        if self.sudo:
+            command = "sudo " + command
         command = self.quote(command, *args)
         chan = self.client.get_transport().open_session()
         logger.info("RUN %s", command)

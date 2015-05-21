@@ -33,17 +33,19 @@ User = modules.User.as_fixture()
 
 @pytest.fixture(scope="module")
 def testinfra_backend(pytestconfig, _testinfra_host):
+    kwargs = {}
+    if pytestconfig.option.ssh_config is not None:
+        kwargs["ssh_config"] = pytestconfig.option.ssh_config
+    if pytestconfig.option.sudo is not None:
+        kwargs["sudo"] = pytestconfig.option.sudo
     if _testinfra_host is not None:
         backend_type = pytestconfig.option.connection or "paramiko"
-        kwargs = {}
-        if pytestconfig.option.ssh_config is not None:
-            kwargs["ssh_config"] = pytestconfig.option.ssh_config
         testinfra.set_backend(
             backend_type,
             _testinfra_host,
             **kwargs)
     else:
-        testinfra.set_backend("local")
+        testinfra.set_backend("local", **kwargs)
 
 
 def pytest_addoption(parser):
@@ -65,6 +67,12 @@ def pytest_addoption(parser):
         action="store",
         dest="ssh_config",
         help="SSH config file",
+    )
+    group._addoption(
+        "--sudo",
+        action="store_true",
+        dest="sudo",
+        help="Use sudo",
     )
     group._addoption(
         "--nagios",

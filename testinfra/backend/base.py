@@ -63,6 +63,11 @@ class CommandResult(object):
 
 class BaseBackend(object):
 
+    def __init__(self, *args, **kwargs):
+        if args or kwargs:
+            raise RuntimeError("Unexpected arguments %s %s" % (args, kwargs))
+        super(BaseBackend, self).__init__()
+
     def quote(self, command, *args):
         if args:
             return command % tuple(pipes.quote(a) for a in args)
