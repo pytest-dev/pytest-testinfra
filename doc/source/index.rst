@@ -194,6 +194,13 @@ SystemInfo
    :members:
 
 
+Salt
+~~~~
+
+
+.. autoclass:: testinfra.modules.Salt
+   :members:
+
 
 .. toctree::
    :maxdepth: 2
