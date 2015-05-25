@@ -49,3 +49,10 @@ def test_puppet_resource(PuppetResource):
     assert PuppetResource("package", "openssh-server") == {
         "openssh-server": {"ensure": "1:6.7p1-5"},
     }
+
+
+def test_facter(Facter):
+    assert Facter()["lsbdistcodename"] == "jessie"
+    assert Facter("lsbdistcodename") == {
+        "lsbdistcodename": "jessie",
+    }

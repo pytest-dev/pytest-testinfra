@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals
 
+import json
 
 import pytest
 
@@ -62,7 +63,7 @@ def parse_puppet_resource(data):
 class PuppetResource(Module):
     """Get puppet resources
 
-    Run puppet resource --types to get a list of available types.
+    Run ``puppet resource --types`` to get a list of available types.
 
     >>> PuppetResource("user", "www-data")
     {
@@ -94,5 +95,37 @@ class PuppetResource(Module):
         @pytest.fixture(scope="module")
         def f(testinfra_backend):
             return PuppetResource()
+        f.__doc__ = cls.__doc__
+        return f
+
+
+class Facter(Module):
+    """Get facts with `facter <https://puppetlabs.com/facter>`_
+
+    >>> Facter()
+    {
+        "operatingsystem": "Debian",
+        "kernel": "linux",
+        [...]
+    }
+    >>> Facter("kernelversion", "is_virtual")
+    {
+      "kernelversion": "3.16.0",
+      "is_virtual": "false"
+    }
+    """
+
+    def __call__(self, *facts):
+        cmd = "facter --json " + " ".join(facts)
+        return json.loads(self.check_output(cmd))
+
+    def __repr__(self):
+        return "<facter>"
+
+    @classmethod
+    def as_fixture(cls):
+        @pytest.fixture(scope="module")
+        def f(testinfra_backend):
+            return Facter()
         f.__doc__ = cls.__doc__
         return f

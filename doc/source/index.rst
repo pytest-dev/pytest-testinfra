@@ -210,6 +210,14 @@ PuppetResource
    :members:
 
 
+Facter
+~~~~~~
+
+
+.. autoclass:: testinfra.modules.Facter
+   :members:
+
+
 .. toctree::
    :maxdepth: 2
 
