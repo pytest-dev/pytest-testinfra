@@ -16,14 +16,14 @@
 from __future__ import unicode_literals
 
 import pytest
-from testinfra import run
+from testinfra import get_backend
 
 
 class Module(object):
 
     @staticmethod
     def run(command, *args, **kwargs):
-        return run(command, *args, **kwargs)
+        return get_backend().run(command, *args, **kwargs)
 
     @classmethod
     def run_expect(cls, exit_status, command, *args, **kwargs):

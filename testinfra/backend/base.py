@@ -62,6 +62,7 @@ class CommandResult(object):
 
 
 class BaseBackend(object):
+    _backend_type = None
 
     def __init__(self, *args, **kwargs):
         if args or kwargs:
@@ -87,3 +88,9 @@ class BaseBackend(object):
 
     def run(self, command, *args):
         raise NotImplementedError
+
+    @classmethod
+    def get_backend_type(cls):
+        if cls._backend_type is None:
+            raise RuntimeError("No backend type")
+        return cls._backend_type

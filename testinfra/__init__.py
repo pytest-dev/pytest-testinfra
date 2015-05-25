@@ -19,16 +19,16 @@ import threading
 
 from testinfra import backend
 
-__all__ = ["set_backend", "run"]
+__all__ = ["get_backend", "set_backend"]
 
 g = threading.local()
 g.backend = None
 
 
-def run(command, *args, **kwargs):
+def get_backend():
     if g.backend is None:
         raise RuntimeError("No runner available")
-    return g.backend.run(command, *args, **kwargs)
+    return g.backend
 
 
 def set_backend(backend_type, *args, **kwargs):

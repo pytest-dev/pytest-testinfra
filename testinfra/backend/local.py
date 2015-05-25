@@ -23,6 +23,7 @@ logger = logging.getLogger("testinfra.backend")
 
 
 class LocalBackend(base.BaseBackend):
+    _backend_type = "local"
 
     def __init__(self, sudo=False, *args, **kwargs):
         self.sudo = sudo

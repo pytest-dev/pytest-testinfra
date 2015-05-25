@@ -20,16 +20,17 @@ from testinfra.backend import paramiko
 from testinfra.backend import salt
 from testinfra.backend import ssh
 
+BACKENDS = dict((klass.get_backend_type(), klass) for klass in (
+    local.LocalBackend,
+    ssh.SshBackend,
+    paramiko.ParamikoBakend,
+    salt.SaltBackend,
+))
+
 
 def get_backend(backend_type, *args, **kwargs):
     try:
-        backend_class = {
-            "local": local.LocalBackend,
-            "ssh": ssh.SshBackend,
-            "safe_ssh": ssh.SafeSshBackend,
-            "paramiko": paramiko.ParamikoBakend,
-            "salt": salt.SaltBackend,
-        }[backend_type]
+        backend_class = BACKENDS[backend_type]
     except KeyError:
         raise RuntimeError("Unknown backend '%s'" % (backend_type,))
     return backend_class(*args, **kwargs)

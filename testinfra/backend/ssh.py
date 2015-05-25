@@ -23,6 +23,7 @@ from testinfra.backend import local
 
 class SshBackend(local.LocalBackend):
     """Run command through ssh command"""
+    _backend_type = "ssh"
 
     def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
@@ -64,6 +65,7 @@ class SafeSshBackend(SshBackend):
     where STDOUT/STDERR are base64 encoded, then we parse that magic string to
     get sanes variables
     """
+    _backend_type = "safe_ssh"
 
     def run(self, command, *args, **kwargs):
         orig_command = self.quote(command, *args)
