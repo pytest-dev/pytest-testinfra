@@ -39,3 +39,7 @@ def test_systeminfo(SystemInfo):
     assert SystemInfo.release == "8.0"
     assert SystemInfo.distribution == "debian"
     assert SystemInfo.codename == "jessie"
+
+
+def test_salt(Salt):
+    assert Salt("pkg.version", "openssh-server") == "1:6.7p1-5"

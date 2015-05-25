@@ -46,7 +46,7 @@ class Salt(Module):
         if backend.get_backend_type() == "salt":
             return backend.run_salt(func, args)
         else:
-            cmd = "salt-call --out=json %s" + len(args) * " %s"
+            cmd = "salt-call --local --out=json %s" + len(args) * " %s"
             cmd_args = [func] + args
             return json.loads(self.check_output(cmd, *cmd_args))["local"]
 
