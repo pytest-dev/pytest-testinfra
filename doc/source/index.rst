@@ -202,6 +202,14 @@ Salt
    :members:
 
 
+PuppetResource
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: testinfra.modules.PuppetResource
+   :members:
+
+
 .. toctree::
    :maxdepth: 2
 

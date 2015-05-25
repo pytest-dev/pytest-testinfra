@@ -30,6 +30,7 @@ Service = modules.Service.as_fixture()
 SystemInfo = modules.SystemInfo.as_fixture()
 User = modules.User.as_fixture()
 Salt = modules.Salt.as_fixture()
+PuppetResource = modules.PuppetResource.as_fixture()
 
 
 @pytest.fixture(scope="module")

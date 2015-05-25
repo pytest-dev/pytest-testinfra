@@ -20,6 +20,7 @@ from testinfra.modules.file import File
 from testinfra.modules.group import Group
 from testinfra.modules.interface import Interface
 from testinfra.modules.package import Package
+from testinfra.modules.puppet import PuppetResource
 from testinfra.modules.salt import Salt
 from testinfra.modules.service import Service
 from testinfra.modules.systeminfo import SystemInfo
@@ -28,5 +29,5 @@ from testinfra.modules.user import User
 
 __all__ = [
     "Command", "File", "Package", "Group", "Interface",
-    "Service", "SystemInfo", "User", "Salt",
+    "Service", "SystemInfo", "User", "Salt", "PuppetResource",
 ]
