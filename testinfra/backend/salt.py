@@ -48,8 +48,9 @@ class SaltBackend(base.BaseBackend):
         if self.sudo:
             command = "sudo " + command
         command = self.quote(command, *args)
-        out = self.client.cmd(
-            self.host, 'cmd.run_all', [command],
-        )[self.host]
+        out = self.run_salt("cmd.run_all", [command])
         return base.CommandResult(
             out['retcode'], out['stdout'], out['stderr'], command)
+
+    def run_salt(self, func, args=None):
+        return self.client.cmd(self.host, func, args or [])[self.host]

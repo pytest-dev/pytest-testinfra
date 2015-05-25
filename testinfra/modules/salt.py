@@ -15,11 +15,13 @@
 
 from __future__ import unicode_literals
 
+
 import json
 
 import pytest
 import six
 
+from testinfra import get_backend
 from testinfra.modules.base import Module
 
 
@@ -40,9 +42,13 @@ class Salt(Module):
         args = args or []
         if isinstance(args, six.string_types):
             args = [args]
-        cmd = "salt-call --out=json %s" + len(args) * " %s"
-        cmd_args = [func] + args
-        return json.loads(self.check_output(cmd, *cmd_args))["local"]
+        backend = get_backend()
+        if backend.get_backend_type() == "salt":
+            return backend.run_salt(func, args)
+        else:
+            cmd = "salt-call --out=json %s" + len(args) * " %s"
+            cmd_args = [func] + args
+            return json.loads(self.check_output(cmd, *cmd_args))["local"]
 
     def __repr__(self):
         return "<salt>"
