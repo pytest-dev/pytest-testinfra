@@ -38,7 +38,7 @@ class Salt(Module):
     {'osarch': 'amd64', 'num_cpus': 4, 'mem_total': 15520}
     """
 
-    def __call__(self, func, args=None):
+    def __call__(self, func, args=None, local=False):
         args = args or []
         if isinstance(args, six.string_types):
             args = [args]
@@ -46,7 +46,10 @@ class Salt(Module):
         if backend.get_backend_type() == "salt":
             return backend.run_salt(func, args)
         else:
-            cmd = "salt-call --local --out=json %s" + len(args) * " %s"
+            cmd = "salt-call --out=json"
+            if local:
+                cmd += " --local"
+            cmd += " %s" + len(args) * " %s"
             cmd_args = [func] + args
             return json.loads(self.check_output(cmd, *cmd_args))["local"]
 
