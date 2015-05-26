@@ -26,17 +26,31 @@ class Module(object):
         return get_backend().run(command, *args, **kwargs)
 
     @classmethod
-    def run_expect(cls, exit_status, command, *args, **kwargs):
+    def run_expect(cls, expected, command, *args, **kwargs):
+        """Run command and check it return an expected exit status
+
+        :param expected: A list of expected exit status
+        :raises: AssertionError
+        """
         out = cls.run(command, *args, **kwargs)
-        assert out.rc in exit_status
+        assert out.rc in expected
         return out
 
     @classmethod
     def run_test(cls, command, *args, **kwargs):
+        """Run command and check it return an exit status of 0 or 1
+
+        :raises: AssertionError
+        """
         return cls.run_expect([0, 1], command, *args, **kwargs)
 
     @classmethod
     def check_output(cls, command, *args, **kwargs):
+        """Get stdout of a command which has run successfully
+
+        :returns: stdout without trailing newline
+        :raises: AssertionError
+        """
         out = cls.run(command, *args, **kwargs)
         assert out.rc == 0
 

@@ -87,37 +87,8 @@ of your test function to make them available;
 Command
 ~~~~~~~
 
-.. class:: testinfra.modules.Command
-
-    Run shell commands
-
-    .. method:: __call__(command, *args)
-
-    Run given command and return rc (exit status), stdout and stderr
-
-    >>> cmd = Command("ls -l /etc/passwd")
-    >>> cmd.rc
-    0
-    >>> cmd.stdout
-    '-rw-r--r-- 1 root root 1790 Feb 11 00:28 /etc/passwd\n'
-    >>> cmd.stderr
-    ''
-
-    Good practice: always use shell arguments quotting to avoid shell injection
-
-    >>> cmd = Command("ls -l -- %s", "/;echo injection")
-    CommandResult(
-        rc=2, stdout='',
-        stderr='ls: cannot access /;echo injection: No such file or directory\n',
-        command="ls -l '/;echo injection'")
-
-    .. method:: check_output(command, *args)
-
-    Run given command, check if exit status is zero and return stdout without trailing newline character.
-
-    Raises RuntimeError if exit status is non zero
-
-
+.. autoclass:: testinfra.modules.Command(command, *args)
+   :members: check_output, run_expect, run_test
 
 
 File
@@ -148,16 +119,9 @@ Group
 Interface
 ~~~~~~~~~
 
-.. class:: testinfra.modules.Interface(name)
-
-    .. attribute:: exists
-    .. attribute:: speed
-    .. attribute:: addresses
-
-        Return ipv4 and ipv6 addresses on the interface
-
-        >>> Interface("eth0").addresses
-        ['192.168.31.254', '192.168.31.252', 'fe80::e291:f5ff:fe98:6b8c']
+.. autoclass:: testinfra.modules.Interface
+   :members:
+   :undoc-members:
 
 
 Package
@@ -198,7 +162,7 @@ Salt
 ~~~~
 
 
-.. autoclass:: testinfra.modules.Salt
+.. autoclass:: testinfra.modules.Salt(function, args=None)
    :members:
 
 
@@ -206,7 +170,7 @@ PuppetResource
 ~~~~~~~~~~~~~~
 
 
-.. autoclass:: testinfra.modules.PuppetResource
+.. autoclass:: testinfra.modules.PuppetResource(type, name=None)
    :members:
 
 
@@ -214,7 +178,7 @@ Facter
 ~~~~~~
 
 
-.. autoclass:: testinfra.modules.Facter
+.. autoclass:: testinfra.modules.Facter(*facts)
    :members:
 
 

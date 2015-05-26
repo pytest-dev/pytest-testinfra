@@ -37,6 +37,11 @@ class Interface(Module):
 
     @property
     def addresses(self):
+        """Return ipv4 and ipv6 addresses on the interface
+
+        >>> Interface("eth0").addresses
+        ['192.168.31.254', '192.168.31.252', 'fe80::e291:f5ff:fe98:6b8c']
+        """
         raise NotImplementedError
 
     def __repr__(self):
