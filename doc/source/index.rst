@@ -8,7 +8,7 @@ Test multiples hosts
 ~~~~~~~~~~~~~~~~~~~~
 
 By default Testinfra launch tests on local machine, but you can also test
-remotes systems using paramiko_ (a ssh implementation in python):
+remotes systems using paramiko_ (a ssh implementation in python)::
 
     $ pip install paramiko
     $ testinfra -v --hosts=localhost,root@webserver:2222 test_myinfra.py
