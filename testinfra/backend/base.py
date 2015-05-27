@@ -16,8 +16,10 @@
 from __future__ import unicode_literals
 
 import locale
+import logging
 import pipes
 
+logger = logging.getLogger(__file__)
 
 ENCODING = locale.getpreferredencoding()
 
@@ -65,8 +67,10 @@ class BaseBackend(object):
     _backend_type = None
 
     def __init__(self, *args, **kwargs):
-        if args or kwargs:
-            raise RuntimeError("Unexpected arguments %s %s" % (args, kwargs))
+        for arg in args:
+            logger.warning("Ignored argument: %s", arg)
+        for key, value in kwargs.items():
+            logger.warning("Ignored argument: %s = %s", key, value)
         super(BaseBackend, self).__init__()
 
     def quote(self, command, *args):
