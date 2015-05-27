@@ -8,9 +8,10 @@ Test multiples hosts
 ~~~~~~~~~~~~~~~~~~~~
 
 By default Testinfra launch tests on local machine, but you can also test
-remotes systems::
+remotes systems using paramiko_ (a ssh implementation in python):
 
-    testinfra -v --hosts=localhost,root@webserver:2222 test_myinfra.py
+    $ pip install paramiko
+    $ testinfra -v --hosts=localhost,root@webserver:2222 test_myinfra.py
 
     ====================== test session starts ======================
     platform linux -- Python 2.7.3 -- py-1.4.26 -- pytest-2.6.4
@@ -35,21 +36,16 @@ You can also set hosts per test module::
         [...]
 
 
-Testinfra use the command `ssh` for remote command execution, but it can
-also use the paramiko_ module which use a persistent connection and thus
-should be faster::
+Parallel execution
+~~~~~~~~~~~~~~~~~~
 
-    pip install paramiko
-
-    testinfra -v --hosts=localhost,root@webserver:2222 --connection=paramiko test_myinfra.py
+If you have a lot of tests, you can use the pytest-xdist_ plugin to run tests using multiples process::
 
 
-If you have a lot a hosts to test, you can also use the pytest-xdist_ plugin to run tests using multiples process::
+    $ pip install pytest-xdist
 
-
-    pip install pytest-xdist
-
-    testinfra -v --host=web1,web2,web3,web4,web5,web6 -n 3 test_myinfra.py
+    # Launch tests using 3 processes
+    $ testinfra -n 3 -v --host=web1,web2,web3,web4,web5,web6 test_myinfra.py
 
 
 Advanced invocation
@@ -58,10 +54,10 @@ Advanced invocation
 ::
 
     # Test recursively all test files (starting with `test_`) in current directory
-    testinfra
+    $ testinfra
 
     # Filter function/hosts with pytest -k option
-    testinfra -k webserver -k nginx
+    $ testinfra -k webserver -k nginx
 
 
 For more usages and features, see the Pytest_ documentation.
@@ -72,10 +68,59 @@ Nagios plugin
 
 You can turn your test session into a nagios check::
 
-    testinfra test_myinfra.py --nagios -qq
-
+    $ testinfra test_myinfra.py --nagios -qq
     TESTINFRA OK - 3 passed, 0 failed, 0 skipped in 0.14 seconds
     ...
+
+
+Connection backends
+===================
+
+Testinfra comes with several connections backends for remote command execution,
+they are controlled with the ``--connection`` parameter.
+
+local
+~~~~~
+
+This is the default backend when not hosts are provided (either via ``--hosts``
+or in modules). Commands are run locally in a subprocess under the current
+user. You can use the ``--sudo`` option to run commands as superuser::
+
+    $ testinfra --sudo test_myinfra.py
+
+
+paramiko
+~~~~~~~~
+
+This is the default backend when a hosts list is provided, paramiko_ is a
+python implementation of SSHv2 protocol. Testinfra will not ask you for a
+password, so you must be able to connect without password (using password less
+keys or using ``ssh-agent``).
+
+You can provide an alternate ssh-config and use sudo on the remote host::
+
+    $ testinfra --ssh-config=/path/to/ssh_config --sudo --hosts=server
+
+ssh
+~~~
+
+This is a pure ssh backend using the ``ssh`` command available in ``$PATH``. Example::
+
+    $ testinfra --connection=ssh --hosts=server
+
+The ssh backend also accept ``--ssh-config`` and ``--sudo`` parameters.
+
+
+salt
+~~~~
+
+The salt backend use the `salt python client API
+<http://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
+
+    $ testinfra --connection=salt --hosts=minion1,minion2
+
+Testinfra will use the salt connection channel to run commands.
+
 
 
 Modules

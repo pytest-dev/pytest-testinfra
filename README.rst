@@ -32,10 +32,10 @@ Quick start
 
 Install testinfra using pip::
 
-    pip install --pre testinfra
+    $ pip install --pre testinfra
 
     # or install the devel version
-    pip install 'git+https://github.com/philpep/testinfra@master#egg=testinfra'
+    $ pip install 'git+https://github.com/philpep/testinfra@master#egg=testinfra'
 
 
 Write your first tests to `test_myinfra.py`::
@@ -62,7 +62,7 @@ Write your first tests to `test_myinfra.py`::
 
 And run it::
 
-    testinfra -v test_myinfra.py
+    $ testinfra -v test_myinfra.py
 
 
     ====================== test session starts ======================
