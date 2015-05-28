@@ -53,7 +53,8 @@ class User(Module):
     @property
     def gids(self):
         """Return a list of user group id"""
-        return map(int, self.check_output("id -G %s", self.name).split(" "))
+        return list(map(int, self.check_output(
+            "id -G %s", self.name).split(" ")))
 
     @property
     def groups(self):
