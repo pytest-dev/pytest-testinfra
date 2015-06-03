@@ -2,15 +2,6 @@
 Testinfra test your infrastructure
 ##################################
 
-.. image:: https://readthedocs.org/projects/testinfra/badge/?version=latest
-   :target: https://readthedocs.org/projects/testinfra/?badge=latest
-   :alt: Documentation Status
-
-
-.. image:: https://travis-ci.org/philpep/testinfra.svg?branch=master
-   :target: https://travis-ci.org/philpep/testinfra
-
-
 Latest documentation: http://testinfra.readthedocs.org/en/latest
 
 About
@@ -38,7 +29,7 @@ Install testinfra using pip::
     $ pip install 'git+https://github.com/philpep/testinfra@master#egg=testinfra'
 
 
-Write your first tests to `test_myinfra.py`::
+Write your first tests file to `test_myinfra.py`::
 
     def test_passwd_file(File):
         passwd = File("/etc/passwd")
@@ -83,5 +74,3 @@ And run it::
 .. _Chef: https://www.chef.io/
 .. _ServerSpec: http://serverspec.org/
 .. _Pytest: http://pytest.org
-.. _paramiko: http://www.paramiko.org/
-.. _pytest-xdist: http://pytest.org/latest/xdist.html
