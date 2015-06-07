@@ -104,4 +104,10 @@ Facter
 .. autoclass:: testinfra.modules.Facter(*facts)
    :members:
 
+Sysctl
+~~~~~~
+
+.. autoclass:: testinfra.modules.Sysctl(name)
+   :members:
+
 .. _pytest fixtures: https://pytest.org/latest/fixture.html

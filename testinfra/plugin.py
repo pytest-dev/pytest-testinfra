@@ -32,6 +32,7 @@ User = modules.User.as_fixture()
 Salt = modules.Salt.as_fixture()
 PuppetResource = modules.PuppetResource.as_fixture()
 Facter = modules.Facter.as_fixture()
+Sysctl = modules.Sysctl.as_fixture()
 
 
 @pytest.fixture(scope="module")

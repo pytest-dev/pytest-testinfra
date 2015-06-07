@@ -24,6 +24,7 @@ from testinfra.modules.puppet import Facter
 from testinfra.modules.puppet import PuppetResource
 from testinfra.modules.salt import Salt
 from testinfra.modules.service import Service
+from testinfra.modules.sysctl import Sysctl
 from testinfra.modules.systeminfo import SystemInfo
 from testinfra.modules.user import User
 
@@ -31,5 +32,5 @@ from testinfra.modules.user import User
 __all__ = [
     "Command", "File", "Package", "Group", "Interface",
     "Service", "SystemInfo", "User", "Salt", "PuppetResource",
-    "Facter",
+    "Facter", "Sysctl",
 ]

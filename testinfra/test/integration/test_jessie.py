@@ -56,3 +56,8 @@ def test_facter(Facter):
     assert Facter("lsbdistcodename") == {
         "lsbdistcodename": "jessie",
     }
+
+
+def test_sysctl(Sysctl):
+    assert Sysctl("kernel.hostname") == "debian_jessie"
+    assert isinstance(Sysctl("kernel.panic"), int)
