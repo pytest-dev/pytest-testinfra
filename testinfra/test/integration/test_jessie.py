@@ -36,7 +36,7 @@ def test_ssh_service(Service):
 
 def test_systeminfo(SystemInfo):
     assert SystemInfo.type == "linux"
-    assert SystemInfo.release == "8.0"
+    assert SystemInfo.release[:2] == "8."
     assert SystemInfo.distribution == "debian"
     assert SystemInfo.codename == "jessie"
 
