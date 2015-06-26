@@ -105,7 +105,7 @@ class BaseBackend(object):
         cmd = self.run(
             "python -c 'import locale;print(locale.getpreferredencoding())'")
         if cmd.rc == 0:
-            encoding = cmd.stdout_bytes.splitlines()[0]
+            encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
         else:
             # Python is not installed, we hope the encoding to be the same as
             # local machine...
