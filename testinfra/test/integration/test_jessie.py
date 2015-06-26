@@ -61,3 +61,16 @@ def test_facter(Facter):
 def test_sysctl(Sysctl):
     assert Sysctl("kernel.hostname") == "debian_jessie"
     assert isinstance(Sysctl("kernel.panic"), int)
+
+
+def test_encoding(Command):
+    # jessie image is fr_FR@ISO-8859-15
+    cmd = Command("ls -l %s", "/é")
+    assert cmd.command == b"ls -l '/\xe9'"
+    assert cmd.stderr_bytes == (
+        b"ls: impossible d'acc\xe9der \xe0 /\xe9: "
+        b"Aucun fichier ou dossier de ce type\n"
+    )
+    assert cmd.stderr == (
+        "ls: impossible d'accéder à /é: Aucun fichier ou dossier de ce type\n"
+    )

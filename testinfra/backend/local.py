@@ -34,6 +34,7 @@ class LocalBackend(base.BaseBackend):
             command = "sudo " + command
         command = self.quote(command, *args)
         logger.info("RUN %s", command)
+        command = self.encode(command)
         p = subprocess.Popen(
             command, shell=True,
             stdin=subprocess.PIPE,
@@ -41,4 +42,6 @@ class LocalBackend(base.BaseBackend):
             stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate()
-        return base.CommandResult(p.returncode, stdout, stderr, command)
+        return base.CommandResult(
+            self, p.returncode, stdout, stderr, command,
+        )

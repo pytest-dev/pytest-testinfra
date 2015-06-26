@@ -21,18 +21,19 @@ import pipes
 
 logger = logging.getLogger(__file__)
 
-ENCODING = locale.getpreferredencoding()
-
 
 class CommandResult(object):
 
-    def __init__(self, exit_status, stdout_bytes, stderr_bytes, command):
+    def __init__(
+        self, backend, exit_status, stdout_bytes, stderr_bytes, command,
+    ):
         self.exit_status = exit_status
         self.stdout_bytes = stdout_bytes
         self.stderr_bytes = stderr_bytes
         self._stdout = None
         self._stderr = None
         self.command = command
+        self._backend = backend
         super(CommandResult, self).__init__()
 
     @property
@@ -42,13 +43,13 @@ class CommandResult(object):
     @property
     def stdout(self):
         if self._stdout is None:
-            self._stdout = self.stdout_bytes.decode(ENCODING)
+            self._stdout = self._backend.decode(self.stdout_bytes)
         return self._stdout
 
     @property
     def stderr(self):
         if self._stderr is None:
-            self._stderr = self.stderr_bytes.decode(ENCODING)
+            self._stderr = self._backend.decode(self.stderr_bytes)
         return self._stderr
 
     def __repr__(self):
@@ -71,6 +72,7 @@ class BaseBackend(object):
             logger.warning("Ignored argument: %s", arg)
         for key, value in kwargs.items():
             logger.warning("Ignored argument: %s = %s", key, value)
+        self._encoding = None
         super(BaseBackend, self).__init__()
 
     def quote(self, command, *args):
@@ -98,3 +100,32 @@ class BaseBackend(object):
         if cls._backend_type is None:
             raise RuntimeError("No backend type")
         return cls._backend_type
+
+    def get_encoding(self):
+        cmd = self.run(
+            "python -c 'import locale;print(locale.getpreferredencoding())'")
+        if cmd.rc == 0:
+            encoding = cmd.stdout_bytes.splitlines()[0]
+        else:
+            # Python is not installed, we hope the encoding to be the same as
+            # local machine...
+            encoding = locale.getpreferredencoding()
+        return encoding
+
+    @property
+    def encoding(self):
+        if self._encoding is None:
+            self._encoding = self.get_encoding()
+        return self._encoding
+
+    def decode(self, data):
+        try:
+            return data.decode("ascii")
+        except UnicodeDecodeError:
+            return data.decode(self.encoding)
+
+    def encode(self, data):
+        try:
+            return data.encode("ascii")
+        except UnicodeEncodeError:
+            return data.encode(self.encoding)
