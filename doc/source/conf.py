@@ -115,7 +115,6 @@ html_theme_options = {
     'github_repo': 'testinfra',
     'github_button': True,
     'travis_button': True,
-    'analytics_id': 'UA-63638452-1',
     'extra_nav_links': {
         'View on github': 'https://github.com/philpep/testinfra',
     },
