@@ -163,6 +163,7 @@ html_sidebars = {
         'about.html',
         'navigation.html',
         'searchbox.html',
+        'piwik.html',
     ],
 }
 
