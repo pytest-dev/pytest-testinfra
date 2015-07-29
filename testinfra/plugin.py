@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals
 
+import argparse
+
 import pytest
 import testinfra
 
@@ -35,18 +37,38 @@ Facter = modules.Facter.as_fixture()
 Sysctl = modules.Sysctl.as_fixture()
 
 
-@pytest.fixture(scope="session")
-def testinfra_backend(pytestconfig, _testinfra_host):
+def _get_testinfra_hosts():
+    # It would be better to use pytest_generate_tests but it doesn't play well
+    # with pytest.mark.parametrize().
+    # See https://github.com/pytest-dev/pytest/issues/896
+    # This is a ugly working workaround
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--hosts", action="store", dest="hosts")
+    known_args, _ = parser.parse_known_args()
+    if known_args.hosts is None:
+        params = [None]
+        ids = ["local"]
+    else:
+        params = known_args.hosts.split(",")
+        ids = params
+    return {
+        "params": params,
+        "ids": ids,
+    }
+
+
+@pytest.fixture(scope="session", **_get_testinfra_hosts())
+def testinfra_backend(request, pytestconfig):
     kwargs = {}
     if pytestconfig.option.ssh_config is not None:
         kwargs["ssh_config"] = pytestconfig.option.ssh_config
     if pytestconfig.option.sudo is not None:
         kwargs["sudo"] = pytestconfig.option.sudo
-    if _testinfra_host is not None:
+    if request.param is not None:
         backend_type = pytestconfig.option.connection or "paramiko"
         testinfra.set_backend(
             backend_type,
-            _testinfra_host,
+            request.param,
             **kwargs)
     else:
         testinfra.set_backend("local", **kwargs)
@@ -84,15 +106,3 @@ def pytest_addoption(parser):
         dest="nagios",
         help="Nagios plugin",
     )
-
-
-def pytest_generate_tests(metafunc):
-    if "_testinfra_host" in metafunc.fixturenames:
-        if metafunc.config.option.hosts is not None:
-            params = metafunc.config.option.hosts.split(",")
-            ids = params
-        else:
-            params = [None]
-            ids = ["local"]
-        metafunc.parametrize(
-            "_testinfra_host", params, ids=ids, scope="session")
