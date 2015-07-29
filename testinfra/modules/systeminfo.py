@@ -130,7 +130,7 @@ class SystemInfo(Module):
 
     @classmethod
     def as_fixture(cls):
-        @pytest.fixture(scope="module")
+        @pytest.fixture(scope="session")
         def f(testinfra_backend):
             return SystemInfo()
         f.__doc__ = cls.__doc__

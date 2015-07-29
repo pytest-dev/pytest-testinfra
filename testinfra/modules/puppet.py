@@ -92,7 +92,7 @@ class PuppetResource(Module):
 
     @classmethod
     def as_fixture(cls):
-        @pytest.fixture(scope="module")
+        @pytest.fixture(scope="session")
         def f(testinfra_backend):
             return PuppetResource()
         f.__doc__ = cls.__doc__
@@ -124,7 +124,7 @@ class Facter(Module):
 
     @classmethod
     def as_fixture(cls):
-        @pytest.fixture(scope="module")
+        @pytest.fixture(scope="session")
         def f(testinfra_backend):
             return Facter()
         f.__doc__ = cls.__doc__

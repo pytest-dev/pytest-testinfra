@@ -35,7 +35,7 @@ Facter = modules.Facter.as_fixture()
 Sysctl = modules.Sysctl.as_fixture()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def testinfra_backend(pytestconfig, _testinfra_host):
     kwargs = {}
     if pytestconfig.option.ssh_config is not None:
@@ -91,11 +91,8 @@ def pytest_generate_tests(metafunc):
         if metafunc.config.option.hosts is not None:
             params = metafunc.config.option.hosts.split(",")
             ids = params
-        elif hasattr(metafunc.module, "hosts"):
-            params = metafunc.module.hosts
-            ids = params
         else:
             params = [None]
             ids = ["local"]
         metafunc.parametrize(
-            "_testinfra_host", params, ids=ids, scope="module")
+            "_testinfra_host", params, ids=ids, scope="session")

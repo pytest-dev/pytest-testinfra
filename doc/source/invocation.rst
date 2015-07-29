@@ -27,14 +27,6 @@ ssh implementation in python)::
     =================== 6 passed in 8.49 seconds ====================
 
 
-You can also set hosts per test module::
-
-    hosts = ["localhost", "root@webserver:2222"]
-
-    def test_foo(File, Package, Service):
-        [...]
-
-
 Parallel execution
 ~~~~~~~~~~~~~~~~~~
 
@@ -56,7 +48,7 @@ Advanced invocation
     $ testinfra
 
     # Filter function/hosts with pytest -k option
-    $ testinfra -k webserver -k nginx
+    $ testinfra --hosts=webserver,dnsserver -k webserver -k nginx
 
 
 For more usages and features, see the Pytest_ documentation.

@@ -19,7 +19,11 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-hosts = ["debian_wheezy"]
+
+@pytest.fixture(autouse=True, scope="module")
+def _skip(Sysctl):
+    if Sysctl("kernel.hostname") != "debian_wheezy":
+        pytest.skip()
 
 
 def test_ssh_package(Package):

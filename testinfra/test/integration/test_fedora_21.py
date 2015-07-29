@@ -19,7 +19,11 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-hosts = ["fedora_21"]
+
+@pytest.fixture(autouse=True, scope="module")
+def _skip(Sysctl):
+    if Sysctl("kernel.hostname") != "fedora_21":
+        pytest.skip()
 
 
 def test_ssh_package(Package):

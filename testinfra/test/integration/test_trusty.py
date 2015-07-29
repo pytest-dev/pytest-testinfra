@@ -19,7 +19,11 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-hosts = ["ubuntu_trusty"]
+
+@pytest.fixture(autouse=True, scope="module")
+def _skip(Sysctl):
+    if Sysctl("kernel.hostname") != "ubuntu_trusty":
+        pytest.skip()
 
 
 def test_ssh_package(Package):

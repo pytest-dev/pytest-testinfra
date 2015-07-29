@@ -61,7 +61,7 @@ class Module(object):
 
     @classmethod
     def as_fixture(cls):
-        @pytest.fixture(scope="module")
+        @pytest.fixture(scope="session")
         def f(testinfra_backend):
             return cls
         f.__doc__ = cls.__doc__

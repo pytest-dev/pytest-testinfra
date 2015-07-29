@@ -40,7 +40,7 @@ class Package(Module):
 
     @classmethod
     def as_fixture(cls):
-        @pytest.fixture(scope="module")
+        @pytest.fixture(scope="session")
         def f(Command, SystemInfo):
             if SystemInfo.type == "freebsd":
                 return FreeBSDPackage

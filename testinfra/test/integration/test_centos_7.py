@@ -19,7 +19,11 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-hosts = ["centos_7"]
+
+@pytest.fixture(autouse=True, scope="module")
+def _skip(Sysctl):
+    if Sysctl("kernel.hostname") != "centos_7":
+        pytest.skip()
 
 
 def test_ssh_package(Package):
