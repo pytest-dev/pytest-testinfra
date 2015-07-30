@@ -32,8 +32,10 @@ class Module(object):
         :param expected: A list of expected exit status
         :raises: AssertionError
         """
+        __tracebackhide__ = True
         out = cls.run(command, *args, **kwargs)
-        assert out.rc in expected
+        if out.rc not in expected:
+            pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
         return out
 
     @classmethod
@@ -51,8 +53,10 @@ class Module(object):
         :returns: stdout without trailing newline
         :raises: AssertionError
         """
+        __tracebackhide__ = True
         out = cls.run(command, *args, **kwargs)
-        assert out.rc == 0
+        if out.rc != 0:
+            pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
 
         if out.stdout[-1] == "\n":
             return out.stdout[:-1]
