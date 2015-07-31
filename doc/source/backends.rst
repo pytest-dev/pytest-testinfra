@@ -11,7 +11,7 @@ This is the default backend when not hosts are provided via ``--hosts`` .
 Commands are run locally in a subprocess under the current user. You can use
 the ``--sudo`` option to run commands as superuser::
 
-    $ testinfra --sudo --hosts=server test_myinfra.py
+    $ testinfra --sudo test_myinfra.py
 
 
 paramiko
