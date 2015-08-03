@@ -82,7 +82,6 @@ class RedirectStdStreams(object):
 
 
 def main():
-    sys.argv.extend(["-p", "testinfra.plugin"])
     if "--nagios" in sys.argv:
         out = tempfile.SpooledTemporaryFile()
         # Compat: In 2.7 SpooledTemporaryFile has no encoding param
