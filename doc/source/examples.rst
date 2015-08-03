@@ -4,7 +4,7 @@ Examples
 Parametrize test
 ~~~~~~~~~~~~~~~~
 
-This examples introduces some usefull `pytest <http://pytest.org>`_ features.
+This examples introduces some useful `pytest <http://pytest.org>`_ features.
 Especially about proper and efficient looping in tests assertions.
 
 The purpose of the test is to verify the security of php config by

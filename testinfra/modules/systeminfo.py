@@ -101,7 +101,7 @@ class SystemInfo(Module):
 
     @property
     def codename(self):
-        """Relase code name
+        """Release code name
 
         >>> SystemInfo.codename
         'wheezy'

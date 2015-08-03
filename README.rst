@@ -11,8 +11,8 @@ With Testinfra you can write unit tests in Python to test *actual state* of
 your servers configured by managements tools like Salt_, Ansible_, Puppet_,
 Chef_ and so on.
 
-Testinfra aims to be a ServerSpec_ equivalent in python and is written as
-a plugin to the powerfull Pytest_ test engine
+Testinfra aims to be a Serverspec_ equivalent in python and is written as
+a plugin to the powerful Pytest_ test engine
 
 .. warning:: Testinfra is currently *alpha* software, API may change before the
              first release, and OS support is limited.
@@ -72,5 +72,5 @@ And run it::
 .. _Ansible: http://www.ansible.com/
 .. _Puppet: https://puppetlabs.com/
 .. _Chef: https://www.chef.io/
-.. _ServerSpec: http://serverspec.org/
+.. _Serverspec: http://serverspec.org/
 .. _Pytest: http://pytest.org
