@@ -42,7 +42,7 @@ class Sysctl(Module):
     @classmethod
     def as_fixture(cls):
         @pytest.fixture(scope="session")
-        def f(testinfra_backend):
+        def f(_testinfra_backend):
             return Sysctl()
         f.__doc__ = cls.__doc__
         return f

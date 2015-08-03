@@ -58,7 +58,7 @@ def _get_testinfra_hosts():
 
 
 @pytest.fixture(scope="session", **_get_testinfra_hosts())
-def testinfra_backend(request, pytestconfig):
+def _testinfra_backend(request, pytestconfig):
     kwargs = {}
     if pytestconfig.option.ssh_config is not None:
         kwargs["ssh_config"] = pytestconfig.option.ssh_config

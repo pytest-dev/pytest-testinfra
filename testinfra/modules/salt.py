@@ -60,7 +60,7 @@ class Salt(Module):
     @classmethod
     def as_fixture(cls):
         @pytest.fixture(scope="session")
-        def f(testinfra_backend):
+        def f(_testinfra_backend):
             return Salt()
         f.__doc__ = cls.__doc__
         return f
