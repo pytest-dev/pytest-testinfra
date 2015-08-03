@@ -80,7 +80,7 @@ def pytest_addoption(parser):
         "--connection",
         action="store",
         dest="connection",
-        help="Remote connection backend paramiko|ssh|safe_ssh|salt",
+        help="Remote connection backend paramiko|ssh|safe_ssh|salt|docker",
     )
     group._addoption(
         "--hosts",

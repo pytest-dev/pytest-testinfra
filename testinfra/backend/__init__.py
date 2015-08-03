@@ -19,6 +19,7 @@ from testinfra.backend import local
 from testinfra.backend import paramiko
 from testinfra.backend import salt
 from testinfra.backend import ssh
+from testinfra.backend import docker
 
 BACKENDS = dict((klass.get_backend_type(), klass) for klass in (
     local.LocalBackend,
@@ -26,6 +27,7 @@ BACKENDS = dict((klass.get_backend_type(), klass) for klass in (
     ssh.SafeSshBackend,
     paramiko.ParamikoBakend,
     salt.SaltBackend,
+    docker.DockerBackend,
 ))
 
 
