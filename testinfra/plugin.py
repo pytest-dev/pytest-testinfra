@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 # Copyright © 2015 Philippe Pepiot
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,43 +37,6 @@ Facter = modules.Facter.as_fixture()
 Sysctl = modules.Sysctl.as_fixture()
 
 
-def _get_testinfra_hosts():
-    # It would be better to use pytest_generate_tests but it doesn't play well
-    # with pytest.mark.parametrize().
-    # See https://github.com/pytest-dev/pytest/issues/896
-    # This is a ugly working workaround
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--hosts", action="store", dest="hosts")
-    known_args, _ = parser.parse_known_args()
-    if known_args.hosts is None:
-        params = [None]
-        ids = ["local"]
-    else:
-        params = known_args.hosts.split(",")
-        ids = params
-    return {
-        "params": params,
-        "ids": ids,
-    }
-
-
-@pytest.fixture(scope="session", **_get_testinfra_hosts())
-def testinfra_backend(request, pytestconfig):
-    kwargs = {}
-    if pytestconfig.option.ssh_config is not None:
-        kwargs["ssh_config"] = pytestconfig.option.ssh_config
-    if pytestconfig.option.sudo is not None:
-        kwargs["sudo"] = pytestconfig.option.sudo
-    if request.param is not None:
-        backend_type = pytestconfig.option.connection or "paramiko"
-        testinfra.set_backend(
-            backend_type,
-            request.param,
-            **kwargs)
-    else:
-        testinfra.set_backend("local", **kwargs)
-
-
 def pytest_addoption(parser):
     group = parser.getgroup("testinfra")
     group._addoption(
@@ -106,3 +69,82 @@ def pytest_addoption(parser):
         dest="nagios",
         help="Nagios plugin",
     )
+
+
+class ArgumentParserAsPyTestConfigOptionGroup(object):
+    """
+    This is an ugly hack, since py.test does not allow for plugin to only print
+    it's help in any easy way.
+
+    Mock up ArgumentParser parser as pytest.config.OptionGroup which allows
+    would allow us to create a register argument options for this parser
+    using py.tests' pytest_addoption construct. Then by specifying
+    add_help=True we force the parser to print only plugin help when
+    parse_known_args is called, since parse_known_args exits script after
+    showing help.
+    """
+
+    def __init__(self):
+        # create parse and set add_help so we
+        self.parser = argparse.ArgumentParser(add_help=True)
+        # add py.test options
+        pytest_addoption(self)
+
+    def parse_known_args(self, *args, **kwargs):
+        """
+        Return result of ArgumentParser.parse_known_args
+        to it.
+        """
+        return self.parser.parse_known_args(*args, **kwargs)
+
+    def getgroup(self, *args, **kwargs):
+        """
+        Expose getgroup to mock pytest.config.OptionGroup.getgroup
+        Return own instance as the "fake" group
+        """
+        return self
+
+    def _addoption(self, *args, **kwargs):
+        """
+        Expose _addoption method to mock pytest.config.OptionGroup._addoption
+        call ArgumentParser parser with method arguments to create script
+        argument
+        """
+        self.parser.add_argument(*args, **kwargs)
+
+
+def _get_testinfra_hosts():
+    # It would be better to use pytest_generate_tests but it doesn't play well
+    # with pytest.mark.parametrize().
+    # See https://github.com/pytest-dev/pytest/issues/896
+    # This is a ugly working workaround
+    parser = ArgumentParserAsPyTestConfigOptionGroup()
+    known_args, _ = parser.parse_known_args()
+    if known_args.hosts is None:
+        params = [None]
+        ids = ["local"]
+    else:
+        params = known_args.hosts.split(",")
+        ids = params
+    return {
+        "params": params,
+        "ids": ids,
+    }
+
+
+@pytest.fixture(scope="session", **_get_testinfra_hosts())
+def testinfra_backend(request, pytestconfig):
+    kwargs = {}
+    if pytestconfig.option.ssh_config is not None:
+        kwargs["ssh_config"] = pytestconfig.option.ssh_config
+    if pytestconfig.option.sudo is not None:
+        kwargs["sudo"] = pytestconfig.option.sudo
+    if request.param is not None:
+        backend_type = pytestconfig.option.connection or "paramiko"
+        testinfra.set_backend(
+            backend_type,
+            request.param,
+            **kwargs)
+    else:
+        testinfra.set_backend("local", **kwargs)
+
