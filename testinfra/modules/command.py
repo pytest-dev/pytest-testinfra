@@ -32,7 +32,7 @@ class Command(Module):
     ''
 
 
-    Good practice: always use shell arguments quotting to avoid shell injection
+    Good practice: always use shell arguments quoting to avoid shell injection
 
 
     >>> cmd = Command("ls -l -- %s", "/;echo inject")
