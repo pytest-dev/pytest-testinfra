@@ -42,7 +42,7 @@ def _get_testinfra_hosts():
     # with pytest.mark.parametrize().
     # See https://github.com/pytest-dev/pytest/issues/896
     # This is a ugly working workaround
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--hosts", action="store", dest="hosts")
     known_args, _ = parser.parse_known_args()
     if known_args.hosts is None:
