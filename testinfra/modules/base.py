@@ -58,7 +58,7 @@ class Module(object):
         if out.rc != 0:
             pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
 
-        if out.stdout[-1] == "\n":
+        if len(out.stdout) and out.stdout[-1] == "\n":
             return out.stdout[:-1]
         else:
             return out.stdout

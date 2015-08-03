@@ -68,3 +68,7 @@ def test_pipe(remote_tempdir, Command, File):
     filename = os.path.join(remote_tempdir, "f")
     assert Command("mkfifo %s", filename).rc == 0
     assert File(filename).is_pipe
+
+
+def test_empty_command_output(Command):
+    assert Command.check_output("printf ''") == ""
