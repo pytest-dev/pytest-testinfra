@@ -50,7 +50,7 @@ class SaltBackend(base.BaseBackend):
         command = self.quote(command, *args)
         out = self.run_salt("cmd.run_all", [command])
         return base.CommandResult(
-            out['retcode'], out['stdout'], out['stderr'], command)
+            self, out['retcode'], out['stdout'], out['stderr'], command)
 
     def run_salt(self, func, args=None):
         return self.client.cmd(self.host, func, args or [])[self.host]
