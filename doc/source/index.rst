@@ -10,3 +10,4 @@ Documentation
    Connection backends <backends>
    modules
    examples
+   support
