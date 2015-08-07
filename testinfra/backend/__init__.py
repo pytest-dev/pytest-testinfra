@@ -15,23 +15,22 @@
 
 from __future__ import unicode_literals
 
-from testinfra.backend import local
-from testinfra.backend import paramiko
-from testinfra.backend import salt
-from testinfra.backend import ssh
-
-BACKENDS = dict((klass.get_backend_type(), klass) for klass in (
-    local.LocalBackend,
-    ssh.SshBackend,
-    ssh.SafeSshBackend,
-    paramiko.ParamikoBakend,
-    salt.SaltBackend,
-))
+import importlib
 
 
 def get_backend(backend_type, *args, **kwargs):
+
+    backend_type_split = backend_type.split(".")
     try:
-        backend_class = BACKENDS[backend_type]
-    except KeyError:
+        if len(backend_type_split) == 1:
+            backend_module = importlib.import_module("testinfra.backend.%s" %
+                                                     backend_type)
+            backend_class = backend_module.Backend
+        else:
+            backend_module = importlib.import_module(".".join(
+                                                     backend_type_split[:-1]))
+            backend_class = getattr(backend_module, backend_type_split[-1])
+
+    except ImportError:
         raise RuntimeError("Unknown backend '%s'" % (backend_type,))
     return backend_class(*args, **kwargs)
