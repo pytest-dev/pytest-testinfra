@@ -23,7 +23,7 @@ pytestmark = pytest.mark.integration
 testinfra_hosts = [
     "%s://ubuntu_trusty?sudo=%s" % (b_type, sudo)
     for b_type, sudo in itertools.product(
-        ["ssh", "paramiko", "safe-ssh"],
+        ["ssh", "paramiko", "safe-ssh", "docker"],
         ["true", "false"],
     )
 ]

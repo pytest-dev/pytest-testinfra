@@ -28,11 +28,8 @@ class LocalBackend(base.BaseBackend):
         self.sudo = sudo
         super(LocalBackend, self).__init__(*args, **kwargs)
 
-    def run(self, command, *args, **kwargs):
-        if self.sudo:
-            command = "sudo " + command
+    def run_local(self, command, *args):
         command = self.quote(command, *args)
-        logger.info("RUN %s", command)
         command = self.encode(command)
         p = subprocess.Popen(
             command, shell=True,
@@ -44,3 +41,8 @@ class LocalBackend(base.BaseBackend):
         return base.CommandResult(
             self, p.returncode, stdout, stderr, command,
         )
+
+    def run(self, command, *args, **kwargs):
+        if self.sudo:
+            command = "sudo " + command
+        return self.run_local(command, *args)

@@ -27,6 +27,17 @@ You can provide an alternate ssh-config and use sudo on the remote host::
 
     $ testinfra --ssh-config=/path/to/ssh_config --sudo --hosts=server
 
+
+docker
+~~~~~~
+
+The docker backend can be used to test *running* containers. It use the `docker
+exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
+
+    $ testinfra --connection=docker --hosts=[user@]docker_id_or_name
+
+See also the :ref:`Test docker images` example.
+
 ssh
 ~~~
 
@@ -46,6 +57,3 @@ The salt backend use the `salt python client API
     $ testinfra --connection=salt --hosts=minion1,minion2
 
 Testinfra will use the salt connection channel to run commands.
-
-
-

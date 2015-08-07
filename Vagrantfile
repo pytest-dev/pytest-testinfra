@@ -11,6 +11,7 @@ Vagrant.configure("2") do |config|
       vm.vm.provider "docker" do |docker|
         docker.build_dir = "images/#{vmname}"
         docker.has_ssh = true
+        docker.name = vmname
         if ['debian_jessie', 'centos_7', 'fedora_21'].include? vmname
           docker.create_args = ["-h", vmname, "--privileged"]
         else

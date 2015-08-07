@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals
 
+from testinfra.backend import docker
 from testinfra.backend import local
 from testinfra.backend import paramiko
 from testinfra.backend import salt
@@ -26,6 +27,7 @@ BACKENDS = dict((name, klass) for name, klass in (
     ("safe-ssh", ssh.SafeSshBackend),
     ("paramiko", paramiko.ParamikoBakend),
     ("salt", salt.SaltBackend),
+    ("docker", docker.DockerBackend),
 ))
 
 

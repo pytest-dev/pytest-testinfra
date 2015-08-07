@@ -9,4 +9,5 @@ Documentation
    invocation
    Connection backends <backends>
    modules
+   examples
    support

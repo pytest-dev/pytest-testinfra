@@ -20,7 +20,7 @@ import pytest
 pytestmark = pytest.mark.integration
 testinfra_hosts = [
     "%s://debian_wheezy" % (b_type,)
-    for b_type in ("ssh", "paramiko", "safe-ssh")
+    for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
 ]
 
 

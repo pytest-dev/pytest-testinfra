@@ -36,7 +36,7 @@ Sysctl = modules.Sysctl.as_fixture()
 
 
 @pytest.fixture(scope="module")
-def _testinfra_backend(pytestconfig, _testinfra_host):
+def _testinfra_backend(request, pytestconfig, _testinfra_host):
     kwargs = {}
     if pytestconfig.option.ssh_config is not None:
         kwargs["ssh_config"] = pytestconfig.option.ssh_config
@@ -75,7 +75,7 @@ def pytest_addoption(parser):
         "--connection",
         action="store",
         dest="connection",
-        help="Remote connection backend paramiko|ssh|safe-ssh|salt",
+        help="Remote connection backend paramiko|ssh|safe-ssh|salt|docker",
     )
     group._addoption(
         "--hosts",

@@ -17,6 +17,9 @@ RUN apt-get update && \
     locale-gen && \
     update-locale
 
+ENV LANG fr_FR.ISO-8859-15
+ENV LANGUAGE fr_FR
+
 ADD https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub /root/.ssh/authorized_keys
 EXPOSE 22
 CMD ["/sbin/init"]
