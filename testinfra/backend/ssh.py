@@ -21,14 +21,14 @@ from testinfra.backend import base
 from testinfra.backend import local
 
 
-class SshBackend(local.LocalBackend):
+class Backend(local.LocalBackend):
     """Run command through ssh command"""
     _backend_type = "ssh"
 
     def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
-        super(SshBackend, self).__init__(*args, **kwargs)
+        super(Backend, self).__init__(*args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = ["ssh"]
@@ -47,11 +47,11 @@ class SshBackend(local.LocalBackend):
             self.host,
             self.quote(command, *args),
         ])
-        return super(SshBackend, self).run(
+        return super(Backend, self).run(
             " ".join(cmd), *cmd_args, **kwargs)
 
 
-class SafeSshBackend(SshBackend):
+class SafeBackend(Backend):
     """Run command using ssh command but try to get a more sane output
 
     When using ssh (or a potentially bugged wrapper) additional output can be
@@ -70,7 +70,7 @@ class SafeSshBackend(SshBackend):
     def run(self, command, *args, **kwargs):
         orig_command = self.quote(command, *args)
 
-        out = super(SafeSshBackend, self).run((
+        out = super(SafeBackend, self).run((
             '''of=$(mktemp)&&ef=$(mktemp)&&%s >$of 2>$ef; r=$?;'''
             '''echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);'''
             '''TESTINFRA_END";rm -f $of $ef''') % (orig_command,))

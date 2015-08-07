@@ -22,12 +22,12 @@ from testinfra.backend import base
 logger = logging.getLogger("testinfra.backend")
 
 
-class LocalBackend(base.BaseBackend):
+class Backend(base.BaseBackend):
     _backend_type = "local"
 
     def __init__(self, sudo=False, *args, **kwargs):
         self.sudo = sudo
-        super(LocalBackend, self).__init__(*args, **kwargs)
+        super(Backend, self).__init__(*args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         if self.sudo:
