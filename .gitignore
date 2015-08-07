@@ -15,6 +15,6 @@ AUTHORS
 ChangeLog
 coverage.xml
 flake8.report
-junit.xml
+junit*.xml
 doc/build
 .vagrant
