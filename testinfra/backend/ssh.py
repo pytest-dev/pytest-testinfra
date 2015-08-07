@@ -31,6 +31,7 @@ class SshBackend(local.LocalBackend):
         super(SshBackend, self).__init__(*args, **kwargs)
 
     def run(self, command, *args, **kwargs):
+        command = self.quote(command, *args)
         cmd = ["ssh"]
         cmd_args = []
         if self.ssh_config:
@@ -43,12 +44,11 @@ class SshBackend(local.LocalBackend):
             cmd.append("-o Port=%s")
             cmd_args.append(self.port)
         cmd.append("%s %s")
-        cmd_args.extend([
-            self.host,
-            self.quote(command, *args),
-        ])
-        return super(SshBackend, self).run(
+        cmd_args.extend([self.host, command])
+        out = super(SshBackend, self).run(
             " ".join(cmd), *cmd_args, **kwargs)
+        out.command = self.encode(command)
+        return out
 
 
 class SafeSshBackend(SshBackend):
@@ -81,4 +81,6 @@ class SafeSshBackend(SshBackend):
         rc = int(rc)
         stdout = base64.b64decode(stdout)
         stderr = base64.b64decode(stderr)
-        return base.CommandResult(self, rc, stdout, stderr, orig_command)
+        return base.CommandResult(
+            self, rc, stdout, stderr,
+            self.encode(orig_command))
