@@ -27,6 +27,15 @@ ssh implementation in python)::
     =================== 6 passed in 8.49 seconds ====================
 
 
+You can also set hosts per test module::
+
+    testinfra_hosts = ["localhost", "root@webserver:2222"]
+
+    def test_foo(File, Package, Service):
+        [....]
+
+
+
 Parallel execution
 ~~~~~~~~~~~~~~~~~~
 

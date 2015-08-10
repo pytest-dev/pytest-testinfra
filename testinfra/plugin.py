@@ -92,6 +92,9 @@ def pytest_generate_tests(metafunc):
         if metafunc.config.option.hosts is not None:
             params = metafunc.config.option.hosts.split(",")
             ids = params
+        elif hasattr(metafunc.module, "testinfra_hosts"):
+            params = metafunc.module.testinfra_hosts
+            ids = params
         else:
             params = [None]
             ids = ["local"]

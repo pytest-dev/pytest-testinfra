@@ -18,12 +18,7 @@ from __future__ import unicode_literals
 import pytest
 
 pytestmark = pytest.mark.integration
-
-
-@pytest.fixture(autouse=True, scope="module")
-def _skip(Sysctl):
-    if Sysctl("kernel.hostname") != "fedora_21":
-        pytest.skip()
+testinfra_hosts = ["fedora_21"]
 
 
 def test_ssh_package(Package):

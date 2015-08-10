@@ -18,12 +18,7 @@ from __future__ import unicode_literals
 import pytest
 
 pytestmark = pytest.mark.integration
-
-
-@pytest.fixture(autouse=True, scope="module")
-def _skip(Sysctl):
-    if Sysctl("kernel.hostname") != "ubuntu_trusty":
-        pytest.skip()
+testinfra_hosts = ["ubuntu_trusty"]
 
 
 def test_ssh_package(Package):
