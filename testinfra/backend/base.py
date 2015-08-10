@@ -19,6 +19,8 @@ import locale
 import logging
 import pipes
 
+import testinfra.modules
+
 logger = logging.getLogger(__file__)
 
 
@@ -65,7 +67,7 @@ class CommandResult(object):
 
 
 class BaseBackend(object):
-    _backend_type = None
+    HAS_RUN_SALT = False
 
     def __init__(self, *args, **kwargs):
         for arg in args:
@@ -73,6 +75,7 @@ class BaseBackend(object):
         for key, value in kwargs.items():
             logger.warning("Ignored argument: %s = %s", key, value)
         self._encoding = None
+        self._module_cache = {}
         super(BaseBackend, self).__init__()
 
     def quote(self, command, *args):
@@ -94,12 +97,6 @@ class BaseBackend(object):
 
     def run(self, command, *args):
         raise NotImplementedError
-
-    @classmethod
-    def get_backend_type(cls):
-        if cls._backend_type is None:
-            raise RuntimeError("No backend type")
-        return cls._backend_type
 
     def get_encoding(self):
         cmd = self.run(
@@ -129,3 +126,11 @@ class BaseBackend(object):
             return data.encode("ascii")
         except UnicodeEncodeError:
             return data.encode(self.encoding)
+
+    def get_module(self, name):
+        try:
+            module = self._module_cache[name]
+        except KeyError:
+            module = getattr(testinfra.modules, name).get_module(self)
+            self._module_cache[name] = module
+        return module

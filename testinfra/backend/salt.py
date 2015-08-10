@@ -27,7 +27,7 @@ else:
 
 
 class SaltBackend(base.BaseBackend):
-    _backend_type = "salt"
+    HAS_RUN_SALT = True
 
     def __init__(self, host, sudo=False, *args, **kwargs):
         self.host = host

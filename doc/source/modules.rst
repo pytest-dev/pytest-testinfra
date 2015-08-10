@@ -17,16 +17,16 @@ Command
 File
 ~~~~
 
-.. autoclass:: testinfra.modules.File
+.. autoclass:: testinfra.modules.File(path)
    :members:
    :undoc-members:
-   :exclude-members: as_fixture
+   :exclude-members: as_fixture, get_module
 
 
 User
 ~~~~
 
-.. autoclass:: testinfra.modules.User
+.. autoclass:: testinfra.modules.User(name=None)
    :members:
    :undoc-members:
 
@@ -34,7 +34,7 @@ User
 Group
 ~~~~~
 
-.. autoclass:: testinfra.modules.Group
+.. autoclass:: testinfra.modules.Group(name)
    :members:
    :undoc-members:
 
@@ -42,9 +42,10 @@ Group
 Interface
 ~~~~~~~~~
 
-.. autoclass:: testinfra.modules.Interface
+.. autoclass:: testinfra.modules.Interface(name)
    :members:
    :undoc-members:
+   :exclude-members: get_module
 
 
 Package
@@ -77,7 +78,7 @@ SystemInfo
 ~~~~~~~~~~
 
 
-.. autoclass:: testinfra.modules.SystemInfo
+.. autoclass:: testinfra.modules.SystemInfo()
    :members:
 
 

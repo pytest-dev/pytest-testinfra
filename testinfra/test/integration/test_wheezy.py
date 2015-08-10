@@ -64,3 +64,8 @@ def test_nonexistent_user(User):
 
 def test_current_user(User):
     assert User().name == "root"
+
+
+def test_group(Group):
+    assert Group("root").exists
+    assert Group("root").gid == 0

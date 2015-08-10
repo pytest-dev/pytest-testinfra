@@ -17,8 +17,6 @@ from __future__ import unicode_literals
 
 import json
 
-import pytest
-
 from testinfra.modules.base import Module
 
 
@@ -90,14 +88,6 @@ class PuppetResource(Module):
     def __repr__(self):
         return "<PuppetResource>"
 
-    @classmethod
-    def as_fixture(cls):
-        @pytest.fixture(scope="session")
-        def f(_testinfra_backend):
-            return PuppetResource()
-        f.__doc__ = cls.__doc__
-        return f
-
 
 class Facter(Module):
     """Get facts with `facter <https://puppetlabs.com/facter>`_
@@ -121,11 +111,3 @@ class Facter(Module):
 
     def __repr__(self):
         return "<facter>"
-
-    @classmethod
-    def as_fixture(cls):
-        @pytest.fixture(scope="session")
-        def f(_testinfra_backend):
-            return Facter()
-        f.__doc__ = cls.__doc__
-        return f

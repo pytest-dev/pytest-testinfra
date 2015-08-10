@@ -15,17 +15,18 @@
 
 from __future__ import unicode_literals
 
-import pytest
-
 from testinfra.modules.base import Module
 
 
 class Service(Module):
     """Test services"""
 
-    def __init__(self, name):
+    def __init__(self, _backend, name):
         self.name = name
-        super(Service, self).__init__()
+        super(Service, self).__init__(_backend)
+
+    def __call__(self, name):
+        return self.__class__(self._backend, name)
 
     @property
     def is_running(self):
@@ -38,27 +39,26 @@ class Service(Module):
         raise NotImplementedError
 
     @classmethod
-    def as_fixture(cls):
-        @pytest.fixture(scope="session")
-        def f(SystemInfo, Command, File):
-            if SystemInfo.type == "linux":
-                if (
-                    Command.run_test("which systemctl").rc == 0
-                    and "systemd" in File("/sbin/init").linked_to
-                ):
-                    return SystemdService
-                else:
-                    return LinuxService
-            elif SystemInfo.type == "freebsd":
-                return FreeBSDService
-            elif SystemInfo.type == "openbsd":
-                return OpenBSDService
-            elif SystemInfo.type == "netbsd":
-                return NetBSDService
+    def get_module(cls, _backend):
+        SystemInfo = _backend.get_module("SystemInfo")
+        Command = _backend.get_module("Command")
+        File = _backend.get_module("File")
+        if SystemInfo.type == "linux":
+            if (
+                Command.run_test("which systemctl").rc == 0
+                and "systemd" in File("/sbin/init").linked_to
+            ):
+                return SystemdService(_backend, None)
             else:
-                raise NotImplementedError
-        f.__doc__ = cls.__doc__
-        return f
+                return LinuxService(_backend, None)
+        elif SystemInfo.type == "freebsd":
+            return FreeBSDService(_backend, None)
+        elif SystemInfo.type == "openbsd":
+            return OpenBSDService(_backend, None)
+        elif SystemInfo.type == "netbsd":
+            return NetBSDService(_backend, None)
+        else:
+            raise NotImplementedError
 
     def __repr__(self):
         return "<service %s>" % (self.name,)

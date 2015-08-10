@@ -32,7 +32,6 @@ logger = logging.getLogger("testinfra.backend")
 
 
 class ParamikoBakend(base.BaseBackend):
-    _backend_type = "paramiko"
 
     def __init__(self, hostspec, ssh_config=None, sudo=False, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)

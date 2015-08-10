@@ -15,17 +15,18 @@
 
 from __future__ import unicode_literals
 
-import pytest
-
 from testinfra.modules.base import Module
 
 
 class Interface(Module):
     """Test network interfaces"""
 
-    def __init__(self, name):
+    def __init__(self, _backend, name):
         self.name = name
-        super(Interface, self).__init__()
+        super(Interface, self).__init__(_backend)
+
+    def __call_(self, name):
+        return self.__class__(self._backend, name)
 
     @property
     def exists(self):
@@ -48,17 +49,14 @@ class Interface(Module):
         return "<interface %s>" % (self.name,)
 
     @classmethod
-    def as_fixture(cls):
-        @pytest.fixture(scope="session")
-        def f(SystemInfo):
-            if SystemInfo.type == "linux":
-                return LinuxInterface
-            elif SystemInfo.type.endswith("bsd"):
-                return BSDInterface
-            else:
-                raise NotImplementedError
-        f.__doc__ = cls.__doc__
-        return f
+    def get_module(cls, _backend):
+        SystemInfo = _backend.get_module("SystemInfo")
+        if SystemInfo.type == "linux":
+            return LinuxInterface(_backend, None)
+        elif SystemInfo.type.endswith("bsd"):
+            return BSDInterface(_backend, None)
+        else:
+            raise NotImplementedError
 
 
 class LinuxInterface(Interface):

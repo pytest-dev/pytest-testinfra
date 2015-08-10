@@ -16,45 +16,44 @@
 from __future__ import unicode_literals
 
 import pytest
-from testinfra import get_backend
 
 
 class Module(object):
 
-    @staticmethod
-    def run(command, *args, **kwargs):
-        return get_backend().run(command, *args, **kwargs)
+    def __init__(self, _backend):
+        self._backend = _backend
+        super(Module, self).__init__()
 
-    @classmethod
-    def run_expect(cls, expected, command, *args, **kwargs):
+    def run(self, command, *args, **kwargs):
+        return self._backend.run(command, *args, **kwargs)
+
+    def run_expect(self, expected, command, *args, **kwargs):
         """Run command and check it return an expected exit status
 
         :param expected: A list of expected exit status
         :raises: AssertionError
         """
         __tracebackhide__ = True
-        out = cls.run(command, *args, **kwargs)
+        out = self.run(command, *args, **kwargs)
         if out.rc not in expected:
             pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
         return out
 
-    @classmethod
-    def run_test(cls, command, *args, **kwargs):
+    def run_test(self, command, *args, **kwargs):
         """Run command and check it return an exit status of 0 or 1
 
         :raises: AssertionError
         """
-        return cls.run_expect([0, 1], command, *args, **kwargs)
+        return self.run_expect([0, 1], command, *args, **kwargs)
 
-    @classmethod
-    def check_output(cls, command, *args, **kwargs):
+    def check_output(self, command, *args, **kwargs):
         """Get stdout of a command which has run successfully
 
         :returns: stdout without trailing newline
         :raises: AssertionError
         """
         __tracebackhide__ = True
-        out = cls.run(command, *args, **kwargs)
+        out = self.run(command, *args, **kwargs)
         if out.rc != 0:
             pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
 
@@ -64,9 +63,13 @@ class Module(object):
             return out.stdout
 
     @classmethod
+    def get_module(cls, _backend):
+        return cls(_backend)
+
+    @classmethod
     def as_fixture(cls):
-        @pytest.fixture(scope="session")
+        @pytest.fixture(scope="module")
         def f(_testinfra_backend):
-            return cls
+            return _testinfra_backend.get_module(cls.__name__)
         f.__doc__ = cls.__doc__
         return f

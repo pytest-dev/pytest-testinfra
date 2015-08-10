@@ -15,17 +15,18 @@
 
 from __future__ import unicode_literals
 
-import pytest
-
 from testinfra.modules.base import Module
 
 
 class Package(Module):
     """Test packages status and version"""
 
-    def __init__(self, name):
+    def __init__(self, _backend, name):
         self.name = name
-        super(Package, self).__init__()
+        super(Package, self).__init__(_backend)
+
+    def __call__(self, name):
+        return self.__class__(self._backend, name)
 
     @property
     def is_installed(self):
@@ -39,21 +40,19 @@ class Package(Module):
         return "<package %s>" % (self.name,)
 
     @classmethod
-    def as_fixture(cls):
-        @pytest.fixture(scope="session")
-        def f(Command, SystemInfo):
-            if SystemInfo.type == "freebsd":
-                return FreeBSDPackage
-            elif SystemInfo.type in ("openbsd", "netbsd"):
-                return OpenBSDPackage
-            elif Command.run_test("which apt-get").rc == 0:
-                return DebianPackage
-            elif Command.run_test("which rpm").rc == 0:
-                return RpmPackage
-            else:
-                raise NotImplementedError
-        f.__doc__ = cls.__doc__
-        return f
+    def get_module(cls, _backend):
+        Command = _backend.get_module("Command")
+        SystemInfo = _backend.get_module("SystemInfo")
+        if SystemInfo.type == "freebsd":
+            return FreeBSDPackage(_backend, None)
+        elif SystemInfo.type in ("openbsd", "netbsd"):
+            return OpenBSDPackage(_backend, None)
+        elif Command.run_test("which apt-get").rc == 0:
+            return DebianPackage(_backend, None)
+        elif Command.run_test("which rpm").rc == 0:
+            return RpmPackage(_backend, None)
+        else:
+            raise NotImplementedError
 
 
 class DebianPackage(Package):

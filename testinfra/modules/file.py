@@ -17,17 +17,18 @@ from __future__ import unicode_literals
 
 import datetime
 
-import pytest
-
 from testinfra.modules.base import Module
 
 
 class File(Module):
     """Test various files attributes"""
 
-    def __init__(self, path):
+    def __init__(self, _backend, path):
         self.path = path
-        super(File, self).__init__()
+        super(File, self).__init__(_backend)
+
+    def __call__(self, path):
+        return self.__class__(self._backend, path)
 
     @property
     def exists(self):
@@ -161,19 +162,16 @@ class File(Module):
         return "<file %s>" % (self.path,)
 
     @classmethod
-    def as_fixture(cls):
-        @pytest.fixture(scope="session")
-        def f(SystemInfo):
-            if SystemInfo.type == "linux":
-                return GNUFile
-            elif SystemInfo.type == "netbsd":
-                return NetBSDFile
-            elif SystemInfo.type.endswith("bsd"):
-                return BSDFile
-            else:
-                raise NotImplementedError
-        f.__doc__ = cls.__doc__
-        return f
+    def get_module(cls, _backend):
+        SystemInfo = _backend.get_module("SystemInfo")
+        if SystemInfo.type == "linux":
+            return GNUFile(_backend, None)
+        elif SystemInfo.type == "netbsd":
+            return NetBSDFile(_backend, None)
+        elif SystemInfo.type.endswith("bsd"):
+            return BSDFile(_backend, None)
+        else:
+            raise NotImplementedError
 
 
 class GNUFile(File):

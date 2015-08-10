@@ -35,7 +35,7 @@ Facter = modules.Facter.as_fixture()
 Sysctl = modules.Sysctl.as_fixture()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def _testinfra_backend(pytestconfig, _testinfra_host):
     kwargs = {}
     if pytestconfig.option.ssh_config is not None:
@@ -44,12 +44,13 @@ def _testinfra_backend(pytestconfig, _testinfra_host):
         kwargs["sudo"] = pytestconfig.option.sudo
     if _testinfra_host is not None:
         backend_type = pytestconfig.option.connection or "paramiko"
-        testinfra.set_backend(
+        backend = testinfra.get_backend(
             backend_type,
             _testinfra_host,
             **kwargs)
     else:
-        testinfra.set_backend("local", **kwargs)
+        backend = testinfra.get_backend("local", **kwargs)
+    return backend
 
 
 def pytest_addoption(parser):
@@ -95,4 +96,4 @@ def pytest_generate_tests(metafunc):
             params = [None]
             ids = ["local"]
         metafunc.parametrize(
-            "_testinfra_host", params, ids=ids, scope="session")
+            "_testinfra_host", params, ids=ids, scope="module")

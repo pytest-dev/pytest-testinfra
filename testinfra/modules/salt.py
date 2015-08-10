@@ -18,10 +18,8 @@ from __future__ import unicode_literals
 
 import json
 
-import pytest
 import six
 
-from testinfra import get_backend
 from testinfra.modules.base import Module
 
 
@@ -43,9 +41,8 @@ class Salt(Module):
         args = args or []
         if isinstance(args, six.string_types):
             args = [args]
-        backend = get_backend()
-        if backend.get_backend_type() == "salt":
-            return backend.run_salt(function, args)
+        if self._backend.HAS_RUN_SALT:
+            return self._backend.run_salt(function, args)
         else:
             cmd = "salt-call --out=json"
             if local:
@@ -56,11 +53,3 @@ class Salt(Module):
 
     def __repr__(self):
         return "<salt>"
-
-    @classmethod
-    def as_fixture(cls):
-        @pytest.fixture(scope="session")
-        def f(_testinfra_backend):
-            return Salt()
-        f.__doc__ = cls.__doc__
-        return f

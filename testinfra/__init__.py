@@ -15,21 +15,17 @@
 
 from __future__ import unicode_literals
 
-import threading
-
 from testinfra import backend
 
-__all__ = ["get_backend", "set_backend"]
-
-g = threading.local()
-g.backend = None
+__all__ = ["get_backend"]
 
 
-def get_backend():
-    if g.backend is None:
-        raise RuntimeError("No runner available")
-    return g.backend
+_BACKEND_CACHE = {}
 
 
-def set_backend(backend_type, *args, **kwargs):
-    g.backend = backend.get_backend(backend_type, *args, **kwargs)
+def get_backend(backend_type, *args, **kwargs):
+    key = (backend_type, args)
+    if key not in _BACKEND_CACHE:
+        _BACKEND_CACHE[key] = backend.get_backend(
+            backend_type, *args, **kwargs)
+    return _BACKEND_CACHE[key]
