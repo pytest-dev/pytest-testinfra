@@ -23,7 +23,7 @@ from testinfra.backend import ssh
 BACKENDS = dict((name, klass) for name, klass in (
     ("local", local.LocalBackend),
     ("ssh", ssh.SshBackend),
-    ("safe_ssh", ssh.SafeSshBackend),
+    ("safe-ssh", ssh.SafeSshBackend),
     ("paramiko", paramiko.ParamikoBakend),
     ("salt", salt.SaltBackend),
 ))

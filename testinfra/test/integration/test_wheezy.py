@@ -18,7 +18,10 @@ from __future__ import unicode_literals
 import pytest
 
 pytestmark = pytest.mark.integration
-testinfra_hosts = ["debian_wheezy"]
+testinfra_hosts = [
+    "%s://debian_wheezy" % (b_type,)
+    for b_type in ("ssh", "paramiko", "safe-ssh")
+]
 
 
 def test_ssh_package(Package):

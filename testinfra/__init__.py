@@ -24,6 +24,7 @@ _BACKEND_CACHE = {}
 
 
 def get_backend(backend_type, *args, **kwargs):
+    global _BACKEND_CACHE
     key = (backend_type, args)
     if key not in _BACKEND_CACHE:
         _BACKEND_CACHE[key] = backend.get_backend(

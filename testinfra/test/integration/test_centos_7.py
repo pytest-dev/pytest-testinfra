@@ -18,7 +18,10 @@ from __future__ import unicode_literals
 import pytest
 
 pytestmark = pytest.mark.integration
-testinfra_hosts = ["centos_7"]
+testinfra_hosts = [
+    "%s://centos_7" % (b_type,)
+    for b_type in ("ssh", "paramiko", "safe-ssh")
+]
 
 
 def test_ssh_package(Package):

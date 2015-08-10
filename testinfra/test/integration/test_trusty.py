@@ -15,10 +15,18 @@
 
 from __future__ import unicode_literals
 
+import itertools
+
 import pytest
 
 pytestmark = pytest.mark.integration
-testinfra_hosts = ["ubuntu_trusty"]
+testinfra_hosts = [
+    "%s://ubuntu_trusty?sudo=%s" % (b_type, sudo)
+    for b_type, sudo in itertools.product(
+        ["ssh", "paramiko", "safe-ssh"],
+        ["true", "false"],
+    )
+]
 
 
 def test_ssh_package(Package):

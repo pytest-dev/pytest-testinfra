@@ -16,8 +16,8 @@
 from __future__ import unicode_literals
 
 import pytest
+from six.moves import urllib
 import testinfra
-
 from testinfra import modules
 
 File = modules.File.as_fixture()
@@ -43,10 +43,21 @@ def _testinfra_backend(pytestconfig, _testinfra_host):
     if pytestconfig.option.sudo is not None:
         kwargs["sudo"] = pytestconfig.option.sudo
     if _testinfra_host is not None:
-        backend_type = pytestconfig.option.connection or "paramiko"
+        if "://" in _testinfra_host:
+            url = urllib.parse.urlparse(_testinfra_host)
+            backend_type = url.scheme
+            host = url.netloc
+            query = urllib.parse.parse_qs(url.query)
+            if query.get("sudo", ["false"])[0].lower() == "true":
+                kwargs["sudo"] = True
+            if "ssh_config" in query:
+                kwargs["ssh_config"] = query.get("ssh_config")[0]
+        else:
+            backend_type = pytestconfig.option.connection or "paramiko"
+            host = _testinfra_host
         backend = testinfra.get_backend(
             backend_type,
-            _testinfra_host,
+            host,
             **kwargs)
     else:
         backend = testinfra.get_backend("local", **kwargs)
@@ -59,7 +70,7 @@ def pytest_addoption(parser):
         "--connection",
         action="store",
         dest="connection",
-        help="Remote connection backend paramiko|ssh|safe_ssh|salt",
+        help="Remote connection backend paramiko|ssh|safe-ssh|salt",
     )
     group._addoption(
         "--hosts",
