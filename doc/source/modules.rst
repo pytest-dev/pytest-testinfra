@@ -14,6 +14,13 @@ Command
    :members: check_output, run_expect, run_test
 
 
+LocalCommand
+~~~~~~~~~~~~
+
+Same as `Command` but run commands locally with subprocess even when the
+connection backend is not "local".
+
+
 File
 ~~~~
 
