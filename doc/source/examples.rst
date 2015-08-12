@@ -1,6 +1,42 @@
 Examples
 ========
 
+.. _make modules:
+
+Make your own modules
+~~~~~~~~~~~~~~~~~~~~~
+
+Suppose you want to create a simple wrapper around the `echo` command. You just
+have to declare a `pytest fixture <https://pytest.org/latest/fixture.html>`_::
+
+    import pytest
+
+    @pytest.fixture()
+    def Echo(Command):
+        def f(arg):
+            return Command.check_output("echo %s", arg)
+        return f
+
+
+    def test(Echo):
+        assert Echo("foo") == "foo"
+
+
+If you want to use it in all your test file, just put it in a `conftest.py
+<https://pytest.org/latest/plugins.html>`_ file.
+
+
+Share your modules
+~~~~~~~~~~~~~~~~~~
+
+Suppose you wrote a more useful module than the echo wrapper above and want to
+share with the entire world. You can package your plugin as a `pytest plugin
+<https://pytest.org/latest/plugins.html>`_.
+
+See `philpep/testinfra-echo <https://github.com/philpep/testinfra-echo>`_ to
+see an example of pytest plugin based on testinfra.
+
+
 .. _test docker images:
 
 Test docker images

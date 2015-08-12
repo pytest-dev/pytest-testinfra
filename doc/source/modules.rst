@@ -1,11 +1,14 @@
 Modules
 =======
 
-Testinfra modules are provided as `pytest fixtures`_, declare them as arguments
-of your test function to make them available::
+Testinfra modules are provided as `pytest fixtures`_, declare them as
+arguments of your test function to make them available::
 
     def test_foo(Package, File, Command):
         [...]
+
+
+Note that you can also :ref:`make modules`.
 
 Command
 ~~~~~~~
