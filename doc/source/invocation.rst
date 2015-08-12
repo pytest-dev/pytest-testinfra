@@ -63,14 +63,5 @@ Advanced invocation
 For more usages and features, see the Pytest_ documentation.
 
 
-Nagios plugin
-~~~~~~~~~~~~~
-
-You can turn your test session into a nagios check::
-
-    $ testinfra test_myinfra.py --nagios -qq
-    TESTINFRA OK - 3 passed, 0 failed, 0 skipped in 0.14 seconds
-    ...
-
 .. _Pytest: http://pytest.org
 .. _pytest-xdist: http://pytest.org/latest/xdist.html

@@ -37,6 +37,70 @@ See `philpep/testinfra-echo <https://github.com/philpep/testinfra-echo>`_ to
 see an example of pytest plugin based on testinfra.
 
 
+Integration with vagrant
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Vagrant <https://www.vagrantup.com/>`_ is a tool that setup and provision
+development environment (virtual machines).
+
+When your vagrant machine is up and running, you can easily run your testinfra
+test suite on it::
+
+    vagrant ssh-config > .vagrant/ssh-config
+    testinfra --hosts=default --ssh-config=.vagrant/ssh-config tests.py
+
+
+Integration with jenkins
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Jenkins <https://jenkins-ci.org/>`_ is a well known open source continuous
+integration server.
+
+If your jenkins slave can run vagrant, your build scripts can be like::
+
+
+    pip install testinfra paramiko
+    vagrant up
+    vagrant ssh-config > .vagrant/ssh-config
+    testinfra --hosts=default --ssh-config=.vagrant/ssh-config --junit-xml junit.xml tests.py
+
+
+Then configure jenkins to get tests results from the `junit.xml` file.
+
+If you use the `docker provisioner
+<https://docs.vagrantup.com/v2/provisioning/docker.html>`_ in vagrant, and use
+the `docker plugin
+<https://wiki.jenkins-ci.org/display/JENKINS/Docker+Plugin>`_ in jenkins, you
+might be interested by the `philpep/jenkins-slave:jessie
+<https://github.com/philpep/jenkins-slave>`_ docker image. This is the image
+used to tests testinfra itself using vagrant and docker (in docker).
+
+
+Integration with nagios
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The tests you will write with testinfra will usually be testing that the
+services you're deploying run correctly. This kind of tests are close to
+monitoring checks, so let's push them to `Nagios <https://www.nagios.org/>`_ !
+
+Testinfra has an option `--nagios` that enable a compatible nagios plugin
+beharvior::
+
+    $ testinfra -qq --nagios test_ok.py; echo $?
+    TESTINFRA OK - 2 passed, 0 failed, 0 skipped in 2.30 seconds
+    [...]
+    0
+
+    $ testinfra -qq --nagios test_fail.py; echo $?
+    TESTINFRA CRITICAL - 1 passed, 1 failed, 0 skipped in 2.24 seconds
+    [Traceback that explain the failed test]
+    2
+
+
+You can run theses tests from the nagios master or in the target host with
+`NRPE <https://en.wikipedia.org/wiki/Nagios#Nagios_Remote_Plugin_Executor>`_.
+
+
 .. _test docker images:
 
 Test docker images
