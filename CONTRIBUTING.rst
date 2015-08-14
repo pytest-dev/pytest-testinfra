@@ -34,9 +34,8 @@ Code style
 
 Your code must pass without errors under `flake8
 <https://flake8.readthedocs.org>`_ with the extension `hacking
-<http://docs.openstack.org/developer/hacking/>`_.
+<http://docs.openstack.org/developer/hacking/>`_::
 
 
-::
     pip install hacking
     flake8 testinfra
