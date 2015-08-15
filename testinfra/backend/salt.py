@@ -53,4 +53,7 @@ class SaltBackend(base.BaseBackend):
             self, out['retcode'], out['stdout'], out['stderr'], command)
 
     def run_salt(self, func, args=None):
-        return self.client.cmd(self.host, func, args or [])[self.host]
+        if self.client.cmd(self.host, "test.ping"):
+            return self.client.cmd(self.host, func, args or [])[self.host]
+        else:
+            raise RuntimeError("Minion did not return. [No response]")
