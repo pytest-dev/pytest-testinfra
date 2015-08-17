@@ -32,7 +32,7 @@ testinfra_hosts = [
 def test_ssh_package(Package):
     ssh = Package("openssh-server")
     assert ssh.is_installed
-    assert ssh.version == "1:6.6p1-2ubuntu2"
+    assert ssh.version.startswith("1:6.6p1-2ubuntu")
 
 
 def test_ssh_service(Service):
