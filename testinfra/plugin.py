@@ -105,8 +105,8 @@ def pytest_addoption(parser):
 
 def pytest_generate_tests(metafunc):
     if "_testinfra_host" in metafunc.fixturenames:
-        if (metafunc.config.option.hosts == "*" and 
-           metafunc.config.option.connection == "salt"):
+        if (metafunc.config.option.hosts == "*" and
+            metafunc.config.option.connection == "salt"):
             import salt.runner
             opts = salt.config.master_config("/etc/salt/master")
             runner = salt.runner.RunnerClient(opts)
