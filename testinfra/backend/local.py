@@ -24,9 +24,9 @@ logger = logging.getLogger("testinfra.backend")
 
 class LocalBackend(base.BaseBackend):
 
-    def __init__(self, sudo=False, *args, **kwargs):
+    def __init__(self, sudo=False, **kwargs):
         self.sudo = sudo
-        super(LocalBackend, self).__init__(*args, **kwargs)
+        super(LocalBackend, self).__init__(**kwargs)
 
     def run_local(self, command, *args):
         command = self.quote(command, *args)

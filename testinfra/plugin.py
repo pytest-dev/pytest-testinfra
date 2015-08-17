@@ -16,7 +16,6 @@
 from __future__ import unicode_literals
 
 import pytest
-from six.moves import urllib
 import testinfra
 from testinfra import modules
 
@@ -37,36 +36,17 @@ Sysctl = modules.Sysctl.as_fixture()
 
 @pytest.fixture(scope="module")
 def _testinfra_backend(request, pytestconfig, _testinfra_host):
-    kwargs = {}
+    kwargs = {"connection": pytestconfig.option.connection or "paramiko"}
     if pytestconfig.option.ssh_config is not None:
         kwargs["ssh_config"] = pytestconfig.option.ssh_config
     if pytestconfig.option.sudo is not None:
         kwargs["sudo"] = pytestconfig.option.sudo
-    if _testinfra_host is not None:
-        if "://" in _testinfra_host:
-            url = urllib.parse.urlparse(_testinfra_host)
-            backend_type = url.scheme
-            host = url.netloc
-            query = urllib.parse.parse_qs(url.query)
-            if query.get("sudo", ["false"])[0].lower() == "true":
-                kwargs["sudo"] = True
-            if "ssh_config" in query:
-                kwargs["ssh_config"] = query.get("ssh_config")[0]
-        else:
-            backend_type = pytestconfig.option.connection or "paramiko"
-            host = _testinfra_host
-        backend = testinfra.get_backend(
-            backend_type,
-            host,
-            **kwargs)
-    else:
-        backend = testinfra.get_backend("local", **kwargs)
-    return backend
+    return testinfra.get_backend(_testinfra_host, **kwargs)
 
 
 @pytest.fixture(scope="module")
 def LocalCommand():
-    return testinfra.get_backend("local").get_module("Command")
+    return testinfra.get_backend("local://").get_module("Command")
 
 
 def pytest_addoption(parser):
@@ -112,7 +92,7 @@ def pytest_generate_tests(metafunc):
             params = metafunc.module.testinfra_hosts
             ids = params
         else:
-            params = [None]
+            params = ["local://"]
             ids = ["local"]
         metafunc.parametrize(
             "_testinfra_host", params, ids=ids, scope="module")

@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals
 
+from six.moves import urllib
+
 from testinfra.backend import docker
 from testinfra.backend import local
 from testinfra.backend import paramiko
@@ -31,9 +33,24 @@ BACKENDS = dict((name, klass) for name, klass in (
 ))
 
 
-def get_backend(backend_type, *args, **kwargs):
+def get_backend(hostspec, connection="paramiko://", **kwargs):
+    kw = kwargs.copy()
+    if "://" in hostspec:
+        url = urllib.parse.urlparse(hostspec)
+        connection = url.scheme
+        host = url.netloc
+        query = urllib.parse.parse_qs(url.query)
+        if query.get("sudo", ["false"])[0].lower() == "true":
+            kw["sudo"] = True
+        if "ssh_config" in query:
+            kw["ssh_config"] = query.get("ssh_config")[0]
+    else:
+        host = hostspec
     try:
-        backend_class = BACKENDS[backend_type]
+        klass = BACKENDS[connection]
     except KeyError:
-        raise RuntimeError("Unknown backend '%s'" % (backend_type,))
-    return backend_class(*args, **kwargs)
+        raise RuntimeError("Unknown connection type '%s'" % (connection,))
+    if connection == "local":
+        return klass(**kw)
+    else:
+        return klass(host, **kw)
