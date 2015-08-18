@@ -97,7 +97,7 @@ beharvior::
     2
 
 
-You can run theses tests from the nagios master or in the target host with
+You can run these tests from the nagios master or in the target host with
 `NRPE <https://en.wikipedia.org/wiki/Nagios#Nagios_Remote_Plugin_Executor>`_.
 
 
