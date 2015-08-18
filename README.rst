@@ -14,16 +14,12 @@ Chef_ and so on.
 Testinfra aims to be a Serverspec_ equivalent in python and is written as
 a plugin to the powerful Pytest_ test engine
 
-.. warning:: Testinfra is currently *alpha* software, API may change before the
-             first release, and OS support is limited.
-
-
 Quick start
 ===========
 
 Install testinfra using pip::
 
-    $ pip install --pre testinfra
+    $ pip install testinfra
 
     # or install the devel version
     $ pip install 'git+https://github.com/philpep/testinfra@master#egg=testinfra'
