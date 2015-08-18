@@ -1,6 +1,11 @@
 API
 ===
 
+.. _connection api:
+
+Connection API
+~~~~~~~~~~~~~~
+
 You can use testinfra outside of pytest or you can dynamically get a
 connection and call fonction from modules::
 
