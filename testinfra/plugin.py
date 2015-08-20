@@ -45,7 +45,7 @@ def _testinfra_backend(request, pytestconfig, _testinfra_host):
 
 
 @pytest.fixture(scope="module")
-def LocalCommand():
+def LocalCommand(_testinfra_backend):
     return testinfra.get_backend("local://").get_module("Command")
 
 
