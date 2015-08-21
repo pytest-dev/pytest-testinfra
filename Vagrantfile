@@ -12,7 +12,9 @@ Vagrant.configure("2") do |config|
         docker.build_dir = "images/#{vmname}"
         docker.has_ssh = true
         docker.name = vmname
-        if ['debian_jessie', 'centos_7', 'fedora_21'].include? vmname
+        if ENV['TRAVIS'] or ['debian_jessie', 'centos_7', 'fedora_21'].include? vmname
+          # Travis require privileged to run exec on containers...
+          # Systemd require privileged
           docker.create_args = ["-h", vmname, "--privileged"]
         else
           docker.create_args = ["-h", vmname]
