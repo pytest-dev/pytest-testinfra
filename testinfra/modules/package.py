@@ -101,7 +101,7 @@ class RpmPackage(Package):
 
     @property
     def is_installed(self):
-        return self.run_test("rpm -q %s", self.name)
+        return self.run_test("rpm -q %s", self.name).rc == 0
 
     @property
     def version(self):
