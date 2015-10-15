@@ -32,7 +32,7 @@ Write your first tests file to `test_myinfra.py`::
         assert passwd.contains("root")
         assert passwd.user == "root"
         assert passwd.group == "root"
-        assert passwd.mode == 644
+        assert passwd.mode == 0o644
 
 
     def test_nginx_is_installed(Package):

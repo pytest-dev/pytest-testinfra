@@ -12,8 +12,8 @@ connection and call fonction from modules::
     >>> import testinfra
     >>> conn = testinfra.get_backend("paramiko://root@server:2222", sudo=True)
     >>> File = conn.get_module("File")
-    >>> File("/etc/shadow").mode
-    640
+    >>> File("/etc/shadow").mode == 0o640
+    True
 
 Same applies to all :ref:`modules`.
 
