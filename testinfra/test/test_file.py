@@ -34,7 +34,7 @@ def test_file(remote_tempdir, Command, SystemInfo, File):
     assert f.uid == uid
     assert f.gid == gid
     assert f.group == group
-    assert f.mode == 600
+    assert f.mode == 0o600
     assert f.contains("fo")
     assert not f.is_directory
     assert not f.is_symlink
