@@ -123,4 +123,13 @@ Sysctl
 .. autoclass:: testinfra.modules.Sysctl(name)
    :members:
 
+
+Port
+~~~~
+
+.. autoclass:: testinfra.modules.Port(address, port)
+   :members:
+   :undoc-members:
+   :exclude-members: get_module
+
 .. _pytest fixtures: https://pytest.org/latest/fixture.html
