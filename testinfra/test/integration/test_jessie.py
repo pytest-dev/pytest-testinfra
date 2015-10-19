@@ -84,3 +84,30 @@ def test_encoding(_testinfra_host, Command):
             "ls: impossible d'accéder à /é: "
             "Aucun fichier ou dossier de ce type\n"
         )
+
+
+def test_socket(_testinfra_host, Socket):
+    listening = Socket.get_listening_sockets()
+    for spec in (
+        "tcp://0.0.0.0:22",
+        "tcp://:::22",
+        "unix:///run/systemd/private",
+    ):
+        assert spec in listening
+    for spec in (
+        "tcp://22",
+        "tcp://0.0.0.0:22",
+        "tcp://127.0.0.1:22",
+        "tcp://:::22",
+        "tcp://::1:22",
+    ):
+        socket = Socket(spec)
+        assert socket.is_listening
+
+    if not _testinfra_host.startswith("docker://"):
+        for spec in (
+            "tcp://22",
+            "tcp://0.0.0.0:22",
+        ):
+            assert len(Socket(spec).clients) >= 1
+    assert not Socket("tcp://4242").is_listening
