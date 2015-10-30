@@ -27,7 +27,7 @@ BACKENDS = dict((name, klass) for name, klass in (
     ("local", local.LocalBackend),
     ("ssh", ssh.SshBackend),
     ("safe-ssh", ssh.SafeSshBackend),
-    ("paramiko", paramiko.ParamikoBakend),
+    ("paramiko", paramiko.ParamikoBackend),
     ("salt", salt.SaltBackend),
     ("docker", docker.DockerBackend),
 ))
