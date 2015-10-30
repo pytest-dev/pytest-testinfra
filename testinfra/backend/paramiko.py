@@ -28,6 +28,11 @@ except ImportError:
 else:
     HAS_PARAMIKO = True
 
+    class IgnorePolicy (paramiko.MissingHostKeyPolicy):
+        """Policy for ignoring missing host key."""
+        def missing_host_key(self, client, hostname, key):
+            pass
+
 logger = logging.getLogger("testinfra.backend")
 
 
@@ -68,6 +73,8 @@ class ParamikoBakend(base.BaseBackend):
                         cfg[key] = int(value)
                     elif key == "identityfile":
                         cfg["key_filename"] = os.path.expanduser(value[0])
+                    elif key == "stricthostkeychecking" and value == "no":
+                        client.set_missing_host_key_policy(IgnorePolicy())
 
             client.connect(**cfg)
             self._client = client
