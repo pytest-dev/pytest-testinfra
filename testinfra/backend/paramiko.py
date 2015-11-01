@@ -40,6 +40,12 @@ class ParamikoBackend(base.BaseBackend):
 
     def __init__(self, hostspec, ssh_config=None, sudo=False, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
+        user_pass=self.user.split(":")
+        if len(user_pass) == 2:
+          self.user=user_pass[0]
+          self.password=user_pass[1]
+        else:
+          self.password=Non
         self.ssh_config = ssh_config
         self.sudo = sudo
         self._client = None
