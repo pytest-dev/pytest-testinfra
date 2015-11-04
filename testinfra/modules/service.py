@@ -78,18 +78,13 @@ class LinuxService(Service):
 
     @property
     def is_enabled(self):
-        return self.is_enabled_with_level(3)
-
-    def is_enabled_with_level(self, level):
-        # sysv
-        if self.run_test(
-            "ls /etc/rc%s.d | grep -q 'S..%s'",
-            str(level), self.name
-        ).rc == 0:
+        # SysV
+        if self.check_output("find /etc/rc?.d -name %s", "S??" + self.name):
             return True
-        # systemd
+        # Upstart
         elif self.run(
-            "grep -q 'start on' /etc/init/%s.conf", self.name
+            "grep -q 'start on' /etc/init/%s.conf",
+            self.name,
         ).rc == 0:
             return True
         else:
