@@ -38,7 +38,7 @@ def test_ssh_package(Package):
 def test_ssh_service(Service):
     ssh = Service("ssh")
     assert ssh.is_running
-    assert ssh.is_enabled
+    assert not ssh.is_enabled
 
 
 def test_systeminfo(SystemInfo):

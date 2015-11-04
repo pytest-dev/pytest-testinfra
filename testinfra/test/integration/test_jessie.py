@@ -30,16 +30,20 @@ def test_ssh_package(Package):
     assert ssh.version == "1:6.7p1-5"
 
 
-def test_ssh_service(Service):
-    ssh = Service("ssh")
-    assert ssh.is_running
-    assert ssh.is_enabled
+@pytest.mark.parametrize("name,running,enabled", [
+    ("ssh", True, True),
+    ("ntp", False, True),
+    ("salt-minion", False, False),
+])
+def test_service(Command, Service, name, running, enabled):
 
+    if name == "ntp":
+        # Systemd say no but sysv say yes
+        assert Command("systemctl is-enabled ntp").rc == 1
 
-def test_service_sysv_legacy(Command, Service):
-    # Systemd say no but sysv say yes
-    assert Command("systemctl is-enabled ntp").rc == 1
-    assert Service("ntp").is_enabled
+    service = Service(name)
+    assert service.is_running == running
+    assert service.is_enabled == enabled
 
 
 def test_systeminfo(SystemInfo):

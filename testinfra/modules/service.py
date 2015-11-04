@@ -41,16 +41,8 @@ class Service(Module):
     @classmethod
     def get_module(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
-        Command = _backend.get_module("Command")
-        File = _backend.get_module("File")
         if SystemInfo.type == "linux":
-            if (
-                Command.run_test("which systemctl").rc == 0
-                and "systemd" in File("/sbin/init").linked_to
-            ):
-                return SystemdService(_backend, None)
-            else:
-                return LinuxService(_backend, None)
+            return LinuxService(_backend, None)
         elif SystemInfo.type == "freebsd":
             return FreeBSDService(_backend, None)
         elif SystemInfo.type == "openbsd":
@@ -65,50 +57,69 @@ class Service(Module):
 
 
 class LinuxService(Service):
+    SYSTEMD, UPSTART, SYSV = range(3)
+
+    def __init__(self, backend, name):
+        self._service_backend = None
+        super(LinuxService, self).__init__(backend, name)
+
+    @property
+    def service_backend(self):
+        File = self._backend.get_module("File")
+        if self._service_backend is None:
+            if (
+                self.run_test("which systemctl").rc == 0
+                and "systemd" in File("/sbin/init").linked_to
+            ):
+                self._service_backend = self.SYSTEMD
+            elif self.run_test("which initctl").rc == 0:
+                self._service_backend = self.UPSTART
+            else:
+                self._service_backend = self.SYSV
+        return self._service_backend
 
     @property
     def is_running(self):
-        # based on /lib/lsb/init-functions
-        # 0: program running
-        # 1: program is dead and pid file exists
-        # 3: not running and pid file does not exists
-        # 4: Unable to determine status
-        return self.run_expect(
-            [0, 1, 3], "service %s status", self.name).rc == 0
+        if self.service_backend == self.SYSTEMD:
+            return self.run_expect(
+                [0, 3], "systemctl is-active %s", self.name).rc == 0
+        else:
+            # based on /lib/lsb/init-functions
+            # 0: program running
+            # 1: program is dead and pid file exists
+            # 3: not running and pid file does not exists
+            # 4: Unable to determine status
+            return self.run_expect(
+                [0, 1, 3], "service %s status", self.name).rc == 0
 
     @property
     def is_enabled(self):
+        if self.service_backend == self.SYSTEMD:
+            cmd = self.run_test("systemctl is-enabled %s", self.name)
+            if cmd.rc == 0:
+                return True
+            elif cmd.stdout.strip() == "disabled":
+                return False
+        elif self.service_backend == self.UPSTART:
+            if self.run(
+                "grep -q '^start on' /etc/init/%s.conf",
+                self.name,
+            ).rc == 0 and self.run(
+                "grep -q '^manual' /etc/init/%s.override",
+                self.name,
+            ).rc != 0:
+                return True
+
         # SysV
-        if self.check_output("find /etc/rc?.d -name %s", "S??" + self.name):
+        # Fallback for both systemd and upstart while distro mix them with sysv
+        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
+        if self.check_output(
+            "find /etc/rc?.d -name %s",
+            "S??" + self.name,
+        ):
             return True
-        # Upstart
-        elif self.run(
-            "grep -q 'start on' /etc/init/%s.conf",
-            self.name,
-        ).rc == 0:
-            return True
-        else:
-            return False
 
-
-class SystemdService(LinuxService):
-
-    @property
-    def is_running(self):
-        return self.run_expect(
-            [0, 3], "systemctl is-active %s", self.name).rc == 0
-
-    @property
-    def is_enabled(self):
-        rc = self.run_test("systemctl is-enabled %s", self.name).rc
-        if rc == 0:
-            return True
-        else:
-            # On Debian services without systemd config file are not regonized
-            # by systemd.
-            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
-            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=705254
-            return super(SystemdService, self).is_enabled
+        return False
 
 
 class FreeBSDService(Service):
