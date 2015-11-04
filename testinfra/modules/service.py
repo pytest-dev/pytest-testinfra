@@ -91,7 +91,7 @@ class LinuxService(Service):
             return False
 
 
-class SystemdService(Service):
+class SystemdService(LinuxService):
 
     @property
     def is_running(self):
@@ -100,7 +100,15 @@ class SystemdService(Service):
 
     @property
     def is_enabled(self):
-        return self.run_test("systemctl is-enabled %s", self.name).rc == 0
+        rc = self.run_test("systemctl is-enabled %s", self.name).rc
+        if rc == 0:
+            return True
+        else:
+            # On Debian services without systemd config file are not regonized
+            # by systemd.
+            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
+            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=705254
+            return super(SystemdService, self).is_enabled
 
 
 class FreeBSDService(Service):

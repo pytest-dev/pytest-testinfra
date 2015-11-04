@@ -36,6 +36,12 @@ def test_ssh_service(Service):
     assert ssh.is_enabled
 
 
+def test_service_sysv_legacy(Command, Service):
+    # Systemd say no but sysv say yes
+    assert Command("systemctl is-enabled ntp").rc == 1
+    assert Service("ntp").is_enabled
+
+
 def test_systeminfo(SystemInfo):
     assert SystemInfo.type == "linux"
     assert SystemInfo.release[:2] == "8."
