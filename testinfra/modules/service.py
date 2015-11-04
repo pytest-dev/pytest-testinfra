@@ -41,8 +41,18 @@ class Service(Module):
     @classmethod
     def get_module(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
+        File = _backend.get_module("File")
+        Command = _backend.get_module("Command")
         if SystemInfo.type == "linux":
-            return LinuxService(_backend, None)
+            if (
+                Command.run_test("which systemctl").rc == 0
+                and "systemd" in File("/sbin/init").linked_to
+            ):
+                return SystemdService(_backend, None)
+            elif Command.run_test("which initctl").rc == 0:
+                return UpstartService(_backend, None)
+            else:
+                return SysvService(_backend, None)
         elif SystemInfo.type == "freebsd":
             return FreeBSDService(_backend, None)
         elif SystemInfo.type == "openbsd":
@@ -56,70 +66,61 @@ class Service(Module):
         return "<service %s>" % (self.name,)
 
 
-class LinuxService(Service):
-    SYSTEMD, UPSTART, SYSV = range(3)
-
-    def __init__(self, backend, name):
-        self._service_backend = None
-        super(LinuxService, self).__init__(backend, name)
-
-    @property
-    def service_backend(self):
-        File = self._backend.get_module("File")
-        if self._service_backend is None:
-            if (
-                self.run_test("which systemctl").rc == 0
-                and "systemd" in File("/sbin/init").linked_to
-            ):
-                self._service_backend = self.SYSTEMD
-            elif self.run_test("which initctl").rc == 0:
-                self._service_backend = self.UPSTART
-            else:
-                self._service_backend = self.SYSV
-        return self._service_backend
+class SysvService(Service):
 
     @property
     def is_running(self):
-        if self.service_backend == self.SYSTEMD:
-            return self.run_expect(
-                [0, 3], "systemctl is-active %s", self.name).rc == 0
-        else:
-            # based on /lib/lsb/init-functions
-            # 0: program running
-            # 1: program is dead and pid file exists
-            # 3: not running and pid file does not exists
-            # 4: Unable to determine status
-            return self.run_expect(
-                [0, 1, 3], "service %s status", self.name).rc == 0
+        # based on /lib/lsb/init-functions
+        # 0: program running
+        # 1: program is dead and pid file exists
+        # 3: not running and pid file does not exists
+        # 4: Unable to determine status
+        return self.run_expect(
+            [0, 1, 3], "service %s status", self.name).rc == 0
 
     @property
     def is_enabled(self):
-        if self.service_backend == self.SYSTEMD:
-            cmd = self.run_test("systemctl is-enabled %s", self.name)
-            if cmd.rc == 0:
-                return True
-            elif cmd.stdout.strip() == "disabled":
-                return False
-        elif self.service_backend == self.UPSTART:
-            if self.run(
-                "grep -q '^start on' /etc/init/%s.conf",
-                self.name,
-            ).rc == 0 and self.run(
-                "grep -q '^manual' /etc/init/%s.override",
-                self.name,
-            ).rc != 0:
-                return True
-
-        # SysV
-        # Fallback for both systemd and upstart while distro mix them with sysv
-        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
-        if self.check_output(
+        return bool(self.check_output(
             "find /etc/rc?.d -name %s",
             "S??" + self.name,
-        ):
-            return True
+        ))
 
-        return False
+
+class SystemdService(SysvService):
+
+    @property
+    def is_running(self):
+        return self.run_expect(
+            [0, 3], "systemctl is-active %s", self.name).rc == 0
+
+    @property
+    def is_enabled(self):
+        cmd = self.run_test("systemctl is-enabled %s", self.name)
+        if cmd.rc == 0:
+            return True
+        elif cmd.stdout.strip() == "disabled":
+            return False
+        else:
+            # Fallback on SysV
+            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
+            return super(SystemdService, self).is_enabled
+
+
+class UpstartService(SysvService):
+
+    @property
+    def is_enabled(self):
+        if self.run(
+            "grep -q '^start on' /etc/init/%s.conf",
+            self.name,
+        ).rc == 0 and self.run(
+            "grep -q '^manual' /etc/init/%s.override",
+            self.name,
+        ).rc != 0:
+            return True
+        else:
+            # Fallback on SysV
+            return super(UpstartService, self).is_enabled
 
 
 class FreeBSDService(Service):
