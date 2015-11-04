@@ -1,6 +1,38 @@
 Examples
 ========
 
+Parametrize your tests
+~~~~~~~~~~~~~~~~~~~~~~
+
+Pytest support `test parametrization <https://pytest.org/latest/parametrize.html>`_::
+
+    # BAD: If the test fails on nginx, python is not tested
+    def test_packages(Package):
+        for name, version in (
+            ("nginx", "1.6"),
+            ("python", "2.7"),
+        ):
+            assert Package(name).is_installed
+            assert Package(name).version.startswith(version)
+
+
+    # GOOD: Each package is tested
+    # $ testinfra -v test.py
+    # [...]
+    # test.py::test_package[local-nginx-1.6] PASSED
+    # test.py::test_package[local-python-2.7] PASSED
+    # [...]
+    import pytest
+
+    @pytest.mark.parametrize("name,version", [
+        ("nginx", "1.6"),
+        ("python", "2.7"),
+    ])
+    def test_packages(Package, name, version):
+        assert Package(name).is_installed
+        assert Package(name).version.startswith(version)
+
+
 .. _make modules:
 
 Make your own modules
