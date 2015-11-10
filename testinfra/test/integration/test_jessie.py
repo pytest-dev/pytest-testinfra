@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals
 
+import sys
+
 import pytest
 
 pytestmark = pytest.mark.integration
@@ -22,6 +24,9 @@ testinfra_hosts = [
     "%s://debian_jessie" % (b_type,)
     for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
 ]
+
+if sys.version_info[0] == 2:
+    testinfra_hosts.append("ansible://debian_jessie")
 
 
 def test_ssh_package(Package):
@@ -76,6 +81,9 @@ def test_sysctl(Sysctl):
 
 
 def test_encoding(testinfra_backend, Command):
+    if testinfra_backend.get_connection_type() == "ansible":
+        pytest.skip("ansible handle encoding himself")
+
     # jessie image is fr_FR@ISO-8859-15
     cmd = Command("ls -l %s", "/é")
     assert cmd.command == b"ls -l '/\xe9'"
@@ -121,3 +129,31 @@ def test_socket(testinfra_backend, Socket):
         ):
             assert len(Socket(spec).clients) >= 1
     assert not Socket("tcp://4242").is_listening
+
+
+def test_ansible_module(testinfra_backend, Ansible):
+    if not testinfra_backend.get_connection_type() == "ansible":
+        with pytest.raises(RuntimeError) as excinfo:
+            setup = Ansible("setup")
+        assert (
+            'Ansible module is only available with ansible '
+            'connection backend') in str(excinfo.value)
+    else:
+        setup = Ansible("setup")["ansible_facts"]
+        assert setup["ansible_lsb"]["codename"] == "jessie"
+        assert Ansible("file", "path=/etc/passwd") == {
+            'changed': False,
+            'gid': 0,
+            'group': 'root',
+            'invocation': {
+                'module_args': 'path=/etc/passwd',
+                'module_complex_args': {},
+                'module_name': 'file'
+            },
+            'mode': '0644',
+            'owner': 'root',
+            'path': '/etc/passwd',
+            'size': 1369,
+            'state': 'file',
+            'uid': 0,
+        }

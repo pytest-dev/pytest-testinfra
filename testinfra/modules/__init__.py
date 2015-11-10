@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals
 
+from testinfra.modules.ansible import Ansible
 from testinfra.modules.command import Command
 from testinfra.modules.file import File
 from testinfra.modules.group import Group
@@ -33,5 +34,5 @@ from testinfra.modules.user import User
 __all__ = [
     "Command", "File", "Package", "Group", "Interface",
     "Service", "SystemInfo", "User", "Salt", "PuppetResource",
-    "Facter", "Sysctl", "Socket",
+    "Facter", "Sysctl", "Socket", "Ansible",
 ]

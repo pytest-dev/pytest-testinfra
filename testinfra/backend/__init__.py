@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 
 from six.moves import urllib
 
+from testinfra.backend import ansible
 from testinfra.backend import docker
 from testinfra.backend import local
 from testinfra.backend import paramiko
@@ -30,6 +31,7 @@ BACKENDS = dict((klass.get_connection_type(), klass) for klass in (
     paramiko.ParamikoBackend,
     salt.SaltBackend,
     docker.DockerBackend,
+    ansible.AnsibleBackend,
 ))
 
 
@@ -49,8 +51,11 @@ def parse_hostspec(hostspec):
         query = urllib.parse.parse_qs(url.query)
         if query.get("sudo", ["false"])[0].lower() == "true":
             kw["sudo"] = True
-        if "ssh_config" in query:
-            kw["ssh_config"] = query.get("ssh_config")[0]
+        for key in (
+            "ssh_config", "ansible_inventory",
+        ):
+            if key in query:
+                kw[key] = query.get(key)[0]
     else:
         host = hostspec
     return host, kw

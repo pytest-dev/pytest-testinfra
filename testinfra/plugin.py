@@ -33,6 +33,7 @@ PuppetResource = modules.PuppetResource.as_fixture()
 Facter = modules.Facter.as_fixture()
 Sysctl = modules.Sysctl.as_fixture()
 Socket = modules.Socket.as_fixture()
+Ansible = modules.Ansible.as_fixture()
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +47,10 @@ def pytest_addoption(parser):
         "--connection",
         action="store",
         dest="connection",
-        help="Remote connection backend paramiko|ssh|safe-ssh|salt|docker",
+        help=(
+            "Remote connection backend (paramiko, ssh, safe-ssh, "
+            "salt, docker, ansible)"
+        )
     )
     group._addoption(
         "--hosts",
@@ -65,6 +69,12 @@ def pytest_addoption(parser):
         action="store_true",
         dest="sudo",
         help="Use sudo",
+    )
+    group._addoption(
+        "--ansible-inventory",
+        action="store",
+        dest="ansible_inventory",
+        help="Ansible inventory file",
     )
     group._addoption(
         "--nagios",
@@ -87,6 +97,7 @@ def pytest_generate_tests(metafunc):
             connection=metafunc.config.option.connection,
             ssh_config=metafunc.config.option.ssh_config,
             sudo=metafunc.config.option.sudo,
+            ansible_inventory=metafunc.config.option.ansible_inventory,
         )
         ids = [e.get_pytest_id() for e in params]
         metafunc.parametrize(

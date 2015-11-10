@@ -57,3 +57,19 @@ The salt backend use the `salt python client API
     $ testinfra --connection=salt --hosts=minion1,minion2
 
 Testinfra will use the salt connection channel to run commands.
+
+
+.. _ansible connection backend:
+
+ansible
+~~~~~~~
+
+
+The ansible backend use the `ansible python API
+<https://docs.ansible.com/ansible/developing_api.html>`_::
+
+    $ testinfra --connection=ansible # tests all inventory hosts
+    $ testinfra --connection=ansible --hosts=host1,host2
+    $ testinfra --connection=ansible --hosts='web*'
+
+You can use an alternative `inventory` with the ``--ansible-inventory`` option

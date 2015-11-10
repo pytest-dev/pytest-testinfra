@@ -108,6 +108,11 @@ Salt
 .. autoclass:: testinfra.modules.Salt(function, args=None)
    :members:
 
+Ansible
+~~~~~~~
+
+.. autoclass:: testinfra.modules.Ansible(module_name, module_args=None, check=True)
+
 
 PuppetResource
 ~~~~~~~~~~~~~~

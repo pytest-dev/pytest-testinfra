@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals
 
+import sys
+
 import pytest
 
 pytestmark = pytest.mark.integration
@@ -22,6 +24,9 @@ testinfra_hosts = [
     "%s://fedora_21" % (b_type,)
     for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
 ]
+
+if sys.version_info[0] == 2:
+    testinfra_hosts.append("ansible://fedora_21")
 
 
 def test_ssh_package(Package):

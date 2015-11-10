@@ -28,12 +28,13 @@ class CommandResult(object):
 
     def __init__(
         self, backend, exit_status, stdout_bytes, stderr_bytes, command,
+        stdout=None, stderr=None,
     ):
         self.exit_status = exit_status
         self.stdout_bytes = stdout_bytes
         self.stderr_bytes = stderr_bytes
-        self._stdout = None
-        self._stderr = None
+        self._stdout = stdout
+        self._stderr = stderr
         self.command = command
         self._backend = backend
         super(CommandResult, self).__init__()
@@ -69,6 +70,7 @@ class CommandResult(object):
 class BaseBackend(object):
     NAME = None
     HAS_RUN_SALT = False
+    HAS_RUN_ANSIBLE = False
 
     def __init__(self, hostname, *args, **kwargs):
         for arg in args:
