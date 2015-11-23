@@ -23,10 +23,14 @@ logger = logging.getLogger("testinfra.backend")
 
 
 class LocalBackend(base.BaseBackend):
+    NAME = "local"
 
-    def __init__(self, sudo=False, **kwargs):
-        self.sudo = sudo
-        super(LocalBackend, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        self.sudo = kwargs.pop("sudo", False)
+        super(LocalBackend, self).__init__("local", **kwargs)
+
+    def get_pytest_id(self):
+        return "local"
 
     def run_local(self, command, *args):
         command = self.quote(command, *args)

@@ -17,40 +17,77 @@ from __future__ import unicode_literals
 
 from six.moves import urllib
 
+from testinfra.backend import ansible
 from testinfra.backend import docker
 from testinfra.backend import local
 from testinfra.backend import paramiko
 from testinfra.backend import salt
 from testinfra.backend import ssh
 
-BACKENDS = dict((name, klass) for name, klass in (
-    ("local", local.LocalBackend),
-    ("ssh", ssh.SshBackend),
-    ("safe-ssh", ssh.SafeSshBackend),
-    ("paramiko", paramiko.ParamikoBackend),
-    ("salt", salt.SaltBackend),
-    ("docker", docker.DockerBackend),
+BACKENDS = dict((klass.get_connection_type(), klass) for klass in (
+    local.LocalBackend,
+    ssh.SshBackend,
+    ssh.SafeSshBackend,
+    paramiko.ParamikoBackend,
+    salt.SaltBackend,
+    docker.DockerBackend,
+    ansible.AnsibleBackend,
 ))
 
 
-def get_backend(hostspec, connection="paramiko://", **kwargs):
-    kw = kwargs.copy()
-    if "://" in hostspec:
+def get_backend_class(connection):
+    try:
+        return BACKENDS[connection]
+    except KeyError:
+        raise RuntimeError("Unknown connection type '%s'" % (connection,))
+
+
+def parse_hostspec(hostspec):
+    kw = {}
+    if hostspec is not None and "://" in hostspec:
         url = urllib.parse.urlparse(hostspec)
-        connection = url.scheme
+        kw["connection"] = url.scheme
         host = url.netloc
         query = urllib.parse.parse_qs(url.query)
         if query.get("sudo", ["false"])[0].lower() == "true":
             kw["sudo"] = True
-        if "ssh_config" in query:
-            kw["ssh_config"] = query.get("ssh_config")[0]
+        for key in (
+            "ssh_config", "ansible_inventory",
+        ):
+            if key in query:
+                kw[key] = query.get(key)[0]
     else:
         host = hostspec
-    try:
-        klass = BACKENDS[connection]
-    except KeyError:
-        raise RuntimeError("Unknown connection type '%s'" % (connection,))
-    if connection == "local":
+    return host, kw
+
+
+def get_backend(hostspec, **kwargs):
+    host, kw = parse_hostspec(hostspec)
+    for k, v in kwargs.items():
+        kw.setdefault(k, v)
+    kw.setdefault("connection", "paramiko")
+    klass = get_backend_class(kw["connection"])
+    if kw["connection"] == "local":
         return klass(**kw)
     else:
         return klass(host, **kw)
+
+
+def get_backends(hosts, **kwargs):
+    backends = []
+    for hostspec in hosts:
+        host, kw = parse_hostspec(hostspec)
+        for k, v in kwargs.items():
+            kw.setdefault(k, v)
+        connection = kw.get("connection")
+        if host is None and connection is None:
+            connection = "local"
+        elif host is not None and connection is None:
+            connection = "paramiko"
+        klass = get_backend_class(connection)
+        for name in klass.get_hosts(host, **kw):
+            if connection == "local":
+                backends.append(klass(**kw))
+            else:
+                backends.append(klass(name, **kw))
+    return backends

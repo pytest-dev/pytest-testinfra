@@ -16,6 +16,7 @@
 from __future__ import unicode_literals
 
 import itertools
+import sys
 
 import pytest
 
@@ -27,6 +28,11 @@ testinfra_hosts = [
         ["true", "false"],
     )
 ]
+
+if sys.version_info == 2:
+    testinfra_hosts.append(
+        "ansible://ubuntu_trusty?sudo=%s" % (sudo,)
+        for sudo in ["true", "false"])
 
 
 def test_ssh_package(Package):
