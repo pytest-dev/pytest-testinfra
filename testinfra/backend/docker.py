@@ -20,6 +20,7 @@ from testinfra.backend import local
 
 
 class DockerBackend(local.LocalBackend):
+    NAME = "docker"
 
     def __init__(self, name, *args, **kwargs):
         if "@" in name:
@@ -27,7 +28,7 @@ class DockerBackend(local.LocalBackend):
         else:
             self.name = name
             self.user = None
-        super(DockerBackend, self).__init__(*args, **kwargs)
+        super(DockerBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         if self.sudo:

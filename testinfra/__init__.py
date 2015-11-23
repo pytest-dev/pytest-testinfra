@@ -17,10 +17,11 @@ from __future__ import unicode_literals
 
 from testinfra import backend
 
-__all__ = ["get_backend"]
+__all__ = ["get_backend", "get_backends"]
 
 
 _BACKEND_CACHE = {}
+_BACKENDS_CACHE = {}
 
 
 def get_backend(hostspec, **kwargs):
@@ -29,3 +30,11 @@ def get_backend(hostspec, **kwargs):
     if key not in _BACKEND_CACHE:
         _BACKEND_CACHE[key] = backend.get_backend(hostspec, **kwargs)
     return _BACKEND_CACHE[key]
+
+
+def get_backends(hosts, **kwargs):
+    global _BACKENDS_CACHE
+    key = (frozenset(hosts), frozenset(kwargs.items()))
+    if key not in _BACKENDS_CACHE:
+        _BACKENDS_CACHE[key] = backend.get_backends(hosts, **kwargs)
+    return _BACKENDS_CACHE[key]

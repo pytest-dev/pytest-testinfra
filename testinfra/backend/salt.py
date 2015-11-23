@@ -28,12 +28,13 @@ else:
 
 class SaltBackend(base.BaseBackend):
     HAS_RUN_SALT = True
+    NAME = "salt"
 
     def __init__(self, host, sudo=False, *args, **kwargs):
         self.host = host
         self._client = None
         self.sudo = sudo
-        super(SaltBackend, self).__init__(*args, **kwargs)
+        super(SaltBackend, self).__init__(self.host, *args, **kwargs)
 
     @property
     def client(self):

@@ -75,11 +75,11 @@ def test_sysctl(Sysctl):
     assert isinstance(Sysctl("kernel.panic"), int)
 
 
-def test_encoding(_testinfra_host, Command):
+def test_encoding(testinfra_backend, Command):
     # jessie image is fr_FR@ISO-8859-15
     cmd = Command("ls -l %s", "/é")
     assert cmd.command == b"ls -l '/\xe9'"
-    if _testinfra_host.startswith("docker://"):
+    if testinfra_backend.get_connection_type() == "docker":
         # docker bug ?
         assert cmd.stderr_bytes == (
             b"ls: impossible d'acc\xe9der \xe0 /\xef\xbf\xbd: "
@@ -96,7 +96,7 @@ def test_encoding(_testinfra_host, Command):
         )
 
 
-def test_socket(_testinfra_host, Socket):
+def test_socket(testinfra_backend, Socket):
     listening = Socket.get_listening_sockets()
     for spec in (
         "tcp://0.0.0.0:22",
@@ -114,7 +114,7 @@ def test_socket(_testinfra_host, Socket):
         socket = Socket(spec)
         assert socket.is_listening
 
-    if not _testinfra_host.startswith("docker://"):
+    if not testinfra_backend.get_connection_type() == "docker":
         for spec in (
             "tcp://22",
             "tcp://0.0.0.0:22",

@@ -36,17 +36,7 @@ Socket = modules.Socket.as_fixture()
 
 
 @pytest.fixture(scope="module")
-def _testinfra_backend(request, pytestconfig, _testinfra_host):
-    kwargs = {"connection": pytestconfig.option.connection or "paramiko"}
-    if pytestconfig.option.ssh_config is not None:
-        kwargs["ssh_config"] = pytestconfig.option.ssh_config
-    if pytestconfig.option.sudo is not None:
-        kwargs["sudo"] = pytestconfig.option.sudo
-    return testinfra.get_backend(_testinfra_host, **kwargs)
-
-
-@pytest.fixture(scope="module")
-def LocalCommand(_testinfra_backend):
+def LocalCommand(testinfra_backend):
     return testinfra.get_backend("local://").get_module("Command")
 
 
@@ -85,15 +75,19 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    if "_testinfra_host" in metafunc.fixturenames:
+    if "testinfra_backend" in metafunc.fixturenames:
         if metafunc.config.option.hosts is not None:
-            params = metafunc.config.option.hosts.split(",")
-            ids = params
+            hosts = metafunc.config.option.hosts.split(",")
         elif hasattr(metafunc.module, "testinfra_hosts"):
-            params = metafunc.module.testinfra_hosts
-            ids = params
+            hosts = metafunc.module.testinfra_hosts
         else:
-            params = ["local://"]
-            ids = ["local"]
+            hosts = [None]
+        params = testinfra.get_backends(
+            hosts,
+            connection=metafunc.config.option.connection,
+            ssh_config=metafunc.config.option.ssh_config,
+            sudo=metafunc.config.option.sudo,
+        )
+        ids = [e.get_pytest_id() for e in params]
         metafunc.parametrize(
-            "_testinfra_host", params, ids=ids, scope="module")
+            "testinfra_backend", params, ids=ids, scope="module")

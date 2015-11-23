@@ -37,13 +37,14 @@ logger = logging.getLogger("testinfra.backend")
 
 
 class ParamikoBackend(base.BaseBackend):
+    NAME = "paramiko"
 
     def __init__(self, hostspec, ssh_config=None, sudo=False, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
         self.sudo = sudo
         self._client = None
-        super(ParamikoBackend, self).__init__(*args, **kwargs)
+        super(ParamikoBackend, self).__init__(self.host, *args, **kwargs)
 
     @property
     def client(self):

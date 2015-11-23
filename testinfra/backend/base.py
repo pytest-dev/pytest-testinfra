@@ -67,16 +67,32 @@ class CommandResult(object):
 
 
 class BaseBackend(object):
+    NAME = None
     HAS_RUN_SALT = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, hostname, *args, **kwargs):
         for arg in args:
             logger.warning("Ignored argument: %s", arg)
         for key, value in kwargs.items():
             logger.warning("Ignored argument: %s = %s", key, value)
         self._encoding = None
         self._module_cache = {}
+        self.hostname = hostname
         super(BaseBackend, self).__init__()
+
+    @classmethod
+    def get_connection_type(cls):
+        return cls.NAME
+
+    def get_hostname(self):
+        return self.hostname
+
+    def get_pytest_id(self):
+        return self.get_connection_type() + "://" + self.get_hostname()
+
+    @staticmethod
+    def get_hosts(host, **kwargs):
+        return [host]
 
     def quote(self, command, *args):
         if args:
