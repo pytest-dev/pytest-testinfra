@@ -32,11 +32,10 @@ class AnsibleBackend(base.BaseBackend):
     HAS_RUN_ANSIBLE = True
 
     def __init__(
-        self, host, sudo=False, ansible_inventory=None,
+        self, host, ansible_inventory=None,
         *args, **kwargs
     ):
         self.host = host
-        self.sudo = sudo
         self.ansible_inventory = ansible_inventory
         super(AnsibleBackend, self).__init__(host, *args, **kwargs)
 
@@ -48,9 +47,7 @@ class AnsibleBackend(base.BaseBackend):
 
     def run(self, command, *args):
         self._check_ansible()
-        if self.sudo:
-            command = "sudo " + command
-        command = self.quote(command, *args)
+        command = self.get_command(command, *args)
         kwargs = {}
         if self.ansible_inventory is not None:
             kwargs["host_list"] = self.ansible_inventory

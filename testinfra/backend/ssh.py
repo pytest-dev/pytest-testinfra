@@ -18,10 +18,9 @@ from __future__ import unicode_literals
 import base64
 
 from testinfra.backend import base
-from testinfra.backend import local
 
 
-class SshBackend(local.LocalBackend):
+class SshBackend(base.BaseBackend):
     """Run command through ssh command"""
     NAME = "ssh"
 
@@ -31,7 +30,9 @@ class SshBackend(local.LocalBackend):
         super(SshBackend, self).__init__(self.host, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
-        command = self.quote(command, *args)
+        return self.run_ssh(self.get_command(command, *args))
+
+    def run_ssh(self, command):
         cmd = ["ssh"]
         cmd_args = []
         if self.ssh_config:
@@ -45,8 +46,8 @@ class SshBackend(local.LocalBackend):
             cmd_args.append(self.port)
         cmd.append("%s %s")
         cmd_args.extend([self.host, command])
-        out = super(SshBackend, self).run(
-            " ".join(cmd), *cmd_args, **kwargs)
+        out = self.run_local(
+            " ".join(cmd), *cmd_args)
         out.command = self.encode(command)
         return out
 
@@ -68,9 +69,9 @@ class SafeSshBackend(SshBackend):
     NAME = "safe-ssh"
 
     def run(self, command, *args, **kwargs):
-        orig_command = self.quote(command, *args)
+        orig_command = self.get_command(command, *args)
 
-        out = super(SafeSshBackend, self).run((
+        out = self.run_ssh((
             '''of=$(mktemp)&&ef=$(mktemp)&&%s >$of 2>$ef; r=$?;'''
             '''echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);'''
             '''TESTINFRA_END";rm -f $of $ef''') % (orig_command,))

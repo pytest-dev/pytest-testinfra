@@ -18,6 +18,7 @@ from __future__ import unicode_literals
 import locale
 import logging
 import pipes
+import subprocess
 
 import testinfra.modules
 
@@ -72,7 +73,7 @@ class BaseBackend(object):
     HAS_RUN_SALT = False
     HAS_RUN_ANSIBLE = False
 
-    def __init__(self, hostname, *args, **kwargs):
+    def __init__(self, hostname, sudo=False, *args, **kwargs):
         for arg in args:
             logger.warning("Ignored argument: %s", arg)
         for key, value in kwargs.items():
@@ -80,6 +81,7 @@ class BaseBackend(object):
         self._encoding = None
         self._module_cache = {}
         self.hostname = hostname
+        self.sudo = sudo
         super(BaseBackend, self).__init__()
 
     @classmethod
@@ -102,6 +104,28 @@ class BaseBackend(object):
         else:
             return command
 
+    def get_command(self, command, *args):
+        if self.sudo:
+            command = "sudo " + command
+        return self.quote(command, *args)
+
+    def run(self, command, *args, **kwargs):
+        raise NotImplementedError
+
+    def run_local(self, command, *args):
+        command = self.quote(command, *args)
+        command = self.encode(command)
+        p = subprocess.Popen(
+            command, shell=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout, stderr = p.communicate()
+        return CommandResult(
+            self, p.returncode, stdout, stderr, command,
+        )
+
     @staticmethod
     def parse_hostspec(hostspec):
         host = hostspec
@@ -112,9 +136,6 @@ class BaseBackend(object):
         if ":" in host:
             host, port = host.split(":", 1)
         return host, user, port
-
-    def run(self, command, *args):
-        raise NotImplementedError
 
     def get_encoding(self):
         cmd = self.run(

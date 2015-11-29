@@ -39,10 +39,9 @@ logger = logging.getLogger("testinfra.backend")
 class ParamikoBackend(base.BaseBackend):
     NAME = "paramiko"
 
-    def __init__(self, hostspec, ssh_config=None, sudo=False, *args, **kwargs):
+    def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
-        self.sudo = sudo
         self._client = None
         super(ParamikoBackend, self).__init__(self.host, *args, **kwargs)
 
@@ -82,9 +81,7 @@ class ParamikoBackend(base.BaseBackend):
         return self._client
 
     def run(self, command, *args, **kwargs):
-        if self.sudo:
-            command = "sudo " + command
-        command = self.quote(command, *args)
+        command = self.get_command(command, *args)
         chan = self.client.get_transport().open_session()
         logger.info("RUN %s", command)
         command = self.encode(command)

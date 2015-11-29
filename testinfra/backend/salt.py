@@ -30,10 +30,9 @@ class SaltBackend(base.BaseBackend):
     HAS_RUN_SALT = True
     NAME = "salt"
 
-    def __init__(self, host, sudo=False, *args, **kwargs):
+    def __init__(self, host, *args, **kwargs):
         self.host = host
         self._client = None
-        self.sudo = sudo
         super(SaltBackend, self).__init__(self.host, *args, **kwargs)
 
     @property
@@ -46,9 +45,7 @@ class SaltBackend(base.BaseBackend):
         return self._client
 
     def run(self, command, *args):
-        if self.sudo:
-            command = "sudo " + command
-        command = self.quote(command, *args)
+        command = self.get_command(command, *args)
         out = self.run_salt("cmd.run_all", [command])
         return base.CommandResult(
             self, out['retcode'], out['stdout'], out['stderr'], command)

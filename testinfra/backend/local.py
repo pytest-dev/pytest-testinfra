@@ -16,7 +16,6 @@
 from __future__ import unicode_literals
 
 import logging
-import subprocess
 from testinfra.backend import base
 
 logger = logging.getLogger("testinfra.backend")
@@ -26,25 +25,10 @@ class LocalBackend(base.BaseBackend):
     NAME = "local"
 
     def __init__(self, *args, **kwargs):
-        self.sudo = kwargs.pop("sudo", False)
         super(LocalBackend, self).__init__("local", **kwargs)
 
     def get_pytest_id(self):
         return "local"
-
-    def run_local(self, command, *args):
-        command = self.quote(command, *args)
-        command = self.encode(command)
-        p = subprocess.Popen(
-            command, shell=True,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        stdout, stderr = p.communicate()
-        return base.CommandResult(
-            self, p.returncode, stdout, stderr, command,
-        )
 
     def run(self, command, *args, **kwargs):
         if self.sudo:

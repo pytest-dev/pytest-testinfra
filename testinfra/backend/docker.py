@@ -16,10 +16,10 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-from testinfra.backend import local
+from testinfra.backend import base
 
 
-class DockerBackend(local.LocalBackend):
+class DockerBackend(base.BaseBackend):
     NAME = "docker"
 
     def __init__(self, name, *args, **kwargs):
@@ -31,9 +31,7 @@ class DockerBackend(local.LocalBackend):
         super(DockerBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
-        if self.sudo:
-            command = "sudo " + command
-        cmd = self.quote(command, *args)
+        cmd = self.get_command(command, *args)
         if self.user is not None:
             out = self.run_local(
                 "docker exec -u %s %s /bin/sh -c %s",
