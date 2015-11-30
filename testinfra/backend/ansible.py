@@ -83,8 +83,8 @@ class AnsibleBackend(base.BaseBackend):
             module_name=module_name,
             **kwargs).run()["contacted"][self.host]
 
-    @staticmethod
-    def get_hosts(host, **kwargs):
+    @classmethod
+    def get_hosts(cls, host, **kwargs):
         AnsibleBackend._check_ansible()
         ansible_inventory = kwargs.get("ansible_inventory")
         if ansible_inventory is not None:

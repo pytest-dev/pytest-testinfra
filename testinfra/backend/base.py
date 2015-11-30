@@ -94,8 +94,13 @@ class BaseBackend(object):
     def get_pytest_id(self):
         return self.get_connection_type() + "://" + self.get_hostname()
 
-    @staticmethod
-    def get_hosts(host, **kwargs):
+    @classmethod
+    def get_hosts(cls, host, **kwargs):
+        if host is None:
+            raise RuntimeError(
+                "One or more hosts is required with the %s backend" % (
+                    cls.get_connection_type(),),
+            )
         return [host]
 
     def quote(self, command, *args):

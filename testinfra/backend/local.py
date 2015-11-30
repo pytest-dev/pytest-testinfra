@@ -30,6 +30,10 @@ class LocalBackend(base.BaseBackend):
     def get_pytest_id(self):
         return "local"
 
+    @classmethod
+    def get_hosts(cls, host, **kwargs):
+        return [host]
+
     def run(self, command, *args, **kwargs):
         if self.sudo:
             command = "sudo " + command
