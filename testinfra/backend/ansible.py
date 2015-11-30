@@ -58,10 +58,16 @@ class AnsibleBackend(base.BaseBackend):
             **kwargs
         ).run()["contacted"][self.host]
 
+        # Ansible return an unicode object but this is bytes ...
+        # A simple test case is:
+        # >>> assert File("/bin/true").content == open("/bin/true").read()
+        stdout_bytes = b"".join(map(chr, map(ord, out['stdout'])))
+        stderr_bytes = b"".join(map(chr, map(ord, out['stderr'])))
+
         return base.CommandResult(
             self, out['rc'],
-            out['stdout'].encode("utf8"),
-            out['stderr'].encode("utf8"),
+            stdout_bytes,
+            stderr_bytes,
             command,
             stdout=out["stdout"], stderr=out["stderr"],
         )
