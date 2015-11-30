@@ -35,12 +35,16 @@ class SaltBackend(base.BaseBackend):
         self._client = None
         super(SaltBackend, self).__init__(self.host, *args, **kwargs)
 
+    @staticmethod
+    def _check_salt():
+        if not HAS_SALT:
+            raise RuntimeError(
+                "You must install salt package to use the salt backend")
+
     @property
     def client(self):
         if self._client is None:
-            if not HAS_SALT:
-                raise RuntimeError(
-                    "You must install salt package to use the salt backend")
+            self._check_salt()
             self._client = salt.client.LocalClient()
         return self._client
 
@@ -57,3 +61,22 @@ class SaltBackend(base.BaseBackend):
                 "Error while running %s(%s): %s. Minion not connected ?" % (
                     func, args, out))
         return out[self.host]
+
+    @classmethod
+    def get_hosts(cls, host, **kwargs):
+        if host is None:
+            host = "*"
+        if any([c in host for c in "@*[?"]):
+            cls._check_salt()
+            client = salt.client.LocalClient()
+            if "@" in host:
+                hosts = client.cmd(
+                    host, "test.true", expr_form="compound").keys()
+            else:
+                hosts = client.cmd(host, "test.true").keys()
+            if not hosts:
+                raise RuntimeError("No host matching '%s'" % (host,))
+            else:
+                return hosts
+        else:
+            return super(SaltBackend, cls).get_hosts(host, **kwargs)

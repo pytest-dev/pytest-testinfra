@@ -54,9 +54,15 @@ salt
 The salt backend use the `salt python client API
 <http://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
 
+    $ testinfra --connection=salt # equivalent to --hosts='*'
     $ testinfra --connection=salt --hosts=minion1,minion2
+    $ testinfra --connection=salt --hosts='web*'
+    $ testinfra --connection=salt --hosts=G@os:Debian
 
 Testinfra will use the salt connection channel to run commands.
+
+Host can be seleted using `glob` or `compound matchers
+<https://docs.saltstack.com/en/latest/topics/targeting/compound.html>`_.
 
 
 .. _ansible connection backend:
