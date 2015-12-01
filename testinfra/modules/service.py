@@ -81,7 +81,7 @@ class SysvService(Service):
     @property
     def is_enabled(self):
         return bool(self.check_output(
-            "find /etc/rc?.d -name %s",
+            "find /etc/rc?.d/ -name %s",
             "S??" + self.name,
         ))
 
