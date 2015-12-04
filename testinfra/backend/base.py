@@ -112,7 +112,7 @@ class BaseBackend(object):
 
     def get_command(self, command, *args):
         if self.sudo:
-            command = "sudo " + command
+            command = self.quote("sudo /bin/sh -c %s", command)
         return self.quote(command, *args)
 
     def run(self, command, *args, **kwargs):
