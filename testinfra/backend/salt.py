@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import print_function
 
 from testinfra.backend import base
 
@@ -51,8 +52,10 @@ class SaltBackend(base.BaseBackend):
     def run(self, command, *args):
         command = self.get_command(command, *args)
         out = self.run_salt("cmd.run_all", [command])
-        return base.CommandResult(
+        result = base.CommandResult(
             self, out['retcode'], out['stdout'], out['stderr'], command)
+        print("RUN", result)
+        return result
 
     def run_salt(self, func, args=None):
         out = self.client.cmd(self.host, func, args or [])

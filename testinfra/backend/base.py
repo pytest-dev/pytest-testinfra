@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import locale
 import logging
@@ -58,13 +59,13 @@ class CommandResult(object):
 
     def __repr__(self):
         return (
-            "CommandResult(exit_status=%s, stdout=%s, "
-            "stderr=%s, command=%s)"
+            "CommandResult(command=%s, exit_status=%s, stdout=%s, "
+            "stderr=%s)"
         ) % (
+            repr(self.command),
             self.exit_status,
             repr(self.stdout_bytes),
             repr(self.stderr_bytes),
-            repr(self.command),
         )
 
 
@@ -127,9 +128,11 @@ class BaseBackend(object):
             stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate()
-        return CommandResult(
+        result = CommandResult(
             self, p.returncode, stdout, stderr, command,
         )
+        print("RUN", result)
+        return result
 
     @staticmethod
     def parse_hostspec(hostspec):

@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import print_function
 
 from testinfra.backend import base
 
@@ -64,13 +65,15 @@ class AnsibleBackend(base.BaseBackend):
         stdout_bytes = b"".join(map(chr, map(ord, out['stdout'])))
         stderr_bytes = b"".join(map(chr, map(ord, out['stderr'])))
 
-        return base.CommandResult(
+        result = base.CommandResult(
             self, out['rc'],
             stdout_bytes,
             stderr_bytes,
             command,
             stdout=out["stdout"], stderr=out["stderr"],
         )
+        print("RUN", result)
+        return result
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
         kwargs = kwargs.copy()

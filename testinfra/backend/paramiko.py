@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import print_function
 
 import logging
 import os
@@ -83,10 +84,11 @@ class ParamikoBackend(base.BaseBackend):
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
         chan = self.client.get_transport().open_session()
-        logger.info("RUN %s", command)
         command = self.encode(command)
         chan.exec_command(command)
         rc = chan.recv_exit_status()
         stdout = b''.join(chan.makefile('rb'))
         stderr = b''.join(chan.makefile_stderr('rb'))
-        return base.CommandResult(self, rc, stdout, stderr, command)
+        result = base.CommandResult(self, rc, stdout, stderr, command)
+        print("RUN", result)
+        return result
