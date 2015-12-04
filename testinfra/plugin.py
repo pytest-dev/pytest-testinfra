@@ -38,6 +38,13 @@ Ansible = modules.Ansible.as_fixture()
 
 @pytest.fixture(scope="module")
 def LocalCommand(testinfra_backend):
+    """Run commands locally
+
+    Same as `Command` but run commands locally with subprocess even
+    when the connection backend is not "local".
+
+    Note: `LocalCommand` does NOT respect ``--sudo`` option
+    """
     return testinfra.get_backend("local://").get_module("Command")
 
 

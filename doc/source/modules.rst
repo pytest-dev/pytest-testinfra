@@ -22,8 +22,8 @@ Command
 LocalCommand
 ~~~~~~~~~~~~
 
-Same as `Command` but run commands locally with subprocess even when the
-connection backend is not "local".
+
+.. autofunction:: testinfra.plugin.LocalCommand(command, *args)
 
 
 File
