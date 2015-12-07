@@ -26,7 +26,7 @@ To run all tests run::
 To run only some selected tests::
 
     # Only tests matching 'ansible' on 4 processes with pytest-xdist
-    tox -- -v -n 5 -k ansible
+    tox -- -v -n 4 -k ansible
 
     # Only jessie tests on python 2.7 and spawn a pdb on error
     tox -e py27 -- -v --pdb testinfra/test/integration/test_jessie.py
