@@ -8,10 +8,7 @@ Pull requests
 =============
 
 Regardless the review by a developer, a pull request will trigger automatic
-tests on these CI servers:
-
-- https://travis-ci.org/philpep/testinfra/
-- https://jenkins.philpep.org/job/testinfra/
+tests on https://travis-ci.org/philpep/testinfra/
 
 You're encouraged to setup a full test environment, to add tests and check if
 all the tests pass *before* submitting your pull request. To run the complete
@@ -25,6 +22,15 @@ To run all tests run::
 
     vagrant up --provider=docker
     tox
+
+To run only some selected tests::
+
+    # Only tests matching 'ansible' on 4 processes with pytest-xdist
+    tox -- -v -n 5 -k ansible
+
+    # Only jessie tests on python 2.7 and spawn a pdb on error
+    tox -e py27 -- -v --pdb testinfra/test/integration/test_jessie.py
+
 
 To speedup the docker images generation during `vagrant up` you can download
 them before running the tests (docker will detect they are the same and use the
