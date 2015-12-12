@@ -1,2 +1,2 @@
-pytest
+pytest==2.8.4
 six
