@@ -25,7 +25,7 @@ class Interface(Module):
         self.name = name
         super(Interface, self).__init__(_backend)
 
-    def __call_(self, name):
+    def __call__(self, name):
         return self.__class__(self._backend, name)
 
     @property
