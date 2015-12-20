@@ -46,4 +46,3 @@ class Process(Module):
             key = attributes[key]
 
         return self._get_column(key).strip()
-
