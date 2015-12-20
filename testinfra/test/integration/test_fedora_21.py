@@ -15,18 +15,18 @@
 
 from __future__ import unicode_literals
 
-import sys
+# import sys
 
-import pytest
+# import pytest
 
-pytestmark = pytest.mark.integration
-testinfra_hosts = [
-    "%s://fedora_21" % (b_type,)
-    for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
-]
+# pytestmark = pytest.mark.integration
+# testinfra_hosts = [
+#     "%s://fedora_21" % (b_type,)
+#     for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
+# ]
 
-if sys.version_info[0] == 2:
-    testinfra_hosts.append("ansible://fedora_21")
+# if sys.version_info[0] == 2:
+#    testinfra_hosts.append("ansible://fedora_21")
 
 
 def test_ssh_package(Package):
@@ -46,3 +46,13 @@ def test_systeminfo(SystemInfo):
     assert SystemInfo.release == "21"
     assert SystemInfo.distribution == "fedora"
     assert SystemInfo.codename is None
+
+
+def test_process(Process):
+    sshd = Process("systemd")
+    assert sshd.name == "systemd"
+    assert sshd.user == "root"
+    assert sshd.pid == "1"
+    assert sshd.group == "root"
+    assert float(sshd.cpu_percent) >= 0
+    assert float(sshd.mem_percent) >= 0

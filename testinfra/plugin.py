@@ -34,6 +34,7 @@ Facter = modules.Facter.as_fixture()
 Sysctl = modules.Sysctl.as_fixture()
 Socket = modules.Socket.as_fixture()
 Ansible = modules.Ansible.as_fixture()
+Process = modules.Process.as_fixture()
 
 
 @pytest.fixture(scope="module")

@@ -72,3 +72,13 @@ def test_current_user(User):
 def test_group(Group):
     assert Group("root").exists
     assert Group("root").gid == 0
+
+
+def test_process(Process):
+    sshd = Process("sshd")
+    assert sshd.name == "sshd"
+    assert sshd.user == "root"
+    assert sshd.pid == "1"
+    assert sshd.group == "root"
+    assert float(sshd.cpu_percent) >= 0
+    assert float(sshd.mem_percent) >= 0
