@@ -49,10 +49,10 @@ def test_systeminfo(SystemInfo):
 
 
 def test_process(Process):
-    sshd = Process("systemd")
-    assert sshd.name == "systemd"
-    assert sshd.user == "root"
-    assert sshd.pid == "1"
-    assert sshd.group == "root"
-    assert float(sshd.cpu_percent) >= 0
-    assert float(sshd.mem_percent) >= 0
+    systemd = Process("systemd")
+    assert systemd.name == "systemd"
+    assert systemd.user == "root"
+    assert systemd.pid == "1"
+    assert systemd.group == "root"
+    assert float(systemd.cpu_percent) >= 0
+    assert float(systemd.mem_percent) >= 0
