@@ -1,6 +1,6 @@
 FROM centos:7
 
-RUN yum -y install openssh-server && yum clean all &&\
+RUN yum -y install openssh-server which && yum clean all &&\
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
     rm -f /etc/systemd/system/*.wants/* && \
