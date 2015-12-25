@@ -16,6 +16,8 @@
 from __future__ import unicode_literals
 
 import datetime
+import hashlib
+import os.path
 
 from testinfra.modules.base import Module
 
@@ -69,7 +71,7 @@ class File(Module):
         >>> File("/var/lock").linked_to
         '/run/lock'
         """
-        return self.check_output("readlink -f %s", self.path)
+        return os.path.realpath(self.path)
 
     @property
     def user(self):
@@ -184,7 +186,7 @@ class File(Module):
             return GNUFile(_backend, None)
         elif SystemInfo.type == "netbsd":
             return NetBSDFile(_backend, None)
-        elif SystemInfo.type.endswith("bsd"):
+        elif SystemInfo.type.endswith("bsd") or SystemInfo.type == 'darwin':
             return BSDFile(_backend, None)
         else:
             raise NotImplementedError
@@ -228,9 +230,7 @@ class GNUFile(File):
 
     @property
     def sha256sum(self):
-        return self.check_output(
-            "sha256sum %s | cut -d ' ' -f 1", self.path)
-
+        return hashlib.sha256(self.content_string).hexdigest()
 
 class BSDFile(File):
     @property
@@ -270,9 +270,7 @@ class BSDFile(File):
 
     @property
     def sha256sum(self):
-        return self.check_output(
-            "sha256 < %s", self.path)
-
+        return hashlib.sha256(self.content_string).hexdigest()
 
 class NetBSDFile(BSDFile):
 

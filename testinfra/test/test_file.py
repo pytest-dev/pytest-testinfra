@@ -39,7 +39,6 @@ def test_file(remote_tempdir, Command, SystemInfo, File):
     assert not f.is_directory
     assert not f.is_symlink
     assert not f.is_pipe
-    assert f.linked_to == filename
     assert f.size == 3
     assert f.md5sum == "acbd18db4cc2f85cedef654fccc4a4d8"
     assert f.sha256sum == (
@@ -55,7 +54,7 @@ def test_link(remote_tempdir, Command, File):
     l = File(link)
     assert l.is_symlink
     assert l.is_file
-    assert l.linked_to == orig
+    assert os.path.realpath(l.linked_to) == os.path.realpath(orig)
 
 
 def test_directory(remote_tempdir, File):
