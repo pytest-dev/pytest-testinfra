@@ -52,3 +52,11 @@ def test_systeminfo(SystemInfo):
     assert SystemInfo.release == "14.04"
     assert SystemInfo.distribution == "ubuntu"
     assert SystemInfo.codename == "trusty"
+
+
+def test_process(Process):
+    ssh = Process.get(pid=1)
+    assert ssh.ppid == 0
+    assert ssh.args == "/usr/sbin/sshd -D"
+    assert ssh.comm == "sshd"
+    assert ssh.euid == 0

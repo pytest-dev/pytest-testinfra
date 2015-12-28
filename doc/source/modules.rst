@@ -67,6 +67,12 @@ Package
    :members:
 
 
+Process
+~~~~~~~
+
+.. autoclass:: testinfra.modules.Process()
+   :members:
+
 Service
 ~~~~~~~
 

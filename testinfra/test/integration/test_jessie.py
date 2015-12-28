@@ -157,3 +157,11 @@ def test_ansible_module(testinfra_backend, Ansible):
             'state': 'file',
             'uid': 0,
         }
+
+
+def test_process(Process):
+    systemd = Process.get(pid=1)
+    assert systemd.ppid == 0
+    assert systemd.args == "/sbin/init"
+    assert systemd.comm == "systemd"
+    assert systemd.euid == 0

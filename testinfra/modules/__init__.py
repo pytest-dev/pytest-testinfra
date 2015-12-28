@@ -21,6 +21,7 @@ from testinfra.modules.file import File
 from testinfra.modules.group import Group
 from testinfra.modules.interface import Interface
 from testinfra.modules.package import Package
+from testinfra.modules.process import Process
 from testinfra.modules.puppet import Facter
 from testinfra.modules.puppet import PuppetResource
 from testinfra.modules.salt import Salt
@@ -34,5 +35,5 @@ from testinfra.modules.user import User
 __all__ = [
     "Command", "File", "Package", "Group", "Interface",
     "Service", "SystemInfo", "User", "Salt", "PuppetResource",
-    "Facter", "Sysctl", "Socket", "Ansible",
+    "Facter", "Sysctl", "Socket", "Ansible", "Process",
 ]

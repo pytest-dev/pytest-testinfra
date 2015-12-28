@@ -72,3 +72,11 @@ def test_current_user(User):
 def test_group(Group):
     assert Group("root").exists
     assert Group("root").gid == 0
+
+
+def test_process(Process):
+    ssh = Process.get(pid=1)
+    assert ssh.ppid == 0
+    assert ssh.args == "/usr/sbin/sshd -D"
+    assert ssh.comm == "sshd"
+    assert ssh.euid == 0

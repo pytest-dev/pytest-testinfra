@@ -46,3 +46,11 @@ def test_systeminfo(SystemInfo):
     assert SystemInfo.release == "7"
     assert SystemInfo.distribution == "centos"
     assert SystemInfo.codename is None
+
+
+def test_process(Process):
+    systemd = Process.get(pid=1)
+    assert systemd.ppid == 0
+    assert systemd.args == "/usr/sbin/init"
+    assert systemd.comm == "systemd"
+    assert systemd.euid == 0
