@@ -157,3 +157,13 @@ def test_ansible_module(testinfra_backend, Ansible):
             'state': 'file',
             'uid': 0,
         }
+
+
+def test_process(Process):
+    systemd = Process("systemd")
+    assert systemd.name == "systemd"
+    assert systemd.user == "root"
+    assert systemd.pid == "1"
+    assert systemd.group == "root"
+    assert float(systemd.cpu_percent) >= 0
+    assert float(systemd.mem_percent) >= 0

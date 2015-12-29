@@ -52,3 +52,13 @@ def test_systeminfo(SystemInfo):
     assert SystemInfo.release == "14.04"
     assert SystemInfo.distribution == "ubuntu"
     assert SystemInfo.codename == "trusty"
+
+
+def test_process(Process):
+    sshd = Process("sshd")
+    assert sshd.name == "sshd"
+    assert sshd.user == "root"
+    assert sshd.pid == "1"
+    assert sshd.group == "root"
+    assert float(sshd.cpu_percent) >= 0
+    assert float(sshd.mem_percent) >= 0

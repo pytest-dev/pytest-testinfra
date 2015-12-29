@@ -46,3 +46,13 @@ def test_systeminfo(SystemInfo):
     assert SystemInfo.release == "7"
     assert SystemInfo.distribution == "centos"
     assert SystemInfo.codename is None
+
+
+def test_process(Process):
+    systemd = Process("systemd")
+    assert systemd.name == "systemd"
+    assert systemd.user == "root"
+    assert systemd.pid == "1"
+    assert systemd.group == "root"
+    assert float(systemd.cpu_percent) >= 0
+    assert float(systemd.mem_percent) >= 0
