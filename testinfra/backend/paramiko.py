@@ -15,7 +15,6 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from __future__ import print_function
 
 import logging
 import os
@@ -34,7 +33,7 @@ else:
         def missing_host_key(self, client, hostname, key):
             pass
 
-logger = logging.getLogger("testinfra.backend")
+logger = logging.getLogger("testinfra")
 
 
 class ParamikoBackend(base.BaseBackend):
@@ -90,5 +89,5 @@ class ParamikoBackend(base.BaseBackend):
         stdout = b''.join(chan.makefile('rb'))
         stderr = b''.join(chan.makefile_stderr('rb'))
         result = base.CommandResult(self, rc, stdout, stderr, command)
-        print("RUN", result)
+        logger.info("RUN %s", result)
         return result

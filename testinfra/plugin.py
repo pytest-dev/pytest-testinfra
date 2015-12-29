@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals
 
+import logging
+
 import pytest
 import testinfra
 from testinfra import modules
@@ -109,3 +111,9 @@ def pytest_generate_tests(metafunc):
         ids = [e.get_pytest_id() for e in params]
         metafunc.parametrize(
             "testinfra_backend", params, ids=ids, scope="module")
+
+
+def pytest_configure(config):
+    if config.option.verbose > 0:
+        logging.basicConfig()
+        logging.getLogger("testinfra").setLevel(logging.DEBUG)

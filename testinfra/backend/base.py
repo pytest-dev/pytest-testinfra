@@ -14,16 +14,16 @@
 # limitations under the License.
 
 from __future__ import unicode_literals
-from __future__ import print_function
 
 import locale
 import logging
 import pipes
 import subprocess
 
+import testinfra
 import testinfra.modules
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger("testinfra")
 
 
 class CommandResult(object):
@@ -75,10 +75,6 @@ class BaseBackend(object):
     HAS_RUN_ANSIBLE = False
 
     def __init__(self, hostname, sudo=False, *args, **kwargs):
-        for arg in args:
-            logger.warning("Ignored argument: %s", arg)
-        for key, value in kwargs.items():
-            logger.warning("Ignored argument: %s = %s", key, value)
         self._encoding = None
         self._module_cache = {}
         self.hostname = hostname
@@ -131,7 +127,7 @@ class BaseBackend(object):
         result = CommandResult(
             self, p.returncode, stdout, stderr, command,
         )
-        print("RUN", result)
+        logger.info("RUN %s", result)
         return result
 
     @staticmethod

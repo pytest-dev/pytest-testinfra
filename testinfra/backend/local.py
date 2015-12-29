@@ -15,10 +15,7 @@
 
 from __future__ import unicode_literals
 
-import logging
 from testinfra.backend import base
-
-logger = logging.getLogger("testinfra.backend")
 
 
 class LocalBackend(base.BaseBackend):

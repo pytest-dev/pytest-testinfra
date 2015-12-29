@@ -15,7 +15,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from __future__ import print_function
+
+import logging
 
 from testinfra.backend import base
 
@@ -26,6 +27,9 @@ except ImportError:
     HAS_ANSIBLE = False
 else:
     HAS_ANSIBLE = True
+
+
+logger = logging.getLogger("testinfra")
 
 
 class AnsibleBackend(base.BaseBackend):
@@ -72,7 +76,7 @@ class AnsibleBackend(base.BaseBackend):
             command,
             stdout=out["stdout"], stderr=out["stderr"],
         )
-        print("RUN", result)
+        logger.info("RUN %s", result)
         return result
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
