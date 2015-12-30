@@ -17,10 +17,10 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
 
-class Ansible(Module):
+class Ansible(InstanceModule):
     """Run Ansible module functions
 
     This module is only available with the :ref:`ansible connection

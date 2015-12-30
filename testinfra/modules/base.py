@@ -19,10 +19,7 @@ import pytest
 
 
 class Module(object):
-
-    def __init__(self, _backend):
-        self._backend = _backend
-        super(Module, self).__init__()
+    _backend = None
 
     def run(self, command, *args, **kwargs):
         return self._backend.run(command, *args, **kwargs)
@@ -64,7 +61,14 @@ class Module(object):
 
     @classmethod
     def get_module(cls, _backend):
-        return cls(_backend)
+        klass = cls.get_module_class(_backend)
+        return type(klass.__name__, (klass,), {
+            "_backend": _backend,
+        })
+
+    @classmethod
+    def get_module_class(cls, _backend):
+        return cls
 
     @classmethod
     def as_fixture(cls):
@@ -73,3 +77,11 @@ class Module(object):
             return testinfra_backend.get_module(cls.__name__)
         f.__doc__ = cls.__doc__
         return f
+
+
+class InstanceModule(Module):
+
+    @classmethod
+    def get_module(cls, _backend):
+        klass = super(InstanceModule, cls).get_module(_backend)
+        return klass()

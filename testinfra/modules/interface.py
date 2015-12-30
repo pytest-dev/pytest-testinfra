@@ -21,12 +21,9 @@ from testinfra.modules.base import Module
 class Interface(Module):
     """Test network interfaces"""
 
-    def __init__(self, _backend, name):
+    def __init__(self, name):
         self.name = name
-        super(Interface, self).__init__(_backend)
-
-    def __call__(self, name):
-        return self.__class__(self._backend, name)
+        super(Interface, self).__init__()
 
     @property
     def exists(self):
@@ -49,12 +46,12 @@ class Interface(Module):
         return "<interface %s>" % (self.name,)
 
     @classmethod
-    def get_module(cls, _backend):
+    def get_module_class(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
         if SystemInfo.type == "linux":
-            return LinuxInterface(_backend, None)
+            return LinuxInterface
         elif SystemInfo.type.endswith("bsd"):
-            return BSDInterface(_backend, None)
+            return BSDInterface
         else:
             raise NotImplementedError
 

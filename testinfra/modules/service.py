@@ -21,12 +21,9 @@ from testinfra.modules.base import Module
 class Service(Module):
     """Test services"""
 
-    def __init__(self, _backend, name):
+    def __init__(self, name):
         self.name = name
-        super(Service, self).__init__(_backend)
-
-    def __call__(self, name):
-        return self.__class__(self._backend, name)
+        super(Service, self).__init__()
 
     @property
     def is_running(self):
@@ -39,7 +36,7 @@ class Service(Module):
         raise NotImplementedError
 
     @classmethod
-    def get_module(cls, _backend):
+    def get_module_class(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
         File = _backend.get_module("File")
         Command = _backend.get_module("Command")
@@ -48,17 +45,17 @@ class Service(Module):
                 Command.run_test("which systemctl").rc == 0
                 and "systemd" in File("/sbin/init").linked_to
             ):
-                return SystemdService(_backend, None)
+                return SystemdService
             elif Command.run_test("which initctl").rc == 0:
-                return UpstartService(_backend, None)
+                return UpstartService
             else:
-                return SysvService(_backend, None)
+                return SysvService
         elif SystemInfo.type == "freebsd":
-            return FreeBSDService(_backend, None)
+            return FreeBSDService
         elif SystemInfo.type == "openbsd":
-            return OpenBSDService(_backend, None)
+            return OpenBSDService
         elif SystemInfo.type == "netbsd":
-            return NetBSDService(_backend, None)
+            return NetBSDService
         else:
             raise NotImplementedError
 

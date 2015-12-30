@@ -15,15 +15,15 @@
 
 from __future__ import unicode_literals
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
 
-class SystemInfo(Module):
+class SystemInfo(InstanceModule):
     """Return system informations"""
 
-    def __init__(self, _backend):
+    def __init__(self):
         self._sysinfo = None
-        super(SystemInfo, self).__init__(_backend)
+        super(SystemInfo, self).__init__()
 
     @property
     def sysinfo(self):

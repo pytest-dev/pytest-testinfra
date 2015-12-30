@@ -17,7 +17,7 @@ from __future__ import unicode_literals
 
 import json
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
 
 def parse_puppet_resource(data):
@@ -58,7 +58,7 @@ def parse_puppet_resource(data):
     return state
 
 
-class PuppetResource(Module):
+class PuppetResource(InstanceModule):
     """Get puppet resources
 
     Run ``puppet resource --types`` to get a list of available types.
@@ -89,7 +89,7 @@ class PuppetResource(Module):
         return "<PuppetResource>"
 
 
-class Facter(Module):
+class Facter(InstanceModule):
     """Get facts with `facter <https://puppetlabs.com/facter>`_
 
     >>> Facter()

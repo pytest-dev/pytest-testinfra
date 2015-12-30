@@ -15,10 +15,10 @@
 
 from __future__ import unicode_literals
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
 
-class Command(Module):
+class Command(InstanceModule):
     """Run given command and return rc (exit status), stdout and stderr
 
     >>> cmd = Command("ls -l /etc/passwd")

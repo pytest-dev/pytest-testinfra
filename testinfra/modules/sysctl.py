@@ -15,10 +15,10 @@
 
 from __future__ import unicode_literals
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
 
-class Sysctl(Module):
+class Sysctl(InstanceModule):
     """Test kernel parameters
 
     >>> Sysctl("kernel.osrelease")

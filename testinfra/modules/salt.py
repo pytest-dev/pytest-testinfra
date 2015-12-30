@@ -20,10 +20,10 @@ import json
 
 import six
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
 
-class Salt(Module):
+class Salt(InstanceModule):
     """Run salt module functions
 
 

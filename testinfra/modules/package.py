@@ -21,12 +21,9 @@ from testinfra.modules.base import Module
 class Package(Module):
     """Test packages status and version"""
 
-    def __init__(self, _backend, name):
+    def __init__(self, name):
         self.name = name
-        super(Package, self).__init__(_backend)
-
-    def __call__(self, name):
-        return self.__class__(self._backend, name)
+        super(Package, self).__init__()
 
     @property
     def is_installed(self):
@@ -40,17 +37,17 @@ class Package(Module):
         return "<package %s>" % (self.name,)
 
     @classmethod
-    def get_module(cls, _backend):
+    def get_module_class(cls, _backend):
         Command = _backend.get_module("Command")
         SystemInfo = _backend.get_module("SystemInfo")
         if SystemInfo.type == "freebsd":
-            return FreeBSDPackage(_backend, None)
+            return FreeBSDPackage
         elif SystemInfo.type in ("openbsd", "netbsd"):
-            return OpenBSDPackage(_backend, None)
+            return OpenBSDPackage
         elif Command.run_test("which apt-get").rc == 0:
-            return DebianPackage(_backend, None)
+            return DebianPackage
         elif Command.run_test("which rpm").rc == 0:
-            return RpmPackage(_backend, None)
+            return RpmPackage
         else:
             raise NotImplementedError
 

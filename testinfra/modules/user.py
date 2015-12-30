@@ -24,12 +24,9 @@ class User(Module):
     If name is not supplied, test the current user
     """
 
-    def __init__(self, _backend, name=None):
+    def __init__(self, name=None):
         self._name = name
-        super(User, self).__init__(_backend)
-
-    def __call__(self, name=None):
-        return self.__class__(self._backend, name)
+        super(User, self).__init__()
 
     @property
     def name(self):

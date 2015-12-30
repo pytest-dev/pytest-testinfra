@@ -23,12 +23,9 @@ from testinfra.modules.base import Module
 class File(Module):
     """Test various files attributes"""
 
-    def __init__(self, _backend, path):
+    def __init__(self, path):
         self.path = path
-        super(File, self).__init__(_backend)
-
-    def __call__(self, path):
-        return self.__class__(self._backend, path)
+        super(File, self).__init__()
 
     @property
     def exists(self):
@@ -178,14 +175,14 @@ class File(Module):
         return "<file %s>" % (self.path,)
 
     @classmethod
-    def get_module(cls, _backend):
+    def get_module_class(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
         if SystemInfo.type == "linux":
-            return GNUFile(_backend, None)
+            return GNUFile
         elif SystemInfo.type == "netbsd":
-            return NetBSDFile(_backend, None)
+            return NetBSDFile
         elif SystemInfo.type.endswith("bsd"):
-            return BSDFile(_backend, None)
+            return BSDFile
         else:
             raise NotImplementedError
 

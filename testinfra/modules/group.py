@@ -21,12 +21,9 @@ from testinfra.modules.base import Module
 class Group(Module):
     """Test unix group"""
 
-    def __init__(self, _backend, name=None):
+    def __init__(self, name=None):
         self.name = name
-        super(Group, self).__init__(_backend)
-
-    def __call__(self, name):
-        return self.__class__(self._backend, name)
+        super(Group, self).__init__()
 
     @property
     def exists(self):

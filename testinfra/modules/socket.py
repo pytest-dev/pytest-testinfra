@@ -81,12 +81,12 @@ class Socket(Module):
 
     """
 
-    def __init__(self, _backend, socketspec):
+    def __init__(self, socketspec):
         if socketspec is not None:
             self.protocol, self.host, self.port = parse_socketspec(socketspec)
         else:
             self.protocol = self.host = self.port = None
-        super(Socket, self).__init__(_backend)
+        super(Socket, self).__init__()
 
     @property
     def is_listening(self):
@@ -160,14 +160,15 @@ class Socket(Module):
                 sockets.append((sock[3], sock[4]))
         return sockets
 
-    def get_listening_sockets(self):
+    @classmethod
+    def get_listening_sockets(cls):
         """Return a list of all listening sockets
 
         >>> Socket.get_listening_sockets()
         ['tcp://0.0.0.0:22', 'tcp://:::22', 'unix:///run/systemd/private', ...]
         """
         sockets = []
-        for sock in self._get_sockets(True):
+        for sock in cls(None)._get_sockets(True):
             if sock[0] == "unix":
                 sockets.append("unix://" + sock[1])
             else:
@@ -179,26 +180,20 @@ class Socket(Module):
     def _get_sockets(self, listening):
         raise NotImplementedError
 
-    def __call__(self, *args, **kwargs):
-        return self.__class__(self._backend, *args, **kwargs)
-
     def __repr__(self):
-        if self.protocol:
-            return "<socket %s://%s%s>" % (
-                self.protocol,
-                self.host + ":" if self.host else "",
-                self.port,
-            )
-        else:
-            return "<socket>"
+        return "<socket %s://%s%s>" % (
+            self.protocol,
+            self.host + ":" if self.host else "",
+            self.port,
+        )
 
     @classmethod
-    def get_module(cls, _backend):
+    def get_module_class(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
         if SystemInfo.type == "linux":
-            return LinuxSocket(_backend, None)
+            return LinuxSocket
         elif SystemInfo.type.endswith("bsd"):
-            return BSDSocket(_backend, None)
+            return BSDSocket
         else:
             raise NotImplementedError
 

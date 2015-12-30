@@ -29,16 +29,16 @@ LocalCommand
 File
 ~~~~
 
-.. autoclass:: testinfra.modules.File(path)
+.. autoclass:: testinfra.modules.File
    :members:
    :undoc-members:
-   :exclude-members: as_fixture, get_module
+   :exclude-members: as_fixture, get_module_class
 
 
 User
 ~~~~
 
-.. autoclass:: testinfra.modules.User(name=None)
+.. autoclass:: testinfra.modules.User
    :members:
    :undoc-members:
 
@@ -46,7 +46,7 @@ User
 Group
 ~~~~~
 
-.. autoclass:: testinfra.modules.Group(name)
+.. autoclass:: testinfra.modules.Group
    :members:
    :undoc-members:
 
@@ -54,10 +54,10 @@ Group
 Interface
 ~~~~~~~~~
 
-.. autoclass:: testinfra.modules.Interface(name)
+.. autoclass:: testinfra.modules.Interface
    :members:
    :undoc-members:
-   :exclude-members: get_module
+   :exclude-members: get_module_class
 
 
 Package
@@ -89,7 +89,7 @@ Service
 Socket
 ~~~~~~
 
-.. autoclass:: testinfra.modules.Socket(spec)
+.. autoclass:: testinfra.modules.Socket
    :members:
 
 
@@ -97,7 +97,7 @@ SystemInfo
 ~~~~~~~~~~
 
 
-.. autoclass:: testinfra.modules.SystemInfo()
+.. autoclass:: testinfra.modules.SystemInfo
    :members:
 
 
