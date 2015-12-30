@@ -27,10 +27,28 @@ class Package(Module):
 
     @property
     def is_installed(self):
+        """Test if the package is installed
+
+        >>> Package("nginx").is_installed
+        True
+
+        Supported package systems:
+
+        - apt (Debian, Ubuntu, ...)
+        - rpm (RHEL, Centos, Fedora, ...)
+        - pkg_info (OpenBSD)
+        - pkg_info (NetBSD)
+        - pkg (FreeBSD)
+        """
         raise NotImplementedError
 
     @property
     def version(self):
+        """Return package version as returned by the package system
+
+        >>> Package("nginx").version
+        '1.2.1-2.2+wheezy3'
+        """
         raise NotImplementedError
 
     def __repr__(self):

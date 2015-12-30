@@ -63,27 +63,15 @@ Interface
 Package
 ~~~~~~~
 
-.. class:: testinfra.modules.Package(name)
+.. autoclass:: testinfra.modules.Package
+   :members:
 
-    .. attribute:: is_installed
-
-    .. attribute:: version
-
-    Return package version as returned by the package system
-
-    >>> Package("nginx").version
-    '1.2.1-2.2+wheezy3'
 
 Service
 ~~~~~~~
 
-.. class:: testinfra.modules.Service(name)
-
-    Test services
-
-    .. attribute:: is_running
-
-    .. attribute:: is_enabled
+.. autoclass:: testinfra.modules.Service
+   :members:
 
 
 Socket

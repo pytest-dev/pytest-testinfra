@@ -19,7 +19,18 @@ from testinfra.modules.base import Module
 
 
 class Service(Module):
-    """Test services"""
+    """Test services
+
+    Implementations:
+
+    - Linux: detect Systemd or Upstart, fallback to SysV
+    - FreeBSD: service(1)
+    - OpenBSD: ``/etc/rc.d/$name check`` for ``is_running``
+      (``is_enabled`` is not yet implemented)
+    - NetBSD: ``/etc/rc.d/$name onestatus`` for ``is_running``
+      (``is_enabled`` is not yet implemented)
+
+    """
 
     def __init__(self, name):
         self.name = name
@@ -27,12 +38,12 @@ class Service(Module):
 
     @property
     def is_running(self):
-        """Check if service is running"""
+        """Test if service is running"""
         raise NotImplementedError
 
     @property
     def is_enabled(self):
-        """Check if service is enabled"""
+        """Test if service is enabled"""
         raise NotImplementedError
 
     @classmethod

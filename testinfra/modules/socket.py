@@ -69,15 +69,15 @@ def parse_socketspec(socketspec):
 class Socket(Module):
     """Test listening tcp/udp and unix sockets
 
-    `spec` must be specified as `<protocol>://<host>:<port>`
+    ``socketspec`` must be specified as ``<protocol>://<host>:<port>``
 
     Example:
 
-      - Unix sockets: `unix:///var/run/docker.sock`
-      - All ipv4 and ipv6 tcp sockets on port 22: `tcp://22`
-      - All ipv4 sockets on port 22: `tcp://0.0.0.0:22`
-      - All ipv6 sockets on port 22: `tcp://:::22`
-      - udp socket on 127.0.0.1 port 69: `udp://127.0.0.1:69`
+      - Unix sockets: ``unix:///var/run/docker.sock``
+      - All ipv4 and ipv6 tcp sockets on port 22: ``tcp://22``
+      - All ipv4 sockets on port 22: ``tcp://0.0.0.0:22``
+      - All ipv6 sockets on port 22: ``tcp://:::22``
+      - udp socket on 127.0.0.1 port 69: ``udp://127.0.0.1:69``
 
     """
 
