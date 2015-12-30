@@ -70,7 +70,7 @@ Package
 Process
 ~~~~~~~
 
-.. autoclass:: testinfra.modules.Process()
+.. autoclass:: testinfra.modules.Process
    :members:
 
 Service
