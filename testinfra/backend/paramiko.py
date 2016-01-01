@@ -28,7 +28,7 @@ except ImportError:
 else:
     HAS_PARAMIKO = True
 
-    class IgnorePolicy (paramiko.MissingHostKeyPolicy):
+    class IgnorePolicy(paramiko.MissingHostKeyPolicy):
         """Policy for ignoring missing host key."""
         def missing_host_key(self, client, hostname, key):
             pass

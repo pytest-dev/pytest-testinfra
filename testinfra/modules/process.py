@@ -141,6 +141,7 @@ class PosixProcess(Process):
         for line in self.check_output(cmd, arg).splitlines()[1:]:
             splitted = line.split()
             attrs = {}
+            i = 0
             for i, key in enumerate(attributes[:-2]):
                 attrs[key] = int_or_float(splitted[i])
             attrs["lstart"] = " ".join(splitted[i+1:i+6])

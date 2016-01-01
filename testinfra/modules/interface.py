@@ -85,6 +85,10 @@ class BSDInterface(Interface):
         return self.run_test("ifconfig %s", self.name).rc == 0
 
     @property
+    def speed(self):
+        raise NotImplementedError
+
+    @property
     def addresses(self):
         stdout = self.check_output("ifconfig %s", self.name)
         addrs = []

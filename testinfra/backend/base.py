@@ -20,7 +20,6 @@ import logging
 import pipes
 import subprocess
 
-import testinfra
 import testinfra.modules
 
 logger = logging.getLogger("testinfra")
@@ -100,7 +99,8 @@ class BaseBackend(object):
             )
         return [host]
 
-    def quote(self, command, *args):
+    @staticmethod
+    def quote(command, *args):
         if args:
             return command % tuple(pipes.quote(a) for a in args)
         else:

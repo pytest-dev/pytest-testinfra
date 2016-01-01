@@ -57,7 +57,8 @@ class NagiosReporter(object):
         sys.stdout.write((
             b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f "
             b"seconds\n") % (
-            status, self.passed, self.failed, self.skipped, self.total_time))
+                status, self.passed, self.failed, self.skipped, self.total_time
+            ))
         return ret
 
 
@@ -66,19 +67,21 @@ class RedirectStdStreams(object):
     def __init__(self, stdout=None, stderr=None):
         self._stdout = stdout or sys.stdout
         self._stderr = stderr or sys.stderr
+        self._old_stdout = None
+        self._old_stderr = None
         super(RedirectStdStreams, self).__init__()
 
     def __enter__(self):
-        self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
-        self.old_stdout.flush()
-        self.old_stderr.flush()
+        self._old_stdout, self._old_stderr = sys.stdout, sys.stderr
+        self._old_stdout.flush()
+        self._old_stderr.flush()
         sys.stdout, sys.stderr = self._stdout, self._stderr
 
     def __exit__(self, exc_type, exc_value, traceback):
         self._stdout.flush()
         self._stderr.flush()
-        sys.stdout = self.old_stdout
-        sys.stderr = self.old_stderr
+        sys.stdout = self._old_stdout
+        sys.stderr = self._old_stderr
 
 
 def main():

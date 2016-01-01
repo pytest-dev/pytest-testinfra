@@ -18,8 +18,6 @@ from __future__ import absolute_import
 
 import logging
 
-from testinfra.backend import base
-
 try:
     import salt.client
 except ImportError:
@@ -27,6 +25,7 @@ except ImportError:
 else:
     HAS_SALT = True
 
+from testinfra.backend import base
 logger = logging.getLogger("testinfra")
 
 

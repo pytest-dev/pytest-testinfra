@@ -1,0 +1,16 @@
+[DISABLE CONTROL]
+disable=
+    missing-docstring,
+    unused-argument,
+    too-few-public-methods,
+    invalid-name,protected-access,
+    bad-continuation,
+    fixme,
+    locally-disabled,
+max-branches=13
+max-bool-expr=6
+max-args=8
+
+[REPORTS]
+reports=no
+msg-template={path}:{line}: {msg_id} {symbol} {msg}

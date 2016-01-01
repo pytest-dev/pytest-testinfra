@@ -25,7 +25,6 @@ _BACKENDS_CACHE = {}
 
 
 def get_backend(hostspec, **kwargs):
-    global _BACKEND_CACHE
     key = (hostspec, frozenset(kwargs.items()))
     if key not in _BACKEND_CACHE:
         _BACKEND_CACHE[key] = backend.get_backend(hostspec, **kwargs)
@@ -33,7 +32,6 @@ def get_backend(hostspec, **kwargs):
 
 
 def get_backends(hosts, **kwargs):
-    global _BACKENDS_CACHE
     key = (frozenset(hosts), frozenset(kwargs.items()))
     if key not in _BACKENDS_CACHE:
         _BACKENDS_CACHE[key] = backend.get_backends(hosts, **kwargs)

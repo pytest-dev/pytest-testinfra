@@ -30,7 +30,7 @@ class Module(object):
         :param expected: A list of expected exit status
         :raises: AssertionError
         """
-        __tracebackhide__ = True
+        __tracebackhide__ = True  # pylint: disable=unused-variable
         out = self.run(command, *args, **kwargs)
         if out.rc not in expected:
             pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
@@ -49,7 +49,7 @@ class Module(object):
         :returns: stdout without trailing newline
         :raises: AssertionError
         """
-        __tracebackhide__ = True
+        __tracebackhide__ = True  # pylint: disable=unused-variable
         out = self.run(command, *args, **kwargs)
         if out.rc != 0:
             pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))

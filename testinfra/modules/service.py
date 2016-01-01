@@ -154,9 +154,17 @@ class OpenBSDService(Service):
     def is_running(self):
         return self.run_test("/etc/rc.d/%s check", self.name).rc == 0
 
+    @property
+    def is_enabled(self):
+        raise NotImplementedError
+
 
 class NetBSDService(Service):
 
     @property
     def is_running(self):
         return self.run_test("/etc/rc.d/%s onestatus", self.name).rc == 0
+
+    @property
+    def is_enabled(self):
+        raise NotImplementedError

@@ -16,16 +16,13 @@
 import fileinput
 import sys
 
-try:
-    import paramiko
-except ImportError:
-    HAS_PARAMIKO = False
-else:
-    HAS_PARAMIKO = True
+import testinfra.backend.paramiko
+if testinfra.backend.paramiko.HAS_PARAMIKO:
+    paramiko = testinfra.backend.paramiko.paramiko
 
 
 def ssh_config_to_ansible_inventory():
-    if not HAS_PARAMIKO:
+    if not testinfra.backend.paramiko.HAS_PARAMIKO:
         raise RuntimeError((
             "You must install paramiko package (pip install paramiko) "
             "to use ssh_config_to_ansible_inventory()"))

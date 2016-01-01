@@ -18,8 +18,6 @@ from __future__ import absolute_import
 
 import logging
 
-from testinfra.backend import base
-
 try:
     import ansible.inventory
     import ansible.runner
@@ -28,7 +26,7 @@ except ImportError:
 else:
     HAS_ANSIBLE = True
 
-
+from testinfra.backend import base
 logger = logging.getLogger("testinfra")
 
 
@@ -36,10 +34,7 @@ class AnsibleBackend(base.BaseBackend):
     NAME = "ansible"
     HAS_RUN_ANSIBLE = True
 
-    def __init__(
-        self, host, ansible_inventory=None,
-        *args, **kwargs
-    ):
+    def __init__(self, host, ansible_inventory=None, *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
         super(AnsibleBackend, self).__init__(host, *args, **kwargs)
@@ -66,8 +61,8 @@ class AnsibleBackend(base.BaseBackend):
         # Ansible return an unicode object but this is bytes ...
         # A simple test case is:
         # >>> assert File("/bin/true").content == open("/bin/true").read()
-        stdout_bytes = b"".join(map(chr, map(ord, out['stdout'])))
-        stderr_bytes = b"".join(map(chr, map(ord, out['stderr'])))
+        stdout_bytes = b"".join((chr(ord(c)) for c in out['stdout']))
+        stderr_bytes = b"".join((chr(ord(c)) for c in out['stderr']))
 
         result = base.CommandResult(
             self, out['rc'],
