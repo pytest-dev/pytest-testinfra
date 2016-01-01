@@ -19,8 +19,6 @@ from __future__ import absolute_import
 import logging
 import os
 
-from testinfra.backend import base
-
 try:
     import paramiko
 except ImportError:
@@ -33,6 +31,7 @@ else:
         def missing_host_key(self, client, hostname, key):
             pass
 
+from testinfra.backend import base
 logger = logging.getLogger("testinfra")
 
 
