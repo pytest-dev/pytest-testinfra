@@ -30,6 +30,7 @@ class User(Module):
 
     @property
     def name(self):
+        """Return user name"""
         if self._name is None:
             self._name = self.check_output("id -nu")
         return self._name
@@ -40,14 +41,17 @@ class User(Module):
 
     @property
     def uid(self):
+        """Return user ID"""
         return int(self.check_output("id -u %s", self.name))
 
     @property
     def gid(self):
+        """Return effective group ID"""
         return int(self.check_output("id -g %s", self.name))
 
     @property
     def group(self):
+        """Return effective group name"""
         return self.check_output("id -ng %s", self.name)
 
     @property
@@ -59,17 +63,17 @@ class User(Module):
 
     @property
     def groups(self):
-        """Return a list of user group names"""
+        """Return the list of user group names"""
         return self.check_output("id -nG %s", self.name).split(" ")
 
     @property
     def home(self):
-        """Return home directory"""
+        """Return the user home directory"""
         return self.check_output("getent passwd %s", self.name).split(":")[5]
 
     @property
     def shell(self):
-        """Return login shell"""
+        """Return the user login shell"""
         return self.check_output("getent passwd %s", self.name).split(":")[6]
 
     def __repr__(self):
