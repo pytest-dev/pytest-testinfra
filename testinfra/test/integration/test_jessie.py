@@ -141,22 +141,16 @@ def test_ansible_module(testinfra_backend, Ansible):
     else:
         setup = Ansible("setup")["ansible_facts"]
         assert setup["ansible_lsb"]["codename"] == "jessie"
-        assert Ansible("file", "path=/etc/passwd") == {
-            'changed': False,
-            'gid': 0,
-            'group': 'root',
-            'invocation': {
-                'module_args': 'path=/etc/passwd',
-                'module_complex_args': {},
-                'module_name': 'file'
-            },
-            'mode': '0644',
-            'owner': 'root',
-            'path': '/etc/passwd',
-            'size': 1369,
-            'state': 'file',
-            'uid': 0,
-        }
+        passwd = Ansible("file", "path=/etc/passwd")
+        assert passwd["changed"] is False
+        assert passwd["gid"] == 0
+        assert passwd["group"] == "root"
+        assert passwd["mode"] == "0644"
+        assert passwd["owner"] == "root"
+        assert passwd["size"] == 1369
+        assert passwd["path"] == "/etc/passwd"
+        assert passwd["state"] == "file"
+        assert passwd["uid"] == 0
 
 
 def test_process(Process):
