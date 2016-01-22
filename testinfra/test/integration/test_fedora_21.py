@@ -32,7 +32,7 @@ if sys.version_info[0] == 2:
 def test_ssh_package(Package):
     ssh = Package("openssh-server")
     assert ssh.is_installed
-    assert ssh.version == "6.6.1p1"
+    assert ssh.version.startswith("6.6")
 
 
 def test_ssh_service(Service):
