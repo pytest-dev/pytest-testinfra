@@ -59,13 +59,13 @@ def test_systeminfo(SystemInfo):
 
 
 def test_salt(Salt):
-    assert Salt("pkg.version", "openssh-server", local=True) == "1:6.7p1-5"
+    ssh_version = Salt("pkg.version", "openssh-server", local=True)
+    assert ssh_version.startswith("1:6.7p1")
 
 
 def test_puppet_resource(PuppetResource):
-    assert PuppetResource("package", "openssh-server") == {
-        "openssh-server": {"ensure": "1:6.7p1-5"},
-    }
+    resource = PuppetResource("package", "openssh-server")
+    assert resource["openssh-server"]["ensure"].startswith("1:6.7p1")
 
 
 def test_facter(Facter):
