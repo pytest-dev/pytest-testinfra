@@ -51,6 +51,11 @@ def LocalCommand(testinfra_backend):
     return testinfra.get_backend("local://").get_module("Command")
 
 
+@pytest.fixture(scope="module")
+def TestinfraBackend(testinfra_backend):
+    return testinfra_backend
+
+
 def pytest_addoption(parser):
     group = parser.getgroup("testinfra")
     group._addoption(

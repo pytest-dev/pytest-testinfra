@@ -69,6 +69,7 @@ class CommandResult(object):
 
 
 class BaseBackend(object):
+    """Represent the connection to the remote or local system"""
     NAME = None
     HAS_RUN_SALT = False
     HAS_RUN_ANSIBLE = False
@@ -82,9 +83,37 @@ class BaseBackend(object):
 
     @classmethod
     def get_connection_type(cls):
+        """Return the connection backend used as string.
+
+        Can be local, paramiko, ssh, docker, salt or ansible
+        """
         return cls.NAME
 
     def get_hostname(self):
+        """Return the hostname (for testinfra) of the remote or local system
+
+
+        Can be useful for multi-hosts tests:
+
+        Example:
+        ::
+
+            import requests
+
+
+            def test(TestinfraBackend):
+                host = TestinfraBackend.get_hostname()
+                response = requests.get("http://" + host)
+                assert response.status_code == 200
+
+
+        ::
+
+            $ testinfra --hosts=server1,server2 test.py
+
+            test.py::test[paramiko://server1] PASSED
+            test.py::test[paramiko://server2] PASSED
+        """
         return self.hostname
 
     def get_pytest_id(self):
@@ -171,6 +200,18 @@ class BaseBackend(object):
             return data.encode(self.encoding)
 
     def get_module(self, name):
+        """Return the testinfra module adapted to the current backend
+
+        ::
+
+            def test(Package):
+                [...]
+
+            # Is equivalent to
+            def test(TestinfraBackend):
+                Package = TestinfraBackend.get_module("Package")
+
+        """
         try:
             module = self._module_cache[name]
         except KeyError:

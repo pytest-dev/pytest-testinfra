@@ -26,6 +26,13 @@ LocalCommand
 .. autofunction:: testinfra.plugin.LocalCommand(command, *args)
 
 
+TestinfraBackend
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: testinfra.backend.base.BaseBackend()
+   :members:
+
+
 File
 ~~~~
 
