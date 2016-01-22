@@ -32,7 +32,7 @@ if sys.version_info[0] == 2:
 def test_ssh_package(Package):
     ssh = Package("openssh-server")
     assert ssh.is_installed
-    assert ssh.version == "1:6.7p1-5"
+    assert ssh.version.startswith("1:6.7p1")
 
 
 @pytest.mark.parametrize("name,running,enabled", [
