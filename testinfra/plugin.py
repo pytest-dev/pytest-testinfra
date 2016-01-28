@@ -58,7 +58,7 @@ def TestinfraBackend(testinfra_backend):
 
 def pytest_addoption(parser):
     group = parser.getgroup("testinfra")
-    group._addoption(
+    group.addoption(
         "--connection",
         action="store",
         dest="connection",
@@ -67,31 +67,31 @@ def pytest_addoption(parser):
             "salt, docker, ansible)"
         )
     )
-    group._addoption(
+    group.addoption(
         "--hosts",
         action="store",
         dest="hosts",
         help="Hosts list (comma separated)",
     )
-    group._addoption(
+    group.addoption(
         "--ssh-config",
         action="store",
         dest="ssh_config",
         help="SSH config file",
     )
-    group._addoption(
+    group.addoption(
         "--sudo",
         action="store_true",
         dest="sudo",
         help="Use sudo",
     )
-    group._addoption(
+    group.addoption(
         "--ansible-inventory",
         action="store",
         dest="ansible_inventory",
         help="Ansible inventory file",
     )
-    group._addoption(
+    group.addoption(
         "--nagios",
         action="store_true",
         dest="nagios",
