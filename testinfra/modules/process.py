@@ -36,8 +36,7 @@ class _Process(dict):
         try:
             return self.__getitem__(key)
         except KeyError:
-            attrs = self["_module"]._get_process_attribute_by_pid(
-                self["pid"], key)
+            attrs = self["_get_process_attribute_by_pid"](self["pid"], key)
             if attrs["lstart"] != self["lstart"]:
                 raise RuntimeError((
                     "Process with pid %s start time changed from %s to %s."
@@ -87,7 +86,8 @@ class Process(InstanceModule):
                 if six.text_type(attrs[key]) != six.text_type(value):
                     break
             else:
-                attrs["_module"] = self
+                attrs["_get_process_attribute_by_pid"] = (
+                    self._get_process_attribute_by_pid)
                 match.append(_Process(attrs))
         return match
 

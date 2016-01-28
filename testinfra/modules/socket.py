@@ -107,7 +107,7 @@ class Socket(Module):
                   socket listen on **both** all ipv4 and ipv6 addresses
                   (ie 0.0.0.0 and ::)
         """
-        sockets = self._get_sockets(True)
+        sockets = self.get_sockets(True)
         if self.protocol == "unix":
             return ("unix", self.host) in sockets
         else:
@@ -139,7 +139,7 @@ class Socket(Module):
 
         """
         sockets = []
-        for sock in self._get_sockets(False):
+        for sock in self.get_sockets(False):
             if sock[0] != self.protocol:
                 continue
 
@@ -168,7 +168,7 @@ class Socket(Module):
         ['tcp://0.0.0.0:22', 'tcp://:::22', 'unix:///run/systemd/private', ...]
         """
         sockets = []
-        for sock in cls(None)._get_sockets(True):
+        for sock in cls(None).get_sockets(True):
             if sock[0] == "unix":
                 sockets.append("unix://" + sock[1])
             else:
@@ -177,7 +177,7 @@ class Socket(Module):
                 ))
         return sockets
 
-    def _get_sockets(self, listening):
+    def get_sockets(self, listening):
         raise NotImplementedError
 
     def __repr__(self):
@@ -200,7 +200,7 @@ class Socket(Module):
 
 class LinuxSocket(Socket):
 
-    def _get_sockets(self, listening):
+    def get_sockets(self, listening):
         sockets = []
         cmd = "netstat -n"
 
@@ -242,7 +242,7 @@ class LinuxSocket(Socket):
 
 class BSDSocket(Socket):
 
-    def _get_sockets(self, listening):
+    def get_sockets(self, listening):
         sockets = []
         cmd = "netstat -n"
 

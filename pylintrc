@@ -3,7 +3,7 @@ disable=
     missing-docstring,
     unused-argument,
     too-few-public-methods,
-    invalid-name,protected-access,
+    invalid-name,
     bad-continuation,
     fixme,
     locally-disabled,
