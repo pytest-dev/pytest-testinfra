@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# Copyright © 2015 Philippe Pepiot
+# Copyright © 2015-2016 Philippe Pepiot
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
 # limitations under the License.
 
 from __future__ import unicode_literals
+
+import re
 
 from testinfra.modules.base import InstanceModule
 
@@ -31,6 +33,51 @@ class SystemInfo(InstanceModule):
             self._sysinfo = self.get_system_info()
         return self._sysinfo
 
+    def _get_linux_sysinfo(self):
+        sysinfo = {}
+
+        # LSB
+        lsb = self.run("lsb_release -a")
+        if lsb.rc == 0:
+            for line in lsb.stdout.splitlines():
+                key, value = line.split(":", 1)
+                key = key.strip().lower()
+                value = value.strip().lower()
+                if key == "distributor id":
+                    sysinfo["distribution"] = value
+                elif key == "release":
+                    sysinfo["release"] = value
+                elif key == "codename":
+                    sysinfo["codename"] = value
+            return sysinfo
+
+        # https://www.freedesktop.org/software/systemd/man/os-release.html
+        os_release = self.run("cat /etc/os-release")
+        if os_release.rc == 0:
+            for line in os_release.stdout.splitlines():
+                for key, attname in (
+                    ("ID=", "distribution"),
+                    ("VERSION_ID=", "release"),
+                ):
+                    if line.startswith(key):
+                        sysinfo[attname] = (
+                            line[len(key):].replace('"', "").
+                            replace("'", "").strip())
+            return sysinfo
+
+        # RedHat / CentOS 6 haven't /etc/os-release
+        redhat_release = self.run("cat /etc/redhat-release")
+        if redhat_release.rc == 0:
+            match = re.match(
+                r"^(.+) release ([^ ]+) .*$",
+                redhat_release.stdout.strip())
+            if match:
+                sysinfo["distribution"], sysinfo["release"] = (
+                    match.groups())
+                return sysinfo
+
+        return sysinfo
+
     def get_system_info(self):
         sysinfo = {
             "type": None,
@@ -40,31 +87,9 @@ class SystemInfo(InstanceModule):
         }
         sysinfo["type"] = self.check_output("uname -s").lower()
         if sysinfo["type"] == "linux":
-            lsb = self.run("lsb_release -a")
-            if lsb.rc == 0:
-                for line in lsb.stdout.splitlines():
-                    key, value = line.split(":", 1)
-                    key = key.strip().lower()
-                    value = value.strip().lower()
-                    if key == "distributor id":
-                        sysinfo["distribution"] = value
-                    elif key == "release":
-                        sysinfo["release"] = value
-                    elif key == "codename":
-                        sysinfo["codename"] = value
-            else:
-                os_release = self.run("cat /etc/os-release")
-                if os_release.rc == 0:
-                    for line in os_release.stdout.splitlines():
-                        for key, attname in (
-                            ("ID=", "distribution"),
-                            ("VERSION_ID=", "release"),
-                        ):
-                            if line.startswith(key):
-                                sysinfo[attname] = (
-                                    line[len(key):].replace('"', "").
-                                    replace("'", "").strip())
+            sysinfo.update(**self._get_linux_sysinfo())
         else:
+            # BSD
             sysinfo["release"] = self.check_output("uname -r")
             sysinfo["distribution"] = sysinfo["type"]
             sysinfo["codename"] = None
