@@ -1,0 +1,24 @@
+version: '2'
+services:
+  debian_wheezy:
+    build: images/debian_wheezy
+    hostname: debian_wheezy
+
+  debian_jessie:
+    build: images/debian_jessie
+    privileged: true
+    hostname: debian_jessie
+
+  centos_7:
+    build: images/centos_7
+    privileged: true
+    hostname: centos_7
+
+  fedora:
+    build: images/fedora
+    privileged: true
+    hostname: fedora
+
+  ubuntu_trusty:
+    build: images/ubuntu_trusty
+    hostname: ubuntu_trusty

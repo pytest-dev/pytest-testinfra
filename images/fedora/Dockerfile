@@ -1,6 +1,6 @@
-FROM fedora:21
+FROM fedora:23
 
-RUN yum -y install systemd openssh-server && yum clean all &&\
+RUN dnf -y install which procps python systemd openssh-server && dnf clean all &&\
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
     rm -f /etc/systemd/system/*.wants/* && \

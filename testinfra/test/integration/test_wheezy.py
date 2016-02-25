@@ -19,11 +19,13 @@ import sys
 
 import pytest
 
+from testinfra.utils.docker_compose_to_ssh_config import DockerComposeService
+
 pytestmark = pytest.mark.integration
 testinfra_hosts = [
     "%s://debian_wheezy" % (b_type,)
-    for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
-]
+    for b_type in ("ssh", "paramiko", "safe-ssh")
+] + ["docker://" + DockerComposeService.get("debian_wheezy")["name"]]
 
 if sys.version_info[0] == 2:
     testinfra_hosts.append("ansible://debian_wheezy")

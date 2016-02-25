@@ -1,14 +1,25 @@
 sudo: required
 services:
   - docker
+env:
+  global:
+    - DOCKER_VERSION=1.10.2-0~trusty
+    - DOCKER_COMPOSE_VERSION=1.6.2
 language: python
 python: 2.7
 before_install:
-  - wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
-  - sudo dpkg -i vagrant_1.8.1_x86_64.deb
-  - for image in debian_wheezy debian_jessie ubuntu_trusty centos_7 fedora_21; do docker pull philpep/testinfra:$image; done
-  - vagrant up --provider=docker
+  - apt-cache madison docker-engine
+  - sudo apt-get -o Dpkg::Options::="--force-confnew" install -y docker-engine=${DOCKER_VERSION}
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - docker version
+  - docker-compose version
+  - for image in debian_wheezy debian_jessie ubuntu_trusty centos_7; do docker pull philpep/testinfra:$image; done
+  - docker-compose up -d
 install:
   - pip install tox
 script:
   - tox
+after_script:
+  - docker-compose kill
