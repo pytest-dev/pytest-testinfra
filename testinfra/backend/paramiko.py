@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# Copyright © 2015 Philippe Pepiot
+# Copyright © 2015-2016 Philippe Pepiot
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ except ImportError:
     HAS_PARAMIKO = False
 else:
     HAS_PARAMIKO = True
+    import paramiko.ssh_exception
 
     class IgnorePolicy(paramiko.MissingHostKeyPolicy):
         """Policy for ignoring missing host key."""
@@ -79,14 +80,27 @@ class ParamikoBackend(base.BaseBackend):
             self._client = client
         return self._client
 
-    def run(self, command, *args, **kwargs):
-        command = self.get_command(command, *args)
+    def _exec_command(self, command):
         chan = self.client.get_transport().open_session()
-        command = self.encode(command)
         chan.exec_command(command)
         rc = chan.recv_exit_status()
         stdout = b''.join(chan.makefile('rb'))
         stderr = b''.join(chan.makefile_stderr('rb'))
+        return rc, stdout, stderr
+
+    def run(self, command, *args, **kwargs):
+        command = self.get_command(command, *args)
+        command = self.encode(command)
+        try:
+            rc, stdout, stderr = self._exec_command(command)
+        except paramiko.ssh_exception.SSHException:
+            if not self.client.get_transport().is_active():
+                # try to reinit connection (once)
+                self._client = None
+                rc, stdout, stderr = self._exec_command(command)
+            else:
+                raise
+
         result = base.CommandResult(self, rc, stdout, stderr, command)
         logger.info("RUN %s", result)
         return result
