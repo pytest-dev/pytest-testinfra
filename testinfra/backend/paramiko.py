@@ -47,38 +47,41 @@ class ParamikoBackend(base.BaseBackend):
 
     @property
     def client(self):
-        if self._client is None:
-            if not HAS_PARAMIKO:
-                raise RuntimeError((
-                    "You must install paramiko package (pip install paramiko) "
-                    "to use the paramiko backend"))
-            client = paramiko.SSHClient()
-            client.set_missing_host_key_policy(paramiko.WarningPolicy())
-            cfg = {
-                "hostname": self.host,
-                "port": int(self.port) if self.port else 22,
-                "username": self.user,
-            }
-            if self.ssh_config:
-                ssh_config = paramiko.SSHConfig()
-                with open(self.ssh_config) as f:
-                    ssh_config.parse(f)
+        if (self._client is not None and
+            self._client.get_transport().is_active()):
+            return self._client
 
-                for key, value in ssh_config.lookup(self.host).items():
-                    if key == "hostname":
-                        cfg[key] = value
-                    elif key == "user":
-                        cfg["username"] = value
-                    elif key == "port":
-                        cfg[key] = int(value)
-                    elif key == "identityfile":
-                        cfg["key_filename"] = os.path.expanduser(value[0])
-                    elif key == "stricthostkeychecking" and value == "no":
-                        client.set_missing_host_key_policy(IgnorePolicy())
+        if not HAS_PARAMIKO:
+            raise RuntimeError((
+                "You must install paramiko package (pip install paramiko) "
+                "to use the paramiko backend"))
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.WarningPolicy())
+        cfg = {
+            "hostname": self.host,
+            "port": int(self.port) if self.port else 22,
+            "username": self.user,
+        }
+        if self.ssh_config:
+            ssh_config = paramiko.SSHConfig()
+            with open(self.ssh_config) as f:
+                ssh_config.parse(f)
 
-            client.connect(**cfg)
-            self._client = client
-        return self._client
+            for key, value in ssh_config.lookup(self.host).items():
+                if key == "hostname":
+                    cfg[key] = value
+                elif key == "user":
+                    cfg["username"] = value
+                elif key == "port":
+                    cfg[key] = int(value)
+                elif key == "identityfile":
+                    cfg["key_filename"] = os.path.expanduser(value[0])
+                elif key == "stricthostkeychecking" and value == "no":
+                    client.set_missing_host_key_policy(IgnorePolicy())
+
+        client.connect(**cfg)
+        self._client = client
+        return client
 
     def _exec_command(self, command):
         chan = self.client.get_transport().open_session()
