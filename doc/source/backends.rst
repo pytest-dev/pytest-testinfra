@@ -79,3 +79,15 @@ The ansible backend use the `ansible python API
     $ testinfra --connection=ansible --hosts='web*'
 
 You can use an alternative `inventory` with the ``--ansible-inventory`` option
+
+LXC
+~~~
+
+This backend provides capability of execution of commands in LXC_ containers.
+To run tests, using this backend, you can use such command::
+
+    $ testinfra --connection=lxc --hosts=container_name
+
+Where ``container_name`` is a name of running container.
+
+.. _LXC: https://linuxcontainers.org/lxc/
