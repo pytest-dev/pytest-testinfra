@@ -23,6 +23,7 @@ from testinfra.backend import local
 from testinfra.backend import paramiko
 from testinfra.backend import salt
 from testinfra.backend import ssh
+from testinfra.backend import lxd
 
 BACKENDS = dict((klass.get_connection_type(), klass) for klass in (
     local.LocalBackend,
@@ -32,6 +33,7 @@ BACKENDS = dict((klass.get_connection_type(), klass) for klass in (
     salt.SaltBackend,
     docker.DockerBackend,
     ansible.AnsibleBackend,
+    lxd.LXDBackend,
 ))
 
 
