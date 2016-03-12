@@ -179,7 +179,7 @@ class File(Module):
             return GNUFile
         elif SystemInfo.type == "netbsd":
             return NetBSDFile
-        elif SystemInfo.type.endswith("bsd"):
+        elif SystemInfo.type.endswith("bsd") or SystemInfo.type == "darwin":
             return BSDFile
         else:
             raise NotImplementedError
