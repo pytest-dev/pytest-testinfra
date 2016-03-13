@@ -66,6 +66,8 @@ class Package(Module):
             return DebianPackage
         elif Command.run_test("which rpm").rc == 0:
             return RpmPackage
+        elif Command.run_test("which brew").rc == 0:
+            return BrewPackage
         else:
             raise NotImplementedError
 
@@ -129,3 +131,16 @@ class RpmPackage(Package):
             if line.startswith("Version"):
                 return line.split(":", 1)[1].strip()
         raise RuntimeError("Cannot parse output '%s'" % (out,))
+
+
+class BrewPackage(Package):
+
+    @property
+    def is_installed(self):
+        package, version = tuple(self.run_test("brew ls --versions %s", self.name).stdout.split())
+        return package == self.name
+
+    @property
+    def version(self):
+        package, version = tuple(self.run_test("brew ls --versions %s", self.name).stdout.split())
+        return version
