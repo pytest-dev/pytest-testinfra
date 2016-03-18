@@ -15,7 +15,7 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - docker version
   - docker-compose version
-  - for image in debian_wheezy debian_jessie ubuntu_trusty centos_7; do docker pull philpep/testinfra:$image; done
+  - for image in debian_wheezy debian_jessie ubuntu_trusty centos_7 fedora; do docker pull philpep/testinfra:$image; done
   - docker-compose up -d
 install:
   - pip install tox
