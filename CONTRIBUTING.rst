@@ -14,13 +14,13 @@ You're encouraged to setup a full test environment, to add tests and check if
 all the tests pass *before* submitting your pull request. To run the complete
 test suite you must install:
 
-- `Vagrant <https://vagrantup.com>`_ version 1.7 or greater
-- `Docker <https://www.docker.com>`_ version 1.7 or greater
+- `Docker <https://www.docker.com>`_ version 1.10 or greater
+- `Docker compose <https://docs.docker.com/compose/>`_ version 1.6 or greater
 - `tox <https://tox.readthedocs.org/en/latest/>`_
 
 To run all tests run::
 
-    vagrant up --provider=docker
+    docker-compose up -d
     tox
 
 To run only some selected tests::
@@ -32,11 +32,11 @@ To run only some selected tests::
     tox -e py27 -- -v --pdb testinfra/test/integration/test_jessie.py
 
 
-To speedup the docker images generation during `vagrant up` you can download
-them before running the tests (docker will detect they are the same and use the
-cache)::
+To speedup the docker images generation during `docker-compose up` you can
+download them before running the tests (docker will detect they are the same
+and use the cache)::
 
-    for tag in debian_jessie debian_wheezy centos_7 fedora_21 ubuntu_trusty; do
+    for tag in debian_jessie debian_wheezy centos_7 fedora ubuntu_trusty; do
         docker pull philpep/testinfra:$tag
     done
 

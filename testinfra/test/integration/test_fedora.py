@@ -19,20 +19,22 @@ import sys
 
 import pytest
 
+from testinfra.utils.docker_compose_to_ssh_config import DockerComposeService
+
 pytestmark = pytest.mark.integration
 testinfra_hosts = [
-    "%s://fedora_21" % (b_type,)
-    for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
-]
+    "%s://fedora" % (b_type,)
+    for b_type in ("ssh", "paramiko", "safe-ssh")
+] + ["docker://" + DockerComposeService.get("fedora")["name"]]
 
 if sys.version_info[0] == 2:
-    testinfra_hosts.append("ansible://fedora_21")
+    testinfra_hosts.append("ansible://fedora")
 
 
 def test_ssh_package(Package):
     ssh = Package("openssh-server")
     assert ssh.is_installed
-    assert ssh.version.startswith("6.6")
+    assert ssh.version.startswith("7.1")
 
 
 def test_ssh_service(Service):
@@ -43,7 +45,7 @@ def test_ssh_service(Service):
 
 def test_systeminfo(SystemInfo):
     assert SystemInfo.type == "linux"
-    assert SystemInfo.release == "21"
+    assert SystemInfo.release == "23"
     assert SystemInfo.distribution == "fedora"
     assert SystemInfo.codename is None
 

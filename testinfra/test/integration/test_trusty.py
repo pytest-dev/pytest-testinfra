@@ -20,13 +20,19 @@ import sys
 
 import pytest
 
+from testinfra.utils.docker_compose_to_ssh_config import DockerComposeService
+
+_docker_name = DockerComposeService.get("ubuntu_trusty")["name"]
 pytestmark = pytest.mark.integration
 testinfra_hosts = [
     "%s://ubuntu_trusty?sudo=%s" % (b_type, sudo)
     for b_type, sudo in itertools.product(
-        ["ssh", "paramiko", "safe-ssh", "docker"],
+        ["ssh", "paramiko", "safe-ssh"],
         ["true", "false"],
     )
+] + [
+    "docker://%s?sudo=%s" % (_docker_name, sudo,)
+    for sudo in ["true", "false"]
 ]
 
 if sys.version_info == 2:

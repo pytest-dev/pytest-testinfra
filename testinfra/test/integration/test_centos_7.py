@@ -19,11 +19,15 @@ import sys
 
 import pytest
 
+
+from testinfra.utils.docker_compose_to_ssh_config import DockerComposeService
+
+
 pytestmark = pytest.mark.integration
 testinfra_hosts = [
     "%s://centos_7" % (b_type,)
-    for b_type in ("ssh", "paramiko", "safe-ssh", "docker")
-]
+    for b_type in ("ssh", "paramiko", "safe-ssh")
+] + ["docker://" + DockerComposeService.get("centos_7")["name"]]
 
 if sys.version_info == 2:
     testinfra_hosts.append("ansible://centos_7")
