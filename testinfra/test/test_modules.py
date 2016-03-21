@@ -13,6 +13,7 @@
 from __future__ import unicode_literals
 
 import re
+import time
 
 import pytest
 from testinfra.modules.socket import parse_socketspec
@@ -264,3 +265,33 @@ def test_ansible_module(TestinfraBackend, Ansible):
     variables = Ansible.get_variables()
     assert variables["inventory_hostname"] == "debian_jessie"
     assert variables["group_names"] == ["ungrouped"]
+
+
+def test_supervisor(Service, Supervisor, Process):
+    # Wait supervisord is running
+    for _ in range(20):
+        if Service("supervisor").is_running:
+            break
+        time.sleep(.5)
+    else:
+        raise RuntimeError("No running supervisor")
+
+    for _ in range(20):
+        service = Supervisor("tail")
+        if service.status == "RUNNING":
+            break
+        else:
+            assert service.status == "STARTING"
+            time.sleep(.5)
+    else:
+        raise RuntimeError("No running tail in supervisor")
+
+    assert service.is_running
+    proc = Process.get(pid=service.pid)
+    assert proc.comm == "tail"
+
+    services = Supervisor.get_services()
+    assert len(services) == 1
+    assert services[0].name == "tail"
+    assert services[0].is_running
+    assert services[0].pid == service.pid

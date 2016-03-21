@@ -87,6 +87,13 @@ Service
    :members:
 
 
+Supervisor
+~~~~~~~~~~
+
+.. autoclass:: testinfra.modules.Supervisor
+   :members:
+
+
 Socket
 ~~~~~~
 
