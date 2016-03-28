@@ -138,48 +138,126 @@ You can run these tests from the nagios master or in the target host with
 Test docker images
 ~~~~~~~~~~~~~~~~~~
 
-This recipe shows how to run and destroy a docker container for each test
-function, thus you can alter the container during the test without cleaning it
-at the end. Also we are using the dynamic :ref:`connection api`::
+Docker is a handy way to test your infrastructure code. This recipe show
+how to test the resulting docker image with testinfra and provides awesome
+features like testing multiple images and run some destructive tests on a
+dedicated container.
 
-    import testinfra
+This will use advanced pytest features, to understand the underlying
+concepts read the pytest documentation:
+
+    - https://pytest.org/latest/fixture.html
+    - https://pytest.org/latest/parametrize.html
+    - https://pytest.org/latest/example/markers.html
+
+
+
+Put this code in a `conftest.py` file:
+
+.. code-block:: python
+
     import pytest
+    import testinfra
+
+    # Use testinfra to get a handy function to run commands locally
+    check_output = testinfra.get_backend(
+        "local://"
+    ).get_module("Command").check_output
 
 
-    @pytest.fixture()
-    def Docker(request, LocalCommand):
-        # Run a new container
-        docker_id = LocalCommand.check_output(
-            "docker run -d debian:jessie tail -f /dev/null")
+    @pytest.fixture
+    def TestinfraBackend(request):
+        # Override the TestinfraBackend fixture,
+        # all testinfra fixtures (eg: modules) depend on it.
+
+        docker_id = check_output(
+            "docker run -d %s tail -f /dev/null", request.param)
 
         def teardown():
-            LocalCommand.check_output("docker kill %s", docker_id)
-            LocalCommand.check_output("docker rm %s", docker_id)
+            check_output("docker rm -f %s", docker_id)
 
-        # At the end of each test, we destroy the container
+        # Destroy the container at the end of the fixture life
         request.addfinalizer(teardown)
 
-        return testinfra.get_backend("docker://%s" % (docker_id,))
+        # Return a dynamic created backend
+        return testinfra.get_backend("docker://" + docker_id)
 
 
-    # This test will be run 10 times
-    @pytest.mark.parametrize("i", range(10))
-    def test(Docker, i):
-        Command = Docker.get_module("Command")
-        File = Docker.get_module("File")
+    def pytest_generate_tests(metafunc):
+        if "TestinfraBackend" in metafunc.fixturenames:
+
+            # Lookup "docker_images" marker
+            marker = getattr(metafunc.function, "docker_images", None)
+            if marker is not None:
+                images = marker.args
+            else:
+                # Default image
+                images = ["debian:jessie"]
+
+            # If the test has a destructive marker, we scope TestinfraBackend
+            # at function level (eg: executing for each test). If not we scope
+            # at session level (eg: all tests will share the same container)
+            if getattr(metafunc.function, "destructive", None) is not None:
+                scope = "function"
+            else:
+                scope = "session"
+
+            metafunc.parametrize(
+                "TestinfraBackend", images, indirect=True, scope=scope)
+
+
+
+Then create a `test_docker.py` file with our testinfra tests:
+
+.. code-block:: python
+
+    import pytest
+
+    # To mark all the tests as destructive:
+    # pytestmark = pytest.mark.destructive
+
+    # To run all the tests on given docker images:
+    # pytestmark = pytest.mark.images("debian:jessie", "centos:7")
+
+    # Both
+    # pytestmark = [
+    #     pytest.mark.destructive,
+    #     pytest.mark.images("debian:jessie", "centos:7")
+    # ]
+
+
+    # This test will run on default image (debian:jessie)
+    def test_default(Process):
+        assert Process.get(pid=1).comm == "tail"
+
+
+    # This test will run on both debian:jessie and centos:7 images
+    @pytest.mark.docker_images("debian:jessie", "centos:7")
+    def test_multiple(Process):
+        assert Process.get(pid=1).comm == "tail"
+
+
+    # This test is marked as destructive and will run on its own container
+    # It will create a /foo file and run 3 times with different params
+    @pytest.mark.destructive
+    @pytest.mark.parametrize("content", ["bar", "baz", "qux"])
+    def test_destructive(Command, File, content):
         assert not File("/foo").exists
-        assert Command("touch /foo").rc == 0
-        assert File("/foo").exists
+        Command.check_output("echo %s > /foo", content)
+        assert File("/foo").content == content + "\n"
 
 
-::
+Now let's run it::
 
-    $ testinfra test.py
+    $ testinfra -v
     [...]
-    === 10 passed in 14.96 seconds ===
 
-    # This can be parallelized accross multiple container and multiple process
-    $ pip install pytest-xdist
-    $ testinfra test.py -n 5
-    [...]
-    === 10 passed in 4.73 seconds ===
+    test_docker.py::test_default[debian:jessie] PASSED
+    test_docker.py::test_multiple[debian:jessie] PASSED
+    test_docker.py::test_multiple[centos:7] PASSED
+    test_docker.py::test_destructive[debian:jessie-bar] PASSED
+    test_docker.py::test_destructive[debian:jessie-baz] PASSED
+    test_docker.py::test_destructive[debian:jessie-qux] PASSED
+
+
+Note that you can speedup the tests execution by using pytest-xdist.
