@@ -168,7 +168,7 @@ Put this code in a `conftest.py` file:
     @pytest.fixture
     def TestinfraBackend(request):
         # Override the TestinfraBackend fixture,
-        # all testinfra fixtures (eg: modules) depend on it.
+        # all testinfra fixtures (i.e. modules) depend on it.
 
         docker_id = check_output(
             "docker run -d %s tail -f /dev/null", request.param)
@@ -195,8 +195,8 @@ Put this code in a `conftest.py` file:
                 images = ["debian:jessie"]
 
             # If the test has a destructive marker, we scope TestinfraBackend
-            # at function level (eg: executing for each test). If not we scope
-            # at session level (eg: all tests will share the same container)
+            # at function level (i.e. executing for each test). If not we scope
+            # at session level (i.e. all tests will share the same container)
             if getattr(metafunc.function, "destructive", None) is not None:
                 scope = "function"
             else:
