@@ -82,14 +82,14 @@ def test_sysctl(Sysctl):
     assert isinstance(Sysctl("kernel.panic"), int)
 
 
-def test_encoding(testinfra_backend, Command):
-    if testinfra_backend.get_connection_type() == "ansible":
+def test_encoding(TestinfraBackend, Command):
+    if TestinfraBackend.get_connection_type() == "ansible":
         pytest.skip("ansible handle encoding himself")
 
     # jessie image is fr_FR@ISO-8859-15
     cmd = Command("ls -l %s", "/é")
     assert cmd.command == b"ls -l '/\xe9'"
-    if testinfra_backend.get_connection_type() == "docker":
+    if TestinfraBackend.get_connection_type() == "docker":
         # docker bug ?
         assert cmd.stderr_bytes == (
             b"ls: impossible d'acc\xe9der \xe0 /\xef\xbf\xbd: "
@@ -106,7 +106,7 @@ def test_encoding(testinfra_backend, Command):
         )
 
 
-def test_socket(testinfra_backend, Socket):
+def test_socket(TestinfraBackend, Socket):
     listening = Socket.get_listening_sockets()
     for spec in (
         "tcp://0.0.0.0:22",
@@ -124,7 +124,7 @@ def test_socket(testinfra_backend, Socket):
         socket = Socket(spec)
         assert socket.is_listening
 
-    if not testinfra_backend.get_connection_type() == "docker":
+    if not TestinfraBackend.get_connection_type() == "docker":
         for spec in (
             "tcp://22",
             "tcp://0.0.0.0:22",
@@ -133,8 +133,8 @@ def test_socket(testinfra_backend, Socket):
     assert not Socket("tcp://4242").is_listening
 
 
-def test_ansible_module(testinfra_backend, Ansible):
-    if not testinfra_backend.get_connection_type() == "ansible":
+def test_ansible_module(TestinfraBackend, Ansible):
+    if not TestinfraBackend.get_connection_type() == "ansible":
         with pytest.raises(RuntimeError) as excinfo:
             setup = Ansible("setup")
         assert (

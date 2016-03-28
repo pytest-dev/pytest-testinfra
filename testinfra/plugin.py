@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# pylint: disable=redefined-outer-name
 
 from __future__ import unicode_literals
 
@@ -40,7 +41,7 @@ Process = modules.Process.as_fixture()
 
 
 @pytest.fixture(scope="module")
-def LocalCommand(testinfra_backend):
+def LocalCommand(TestinfraBackend):
     """Run commands locally
 
     Same as `Command` but run commands locally with subprocess even
@@ -52,8 +53,8 @@ def LocalCommand(testinfra_backend):
 
 
 @pytest.fixture(scope="module")
-def TestinfraBackend(testinfra_backend):
-    return testinfra_backend
+def TestinfraBackend(_testinfra_backend):
+    return _testinfra_backend
 
 
 def pytest_addoption(parser):
@@ -100,7 +101,7 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    if "testinfra_backend" in metafunc.fixturenames:
+    if "_testinfra_backend" in metafunc.fixturenames:
         if metafunc.config.option.hosts is not None:
             hosts = metafunc.config.option.hosts.split(",")
         elif hasattr(metafunc.module, "testinfra_hosts"):
@@ -116,7 +117,7 @@ def pytest_generate_tests(metafunc):
         )
         ids = [e.get_pytest_id() for e in params]
         metafunc.parametrize(
-            "testinfra_backend", params, ids=ids, scope="module")
+            "_testinfra_backend", params, ids=ids, scope="module")
 
 
 def pytest_configure(config):
