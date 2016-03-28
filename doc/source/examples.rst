@@ -217,12 +217,12 @@ Then create a `test_docker.py` file with our testinfra tests:
     # pytestmark = pytest.mark.destructive
 
     # To run all the tests on given docker images:
-    # pytestmark = pytest.mark.images("debian:jessie", "centos:7")
+    # pytestmark = pytest.mark.docker_images("debian:jessie", "centos:7")
 
     # Both
     # pytestmark = [
     #     pytest.mark.destructive,
-    #     pytest.mark.images("debian:jessie", "centos:7")
+    #     pytest.mark.docker_images("debian:jessie", "centos:7")
     # ]
 
 
