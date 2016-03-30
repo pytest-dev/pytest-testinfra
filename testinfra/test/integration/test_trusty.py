@@ -66,3 +66,7 @@ def test_process(Process):
     assert ssh.args == "/usr/sbin/sshd -D"
     assert ssh.comm == "sshd"
     assert ssh.euid == 0
+
+
+def test_sudo_quote(Command):
+    assert Command("echo a b | grep -q %s", "a c").rc == 1
