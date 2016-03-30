@@ -136,9 +136,10 @@ class BaseBackend(object):
             return command
 
     def get_command(self, command, *args):
+        command = self.quote(command, *args)
         if self.sudo:
             command = self.quote("sudo /bin/sh -c %s", command)
-        return self.quote(command, *args)
+        return command
 
     def run(self, command, *args, **kwargs):
         raise NotImplementedError
