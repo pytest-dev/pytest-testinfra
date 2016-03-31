@@ -66,3 +66,9 @@ def test_process(Process):
     assert ssh.args == "/usr/sbin/sshd -D"
     assert ssh.comm == "sshd"
     assert ssh.euid == 0
+
+
+def test_command_parameter_quoting(File):
+    # Produces a grep command with a parameter which gets quoted
+    # since it has spaces
+    assert File('/etc/default/useradd').contains('^# Default values for')
