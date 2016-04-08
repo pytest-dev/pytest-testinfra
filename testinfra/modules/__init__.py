@@ -30,10 +30,13 @@ from testinfra.modules.socket import Socket
 from testinfra.modules.sysctl import Sysctl
 from testinfra.modules.systeminfo import SystemInfo
 from testinfra.modules.user import User
+from testinfra.modules.python_package import PythonPackage
+from testinfra.modules.ruby_package import RubyPackage
 
 
 __all__ = [
     "Command", "File", "Package", "Group", "Interface",
     "Service", "SystemInfo", "User", "Salt", "PuppetResource",
-    "Facter", "Sysctl", "Socket", "Ansible", "Process",
+    "Facter", "Sysctl", "Socket", "Ansible", "Process", "RubyPackage",
+    "PythonPackage",
 ]
