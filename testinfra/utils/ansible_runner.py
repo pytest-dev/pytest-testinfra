@@ -79,10 +79,13 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
             kwargs["host_list"] = self.host_list
         if module_args is not None:
             kwargs["module_args"] = module_args
-        return ansible.runner.Runner(
+        result = ansible.runner.Runner(
             pattern=host,
             module_name=module_name,
-            **kwargs).run()["contacted"][host]
+            **kwargs).run()
+        if host not in result["contacted"]:
+            raise RuntimeError("Unexpected error: {}".format(result))
+        return result["contacted"][host]
 
 
 class Options(object):
