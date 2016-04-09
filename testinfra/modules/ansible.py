@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# Copyright © 2015 Philippe Pepiot
+# Copyright © 2015-2016 Philippe Pepiot <phil@philpep.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,6 +46,19 @@ class Ansible(InstanceModule):
                 "connection backend"))
         return self._backend.run_ansible(
             module_name, module_args, check=check, **kwargs)
+
+    def get_variables(self):
+        """Returns a dict of ansible variables
+
+        >>> Ansible.get_variables()
+        {
+            'inventory_hostname': 'localhost',
+            'group_names': ['ungrouped'],
+            'foo': 'bar',
+        }
+
+        """
+        return self._backend.get_variables()
 
     def __repr__(self):
         return "<ansible>"

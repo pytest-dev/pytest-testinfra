@@ -154,6 +154,11 @@ def test_ansible_module(TestinfraBackend, Ansible):
         assert passwd["state"] == "file"
         assert passwd["uid"] == 0
 
+        variables = Ansible.get_variables()
+        assert variables["inventory_hostname"] == "debian_jessie"
+        assert variables["ansible_user"] == "root"
+        assert variables["group_names"] == ["ungrouped"]
+
 
 def test_process(Process):
     systemd = Process.get(pid=1)

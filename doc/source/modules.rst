@@ -113,6 +113,7 @@ Ansible
 ~~~~~~~
 
 .. autoclass:: testinfra.modules.Ansible(module_name, module_args=None, check=True)
+   :members:
 
 
 PuppetResource

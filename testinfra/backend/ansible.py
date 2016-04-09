@@ -59,6 +59,10 @@ class AnsibleBackend(base.BaseBackend):
             host_list=self.ansible_inventory,
             **kwargs)
 
+    def get_variables(self):
+        return ansible_runner.get_variables(
+            self.host, host_list=self.ansible_inventory)
+
     @classmethod
     def get_hosts(cls, host, **kwargs):
         return ansible_runner.get_hosts(kwargs.get("ansible_inventory"), host)

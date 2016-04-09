@@ -46,19 +46,25 @@ class AnsibleRunnerBase(object):
     def get_hosts(self, pattern=None):
         raise NotImplementedError
 
+    def get_variables(self, host):
+        raise NotImplementedError
+
     def run(self, module_name, module_args, **kwargs):
         raise NotImplementedError
 
 
 class AnsibleRunnerUnavailable(AnsibleRunnerBase):
+    _unavailable = RuntimeError(
+        "You must install ansible package to use the ansible backend")
 
     def get_hosts(self, pattern=None):
-        raise RuntimeError(
-            "You must install ansible package to use the ansible backend")
+        raise self._unavailable
+
+    def get_variables(self, host):
+        raise self._unavailable
 
     def run(self, host, module_name, module_args, **kwargs):
-        raise RuntimeError(
-            "You must install ansible package to use the ansible backend")
+        raise self._unavailable
 
 
 class AnsibleRunnerV1(AnsibleRunnerBase):
@@ -72,6 +78,9 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
             e.name for e in
             self.inventory.get_hosts(pattern=pattern or "all")
         ]
+
+    def get_variables(self, host):
+        return self.inventory.get_variables(host)
 
     def run(self, host, module_name, module_args=None, **kwargs):
         kwargs = kwargs.copy()
@@ -145,6 +154,9 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
             self.inventory.get_hosts(pattern=pattern or "all")
         ]
 
+    def get_variables(self, host):
+        return self.inventory.get_vars(host)
+
     def run(self, host, module_name, module_args=None, **kwargs):
         action = {"module": module_name}
         if module_args is not None:
@@ -200,3 +212,7 @@ def get_hosts(host_list=None, pattern=None):
 def run(host, module_name, module_args=None, host_list=None, **kwargs):
     return AnsibleRunner(host_list).run(
         host, module_name, module_args, **kwargs)
+
+
+def get_variables(host, host_list=None):
+    return AnsibleRunner(host_list).get_variables(host)
