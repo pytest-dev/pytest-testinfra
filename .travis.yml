@@ -2,24 +2,18 @@ sudo: required
 services:
   - docker
 env:
-  global:
-    - DOCKER_VERSION=1.10.2-0~trusty
-    - DOCKER_COMPOSE_VERSION=1.6.2
+  matrix:
+    - TOXENV=py27,ansible1,py34 DOCKER=true
+    - TOXENV=flake8
+    - TOXENV=pylint
+    - TOXENV=sphinxdoc
 language: python
 python: 2.7
 before_install:
-  - apt-cache madison docker-engine
-  - sudo apt-get -o Dpkg::Options::="--force-confnew" install -y docker-engine=${DOCKER_VERSION}
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
+  - if [ x"$DOCKER" = x"true" ]; then sudo apt-get update -qq && sudo apt-get install -y -o Dpkg::Options::="--force-confnew" docker-engine; fi
   - docker version
-  - docker-compose version
-  - for image in debian_wheezy debian_jessie ubuntu_trusty centos_7 fedora; do docker pull philpep/testinfra:$image; done
-  - docker-compose up -d
+  - if [ x"$DOCKER" = x"true" ]; then for image in debian_wheezy debian_jessie ubuntu_trusty centos_7 fedora; do docker pull philpep/testinfra:$image; done; fi
 install:
   - pip install tox
 script:
-  - tox
-after_script:
-  - docker-compose kill
+  - tox -e $TOXENV
