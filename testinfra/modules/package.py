@@ -82,7 +82,7 @@ class DebianPackage(Package):
     def version(self):
         return self.check_output((
             "dpkg-query -f '${Status} ${Version}' -W %s | "
-            "sed -n 's/^install ok installed //p'"), self.name)
+            "sed -r -n 's/^(install|hold) ok installed //p'"), self.name)
 
 
 class FreeBSDPackage(Package):
