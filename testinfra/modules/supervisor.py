@@ -19,8 +19,7 @@ from testinfra.modules.base import Module
 
 
 class Supervisor(Module):
-    """Test supervisor managed processes
-    """
+    """Test supervisor managed processes"""
 
     def __init__(self, name):
         self.name = name
@@ -28,33 +27,31 @@ class Supervisor(Module):
 
     @property
     def is_running(self):
-        """Test if service is running"""
-        raise NotImplementedError
+        """Test if supervisord managed service is running"""
+        return self.status(self.name) == "RUNNING"
+
+    @property
+    def is_stopped(self):
+        """Test if supervisord managed service is stopped"""
+        return self.status(self.name) == "STOPPED"
 
     @property
     def is_enabled(self):
         """Test if service is enabled"""
         raise NotImplementedError
 
-    @classmethod
-    def get_module_class(cls, _backend):
-        Command = _backend.get_module("Command")
-        if (
-            Command.run_test("which supervisorctl").rc == 0
-            ):
-            return SupervisorService
-        else:
-            raise NotImplementedError
+    def list_services(self):
+        """Get services from supervisorctl and returns a dict"""
+        ret = {}
+        output = self.check_output("supervisorctl status")
+        for line in output.split("\n"):
+            name, status, _, pid, _, uptime = line.split()
+            ret[name] = status
+        return ret
+
+    def status(self, name):
+        programs = self.list_services()
+        return programs[name]
 
     def __repr__(self):
         return "<service %s>" % (self.name,)
-
-
-class SupervisorService(Supervisor):
-    @property
-    def is_running(self):
-        # 0: program running
-        # anything else is not considered, the supervisorctl program
-        # always returns zero no matter what
-        return self.run_expect(
-                [0], "supervisorctl status %s | grep RUNNING" % self.name).rc == 0
