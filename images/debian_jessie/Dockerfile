@@ -3,7 +3,7 @@ FROM debian:jessie
 # ntpd is linked to /bin/false, so the service is not running but is enabled
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install python openssh-server \
-        puppet salt-minion locales ntp && \
+        puppet salt-minion locales ntp supervisor netcat && \
     mkdir -p /var/run/sshd && \
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
@@ -14,12 +14,15 @@ RUN apt-get update && \
     systemctl enable ssh.service && \
     systemctl disable salt-minion.service && \
     systemctl enable ntp.service && \
+    systemctl enable supervisor.service && \
     ln -fsn /bin/false /usr/sbin/ntpd && \
     echo "LANG=fr_FR.ISO-8859-15" > /etc/default/locale && \
     echo "LANGUAGE=fr_FR" >> /etc/default/locale && \
     echo "fr_FR.ISO-8859-15 ISO-8859-15" >> /etc/locale.gen && \
     locale-gen && \
     update-locale
+
+ADD supervisor/nc.conf /etc/supervisor/conf.d/nc.conf
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR
