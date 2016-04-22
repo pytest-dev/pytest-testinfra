@@ -74,15 +74,14 @@ class DebianPackage(Package):
 
     @property
     def is_installed(self):
-        return self.run_test((
-            "dpkg-query -f '${Status}' -W %s | "
-            "grep -qE '^(install|hold) ok installed$'"), self.name).rc == 0
+        return self.run_test("dpkg -s %s" % (self.name,)).rc == 0
 
     @property
     def version(self):
-        return self.check_output((
-            "dpkg-query -f '${Status} ${Version}' -W %s | "
-            "sed -r -n 's/^(install|hold) ok installed //p'"), self.name)
+        out = self.check_output("dpkg-query -f '${Status} ${Version}' -W %s"
+                                % (self.name,)).split()
+        if out[0].lower() in ["install", "hold"]:
+            return out[3]
 
 
 class FreeBSDPackage(Package):

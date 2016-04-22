@@ -166,3 +166,8 @@ def test_process(Process):
     assert systemd.args == "/sbin/init"
     assert systemd.comm == "systemd"
     assert systemd.euid == 0
+
+
+def test_held_package_version(Package):
+    python = Package("python")
+    assert python.version == "2.7.9-1"

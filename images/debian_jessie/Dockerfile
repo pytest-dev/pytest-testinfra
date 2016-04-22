@@ -15,6 +15,7 @@ RUN apt-get update && \
     systemctl disable salt-minion.service && \
     systemctl enable ntp.service && \
     ln -fsn /bin/false /usr/sbin/ntpd && \
+    echo "python hold" | dpkg --set-selections && \
     echo "LANG=fr_FR.ISO-8859-15" > /etc/default/locale && \
     echo "LANGUAGE=fr_FR" >> /etc/default/locale && \
     echo "fr_FR.ISO-8859-15 ISO-8859-15" >> /etc/locale.gen && \
