@@ -35,23 +35,27 @@ class Supervisor(Module):
         """Test if supervisord managed service is stopped"""
         return self.status(self.name) == "STOPPED"
 
-    @property
-    def is_enabled(self):
-        """Test if service is enabled"""
-        raise NotImplementedError
-
-    def list_services(self):
+    def get_services(self):
         """Get services from supervisorctl and returns a dict"""
-        ret = {}
+        ret = []
         output = self.check_output("supervisorctl status")
-        for line in output.split("\n"):
+        for line in output.splitlines():
             name, status, _, pid, _, uptime = line.split()
-            ret[name] = status
+            service = dict(
+                    name=name,
+                    status=status,
+                    pid=pid,
+                    uptime=uptime,
+                    )
+            ret.append(service)
         return ret
 
     def status(self, name):
-        programs = self.list_services()
-        return programs[name]
+        service = [ item for item in self.get_services() if item['name'] == name ]
+        try:
+            return service[0]['status']
+        except IndexError as e:
+            return 'NOTPRESENT'
 
     def __repr__(self):
         return "<service %s>" % (self.name,)
