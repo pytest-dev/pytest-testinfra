@@ -166,3 +166,8 @@ def test_process(Process):
     assert systemd.args == "/sbin/init"
     assert systemd.comm == "systemd"
     assert systemd.euid == 0
+
+
+def test_supervisor(Supervisor):
+    service = Supervisor('nc_l_9999')
+    assert service.is_running
