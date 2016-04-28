@@ -40,7 +40,7 @@ class MountPoint(Module):
         """
         mountpoint = self.find_mountpoint()
         if mountpoint:
-            return mountpoint.split()[2]
+            return mountpoint[2]
 
     @property
     def device(self):
@@ -50,7 +50,7 @@ class MountPoint(Module):
         """
         mountpoint = self.find_mountpoint()
         if mountpoint:
-            return mountpoint.split()[0]
+            return mountpoint[0]
 
     @property
     def exists(self):
@@ -101,10 +101,11 @@ class LinuxMountPoint(MountPoint):
         # suggests that most OS mount the filesystem over it, leaving rootfs
         # would result in ambiguity when resolving a mountpoint
         devices_to_ignore = ["rootfs"]
-        mount = [mnt for mnt in mount if mnt[0] not in devices_to_ignore]
+        mount = [mnt for mnt in mount if mnt.split()[0] not in
+                 devices_to_ignore]
 
         if mount:
-            return mount[0]
+            return mount[0].split()
 
 
 class BSDMountPoint(MountPoint):
@@ -114,4 +115,4 @@ class BSDMountPoint(MountPoint):
         mount = [mount for mount in mounts if mount.split()[1] == self.path]
 
         if mount:
-            return mount[0]
+            return mount[0].split()
