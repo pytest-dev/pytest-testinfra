@@ -28,14 +28,19 @@ class MountPoint(Module):
     def __repr__(self):
         return "<mountpoint %s>" % (self.path,)
 
+    def find_mountpoint(self):
+        raise NotImplementedError
+
     @property
-    def type(self):
+    def filesystem(self):
         """ Returns the FileSystem type associated to a mount point
-        >>> MountPoint("/").type
+        >>> MountPoint("/").filesystem
         'ext4'
 
         """
-        raise NotImplementedError
+        mountpoint = self.find_mountpoint()
+        if mountpoint:
+            return mountpoint.split()[2]
 
     @property
     def device(self):
@@ -43,7 +48,9 @@ class MountPoint(Module):
         >>> MountPoint("/").device
         '/dev/sda1'
         """
-        raise NotImplementedError
+        mountpoint = self.find_mountpoint()
+        if mountpoint:
+            return mountpoint.split()[0]
 
     @property
     def exists(self):
@@ -52,8 +59,13 @@ class MountPoint(Module):
         >>> MountPoint("/").exists
         True
 
+        >>> MountPoint("/not/a/mountpoint").exists
+        False
+
         """
-        raise NotImplementedError
+        mountpoint = self.find_mountpoint()
+        if mountpoint:
+            return True
 
     @property
     def options(self):
@@ -62,7 +74,9 @@ class MountPoint(Module):
         >>> MountPoint("/").options
         ['rw', 'relatime', 'data=ordered']
         """
-        raise NotImplementedError
+        mountpoint = self.find_mountpoint()
+        if mountpoint:
+            return mountpoint[3].split(",")
 
     @classmethod
     def get_module_class(cls, _backend):
@@ -101,30 +115,12 @@ class LinuxMountPoint(MountPoint):
         if mount:
             return mount[0]
 
-    @property
-    def type(self):
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
-            return mountpoint.split()[1]
-
-    @property
-    def device(self):
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
-            return mountpoint.split()[0]
-
-    @property
-    def exists(self):
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
-            return True
-
-    @property
-    def options(self):
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
-            return mountpoint[3].split(",")
-
 
 class BSDMountPoint(MountPoint):
-    pass
+
+    def find_mountpoint(self):
+        mounts = self.check_output("mount -p").splitlines()
+        mount = [mount for mount in mounts if mount.split()[1] == self.path]
+
+        if mount:
+            return mount[0]
