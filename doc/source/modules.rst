@@ -137,4 +137,11 @@ Sysctl
 .. autoclass:: testinfra.modules.Sysctl(name)
    :members:
 
+
+MountPoint
+~~~~~~~~~~
+
+.. autoclass:: testinfra.modules.MountPoint(path)
+   :members:
+
 .. _pytest fixtures: https://pytest.org/latest/fixture.html
