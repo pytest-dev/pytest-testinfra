@@ -91,16 +91,6 @@ class MountPoint(Module):
 
 class LinuxMountPoint(MountPoint):
 
-    # /proc/mounts
-    # Before kernel 2.4.19, this file was a list of all the
-    # filesystems currently mounted on the system.  With the
-    # introduction of per-process mount namespaces in Linux 2.4.19,
-    # this file became a link to /proc/self/mounts, which lists the
-    # mount points of the process's own mount namespace.
-
-    # format of /proc/self/mounts is documented at
-    # http://man7.org/linux/man-pages/man5/fstab.5.html
-
     def find_mountpoint(self):
         mounts = self.check_output("cat /proc/self/mounts").splitlines()
         mount = [mount for mount in mounts if mount.split()[1] == self.path]
@@ -110,7 +100,8 @@ class LinuxMountPoint(MountPoint):
         # -initramfs.txt
         # suggests that most OS mount the filesystem over it, leaving rootfs
         # would result in ambiguity when resolving a mountpoint
-        mount = [mnt for mnt in mount if mnt[0] != "rootfs"]
+        devices_to_ignore = ["rootfs"]
+        mount = [mnt for mnt in mount if mnt[0] not in devices_to_ignore]
 
         if mount:
             return mount[0]
