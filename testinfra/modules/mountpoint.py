@@ -19,10 +19,60 @@ from testinfra.modules.base import Module
 
 
 class MountPoint(Module):
+    """Test Mount Points"""
 
     def __init__(self, path):
         self.path = path
         super(MountPoint, self).__init__()
+
+    def __repr__(self):
+        return "<mountpoint %s>" % (self.path,)
+
+    @property
+    def type(self):
+        """ Returns the FileSystem type associated to a mount point
+        >>> MountPoint("/").type
+        'ext4'
+
+        """
+        raise NotImplementedError
+
+    @property
+    def device(self):
+        """ Return the device associated with a mount point
+        >>> MountPoint("/").device
+        '/dev/sda1'
+        """
+        raise NotImplementedError
+
+    @property
+    def exists(self):
+        """ Return if a mountpoint exists
+
+        >>> MountPoint("/").exists
+        True
+
+        """
+        raise NotImplementedError
+
+    @property
+    def options(self):
+        """ Return a list of options that a mount point has been created with
+
+        >>> MountPoint("/").options
+        ['rw', 'relatime', 'data=ordered']
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_module_class(cls, _backend):
+        SystemInfo = _backend.get_module("SystemInfo")
+        if SystemInfo.type == "linux":
+            return LinuxMountPoint
+        elif SystemInfo.type.endswith("bsd"):
+            return BSDMountPoint
+        else:
+            raise NotImplementedError
 
 
 class LinuxMountPoint(MountPoint):
