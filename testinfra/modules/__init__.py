@@ -20,6 +20,7 @@ from testinfra.modules.command import Command
 from testinfra.modules.file import File
 from testinfra.modules.group import Group
 from testinfra.modules.interface import Interface
+from testinfra.modules.mountpoint import MountPoint
 from testinfra.modules.package import Package
 from testinfra.modules.process import Process
 from testinfra.modules.puppet import Facter
@@ -30,7 +31,6 @@ from testinfra.modules.socket import Socket
 from testinfra.modules.sysctl import Sysctl
 from testinfra.modules.systeminfo import SystemInfo
 from testinfra.modules.user import User
-from testinfra.modules.mountpoint import MountPoint
 
 
 __all__ = [

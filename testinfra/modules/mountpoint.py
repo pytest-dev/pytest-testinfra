@@ -33,7 +33,8 @@ class MountPoint(Module):
 
     @property
     def filesystem(self):
-        """ Returns the FileSystem type associated to a mount point
+        """Returns the FileSystem type associated to a mount point
+
         >>> MountPoint("/").filesystem
         'ext4'
 
@@ -44,7 +45,8 @@ class MountPoint(Module):
 
     @property
     def device(self):
-        """ Return the device associated with a mount point
+        """Return the device associated with a mount point
+
         >>> MountPoint("/").device
         '/dev/sda1'
         """
@@ -54,7 +56,7 @@ class MountPoint(Module):
 
     @property
     def exists(self):
-        """ Return if a mountpoint exists
+        """Return if a mountpoint exists
 
         >>> MountPoint("/").exists
         True
@@ -69,7 +71,7 @@ class MountPoint(Module):
 
     @property
     def options(self):
-        """ Return a list of options that a mount point has been created with
+        """Return a list of options that a mount point has been created with
 
         >>> MountPoint("/").options
         ['rw', 'relatime', 'data=ordered']

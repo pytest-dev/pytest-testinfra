@@ -56,3 +56,10 @@ def test_process(Process):
     assert systemd.args == "/usr/sbin/init"
     assert systemd.comm == "systemd"
     assert systemd.euid == 0
+
+
+def test_mountpoint(MountPoint):
+    root_mount = MountPoint('/')
+    assert root_mount.exists
+    assert 'rw' in root_mount.options
+    assert root_mount.filesystem == "aufs"

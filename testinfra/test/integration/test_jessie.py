@@ -171,3 +171,10 @@ def test_process(Process):
 def test_held_package_version(Package):
     python = Package("python")
     assert python.version == "2.7.9-1"
+
+
+def test_mountpoint(MountPoint):
+    root_mount = MountPoint('/')
+    assert root_mount.exists
+    assert 'rw' in root_mount.options
+    assert root_mount.filesystem == "aufs"

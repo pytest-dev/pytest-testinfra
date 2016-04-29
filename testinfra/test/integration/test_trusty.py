@@ -70,3 +70,10 @@ def test_process(Process):
 
 def test_sudo_quote(Command):
     assert Command("echo a b | grep -q %s", "a c").rc == 1
+
+
+def test_mountpoint(MountPoint):
+    root_mount = MountPoint('/')
+    assert root_mount.exists
+    assert 'rw' in root_mount.options
+    assert root_mount.filesystem == "aufs"
