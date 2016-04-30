@@ -40,6 +40,7 @@ BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir, os.pardir))
 _Command = testinfra.get_backend("local://").get_module("Command")
 check_output = _Command.check_output
 
+
 def get_ansible_inventory(name, hostname, user, port, key):
     ansible_major_version = int(ansible.__version__.split(".", 1)[0])
     items = [
