@@ -256,3 +256,10 @@ def test_ansible_module(TestinfraBackend, Ansible):
         assert variables["inventory_hostname"] == "debian_jessie"
         assert variables["ansible_user"] == "root"
         assert variables["group_names"] == ["ungrouped"]
+
+@all_images
+def test_mountpoint(MountPoint):
+    root_mount = MountPoint('/')
+    assert root_mount.exists
+    assert 'rw' in root_mount.options
+    assert root_mount.filesystem == "aufs"
