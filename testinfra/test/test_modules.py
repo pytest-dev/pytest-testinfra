@@ -257,6 +257,7 @@ def test_ansible_module(TestinfraBackend, Ansible):
         assert variables["ansible_user"] == "root"
         assert variables["group_names"] == ["ungrouped"]
 
+
 @all_images
 def test_mountpoint(MountPoint):
     root_mount = MountPoint('/')
