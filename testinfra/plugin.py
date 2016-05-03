@@ -41,7 +41,7 @@ Process = modules.Process.as_fixture()
 MountPoint = modules.MountPoint.as_fixture()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def LocalCommand(TestinfraBackend):
     """Run commands locally
 
@@ -122,6 +122,6 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_configure(config):
-    if config.option.verbose > 0:
+    if config.option.verbose > 1:
         logging.basicConfig()
         logging.getLogger("testinfra").setLevel(logging.DEBUG)
