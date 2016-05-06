@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 import re
 
 import pytest
+from testinfra.modules.socket import parse_socketspec
 
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
@@ -114,6 +115,14 @@ def test_facter(Facter):
 def test_sysctl(Sysctl, Command):
     assert Sysctl("kernel.hostname") == Command.check_output("hostname")
     assert isinstance(Sysctl("kernel.panic"), int)
+
+
+def test_parse_socketspec():
+    assert parse_socketspec("tcp://22") == ("tcp", None, 22)
+    assert parse_socketspec("tcp://:::22") == ("tcp", "::", 22)
+    assert parse_socketspec("udp://0.0.0.0:22") == ("udp", "0.0.0.0", 22)
+    assert parse_socketspec("unix://can:be.any/thing:22") == (
+        "unix", "can:be.any/thing:22", None)
 
 
 def test_socket(TestinfraBackend, Socket):
