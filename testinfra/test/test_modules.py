@@ -240,10 +240,14 @@ def test_file(Command, SystemInfo, File):
     assert File("/d/p").is_pipe
 
 
+@pytest.mark.testinfra_hosts(
+    "docker://debian_jessie",
+    "ansible://debian_jessie",
+)
 def test_ansible_module(TestinfraBackend, Ansible):
-    if not TestinfraBackend.get_connection_type() == "ansible":
+    if TestinfraBackend.get_connection_type() != "ansible":
         with pytest.raises(RuntimeError) as excinfo:
-            setup = Ansible("setup")
+            Ansible("setup")
         assert (
             'Ansible module is only available with ansible '
             'connection backend') in str(excinfo.value)
@@ -256,12 +260,11 @@ def test_ansible_module(TestinfraBackend, Ansible):
         assert passwd["group"] == "root"
         assert passwd["mode"] == "0644"
         assert passwd["owner"] == "root"
-        assert passwd["size"] == 1369
+        assert isinstance(passwd["size"], int)
         assert passwd["path"] == "/etc/passwd"
         assert passwd["state"] == "file"
         assert passwd["uid"] == 0
 
         variables = Ansible.get_variables()
         assert variables["inventory_hostname"] == "debian_jessie"
-        assert variables["ansible_user"] == "root"
         assert variables["group_names"] == ["ungrouped"]
