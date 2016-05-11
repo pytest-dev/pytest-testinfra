@@ -129,7 +129,12 @@ def TestinfraBackend(request, tmpdir_factory):
             docker_id, connection="docker"
         ).get_module("Service")
 
-        while not service("ssh").is_running:
+        if image in ("centos_7", "fedora"):
+            service_name = "sshd"
+        else:
+            service_name = "ssh"
+
+        while not service(service_name).is_running:
             time.sleep(.5)
 
     backend = testinfra.get_backend(host, **kw)
