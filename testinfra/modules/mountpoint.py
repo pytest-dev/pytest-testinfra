@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright © 2015 Philippe Pepiot
+# Copyright © 2016 Philippe Pepiot, George Alton
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,23 @@ class MountPoint(Module):
     """Test Mount Points"""
 
     def __init__(self, path):
+        self._attrs = None
         self.path = path
         super(MountPoint, self).__init__()
+
+    def _get_attrs(self):
+        if self._attrs is None:
+            self._attrs = self.get_mountpoint()
+        return self._attrs
+
+    def get_mountpoint(self):
+        mountpoint = self.find_mountpoint()
+        if mountpoint:
+            return {
+                "device": mountpoint[0],
+                "filesystem": mountpoint[2],
+                "options": mountpoint[3].split(",")
+                }
 
     def __repr__(self):
         return "<mountpoint %s>" % (self.path,)
@@ -39,9 +54,7 @@ class MountPoint(Module):
         'ext4'
 
         """
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
-            return mountpoint[2]
+        return self._get_attrs()["filesystem"]
 
     @property
     def device(self):
@@ -50,9 +63,7 @@ class MountPoint(Module):
         >>> MountPoint("/").device
         '/dev/sda1'
         """
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
-            return mountpoint[0]
+        return self._get_attrs()["device"]
 
     @property
     def exists(self):
@@ -65,8 +76,7 @@ class MountPoint(Module):
         False
 
         """
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
+        if self._get_attrs():
             return True
 
     @property
@@ -76,9 +86,7 @@ class MountPoint(Module):
         >>> MountPoint("/").options
         ['rw', 'relatime', 'data=ordered']
         """
-        mountpoint = self.find_mountpoint()
-        if mountpoint:
-            return mountpoint[3].split(",")
+        return self._get_attrs()["options"]
 
     @classmethod
     def get_module_class(cls, _backend):

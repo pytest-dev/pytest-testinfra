@@ -258,9 +258,10 @@ def test_ansible_module(TestinfraBackend, Ansible):
         assert variables["group_names"] == ["ungrouped"]
 
 
-@all_images
 def test_mountpoint(MountPoint):
     root_mount = MountPoint('/')
     assert root_mount.exists
     assert 'rw' in root_mount.options
-    assert root_mount.filesystem == "aufs"
+    assert root_mount.filesystem
+    fake_mount = MountPoint('/fake/mount')
+    assert not fake_mount.exists
