@@ -62,6 +62,7 @@ class MountPoint(Module):
 
         >>> MountPoint("/").device
         '/dev/sda1'
+
         """
         return self._get_attrs()["device"]
 
@@ -85,6 +86,7 @@ class MountPoint(Module):
 
         >>> MountPoint("/").options
         ['rw', 'relatime', 'data=ordered']
+
         """
         return self._get_attrs()["options"]
 
@@ -98,11 +100,33 @@ class MountPoint(Module):
         else:
             raise NotImplementedError
 
+    @classmethod
+    def read_mounts(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def get_mountpoints(cls):
+        """Returns a list of MountPoint instances
+
+        >>> MountPoint.get_mountpoints()
+        [<mountpoint />,  <mountpoint /proc>, <mountpoint /dev>]
+
+        """
+        raise NotImplementedError
+
 
 class LinuxMountPoint(MountPoint):
 
+    @classmethod
+    def read_mounts(cls):
+        return cls(None).check_output("cat /proc/self/mounts").splitlines()
+
+    @classmethod
+    def get_mountpoints(cls):
+        return [cls(mountpoint.split()[1]) for mountpoint in cls.read_mounts()]
+
     def find_mountpoint(self):
-        mounts = self.check_output("cat /proc/self/mounts").splitlines()
+        mounts = self.read_mounts()
         mount = [mount for mount in mounts if mount.split()[1] == self.path]
 
         # ignore rootfs
@@ -120,8 +144,16 @@ class LinuxMountPoint(MountPoint):
 
 class BSDMountPoint(MountPoint):
 
+    @classmethod
+    def read_mounts(cls):
+        return cls(None).check_output("mount -p").splitlines()
+
+    @classmethod
+    def get_mountpoints(cls):
+        return [cls(mountpoint.split()[1]) for mountpoint in cls.read_mounts()]
+
     def find_mountpoint(self):
-        mounts = self.check_output("mount -p").splitlines()
+        mounts = self.read_mounts()
         mount = [mount for mount in mounts if mount.split()[1] == self.path]
 
         if mount:

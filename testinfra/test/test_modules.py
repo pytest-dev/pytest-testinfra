@@ -265,3 +265,6 @@ def test_mountpoint(MountPoint):
     assert root_mount.filesystem
     fake_mount = MountPoint('/fake/mount')
     assert not fake_mount.exists
+
+    mountpoints = MountPoint.get_mountpoints()
+    assert mountpoints
