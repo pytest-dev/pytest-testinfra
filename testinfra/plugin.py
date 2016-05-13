@@ -38,6 +38,7 @@ Sysctl = modules.Sysctl.as_fixture()
 Socket = modules.Socket.as_fixture()
 Ansible = modules.Ansible.as_fixture()
 Process = modules.Process.as_fixture()
+MountPoint = modules.MountPoint.as_fixture()
 
 
 @pytest.fixture()

@@ -268,3 +268,16 @@ def test_ansible_module(TestinfraBackend, Ansible):
         variables = Ansible.get_variables()
         assert variables["inventory_hostname"] == "debian_jessie"
         assert variables["group_names"] == ["ungrouped"]
+
+
+def test_mountpoint(MountPoint):
+    root_mount = MountPoint('/')
+    assert root_mount.exists
+    assert 'rw' in root_mount.options
+    assert root_mount.filesystem
+    fake_mount = MountPoint('/fake/mount')
+    assert not fake_mount.exists
+
+    mountpoints = MountPoint.get_mountpoints()
+    assert mountpoints
+    assert all(isinstance(mount, MountPoint) for mount in mountpoints)
