@@ -268,3 +268,22 @@ def test_ansible_module(TestinfraBackend, Ansible):
         variables = Ansible.get_variables()
         assert variables["inventory_hostname"] == "debian_jessie"
         assert variables["group_names"] == ["ungrouped"]
+
+
+def test_global_python_package(PythonPackage, Command):
+    assert PythonPackage('simplejson').is_installed
+    assert PythonPackage('simplejson').version == '3.8.2'
+
+
+def test_virtualenv_python_package(PythonPackage, Command):
+    assert PythonPackage('simplejson',
+                         pip_path='/usr/local/testenv/bin/pip').is_installed
+    assert PythonPackage(
+        'simplejson',
+        pip_path='/usr/local/testenv/bin/pip'
+    ).version == '3.8.2'
+
+
+def test_global_ruby_package(RubyPackage, Command):
+    assert RubyPackage('bundler').is_installed
+    assert RubyPackage('bundler').version == '1.12.3'

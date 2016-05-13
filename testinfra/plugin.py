@@ -38,6 +38,8 @@ Sysctl = modules.Sysctl.as_fixture()
 Socket = modules.Socket.as_fixture()
 Ansible = modules.Ansible.as_fixture()
 Process = modules.Process.as_fixture()
+PythonPackage = modules.PythonPackage.as_fixture()
+RubyPackage = modules.RubyPackage.as_fixture()
 
 
 @pytest.fixture()

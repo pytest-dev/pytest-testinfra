@@ -29,7 +29,7 @@ class RubyPackage(Module):
         self.pkg_name = pkg_name
         args = ['%s list', gem_binary]
         for line in self.check_output(*args).split('\n'):
-            gem_re = re.compile('^([A-Za-z-_1-9]+) \((.*?)\)$')
+            gem_re = re.compile(r'^([A-Za-z-_1-9]+) \((.*?)\)$')
             if re.match(gem_re, line):
                 name, version = re.search(gem_re, line).groups()
                 self.gem_dict[name] = version
@@ -41,3 +41,6 @@ class RubyPackage(Module):
     @property
     def version(self):
         return self.gem_dict.get(self.pkg_name)
+
+    def __repr__(self):
+        return "<ruby_package %s>" % (self.pkg_name,)

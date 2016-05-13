@@ -24,16 +24,17 @@ class PythonPackage(Module):
     """Test status and version of Python package."""
 
     def __init__(self, pkg_name, pip_path='pip'):
-        """
+        """If you are using a virtualenv, pass the full path to the pip binary
+
         :param pkg_name: Name of the package to verify
         :param pip_path: Path to the desired pip binary
         """
         super(PythonPackage, self).__init__()
         self.pip_dict = {}
         self.pkg_name = pkg_name
-        args = ['%s list', pip_path]
-        for line in self.check_output(*args).split('\n'):
-            py_re = re.compile('^([A-Za-z-_1-9]+) \((.*?)(, .*)\)$')
+        cmd = '{0} list'.format(pip_path)
+        py_re = re.compile(r'^([A-Za-z-_1-9]+) \((.*?)(, .*)?\)')
+        for line in self.check_output(cmd).split('\n'):
             if re.match(py_re, line):
                 name, version = re.search(py_re, line).groups()[:2]
                 self.pip_dict[name] = version
@@ -45,3 +46,6 @@ class PythonPackage(Module):
     @property
     def version(self):
         return self.pip_dict.get(self.pkg_name)
+
+    def __repr__(self):
+        return "<python_package %s>" % (self.pkg_name,)

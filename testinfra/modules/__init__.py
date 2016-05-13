@@ -24,14 +24,14 @@ from testinfra.modules.package import Package
 from testinfra.modules.process import Process
 from testinfra.modules.puppet import Facter
 from testinfra.modules.puppet import PuppetResource
+from testinfra.modules.python_package import PythonPackage
+from testinfra.modules.ruby_package import RubyPackage
 from testinfra.modules.salt import Salt
 from testinfra.modules.service import Service
 from testinfra.modules.socket import Socket
 from testinfra.modules.sysctl import Sysctl
 from testinfra.modules.systeminfo import SystemInfo
 from testinfra.modules.user import User
-from testinfra.modules.python_package import PythonPackage
-from testinfra.modules.ruby_package import RubyPackage
 
 
 __all__ = [
