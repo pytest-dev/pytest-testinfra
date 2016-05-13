@@ -268,3 +268,4 @@ def test_mountpoint(MountPoint):
 
     mountpoints = MountPoint.get_mountpoints()
     assert mountpoints
+    assert all(isinstance(mount, MountPoint) for mount in mountpoints)
