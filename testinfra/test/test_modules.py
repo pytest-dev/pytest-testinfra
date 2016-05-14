@@ -238,31 +238,29 @@ def test_file(Command, SystemInfo, File):
     assert File("/d/p").is_pipe
 
 
-@pytest.mark.testinfra_hosts(
-    "docker://debian_jessie",
-    "ansible://debian_jessie",
-)
-def test_ansible_module(TestinfraBackend, Ansible):
-    if TestinfraBackend.get_connection_type() != "ansible":
-        with pytest.raises(RuntimeError) as excinfo:
-            Ansible("setup")
-        assert (
-            'Ansible module is only available with ansible '
-            'connection backend') in str(excinfo.value)
-    else:
-        setup = Ansible("setup")["ansible_facts"]
-        assert setup["ansible_lsb"]["codename"] == "jessie"
-        passwd = Ansible("file", "path=/etc/passwd")
-        assert passwd["changed"] is False
-        assert passwd["gid"] == 0
-        assert passwd["group"] == "root"
-        assert passwd["mode"] == "0644"
-        assert passwd["owner"] == "root"
-        assert isinstance(passwd["size"], int)
-        assert passwd["path"] == "/etc/passwd"
-        assert passwd["state"] == "file"
-        assert passwd["uid"] == 0
+def test_ansible_unavailable(Ansible):
+    with pytest.raises(RuntimeError) as excinfo:
+        Ansible("setup")
+    assert (
+        'Ansible module is only available with ansible '
+        'connection backend') in str(excinfo.value)
 
-        variables = Ansible.get_variables()
-        assert variables["inventory_hostname"] == "debian_jessie"
-        assert variables["group_names"] == ["ungrouped"]
+
+@pytest.mark.testinfra_hosts("ansible://debian_jessie")
+def test_ansible_module(TestinfraBackend, Ansible):
+    setup = Ansible("setup")["ansible_facts"]
+    assert setup["ansible_lsb"]["codename"] == "jessie"
+    passwd = Ansible("file", "path=/etc/passwd")
+    assert passwd["changed"] is False
+    assert passwd["gid"] == 0
+    assert passwd["group"] == "root"
+    assert passwd["mode"] == "0644"
+    assert passwd["owner"] == "root"
+    assert isinstance(passwd["size"], int)
+    assert passwd["path"] == "/etc/passwd"
+    assert passwd["state"] == "file"
+    assert passwd["uid"] == 0
+
+    variables = Ansible.get_variables()
+    assert variables["inventory_hostname"] == "debian_jessie"
+    assert variables["group_names"] == ["ungrouped"]
