@@ -76,5 +76,10 @@ class User(Module):
         """Return the user login shell"""
         return self.check_output("getent passwd %s", self.name).split(":")[6]
 
+    @property
+    def password(self):
+        """Return the crypted user password"""
+        return self.check_output("getent shadow %s", self.name).split(":")[1]
+
     def __repr__(self):
         return "<user %s>" % (self.name,)
