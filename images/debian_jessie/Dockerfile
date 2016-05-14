@@ -32,6 +32,8 @@ RUN apt-get update && \
     chown -R user:user /home/user/.ssh && \
     echo "[program:tail]\ncommand=tail -f /dev/null\nuser=user\ngroup=user\n" > /etc/supervisor/conf.d/tail.conf
 
+RUN echo "root:foo" | chpasswd
+
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR
