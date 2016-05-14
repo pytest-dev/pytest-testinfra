@@ -15,8 +15,10 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import itertools
 import os
 import subprocess
+import sys
 import threading
 import time
 
@@ -62,36 +64,58 @@ def get_ansible_inventory(name, hostname, user, port, key):
     return " ".join(items) + "\n"
 
 
-def start_container(request, image, tmpdir):
-    docker_host = os.environ.get("DOCKER_HOST")
-    if docker_host is not None:
-        docker_host = urllib.parse.urlparse(
-            docker_host).hostname or "localhost"
-    else:
-        docker_host = "localhost"
+def build_docker_container_fixture(image, scope):
+    @pytest.fixture(scope=scope)
+    def func(request):
+        docker_host = os.environ.get("DOCKER_HOST")
+        if docker_host is not None:
+            docker_host = urllib.parse.urlparse(
+                docker_host).hostname or "localhost"
+        else:
+            docker_host = "localhost"
 
-    cmd = ["docker", "run", "-d", "-P"]
-    if image in ("debian_jessie", "centos_7", "fedora"):
-        cmd.append("--privileged")
+        cmd = ["docker", "run", "-d", "-P"]
+        if image in ("debian_jessie", "centos_7", "fedora"):
+            cmd.append("--privileged")
 
-    cmd.append("philpep/testinfra:" + image)
-    docker_id = check_output(" ".join(cmd))
+        cmd.append("philpep/testinfra:" + image)
+        docker_id = check_output(" ".join(cmd))
 
-    def teardown():
-        check_output("docker rm -f %s", docker_id)
+        def teardown():
+            check_output("docker rm -f %s", docker_id)
 
-    request.addfinalizer(teardown)
+        request.addfinalizer(teardown)
 
-    port = check_output("docker port %s 22", docker_id)
-    port = int(port.rsplit(":", 1)[-1])
-    return docker_id, docker_host, port
+        port = check_output("docker port %s 22", docker_id)
+        port = int(port.rsplit(":", 1)[-1])
+        return docker_id, docker_host, port
+    fname = "_docker_container_%s_%s" % (image, scope)
+    mod = sys.modules[__name__]
+    setattr(mod, fname, func)
+
+
+def initialize_container_fixtures():
+    for image, scope in itertools.product([
+        "debian_jessie", "debian_wheezy",
+        "ubuntu_trusty", "fedora",
+        "centos_7",
+    ], ["function", "session"]):
+        build_docker_container_fixture(image, scope)
+
+initialize_container_fixtures()
 
 
 @pytest.fixture
 def TestinfraBackend(request, tmpdir_factory):
     image, kw = parse_hostspec(request.param)
-    docker_id, docker_host, port = start_container(
-        request, image, tmpdir_factory)
+
+    if getattr(request.function, "destructive", None) is not None:
+        scope = "function"
+    else:
+        scope = "session"
+
+    fname = "_docker_container_%s_%s" % (image, scope)
+    docker_id, docker_host, port = request.getfuncargvalue(fname)
 
     if kw["connection"] == "docker":
         host = docker_id
@@ -156,13 +180,7 @@ def pytest_generate_tests(metafunc):
             # Default
             hosts = ["docker://debian_jessie"]
 
-        if getattr(metafunc.function, "destructive", None) is not None:
-            scope = "function"
-        else:
-            scope = "session"
-
-        metafunc.parametrize(
-            "TestinfraBackend", hosts, indirect=True, scope=scope)
+        metafunc.parametrize("TestinfraBackend", hosts, indirect=True)
 
 
 def pytest_configure(config):
