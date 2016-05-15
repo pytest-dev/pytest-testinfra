@@ -12,6 +12,7 @@
 # limitations under the License.
 from __future__ import unicode_literals
 
+import crypt
 import re
 import time
 
@@ -189,12 +190,9 @@ def test_nonexistent_user(User):
 
 
 def test_current_user(User):
-    root = User()
-    assert root.name == "root"
-    assert root.password == (
-        "$6$pjNJ/Z5B$iluiXQkRakXrFn1A3nRvZMtKkc2wkeZYegiqWszR7LpyBODdwv7CQ6BBR"
-        "7B9K1ecXgSXciUR0jOh30jE/gvUs."
-    )
+    assert User().name == "root"
+    pw = User().password
+    assert crypt.crypt("foo", pw) == pw
 
 
 def test_group(Group):
