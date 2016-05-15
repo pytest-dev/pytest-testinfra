@@ -312,3 +312,19 @@ def test_supervisor(Command, Service, Supervisor, Process):
     with pytest.raises(RuntimeError) as excinfo:
         Supervisor("tail").is_running
     assert 'Is supervisor running' in str(excinfo.value)
+
+
+def test_mountpoint(MountPoint):
+    root_mount = MountPoint('/')
+    assert root_mount.exists
+    assert isinstance(root_mount.options, list)
+    assert 'rw' in root_mount.options
+    assert root_mount.filesystem
+
+    fake_mount = MountPoint('/fake/mount')
+    assert not fake_mount.exists
+
+    mountpoints = MountPoint.get_mountpoints()
+    assert mountpoints
+    assert all(isinstance(m, MountPoint) for m in mountpoints)
+    assert len([m for m in mountpoints if m.path == "/"]) == 1
