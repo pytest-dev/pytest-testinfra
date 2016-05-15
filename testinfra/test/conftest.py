@@ -35,10 +35,18 @@ from testinfra.backend import parse_hostspec
 
 BASETESTDIR = os.path.abspath(os.path.dirname(__file__))
 BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir, os.pardir))
+_HAS_DOCKER = None
 
 # Use testinfra to get a handy function to run commands locally
 _Command = testinfra.get_backend("local://").get_module("Command")
 check_output = _Command.check_output
+
+
+def has_docker():
+    global _HAS_DOCKER
+    if _HAS_DOCKER is None:
+        _HAS_DOCKER = _Command("which docker").rc == 0
+    return _HAS_DOCKER
 
 
 def get_ansible_inventory(name, hostname, user, port, key):
@@ -105,6 +113,9 @@ initialize_container_fixtures()
 
 @pytest.fixture
 def TestinfraBackend(request, tmpdir_factory):
+    if not has_docker():
+        pytest.skip()
+        return
     image, kw = parse_hostspec(request.param)
 
     if getattr(request.function, "destructive", None) is not None:
@@ -182,6 +193,9 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_configure(config):
+    if not has_docker():
+        return
+
     def build_image(build_failed, dockerfile, image, image_path):
         print("BUILD", image)
         try:
