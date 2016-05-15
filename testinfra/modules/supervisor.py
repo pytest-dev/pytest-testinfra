@@ -74,10 +74,12 @@ class Supervisor(Module):
 
     @property
     def status(self):
-        """Return the status of the managed service (RUNNING, STOPPED,
-        FATAL, ...)
+        """Return the status of the managed service
 
-        http://supervisord.org/subprocess.html#process-states
+        Status can be STOPPED, STARTING, RUNNING, BACKOFF, STOPPING,
+        EXITED, FATAL, UNKNOWN.
+
+        See http://supervisord.org/subprocess.html#process-states
         """
         return self._attrs["status"]
 
