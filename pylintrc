@@ -10,6 +10,8 @@ disable=
 max-branches=13
 max-bool-expr=6
 max-args=8
+# we have flake8 for that
+max-line-length=1000
 
 [REPORTS]
 reports=no
