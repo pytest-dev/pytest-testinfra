@@ -25,10 +25,10 @@ from testinfra.modules.puppet import PuppetResource
 from testinfra.modules.salt import Salt
 from testinfra.modules.service import Service
 from testinfra.modules.socket import Socket
+from testinfra.modules.supervisor import Supervisor
 from testinfra.modules.sysctl import Sysctl
 from testinfra.modules.systeminfo import SystemInfo
 from testinfra.modules.user import User
-from testinfra.modules.supervisor import Supervisor
 
 
 __all__ = [

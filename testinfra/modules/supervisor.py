@@ -32,9 +32,9 @@ class Supervisor(Module):
     4242
     """
 
-    def __init__(self, name):
+    def __init__(self, name, _attrs_cache=None):
         self.name = name
-        self._attrs_cache = None
+        self._attrs_cache = _attrs_cache
         super(Supervisor, self).__init__()
 
     @staticmethod
@@ -101,8 +101,7 @@ class Supervisor(Module):
             "supervisorctl status",
         ).splitlines():
             attrs = cls._parse_status(line)
-            service = cls(attrs["name"])
-            service._attrs_cache = attrs
+            service = cls(attrs["name"], attrs)
             services.append(service)
         return services
 
