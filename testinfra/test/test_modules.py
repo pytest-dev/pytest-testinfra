@@ -181,6 +181,7 @@ def test_user(User):
     assert user.groups == ["nogroup"]
     assert user.shell == "/usr/sbin/nologin"
     assert user.home == "/var/run/sshd"
+    assert user.password == "*"
 
 
 def test_nonexistent_user(User):
