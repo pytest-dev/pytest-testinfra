@@ -14,6 +14,11 @@ from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
 
+STATUS = [
+    "STOPPED", "STARTING", "RUNNING", "BACKOFF", "STOPPING", "EXITED",
+    "FATAL", "UNKNOWN",
+]
+
 
 class Supervisor(Module):
     """Test supervisor managed services
@@ -37,6 +42,12 @@ class Supervisor(Module):
         splitted = line.split()
         name = splitted[0]
         status = splitted[1]
+        # supervisorctl exit status is 0 even if it cannot connect to
+        # supervisord socket and output the error to stdout.
+        # So we check that parsed status is a known status.
+        if status not in STATUS:
+            raise RuntimeError(
+                "Cannot get supervisor status. Is supervisor running ?")
         if status == "RUNNING":
             pid = splitted[3]
             if pid[-1] == ",":

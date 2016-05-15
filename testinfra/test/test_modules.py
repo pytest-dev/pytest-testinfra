@@ -267,7 +267,8 @@ def test_ansible_module(TestinfraBackend, Ansible):
     assert variables["group_names"] == ["ungrouped"]
 
 
-def test_supervisor(Service, Supervisor, Process):
+@pytest.mark.destructive
+def test_supervisor(Command, Service, Supervisor, Process):
     # Wait supervisord is running
     for _ in range(20):
         if Service("supervisor").is_running:
@@ -295,3 +296,15 @@ def test_supervisor(Service, Supervisor, Process):
     assert services[0].name == "tail"
     assert services[0].is_running
     assert services[0].pid == service.pid
+
+    Command("supervisorctl stop tail")
+    service = Supervisor("tail")
+    assert not service.is_running
+    assert service.status == "STOPPED"
+    assert service.pid is None
+
+    Command("service supervisor stop")
+    assert not Service("supervisor").is_running
+    with pytest.raises(RuntimeError) as excinfo:
+        Supervisor("tail").is_running
+    assert 'Is supervisor running' in str(excinfo.value)
