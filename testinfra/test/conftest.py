@@ -36,6 +36,10 @@ from testinfra.backend import parse_hostspec
 BASETESTDIR = os.path.abspath(os.path.dirname(__file__))
 BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir, os.pardir))
 
+# Use testinfra to get a handy function to run commands locally
+_Command = testinfra.get_backend("local://").get_module("Command")
+check_output = _Command.check_output
+
 
 def get_ansible_inventory(name, hostname, user, port, key):
     ansible_major_version = int(ansible.__version__.split(".", 1)[0])
@@ -73,14 +77,14 @@ def build_docker_container_fixture(image, scope):
             cmd.append("--privileged")
 
         cmd.append("philpep/testinfra:" + image)
-        docker_id = subprocess.check_output(cmd).strip()
+        docker_id = check_output(" ".join(cmd))
 
         def teardown():
-            subprocess.check_output(["docker", "rm", "-f", docker_id])
+            check_output("docker rm -f %s", docker_id)
 
         request.addfinalizer(teardown)
 
-        port = subprocess.check_output(["docker", "port", docker_id, "22"])
+        port = check_output("docker port %s 22", docker_id)
         port = int(port.rsplit(":", 1)[-1])
         return docker_id, docker_host, port
     fname = "_docker_container_%s_%s" % (image, scope)
