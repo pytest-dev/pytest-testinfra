@@ -79,6 +79,11 @@ class User(Module):
         """Return the crypted user password"""
         return self.check_output("getent shadow %s", self.name).split(":")[1]
 
+    @property
+    def expires(self):
+        """Return the expiration days since epoch when account expires"""
+        return self.check_output("getent shadow %s", self.name).split(":")[7]
+
     @classmethod
     def get_module_class(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
