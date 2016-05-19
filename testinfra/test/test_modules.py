@@ -184,6 +184,8 @@ def test_user(User):
     assert user.home == "/var/run/sshd"
     assert user.password == "*"
     assert user.expires == ""
+    print user.system
+    assert user.system
 
 
 def test_nonexistent_user(User):

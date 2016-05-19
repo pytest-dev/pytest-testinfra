@@ -87,10 +87,10 @@ class User(Module):
     @property
     def system(self):
         """Return True if system account, False otherwise"""
-        sys_min = self.check_output(
-            "awk '/SYS_UID_MIN/ {print $2}' /etc/login.defs")
-        sys_max = self.check_output(
-            "awk '/SYS_UID_MAX/ {print $2}' /etc/login.defs")
+        sys_min = int(self.check_output(
+            "awk '/SYS_UID_MIN/ {print $2}' /etc/login.defs"))
+        sys_max = int(self.check_output(
+            "awk '/SYS_UID_MAX/ {print $2}' /etc/login.defs"))
         uid = self.uid
         return sys_min <= uid and uid <= sys_max
 
