@@ -183,6 +183,7 @@ def test_user(User):
     assert user.shell == "/usr/sbin/nologin"
     assert user.home == "/var/run/sshd"
     assert user.password == "*"
+    assert user.expires == ""
 
 
 def test_nonexistent_user(User):
