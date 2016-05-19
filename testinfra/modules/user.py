@@ -84,6 +84,16 @@ class User(Module):
         """Return the expiration days since epoch when account expires"""
         return self.check_output("getent shadow %s", self.name).split(":")[7]
 
+    @property
+    def system(self):
+        """Return True if system account, False otherwise"""
+        sys_min = self.check_output(
+            "awk '/SYS_UID_MIN/ {print $2}' /etc/login.defs")
+        sys_max = self.check_output(
+            "awk '/SYS_UID_MAX/ {print $2}' /etc/login.defs")
+        uid = self.uid
+        return sys_min <= uid and uid <= sys_max
+
     @classmethod
     def get_module_class(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
