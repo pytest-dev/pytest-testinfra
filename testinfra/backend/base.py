@@ -134,14 +134,17 @@ class BaseBackend(object):
         else:
             return command
 
+    def get_sudo_command(self, command, sudo_user):
+        if sudo_user is None:
+            return self.quote("sudo /bin/sh -c %s", command)
+        else:
+            return self.quote(
+                "sudo -u %s /bin/sh -c %s", sudo_user, command)
+
     def get_command(self, command, *args):
         command = self.quote(command, *args)
         if self.sudo:
-            if self.sudo_user is None:
-                command = self.quote("sudo /bin/sh -c %s", command)
-            else:
-                command = self.quote(
-                    "sudo -u %s /bin/sh -c %s", self.sudo_user, command)
+            command = self.get_sudo_command(command, self.sudo_user)
         return command
 
     def run(self, command, *args, **kwargs):
