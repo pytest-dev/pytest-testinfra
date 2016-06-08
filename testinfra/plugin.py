@@ -87,6 +87,12 @@ def pytest_addoption(parser):
         help="Use sudo",
     )
     group.addoption(
+        "--sudo-user",
+        action="store",
+        dest="sudo_user",
+        help="sudo user",
+    )
+    group.addoption(
         "--ansible-inventory",
         action="store",
         dest="ansible_inventory",
@@ -113,6 +119,7 @@ def pytest_generate_tests(metafunc):
             connection=metafunc.config.option.connection,
             ssh_config=metafunc.config.option.ssh_config,
             sudo=metafunc.config.option.sudo,
+            sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
         )
         ids = [e.get_pytest_id() for e in params]

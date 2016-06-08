@@ -72,11 +72,12 @@ class BaseBackend(object):
     HAS_RUN_SALT = False
     HAS_RUN_ANSIBLE = False
 
-    def __init__(self, hostname, sudo=False, *args, **kwargs):
+    def __init__(self, hostname, sudo=False, sudo_user=None, *args, **kwargs):
         self._encoding = None
         self._module_cache = {}
         self.hostname = hostname
         self.sudo = sudo
+        self.sudo_user = sudo_user
         super(BaseBackend, self).__init__()
 
     @classmethod
@@ -136,7 +137,11 @@ class BaseBackend(object):
     def get_command(self, command, *args):
         command = self.quote(command, *args)
         if self.sudo:
-            command = self.quote("sudo /bin/sh -c %s", command)
+            if self.sudo_user is None:
+                command = self.quote("sudo /bin/sh -c %s", command)
+            else:
+                command = self.quote(
+                    "sudo -u %s /bin/sh -c %s", self.sudo_user, command)
         return command
 
     def run(self, command, *args, **kwargs):

@@ -20,9 +20,14 @@ SUDO_HOSTS = [
     backend + "://user@debian_jessie?sudo=True"
     for backend in BACKENDS
 ]
+SUDO_USER_HOSTS = [
+    backend + "://debian_jessie?sudo=True&sudo_user=user"
+    for backend in BACKENDS
+]
 
 
-@pytest.mark.testinfra_hosts(*(HOSTS + USER_HOSTS + SUDO_HOSTS))
+@pytest.mark.testinfra_hosts(*(
+    HOSTS + USER_HOSTS + SUDO_HOSTS + SUDO_USER_HOSTS))
 def test_command(Command):
     assert Command.check_output("true") == ""
     # test that quotting is correct
@@ -53,7 +58,7 @@ def test_encoding(TestinfraBackend, Command):
         )
 
 
-@pytest.mark.testinfra_hosts(*USER_HOSTS)
+@pytest.mark.testinfra_hosts(*(USER_HOSTS + SUDO_USER_HOSTS))
 def test_user_connection(User):
     assert User().name == "user"
 

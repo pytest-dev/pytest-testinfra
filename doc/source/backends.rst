@@ -4,12 +4,15 @@ Connection backends
 Testinfra comes with several connections backends for remote command execution,
 they are controlled with the ``--connection`` parameter.
 
+For all backends, command can be run as superuser with the ``--sudo``
+option or as specific user by adding a ``--sudo-user`` option.
+
 local
 ~~~~~
 
-This is the default backend when not hosts are provided (either via ``--hosts``
-or in modules). Commands are run locally in a subprocess under the current
-user. You can use the ``--sudo`` option to run commands as superuser::
+This is the default backend when not hosts are provided (either via
+``--hosts`` or in modules). Commands are run locally in a subprocess under
+the current user::
 
     $ testinfra --sudo test_myinfra.py
 
