@@ -13,6 +13,7 @@
 from __future__ import unicode_literals
 
 import crypt
+import datetime
 import re
 import time
 
@@ -183,6 +184,11 @@ def test_user(User):
     assert user.shell == "/usr/sbin/nologin"
     assert user.home == "/var/run/sshd"
     assert user.password == "*"
+
+
+def test_user_expiration_date(User):
+    assert User("root").expiration_date is None
+    assert User("user").expiration_date == datetime.datetime(2024, 10, 4, 0, 0)
 
 
 def test_nonexistent_user(User):

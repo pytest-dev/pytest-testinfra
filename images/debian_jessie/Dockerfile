@@ -40,6 +40,9 @@ RUN echo "PermitUserEnvironment yes" >> /etc/ssh/sshd_config
 RUN echo "LANG=fr_FR.ISO-8859-15" >> /root/.ssh/environment
 RUN echo "user:foo" | chpasswd
 
+# Expiration date for user "user"
+RUN chage -E 20000 user
+
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR

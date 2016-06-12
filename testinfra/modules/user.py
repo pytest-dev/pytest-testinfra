@@ -13,6 +13,8 @@
 
 from __future__ import unicode_literals
 
+import datetime
+
 from testinfra.modules.base import Module
 
 
@@ -79,6 +81,25 @@ class User(Module):
         """Return the crypted user password"""
         return self.check_output("getent shadow %s", self.name).split(":")[1]
 
+    @property
+    def expiration_date(self):
+        """Return the account expiration date
+
+        >>> User("phil").expiration_date
+        datetime.datetime(2020, 1, 1, 0, 0)
+        >>> User("root").expiration_date
+        None
+        """
+        days = self.check_output("getent shadow %s", self.name).split(":")[7]
+        try:
+            days = int(days)
+        except ValueError:
+            return None
+
+        if days > 0:
+            epoch = datetime.datetime.utcfromtimestamp(0)
+            return epoch + datetime.timedelta(days=int(days))
+
     @classmethod
     def get_module_class(cls, _backend):
         SystemInfo = _backend.get_module("SystemInfo")
@@ -95,3 +116,16 @@ class BSDUser(User):
     @property
     def password(self):
         return self.check_output("getent passwd %s", self.name).split(":")[1]
+
+    @property
+    def expiration_date(self):
+        seconds = self.check_output(
+            "getent passwd %s", self.name).split(":")[6]
+        try:
+            seconds = int(seconds)
+        except ValueError:
+            return None
+
+        if seconds > 0:
+            epoch = datetime.datetime.utcfromtimestamp(0)
+            return epoch + datetime.timedelta(seconds=int(seconds))
