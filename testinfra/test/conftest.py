@@ -117,19 +117,19 @@ def TestinfraBackend(request, tmpdir_factory):
         pytest.skip()
         return
     image, kw = parse_hostspec(request.param)
+    host, user, _ = BaseBackend.parse_hostspec(image)
 
     if getattr(request.function, "destructive", None) is not None:
         scope = "function"
     else:
         scope = "session"
 
-    fname = "_docker_container_%s_%s" % (image, scope)
+    fname = "_docker_container_%s_%s" % (host, scope)
     docker_id, docker_host, port = request.getfuncargvalue(fname)
 
     if kw["connection"] == "docker":
         host = docker_id
     elif kw["connection"] in ("ansible", "ssh", "paramiko", "safe-ssh"):
-        host, user, _ = BaseBackend.parse_hostspec(image)
         tmpdir = tmpdir_factory.mktemp(str(id(request)))
         key = tmpdir.join("ssh_key")
         key.write(open(os.path.join(BASETESTDIR, "ssh_key")).read())
@@ -147,14 +147,13 @@ def TestinfraBackend(request, tmpdir_factory):
             ssh_config.write((
                 "Host {}\n"
                 "  Hostname {}\n"
-                "  User {}\n"
                 "  Port {}\n"
                 "  UserKnownHostsFile /dev/null\n"
                 "  StrictHostKeyChecking no\n"
                 "  IdentityFile {}\n"
                 "  IdentitiesOnly yes\n"
                 "  LogLevel FATAL\n"
-            ).format(image, docker_host, user or "root", port, str(key)))
+            ).format(host, docker_host, port, str(key)))
             kw["ssh_config"] = str(ssh_config)
 
         # Wait ssh to be up
@@ -170,7 +169,12 @@ def TestinfraBackend(request, tmpdir_factory):
         while not service(service_name).is_running:
             time.sleep(.5)
 
-    backend = testinfra.get_backend(host, **kw)
+    if kw["connection"] != "ansible":
+        hostspec = (user or "root") + "@" + host
+    else:
+        hostspec = host
+
+    backend = testinfra.get_backend(hostspec, **kw)
     backend.get_hostname = lambda: image
     return backend
 

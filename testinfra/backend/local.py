@@ -30,6 +30,4 @@ class LocalBackend(base.BaseBackend):
         return [host]
 
     def run(self, command, *args, **kwargs):
-        if self.sudo:
-            command = "sudo " + command
-        return self.run_local(command, *args)
+        return self.run_local(self.get_command(command, *args))

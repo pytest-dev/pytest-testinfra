@@ -33,6 +33,12 @@ TestinfraBackend
    :members:
 
 
+Sudo
+~~~~
+
+.. autoclass:: testinfra.modules.Sudo(user=None)
+
+
 File
 ~~~~
 

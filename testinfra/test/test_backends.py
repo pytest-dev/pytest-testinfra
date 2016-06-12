@@ -13,20 +13,28 @@
 from __future__ import unicode_literals
 import pytest
 
-pytestmark = pytest.mark.testinfra_hosts(
-    "ssh://debian_jessie",
-    "ssh://debian_jessie?sudo=True",
-    "safe-ssh://debian_jessie",
-    "paramiko://debian_jessie",
-    "ansible://debian_jessie",
-)
+BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
+HOSTS = [backend + "://debian_jessie" for backend in BACKENDS]
+USER_HOSTS = [backend + "://user@debian_jessie" for backend in BACKENDS]
+SUDO_HOSTS = [
+    backend + "://user@debian_jessie?sudo=True"
+    for backend in BACKENDS
+]
+SUDO_USER_HOSTS = [
+    backend + "://debian_jessie?sudo=True&sudo_user=user"
+    for backend in BACKENDS
+]
 
 
+@pytest.mark.testinfra_hosts(*(
+    HOSTS + USER_HOSTS + SUDO_HOSTS + SUDO_USER_HOSTS))
 def test_command(Command):
     assert Command.check_output("true") == ""
+    # test that quotting is correct
     assert Command("echo a b | grep -q %s", "a c").rc == 1
 
 
+@pytest.mark.testinfra_hosts(*HOSTS)
 def test_encoding(TestinfraBackend, Command):
     if TestinfraBackend.get_connection_type() == "ansible":
         pytest.skip("ansible handle encoding himself")
@@ -48,3 +56,13 @@ def test_encoding(TestinfraBackend, Command):
             "ls: impossible d'accéder à /é: "
             "Aucun fichier ou dossier de ce type\n"
         )
+
+
+@pytest.mark.testinfra_hosts(*(USER_HOSTS + SUDO_USER_HOSTS))
+def test_user_connection(User):
+    assert User().name == "user"
+
+
+@pytest.mark.testinfra_hosts(*SUDO_HOSTS)
+def test_sudo(User):
+    assert User().name == "root"

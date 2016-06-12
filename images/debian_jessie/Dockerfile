@@ -34,6 +34,12 @@ RUN apt-get update && \
 
 RUN echo "root:foo" | chpasswd
 
+# Enable ssh login for user and fix side effect on environment variables...
+RUN sed -ri 's/^UsePAM yes$/UsePAM no/' /etc/ssh/sshd_config
+RUN echo "PermitUserEnvironment yes" >> /etc/ssh/sshd_config
+RUN echo "LANG=fr_FR.ISO-8859-15" >> /root/.ssh/environment
+RUN echo "user:foo" | chpasswd
+
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR

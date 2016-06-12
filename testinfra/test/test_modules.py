@@ -328,3 +328,21 @@ def test_mountpoint(MountPoint):
     assert mountpoints
     assert all(isinstance(m, MountPoint) for m in mountpoints)
     assert len([m for m in mountpoints if m.path == "/"]) == 1
+
+
+def test_sudo_from_root(Sudo, User):
+    assert User().name == "root"
+    with Sudo("user"):
+        assert User().name == "user"
+    assert User().name == "root"
+
+
+@pytest.mark.testinfra_hosts("docker://user@debian_jessie")
+def test_sudo_to_root(Sudo, User):
+    assert User().name == "user"
+    with Sudo():
+        assert User().name == "root"
+        # Test nested sudo
+        with Sudo("www-data"):
+            assert User().name == "www-data"
+    assert User().name == "user"

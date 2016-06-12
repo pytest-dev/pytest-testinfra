@@ -26,6 +26,7 @@ from testinfra.modules.puppet import PuppetResource
 from testinfra.modules.salt import Salt
 from testinfra.modules.service import Service
 from testinfra.modules.socket import Socket
+from testinfra.modules.sudo import Sudo
 from testinfra.modules.supervisor import Supervisor
 from testinfra.modules.sysctl import Sysctl
 from testinfra.modules.systeminfo import SystemInfo
@@ -36,5 +37,5 @@ __all__ = [
     "Command", "File", "Package", "Group", "Interface",
     "Service", "SystemInfo", "User", "Salt", "PuppetResource",
     "Facter", "Sysctl", "Socket", "Ansible", "Process",
-    "Supervisor", "MountPoint",
+    "Supervisor", "MountPoint", "Sudo",
 ]

@@ -51,6 +51,7 @@ def parse_hostspec(hostspec):
             kw["sudo"] = True
         for key in (
             "ssh_config", "ansible_inventory",
+            "sudo_user",
         ):
             if key in query:
                 kw[key] = query.get(key)[0]
