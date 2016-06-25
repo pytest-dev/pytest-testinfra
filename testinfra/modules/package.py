@@ -60,7 +60,7 @@ class Package(Module):
             return FreeBSDPackage
         elif SystemInfo.type in ("openbsd", "netbsd"):
             return OpenBSDPackage
-        elif Command.run_test("which apt-get").rc == 0:
+        elif Command.run_test("which dpkg-query").rc == 0:
             return DebianPackage
         elif Command.run_test("which rpm").rc == 0:
             return RpmPackage
