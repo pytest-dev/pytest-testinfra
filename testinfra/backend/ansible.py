@@ -15,6 +15,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
+import pprint
 
 from testinfra.backend import base
 import testinfra.utils.ansible_runner as ansible_runner
@@ -52,10 +53,15 @@ class AnsibleBackend(base.BaseBackend):
         return result
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
-        return ansible_runner.run(
+        result = ansible_runner.run(
             self.host, module_name, module_args,
             host_list=self.ansible_inventory,
             **kwargs)
+        logger.info(
+            "RUN Ansible(%s, %s, %s): %s",
+            repr(module_name), repr(module_args), repr(kwargs),
+            pprint.pformat(result))
+        return result
 
     def get_variables(self):
         return ansible_runner.get_variables(
