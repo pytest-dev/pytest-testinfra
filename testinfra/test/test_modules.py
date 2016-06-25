@@ -259,6 +259,8 @@ def test_ansible_unavailable(Ansible):
 
 @pytest.mark.testinfra_hosts("ansible://debian_jessie")
 def test_ansible_module(TestinfraBackend, Ansible):
+    import ansible
+    version = int(ansible.__version__.split(".", 1)[0])
     setup = Ansible("setup")["ansible_facts"]
     assert setup["ansible_lsb"]["codename"] == "jessie"
     passwd = Ansible("file", "path=/etc/passwd")
@@ -275,6 +277,29 @@ def test_ansible_module(TestinfraBackend, Ansible):
     variables = Ansible.get_variables()
     assert variables["inventory_hostname"] == "debian_jessie"
     assert variables["group_names"] == ["ungrouped"]
+
+    # test errors reporting
+    with pytest.raises(Ansible.AnsibleException) as excinfo:
+        Ansible("file", "path=/etc/passwd an_unexpected=variable")
+    tb = str(excinfo.value)
+    assert 'unsupported parameter for module: an_unexpected' in tb
+
+    with pytest.raises(Ansible.AnsibleException) as excinfo:
+        Ansible("command", "zzz")
+    if version == 1:
+        msg = "check mode not supported for command"
+    else:
+        msg = "Skipped. You might want to try check=False"
+    assert excinfo.value.result['msg'] == msg
+
+    try:
+        Ansible("command", "zzz", check=False)
+    except Ansible.AnsibleException as exc:
+        assert exc.result['rc'] == 2
+        assert exc.result['msg'] == '[Errno 2] No such file or directory'
+
+    result = Ansible("command", "echo foo", check=False)
+    assert result['stdout'] == 'foo'
 
 
 @pytest.mark.destructive

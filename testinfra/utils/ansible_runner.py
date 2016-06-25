@@ -16,6 +16,8 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import pprint
+
 try:
     import ansible
 except ImportError:
@@ -92,6 +94,9 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
             **kwargs).run()
         if host not in result["contacted"]:
             raise RuntimeError("Unexpected error: {}".format(result))
+        if result["contacted"][host].get("skipped", False) is True:
+            # For consistency with ansible v2 backend
+            result["contacted"][host]["failed"] = True
         return result["contacted"][host]
 
 
@@ -113,24 +118,29 @@ class Options(object):
 if _has_ansible and _ansible_major_version == 2:
     class Callback(ansible.plugins.callback.CallbackBase):
 
-        def __init__(self):
-            self.unreachable = {}
-            self.contacted = {}
+        def __init__(self, *args, **kwargs):
+            self.result = {}
+            super(Callback, self).__init__(*args, **kwargs)
 
         def runner_on_ok(self, host, result):
-            self.contacted[host] = {
-                "success": True,
-                "result": result,
-            }
+            self.result = result
 
         def runner_on_failed(self, host, result, ignore_errors=False):
-            self.contacted[host] = {
-                "success": False,
-                "result": result,
-            }
+            self.result = result
 
+        # pylint: disable=no-self-use
         def runner_on_unreachable(self, host, result):
-            self.unreachable[host] = result
+            raise RuntimeError(
+                'Host {} is unreachable: {}'.format(
+                    host, pprint.pformat(result)),
+            )
+
+        def runner_on_skipped(self, host, item=None):
+            self.result = {
+                'failed': True,
+                'msg': 'Skipped. You might want to try check=False',
+                'item': item,
+            }
 
 
 class AnsibleRunnerV2(AnsibleRunnerBase):
@@ -186,10 +196,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
             if tqm is not None:
                 tqm.cleanup()
 
-        if host in callback.unreachable:
-            raise RuntimeError(
-                "host unreachable: {}".format(callback.unreachable[host]))
-        return callback.contacted[host]["result"]
+        return callback.result
 
 if not _has_ansible:
     AnsibleRunner = AnsibleRunnerUnavailable
