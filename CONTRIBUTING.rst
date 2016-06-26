@@ -30,14 +30,6 @@ To run only some selected tests::
     tox -e py27 -- -v --pdb testinfra/test/test_modules.py
 
 
-To speedup the docker images generation you can download them before running
-the tests (docker will detect they are the same and use the cache)::
-
-    for tag in debian_jessie debian_wheezy centos_7 fedora ubuntu_trusty; do
-        docker pull philpep/testinfra:$tag
-    done
-
-
 Code style
 ==========
 

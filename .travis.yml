@@ -12,7 +12,6 @@ python: 2.7
 before_install:
   - if [ x"$DOCKER" = x"true" ]; then sudo apt-get update -qq && sudo apt-get install -y -o Dpkg::Options::="--force-confnew" docker-engine; fi
   - docker version
-  - if [ x"$DOCKER" = x"true" ]; then for image in debian_wheezy debian_jessie ubuntu_trusty centos_7 fedora; do docker pull philpep/testinfra:$image; done; fi
 install:
   - pip install tox
 script:
