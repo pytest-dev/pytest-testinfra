@@ -275,6 +275,7 @@ def test_ansible_module(TestinfraBackend, Ansible):
     assert passwd["uid"] == 0
 
     variables = Ansible.get_variables()
+    assert variables["myvar"] == "foo"
     assert variables["inventory_hostname"] == "debian_jessie"
     assert variables["group_names"] == ["ungrouped"]
 

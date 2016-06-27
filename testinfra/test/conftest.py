@@ -54,6 +54,7 @@ def get_ansible_inventory(name, hostname, user, port, key):
     items = [
         name,
         "ansible_ssh_private_key_file={}".format(key),
+        "myvar=foo",
     ]
     if ansible_major_version == 1:
         items.extend([
