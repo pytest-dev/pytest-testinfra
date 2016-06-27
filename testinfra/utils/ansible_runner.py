@@ -208,16 +208,3 @@ else:
     raise NotImplementedError(
         "Unhandled ansible version " + ansible.__version__
     )
-
-
-def get_hosts(host_list=None, pattern=None):
-    return AnsibleRunner(host_list).get_hosts(pattern)
-
-
-def run(host, module_name, module_args=None, host_list=None, **kwargs):
-    return AnsibleRunner(host_list).run(
-        host, module_name, module_args, **kwargs)
-
-
-def get_variables(host, host_list=None):
-    return AnsibleRunner(host_list).get_variables(host)
