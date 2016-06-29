@@ -66,3 +66,14 @@ def test_user_connection(User):
 @pytest.mark.testinfra_hosts(*SUDO_HOSTS)
 def test_sudo(User):
     assert User().name == "root"
+
+
+@pytest.mark.testinfra_hosts("ansible://debian_jessie")
+def test_ansible_hosts_expand(TestinfraBackend):
+    from testinfra.backend.ansible import AnsibleBackend
+
+    def get_hosts(spec):
+        return AnsibleBackend.get_hosts(
+            spec, ansible_inventory=TestinfraBackend.ansible_inventory)
+    assert get_hosts(["all"]) == ["debian_jessie"]
+    assert get_hosts(["*ia*jess*"]) == ["debian_jessie"]
