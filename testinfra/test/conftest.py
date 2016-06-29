@@ -49,7 +49,7 @@ def has_docker():
     return _HAS_DOCKER
 
 
-def get_ansible_inventory(name, hostname, user, port, key):
+def setup_ansible_config(tmpdir, name, host, user, port, key):
     ansible_major_version = int(ansible.__version__.split(".", 1)[0])
     items = [
         name,
@@ -58,17 +58,17 @@ def get_ansible_inventory(name, hostname, user, port, key):
     ]
     if ansible_major_version == 1:
         items.extend([
-            "ansible_ssh_host={}".format(hostname),
+            "ansible_ssh_host={}".format(host),
             "ansible_ssh_user={}".format(user),
             "ansible_ssh_port={}".format(port),
         ])
     elif ansible_major_version == 2:
         items.extend([
-            "ansible_host={}".format(hostname),
+            "ansible_host={}".format(host),
             "ansible_user={}".format(user),
             "ansible_port={}".format(port),
         ])
-    return " ".join(items) + "\n"
+    tmpdir.join("inventory").write(" ".join(items) + "\n")
 
 
 def build_docker_container_fixture(image, scope):
@@ -139,10 +139,10 @@ def TestinfraBackend(request, tmpdir_factory):
             if ansible is None:
                 pytest.skip()
                 return
-            inventory = tmpdir.join("inventory")
-            inventory.write(get_ansible_inventory(
-                host, docker_host, user or "root", port, str(key)))
-            kw["ansible_inventory"] = str(inventory)
+            setup_ansible_config(
+                tmpdir, host, docker_host, user or "root", port, str(key))
+            # this force backend cache reloading
+            kw["ansible_inventory"] = str(tmpdir.join("inventory"))
         else:
             ssh_config = tmpdir.join("ssh_config")
             ssh_config.write((
