@@ -69,6 +69,13 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
             "ansible_port={}".format(port),
         ])
     tmpdir.join("inventory").write(" ".join(items) + "\n")
+    ansible_cfg = tmpdir.join("ansible.cfg")
+    ansible_cfg.write((
+        "[defaults]\n"
+        "host_key_checking=False\n\n"
+        "[ssh_connection]\n"
+        "pipelining=True\n"
+    ))
 
 
 def build_docker_container_fixture(image, scope):
@@ -141,6 +148,7 @@ def TestinfraBackend(request, tmpdir_factory):
                 return
             setup_ansible_config(
                 tmpdir, host, docker_host, user or "root", port, str(key))
+            os.environ["ANSIBLE_CONFIG"] = str(tmpdir.join("ansible.cfg"))
             # this force backend cache reloading
             kw["ansible_inventory"] = str(tmpdir.join("inventory"))
         else:

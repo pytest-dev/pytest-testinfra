@@ -263,7 +263,7 @@ def test_ansible_module(TestinfraBackend, Ansible):
     version = int(ansible.__version__.split(".", 1)[0])
     setup = Ansible("setup")["ansible_facts"]
     assert setup["ansible_lsb"]["codename"] == "jessie"
-    passwd = Ansible("file", "path=/etc/passwd")
+    passwd = Ansible("file", "path=/etc/passwd state=file")
     assert passwd["changed"] is False
     assert passwd["gid"] == 0
     assert passwd["group"] == "root"

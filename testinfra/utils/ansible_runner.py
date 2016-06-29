@@ -25,16 +25,25 @@ except ImportError:
 else:
     _has_ansible = True
     _ansible_major_version = int(ansible.__version__.split(".", 1)[0])
+    import ansible.constants
     if _ansible_major_version == 1:
         import ansible.inventory
         import ansible.runner
+        import ansible.utils
     elif _ansible_major_version == 2:
+        import ansible.cli
         import ansible.executor.task_queue_manager
         import ansible.inventory
         import ansible.parsing.dataloader
         import ansible.playbook.play
         import ansible.plugins.callback
         import ansible.vars
+
+
+def _reload_constants():
+    # Reload defaults that can depend on environment variables and
+    # current working directory
+    reload(ansible.constants)
 
 
 class AnsibleRunnerBase(object):
@@ -71,7 +80,11 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
 
     def __init__(self, host_list=None):
         super(AnsibleRunnerV1, self).__init__(host_list)
-        self.inventory = ansible.inventory.Inventory(self.host_list)
+        _reload_constants()
+        kwargs = {}
+        if self.host_list is not None:
+            kwargs["host_list"] = host_list
+        self.inventory = ansible.inventory.Inventory(**kwargs)
 
     def get_hosts(self, pattern=None):
         return [
@@ -91,6 +104,7 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
         result = ansible.runner.Runner(
             pattern=host,
             module_name=module_name,
+            inventory=self.inventory,
             **kwargs).run()
         if host not in result["contacted"]:
             raise RuntimeError("Unexpected error: {}".format(result))
@@ -98,21 +112,6 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
             # For consistency with ansible v2 backend
             result["contacted"][host]["failed"] = True
         return result["contacted"][host]
-
-
-class Options(object):
-
-    def __init__(self, **kwargs):
-        self.connection = "smart"
-        for attr in (
-            "module_path", "forks", "remote_user", "private_key_file",
-            "ssh_common_args", "ssh_extra_args", "sftp_extra_args",
-            "scp_extra_args", "become", "become_method", "become_user",
-            "verbosity",
-        ):
-            setattr(self, attr, None)
-        self.check = kwargs.get("check", False)
-        super(Options, self).__init__()
 
 
 if _has_ansible and _ansible_major_version == 2:
@@ -147,12 +146,26 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
 
     def __init__(self, host_list=None):
         super(AnsibleRunnerV2, self).__init__(host_list)
+        _reload_constants()
         self.variable_manager = ansible.vars.VariableManager()
+        self.options = ansible.cli.CLI(None).base_parser(
+            connect_opts=True,
+            meta_opts=True,
+            runas_opts=True,
+            subset_opts=True,
+            check_opts=True,
+            inventory_opts=True,
+            runtask_opts=True,
+            vault_opts=True,
+            fork_opts=True,
+            module_opts=True,
+        ).parse_args([])[0]
+        self.options.connection = "smart"
         self.loader = ansible.parsing.dataloader.DataLoader()
         self.inventory = ansible.inventory.Inventory(
             loader=self.loader,
             variable_manager=self.variable_manager,
-            host_list=host_list,
+            host_list=host_list or self.options.inventory,
         )
         self.variable_manager.set_inventory(self.inventory)
 
@@ -166,6 +179,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         return self.inventory.get_vars(host)
 
     def run(self, host, module_name, module_args=None, **kwargs):
+        self.options.check = kwargs.get("check", False)
         action = {"module": module_name}
         if module_args is not None:
             if module_name in ("command", "shell"):
@@ -180,14 +194,13 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
             }],
         }, variable_manager=self.variable_manager, loader=self.loader)
         tqm = None
-        options = Options(**kwargs)
         callback = Callback()
         try:
             tqm = ansible.executor.task_queue_manager.TaskQueueManager(
                 inventory=self.inventory,
                 variable_manager=self.variable_manager,
                 loader=self.loader,
-                options=options,
+                options=self.options,
                 passwords=None,
                 stdout_callback=callback,
             )
