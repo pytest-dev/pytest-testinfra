@@ -49,6 +49,20 @@ def has_docker():
     return _HAS_DOCKER
 
 
+# Generated with
+# $ echo myhostvar: bar > hostvars.yml
+# $ echo polichinelle > vault-pass.txt
+# $ ansible-vault encrypt --vault-password-file vault-pass.txt hostvars.yml
+# $ cat hostvars.yml
+ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
+39396233323131393835363638373764336364323036313434306134636633353932623363646233
+6436653132383662623364313438376662666135346266370a343934663431363661393363386633
+64656261336662623036373036363535313964313538366533313334366363613435303066316639
+3235393661656230350a326264356530326432393832353064363439393330616634633761393838
+3261
+"""
+
+
 def setup_ansible_config(tmpdir, name, host, user, port, key):
     ansible_major_version = int(ansible.__version__.split(".", 1)[0])
     items = [
@@ -68,14 +82,17 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
             "ansible_user={}".format(user),
             "ansible_port={}".format(port),
         ])
-    tmpdir.join("inventory").write(" ".join(items) + "\n")
+    tmpdir.mkdir("host_vars").join(name).write(ANSIBLE_HOSTVARS)
+    vault_password_file = tmpdir.join("vault-pass.txt")
+    vault_password_file.write("polichinelle\n")
     ansible_cfg = tmpdir.join("ansible.cfg")
     ansible_cfg.write((
         "[defaults]\n"
+        "vault_password_file={}\n"
         "host_key_checking=False\n\n"
         "[ssh_connection]\n"
         "pipelining=True\n"
-    ))
+    ).format(str(vault_password_file)))
 
 
 def build_docker_container_fixture(image, scope):

@@ -276,6 +276,7 @@ def test_ansible_module(TestinfraBackend, Ansible):
 
     variables = Ansible.get_variables()
     assert variables["myvar"] == "foo"
+    assert variables["myhostvar"] == "bar"
     assert variables["inventory_hostname"] == "debian_jessie"
     assert variables["group_names"] == ["ungrouped"]
 

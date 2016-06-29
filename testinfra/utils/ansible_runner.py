@@ -81,7 +81,9 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
     def __init__(self, host_list=None):
         super(AnsibleRunnerV1, self).__init__(host_list)
         _reload_constants()
-        kwargs = {}
+        self.vault_pass = ansible.utils.read_vault_file(
+            ansible.constants.DEFAULT_VAULT_PASSWORD_FILE)
+        kwargs = {"vault_password": self.vault_pass}
         if self.host_list is not None:
             kwargs["host_list"] = host_list
         self.inventory = ansible.inventory.Inventory(**kwargs)
@@ -104,6 +106,7 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
         result = ansible.runner.Runner(
             pattern=host,
             module_name=module_name,
+            vault_pass=self.vault_pass,
             inventory=self.inventory,
             **kwargs).run()
         if host not in result["contacted"]:
@@ -162,6 +165,11 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         ).parse_args([])[0]
         self.options.connection = "smart"
         self.loader = ansible.parsing.dataloader.DataLoader()
+        if self.options.vault_password_file:
+            vault_pass = ansible.cli.CLI.read_vault_password_file(
+                self.options.vault_password_file, loader=self.loader)
+            self.loader.set_vault_password(vault_pass)
+
         self.inventory = ansible.inventory.Inventory(
             loader=self.loader,
             variable_manager=self.variable_manager,
