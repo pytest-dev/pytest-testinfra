@@ -76,4 +76,5 @@ def test_ansible_hosts_expand(TestinfraBackend):
         return AnsibleBackend.get_hosts(
             spec, ansible_inventory=TestinfraBackend.ansible_inventory)
     assert get_hosts(["all"]) == ["debian_jessie"]
+    assert get_hosts(["testgroup"]) == ["debian_jessie"]
     assert get_hosts(["*ia*jess*"]) == ["debian_jessie"]

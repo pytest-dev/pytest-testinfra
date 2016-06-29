@@ -37,6 +37,7 @@ else:
         import ansible.parsing.dataloader
         import ansible.playbook.play
         import ansible.plugins.callback
+        import ansible.utils.vars
         import ansible.vars
 
 
@@ -184,7 +185,9 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         ]
 
     def get_variables(self, host):
-        return self.inventory.get_vars(host)
+        host = self.inventory.get_host(host)
+        return ansible.utils.vars.combine_vars(
+            host.get_group_vars(), host.get_vars())
 
     def run(self, host, module_name, module_args=None, **kwargs):
         self.options.check = kwargs.get("check", False)
