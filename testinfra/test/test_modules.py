@@ -263,7 +263,7 @@ def test_ansible_module(TestinfraBackend, Ansible):
     version = int(ansible.__version__.split(".", 1)[0])
     setup = Ansible("setup")["ansible_facts"]
     assert setup["ansible_lsb"]["codename"] == "jessie"
-    passwd = Ansible("file", "path=/etc/passwd")
+    passwd = Ansible("file", "path=/etc/passwd state=file")
     assert passwd["changed"] is False
     assert passwd["gid"] == 0
     assert passwd["group"] == "root"
@@ -275,8 +275,11 @@ def test_ansible_module(TestinfraBackend, Ansible):
     assert passwd["uid"] == 0
 
     variables = Ansible.get_variables()
+    assert variables["myvar"] == "foo"
+    assert variables["myhostvar"] == "bar"
+    assert variables["mygroupvar"] == "qux"
     assert variables["inventory_hostname"] == "debian_jessie"
-    assert variables["group_names"] == ["ungrouped"]
+    assert variables["group_names"] == ["testgroup"]
 
     # test errors reporting
     with pytest.raises(Ansible.AnsibleException) as excinfo:

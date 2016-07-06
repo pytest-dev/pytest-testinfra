@@ -49,25 +49,57 @@ def has_docker():
     return _HAS_DOCKER
 
 
-def get_ansible_inventory(name, hostname, user, port, key):
+# Generated with
+# $ echo myhostvar: bar > hostvars.yml
+# $ echo polichinelle > vault-pass.txt
+# $ ansible-vault encrypt --vault-password-file vault-pass.txt hostvars.yml
+# $ cat hostvars.yml
+ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
+39396233323131393835363638373764336364323036313434306134636633353932623363646233
+6436653132383662623364313438376662666135346266370a343934663431363661393363386633
+64656261336662623036373036363535313964313538366533313334366363613435303066316639
+3235393661656230350a326264356530326432393832353064363439393330616634633761393838
+3261
+"""
+
+
+def setup_ansible_config(tmpdir, name, host, user, port, key):
     ansible_major_version = int(ansible.__version__.split(".", 1)[0])
     items = [
         name,
         "ansible_ssh_private_key_file={}".format(key),
+        "myvar=foo",
     ]
     if ansible_major_version == 1:
         items.extend([
-            "ansible_ssh_host={}".format(hostname),
+            "ansible_ssh_host={}".format(host),
             "ansible_ssh_user={}".format(user),
             "ansible_ssh_port={}".format(port),
         ])
     elif ansible_major_version == 2:
         items.extend([
-            "ansible_host={}".format(hostname),
+            "ansible_host={}".format(host),
             "ansible_user={}".format(user),
             "ansible_port={}".format(port),
         ])
-    return " ".join(items) + "\n"
+    tmpdir.join("inventory").write(
+        "[testgroup]\n" + " ".join(items) + "\n")
+    tmpdir.mkdir("host_vars").join(name).write(ANSIBLE_HOSTVARS)
+    tmpdir.mkdir("group_vars").join("testgroup").write((
+        "---\n"
+        "myhostvar: should_be_overriden\n"
+        "mygroupvar: qux\n"
+    ))
+    vault_password_file = tmpdir.join("vault-pass.txt")
+    vault_password_file.write("polichinelle\n")
+    ansible_cfg = tmpdir.join("ansible.cfg")
+    ansible_cfg.write((
+        "[defaults]\n"
+        "vault_password_file={}\n"
+        "host_key_checking=False\n\n"
+        "[ssh_connection]\n"
+        "pipelining=True\n"
+    ).format(str(vault_password_file)))
 
 
 def build_docker_container_fixture(image, scope):
@@ -138,10 +170,11 @@ def TestinfraBackend(request, tmpdir_factory):
             if ansible is None:
                 pytest.skip()
                 return
-            inventory = tmpdir.join("inventory")
-            inventory.write(get_ansible_inventory(
-                host, docker_host, user or "root", port, str(key)))
-            kw["ansible_inventory"] = str(inventory)
+            setup_ansible_config(
+                tmpdir, host, docker_host, user or "root", port, str(key))
+            os.environ["ANSIBLE_CONFIG"] = str(tmpdir.join("ansible.cfg"))
+            # this force backend cache reloading
+            kw["ansible_inventory"] = str(tmpdir.join("inventory"))
         else:
             ssh_config = tmpdir.join("ssh_config")
             ssh_config.write((

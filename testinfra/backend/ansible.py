@@ -18,7 +18,6 @@ import logging
 import pprint
 
 from testinfra.backend import base
-import testinfra.utils.ansible_runner as ansible_runner
 
 logger = logging.getLogger("testinfra")
 
@@ -30,7 +29,15 @@ class AnsibleBackend(base.BaseBackend):
     def __init__(self, host, ansible_inventory=None, *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
+        self._ansible_runner = None
         super(AnsibleBackend, self).__init__(host, *args, **kwargs)
+
+    @property
+    def ansible_runner(self):
+        if self._ansible_runner is None:
+            from testinfra.utils.ansible_runner import AnsibleRunner
+            self._ansible_runner = AnsibleRunner(self.ansible_inventory)
+        return self._ansible_runner
 
     def run(self, command, *args):
         command = self.get_command(command, *args)
@@ -53,9 +60,8 @@ class AnsibleBackend(base.BaseBackend):
         return result
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
-        result = ansible_runner.run(
+        result = self.ansible_runner.run(
             self.host, module_name, module_args,
-            host_list=self.ansible_inventory,
             **kwargs)
         logger.info(
             "RUN Ansible(%s, %s, %s): %s",
@@ -64,9 +70,9 @@ class AnsibleBackend(base.BaseBackend):
         return result
 
     def get_variables(self):
-        return ansible_runner.get_variables(
-            self.host, host_list=self.ansible_inventory)
+        return self.ansible_runner.get_variables(self.host)
 
     @classmethod
     def get_hosts(cls, host, **kwargs):
-        return ansible_runner.get_hosts(kwargs.get("ansible_inventory"), host)
+        from testinfra.utils.ansible_runner import AnsibleRunner
+        return AnsibleRunner(kwargs.get("ansible_inventory")).get_hosts(host)
