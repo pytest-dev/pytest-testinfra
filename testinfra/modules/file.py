@@ -142,7 +142,7 @@ class File(Module):
         """Return file content as bytes
 
         >>> File("/tmp/foo").content
-        b'bar'
+        b'caf\\xc3\\xa9'
         """
         return self._get_content(False)
 
@@ -150,8 +150,8 @@ class File(Module):
     def content_string(self):
         """Return file content as string
 
-        >>> File("/tmp/foo").content
-        'bar'
+        >>> File("/tmp/foo").content_string
+        'café'
         """
         return self._get_content(True)
 
