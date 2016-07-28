@@ -1,2 +1,2 @@
 pytest
-six
+six>=1.4
