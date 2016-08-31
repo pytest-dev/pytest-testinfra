@@ -69,6 +69,8 @@ class Socket(Module):
 
     ``socketspec`` must be specified as ``<protocol>://<host>:<port>``
 
+    This module requires the ``netstat`` command to on the target host.
+
     Example:
 
       - Unix sockets: ``unix:///var/run/docker.sock``
