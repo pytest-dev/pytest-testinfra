@@ -1,2 +1,2 @@
-pytest
+pytest!=3.0.2
 six>=1.4
