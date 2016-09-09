@@ -226,7 +226,8 @@ def pytest_generate_tests(metafunc):
             # Default
             hosts = ["docker://debian_jessie"]
 
-        metafunc.parametrize("TestinfraBackend", hosts, indirect=True)
+        metafunc.parametrize("TestinfraBackend", hosts, indirect=True,
+                             scope="function")
 
 
 def pytest_configure(config):
