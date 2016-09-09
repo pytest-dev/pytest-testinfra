@@ -271,7 +271,8 @@ def test_ansible_module(TestinfraBackend, Ansible):
     assert passwd["owner"] == "root"
     assert isinstance(passwd["size"], int)
     assert passwd["path"] == "/etc/passwd"
-    assert passwd["state"] == "file"
+    # seems to vary with differents docker fs backend
+    assert passwd["state"] in ("file", "hard")
     assert passwd["uid"] == 0
 
     variables = Ansible.get_variables()
