@@ -81,4 +81,6 @@ The ansible backend use the `ansible python API
     $ testinfra --connection=ansible --hosts=host1,host2
     $ testinfra --connection=ansible --hosts='web*'
 
-You can use an alternative `inventory` with the ``--ansible-inventory`` option
+You can use an alternative `inventory` with the ``--ansible-inventory`` option.
+
+To use a different remote user, set the `$ANSIBLE_REMOTE_USER` environment variable: `$ export ANSIBLE_REMOTE_USER=<your-remote-user>`.
