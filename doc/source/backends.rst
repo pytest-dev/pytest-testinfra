@@ -83,4 +83,5 @@ The ansible backend use the `ansible python API
 
 You can use an alternative `inventory` with the ``--ansible-inventory`` option.
 
-To use a different remote user, set the `$ANSIBLE_REMOTE_USER` environment variable: `$ export ANSIBLE_REMOTE_USER=<your-remote-user>`.
+Note: Ansible settings such as ``remote_user``, etc., may be configured by using Ansible's
+`environment variables <http://docs.ansible.com/ansible/intro_configuration.html#environmental-configuration>`_.
