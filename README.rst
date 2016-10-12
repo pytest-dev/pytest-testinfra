@@ -2,7 +2,7 @@
 Testinfra test your infrastructure
 ##################################
 
-Latest documentation: http://testinfra.readthedocs.org/en/latest
+Latest documentation: https://testinfra.readthedocs.io/en/latest
 
 About
 =====
