@@ -109,3 +109,11 @@ The winrm backend uses `pywinrm <https://pypi.python.org/pypi/pywinrm>`_::
 
     $ py.test --hosts='winrm://Administrator:Password@127.0.0.1'
     $ py.test --connection=winrm --hosts='vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
+
+LXC
+~~~
+
+The LXC backend can be used to test *running* LXC containers. It uses the
+`lxc exec <https://linuxcontainers.org/lxd/getting-started-cli/>`_ command::
+
+    $ testinfra --hosts='lxc://container_name'
