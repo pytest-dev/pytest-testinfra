@@ -15,7 +15,7 @@ all the tests pass *before* submitting your pull request. To run the complete
 test suite you must install:
 
 - `Docker <https://www.docker.com>`_
-- `tox <https://tox.readthedocs.org/en/latest/>`_
+- `tox <https://tox.readthedocs.io/en/latest/>`_
 
 To run all tests run::
 
@@ -34,7 +34,7 @@ Code style
 ==========
 
 Your code must pass without errors under `flake8
-<https://flake8.readthedocs.org>`_ with the extension `hacking
+<https://flake8.readthedocs.io>`_ with the extension `hacking
 <http://docs.openstack.org/developer/hacking/>`_::
 
 
