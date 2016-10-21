@@ -80,6 +80,6 @@ class SaltBackend(base.BaseBackend):
             if not hosts:
                 raise RuntimeError("No host matching '%s'" % (host,))
             else:
-                return hosts
+                return sorted(hosts)
         else:
             return super(SaltBackend, cls).get_hosts(host, **kwargs)
