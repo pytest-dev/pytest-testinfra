@@ -82,3 +82,13 @@ The ansible backend use the `ansible python API
     $ testinfra --connection=ansible --hosts='web*'
 
 You can use an alternative `inventory` with the ``--ansible-inventory`` option
+
+
+LXD
+~~~
+
+The LXD backend can be used to test *running* LXD containers. It uses the
+`lxc exec <https://linuxcontainers.org/lxd/getting-started-cli/>`_ command::
+
+    $ testinfra --connection=lxd --hosts=container_name
+
