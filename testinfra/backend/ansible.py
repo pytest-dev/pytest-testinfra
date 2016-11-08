@@ -43,21 +43,26 @@ class AnsibleBackend(base.BaseBackend):
         command = self.get_command(command, *args)
         out = self.run_ansible("shell", module_args=command)
 
-        # Ansible return an unicode object but this is bytes ...
+        # Ansible may return bytes as an unicode object...
         # A simple test case is:
         # >>> assert File("/bin/true").content == open("/bin/true").read()
-        stdout_bytes = b"".join((chr(ord(c)) for c in out['stdout']))
-        stderr_bytes = b"".join((chr(ord(c)) for c in out['stderr']))
+        try:
+            stdout_bytes = b"".join((chr(ord(c)) for c in out['stdout']))
+        except ValueError:
+            stdout_bytes = None
 
-        result = base.CommandResult(
-            self, out['rc'],
-            stdout_bytes,
-            stderr_bytes,
+        try:
+            stderr_bytes = b"".join((chr(ord(c)) for c in out['stderr']))
+        except ValueError:
+            stderr_bytes = None
+
+        return self.result(
+            out['rc'],
             command,
+            stdout_bytes=stdout_bytes,
+            stderr_bytes=stderr_bytes,
             stdout=out["stdout"], stderr=out["stderr"],
         )
-        logger.info("RUN %s", result)
-        return result
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
         result = self.ansible_runner.run(

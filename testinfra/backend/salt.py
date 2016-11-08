@@ -14,8 +14,6 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-import logging
-
 try:
     import salt.client
 except ImportError:
@@ -24,7 +22,6 @@ else:
     HAS_SALT = True
 
 from testinfra.backend import base
-logger = logging.getLogger("testinfra")
 
 
 class SaltBackend(base.BaseBackend):
@@ -52,10 +49,8 @@ class SaltBackend(base.BaseBackend):
     def run(self, command, *args):
         command = self.get_command(command, *args)
         out = self.run_salt("cmd.run_all", [command])
-        result = base.CommandResult(
-            self, out['retcode'], out['stdout'], out['stderr'], command)
-        logger.info("RUN %s", result)
-        return result
+        return self.result(out['retcode'], command, out['stdout'],
+                           out['stderr'])
 
     def run_salt(self, func, args=None):
         out = self.client.cmd(self.host, func, args or [])

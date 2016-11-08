@@ -80,6 +80,4 @@ class SafeSshBackend(SshBackend):
         rc = int(rc)
         stdout = base64.b64decode(stdout)
         stderr = base64.b64decode(stderr)
-        return base.CommandResult(
-            self, rc, stdout, stderr,
-            self.encode(orig_command))
+        return self.result(rc, self.encode(orig_command), stdout, stderr)
