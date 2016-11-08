@@ -51,11 +51,11 @@ class Service(Module):
         Command = _backend.get_module("Command")
         if SystemInfo.type == "linux":
             if (
-                Command.run_test("which systemctl").rc == 0
+                Command.run_test("command -v systemctl").rc == 0
                 and "systemd" in File("/sbin/init").linked_to
             ):
                 return SystemdService
-            elif Command.run_test("which initctl").rc == 0:
+            elif Command.run_test("command -v initctl").rc == 0:
                 return UpstartService
             else:
                 return SysvService
