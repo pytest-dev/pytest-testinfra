@@ -300,7 +300,11 @@ def test_ansible_module(TestinfraBackend, Ansible):
         Ansible("command", "zzz", check=False)
     except Ansible.AnsibleException as exc:
         assert exc.result['rc'] == 2
-        assert exc.result['msg'] == '[Errno 2] No such file or directory'
+        if version == 1:
+            assert exc.result['msg'] == '[Errno 2] No such file or directory'
+        else:
+            assert exc.result['msg'] == ('[Errno 2] Aucun fichier ou dossier '
+                                         'de ce type')
 
     result = Ansible("command", "echo foo", check=False)
     assert result['stdout'] == 'foo'
