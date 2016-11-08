@@ -185,9 +185,8 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         ]
 
     def get_variables(self, host):
-        host = self.inventory.get_host(host)
-        return ansible.utils.vars.combine_vars(
-            host.get_group_vars(), host.get_vars())
+        return self.variable_manager.get_vars(
+            self.loader, host=self.inventory.get_host(host))
 
     def run(self, host, module_name, module_args=None, **kwargs):
         self.options.check = kwargs.get("check", False)
