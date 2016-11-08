@@ -14,7 +14,6 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-import logging
 import os
 
 try:
@@ -31,7 +30,6 @@ else:
             pass
 
 from testinfra.backend import base
-logger = logging.getLogger("testinfra")
 
 
 class ParamikoBackend(base.BaseBackend):
@@ -99,6 +97,4 @@ class ParamikoBackend(base.BaseBackend):
             else:
                 raise
 
-        result = base.CommandResult(self, rc, stdout, stderr, command)
-        logger.info("RUN %s", result)
-        return result
+        return self.result(rc, command, stdout, stderr)

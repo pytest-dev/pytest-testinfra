@@ -26,12 +26,12 @@ logger = logging.getLogger("testinfra")
 class CommandResult(object):
 
     def __init__(
-        self, backend, exit_status, stdout_bytes, stderr_bytes, command,
-        stdout=None, stderr=None,
+        self, backend, exit_status, command, stdout_bytes,
+        stderr_bytes, stdout=None, stderr=None,
     ):
         self.exit_status = exit_status
-        self.stdout_bytes = stdout_bytes
-        self.stderr_bytes = stderr_bytes
+        self._stdout_bytes = stdout_bytes
+        self._stderr_bytes = stderr_bytes
         self._stdout = stdout
         self._stderr = stderr
         self.command = command
@@ -45,14 +45,26 @@ class CommandResult(object):
     @property
     def stdout(self):
         if self._stdout is None:
-            self._stdout = self._backend.decode(self.stdout_bytes)
+            self._stdout = self._backend.decode(self._stdout_bytes)
         return self._stdout
 
     @property
     def stderr(self):
         if self._stderr is None:
-            self._stderr = self._backend.decode(self.stderr_bytes)
+            self._stderr = self._backend.decode(self._stderr_bytes)
         return self._stderr
+
+    @property
+    def stdout_bytes(self):
+        if self._stdout_bytes is None:
+            self._stdout_bytes = self._backend.encode(self._stdout)
+        return self._stdout_bytes
+
+    @property
+    def stderr_bytes(self):
+        if self._stderr_bytes is None:
+            self._stderr_bytes = self._backend.encode(self._stderr)
+        return self._stderr_bytes
 
     def __repr__(self):
         return (
@@ -61,8 +73,8 @@ class CommandResult(object):
         ) % (
             repr(self.command),
             self.exit_status,
-            repr(self.stdout_bytes),
-            repr(self.stderr_bytes),
+            repr(self._stdout_bytes or self._stdout),
+            repr(self._stderr_bytes or self._stderr),
         )
 
 
@@ -160,10 +172,7 @@ class BaseBackend(object):
             stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate()
-        result = CommandResult(
-            self, p.returncode, stdout, stderr, command,
-        )
-        logger.info("RUN %s", result)
+        result = self.result(p.returncode, command, stdout, stderr)
         return result
 
     @staticmethod
@@ -205,6 +214,11 @@ class BaseBackend(object):
             return data.encode("ascii")
         except UnicodeEncodeError:
             return data.encode(self.encoding)
+
+    def result(self, *args, **kwargs):
+        result = CommandResult(self, *args, **kwargs)
+        logger.info("RUN %s", result)
+        return result
 
     def get_module(self, name):
         """Return the testinfra module adapted to the current backend
