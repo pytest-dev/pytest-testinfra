@@ -35,7 +35,7 @@ class Module(object):
         return out
 
     def run_test(self, command, *args, **kwargs):
-        """Run command and check it return an exit status of 0 or 1
+        """Run command and check it return an exit status of 0, 1 or 127
 
         :raises: AssertionError
         """
