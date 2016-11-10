@@ -39,6 +39,7 @@ Process = modules.Process.as_fixture()
 Supervisor = modules.Supervisor.as_fixture()
 MountPoint = modules.MountPoint.as_fixture()
 Sudo = modules.Sudo.as_fixture()
+PipPackage = modules.PipPackage.as_fixture()
 
 
 @pytest.fixture()

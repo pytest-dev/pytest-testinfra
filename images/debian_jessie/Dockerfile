@@ -3,7 +3,7 @@ FROM debian:jessie
 # ntpd is linked to /bin/false, so the service is not running but is enabled
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install python openssh-server \
-        puppet salt-minion locales ntp sudo supervisor && \
+        puppet salt-minion locales ntp sudo supervisor python-pip python-virtualenv && \
     mkdir -p /var/run/sshd && \
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
@@ -42,6 +42,9 @@ RUN echo "user:foo" | chpasswd
 
 # Expiration date for user "user"
 RUN chage -E 20000 user
+
+# Some python virtualenv
+RUN virtualenv /v && /v/bin/pip install 'pytest>2,<3'
 
 
 ENV LANG fr_FR.ISO-8859-15

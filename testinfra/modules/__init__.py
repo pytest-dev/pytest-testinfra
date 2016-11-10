@@ -20,6 +20,7 @@ from testinfra.modules.group import Group
 from testinfra.modules.interface import Interface
 from testinfra.modules.mountpoint import MountPoint
 from testinfra.modules.package import Package
+from testinfra.modules.pip import PipPackage
 from testinfra.modules.process import Process
 from testinfra.modules.puppet import Facter
 from testinfra.modules.puppet import PuppetResource
@@ -37,5 +38,5 @@ __all__ = [
     "Command", "File", "Package", "Group", "Interface",
     "Service", "SystemInfo", "User", "Salt", "PuppetResource",
     "Facter", "Sysctl", "Socket", "Ansible", "Process",
-    "Supervisor", "MountPoint", "Sudo",
+    "Supervisor", "MountPoint", "Sudo", "PipPackage",
 ]

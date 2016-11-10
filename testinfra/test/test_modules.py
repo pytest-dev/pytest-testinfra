@@ -385,3 +385,13 @@ def test_sudo_to_root(Sudo, User):
         with Sudo("www-data"):
             assert User().name == "www-data"
     assert User().name == "user"
+
+
+def test_pip_package(PipPackage):
+    assert PipPackage.get_packages()['pip']['version'] == '1.5.6'
+    pytest = PipPackage.get_packages(pip_path='/v/bin/pip')['pytest']
+    assert pytest['version'].startswith('2.')
+    outdated = PipPackage.get_outdated_packages(
+        pip_path='/v/bin/pip')['pytest']
+    assert outdated['current'] == pytest['version']
+    assert int(outdated['latest'].split('.')[0]) > 2
