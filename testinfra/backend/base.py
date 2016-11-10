@@ -220,6 +220,9 @@ class BaseBackend(object):
         logger.info("RUN %s", result)
         return result
 
+    def __getattr__(self, attr):
+        return self.get_module(attr)
+
     def get_module(self, name):
         """Return the testinfra module adapted to the current backend
 
