@@ -207,7 +207,7 @@ class BaseBackend(object):
         try:
             return data.decode("ascii")
         except UnicodeDecodeError:
-            return data.decode(self.encoding)
+            return data.decode(self.encoding, errors='ignore')
 
     def encode(self, data):
         try:
