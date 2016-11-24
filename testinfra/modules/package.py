@@ -60,9 +60,9 @@ class Package(Module):
             return FreeBSDPackage
         elif SystemInfo.type in ("openbsd", "netbsd"):
             return OpenBSDPackage
-        elif Command.run_test("which dpkg-query").rc == 0:
+        elif Command.run_test("command -v dpkg-query").rc == 0:
             return DebianPackage
-        elif Command.run_test("which rpm").rc == 0:
+        elif Command.run_test("command -v rpm").rc == 0:
             return RpmPackage
         else:
             raise NotImplementedError

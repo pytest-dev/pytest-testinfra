@@ -45,7 +45,7 @@ check_output = _Command.check_output
 def has_docker():
     global _HAS_DOCKER
     if _HAS_DOCKER is None:
-        _HAS_DOCKER = _Command("which docker").rc == 0
+        _HAS_DOCKER = _Command("command -v docker").rc == 0
     return _HAS_DOCKER
 
 
