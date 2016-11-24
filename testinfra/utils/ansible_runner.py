@@ -221,6 +221,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
 
         return callback.result
 
+
 if not _has_ansible:
     AnsibleRunner = AnsibleRunnerUnavailable
 elif _ansible_major_version == 1:

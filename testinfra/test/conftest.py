@@ -140,6 +140,7 @@ def initialize_container_fixtures():
     ], ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
+
 initialize_container_fixtures()
 
 
