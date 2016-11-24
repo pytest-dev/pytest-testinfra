@@ -35,6 +35,45 @@ Pytest support `test parametrization <https://pytest.org/latest/parametrize.html
 
 .. _make modules:
 
+
+Using unittest
+~~~~~~~~~~~~~~
+
+Testinfra can be used with python standard unit test framework `unittest
+<https://docs.python.org/3/library/unittest.html>`_ instead of pytest::
+
+    import unittest
+    import testinfra
+
+
+    class Test(unittest.TestCase):
+
+        def setUp(self):
+            self.b = testinfra.get_backend("paramiko://root@host")
+
+        def test_nginx_config(self):
+            self.assertEqual(self.b.Command("nginx -t").rc, 0)
+
+        def test_nginx_service(self):
+            service = self.b.Service("nginx")
+            self.assertTrue(service.is_running)
+            self.assertTrue(service.is_enabled)
+
+
+    if __name__ == "__main__":
+        unittest.main()
+
+
+::
+
+    $ python test.py
+    ..
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.705s
+
+    OK
+
+
 Make your own modules
 ~~~~~~~~~~~~~~~~~~~~~
 
