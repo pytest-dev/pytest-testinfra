@@ -80,6 +80,12 @@ Package
    :members:
 
 
+PipPackage
+~~~~~~~~~~
+
+.. autoclass:: testinfra.modules.PipPackage
+   :members:
+
 Process
 ~~~~~~~
 
