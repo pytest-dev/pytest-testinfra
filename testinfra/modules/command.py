@@ -41,5 +41,9 @@ class Command(InstanceModule):
     def __call__(self, command, *args, **kwargs):
         return self.run(command, *args, **kwargs)
 
+    def exists(self, command):
+        """Return True if given command exist in $PATH"""
+        return self.run_expect([0, 1, 127], "command -v %s", command).rc == 0
+
     def __repr__(self):
         return "<command>"

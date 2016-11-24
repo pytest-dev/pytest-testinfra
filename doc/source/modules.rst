@@ -16,7 +16,7 @@ Command
 ~~~~~~~
 
 .. autoclass:: testinfra.modules.Command(command, *args)
-   :members: check_output, run_expect, run_test
+   :members: check_output, run_expect, run_test, exists
 
 
 LocalCommand
