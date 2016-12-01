@@ -41,6 +41,15 @@ class Package(Module):
         raise NotImplementedError
 
     @property
+    def release(self):
+        """Return the release specific info from the package version
+
+        >>> Package("nginx").release
+        '1.el6'
+        """
+        raise NotImplementedError
+
+    @property
     def version(self):
         """Return package version as returned by the package system
 
@@ -78,6 +87,10 @@ class DebianPackage(Package):
         return out[0] in ["install", "hold"] and out[1:3] == installed_status
 
     @property
+    def release(self):
+        raise NotImplementedError
+
+    @property
     def version(self):
         out = self.check_output("dpkg-query -f '${Status} ${Version}' -W %s"
                                 % (self.name,)).split()
@@ -94,6 +107,10 @@ class FreeBSDPackage(Package):
             [0, EX_UNAVAILABLE], "pkg query %%n %s", self.name).rc == 0
 
     @property
+    def release(self):
+        raise NotImplementedError
+
+    @property
     def version(self):
         return self.check_output("pkg query %%v %s", self.name)
 
@@ -105,6 +122,10 @@ class OpenBSDPackage(Package):
         return self.run_test("pkg_info -e %s", "%s-*" % (self.name,)).rc == 0
 
     @property
+    def release(self):
+        raise NotImplementedError
+
+    @property
     def version(self):
         out = self.check_output("pkg_info -e %s", "%s-*" % (self.name,))
         # OpenBSD: inst:zsh-5.0.5p0
@@ -114,18 +135,25 @@ class OpenBSDPackage(Package):
 
 class RpmPackage(Package):
 
+    def _get_package_info(self, header):
+        # Name        : bash
+        # Version     : 4.2.46
+        # Release     : 0.g9b0f0e9
+        # ...
+        out = self.check_output("rpm -qi %s", self.name)
+        for line in out.splitlines():
+            if line.startswith(header):
+                return line.split(":", 1)[1].strip()
+        raise RuntimeError("Cannot parse output '%s'" % (out,))
+
     @property
     def is_installed(self):
         return self.run_test("rpm -q %s", self.name).rc == 0
 
     @property
     def version(self):
-        out = self.check_output("rpm -qi %s", self.name)
+        return self._get_package_info("Version")
 
-        # Name        : bash
-        # Version     : 4.2.46
-        # ...
-        for line in out.splitlines():
-            if line.startswith("Version"):
-                return line.split(":", 1)[1].strip()
-        raise RuntimeError("Cannot parse output '%s'" % (out,))
+    @property
+    def release(self):
+        return self._get_package_info("Release")
