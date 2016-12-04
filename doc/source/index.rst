@@ -6,6 +6,7 @@ Documentation
 .. toctree::
    :maxdepth: 3
 
+   changelog
    invocation
    Connection backends <backends>
    modules
