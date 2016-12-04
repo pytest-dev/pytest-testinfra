@@ -24,6 +24,7 @@ all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
         "debian_jessie", "centos_7", "ubuntu_trusty", "fedora",
+        "ubuntu_xenial",
     )
 ])
 
@@ -36,6 +37,7 @@ def test_package(docker_image, Package):
         "debian_wheezy": "1:6.0",
         "fedora": "7.",
         "ubuntu_trusty": "1:6.6",
+        "ubuntu_xenial": "1:7.2",
         "centos_7": "6.6",
     }[docker_image]
     assert ssh.is_installed
@@ -46,6 +48,7 @@ def test_package(docker_image, Package):
         "debian_jessie": None,
         "debian_wheezy": None,
         "ubuntu_trusty": None,
+        "ubuntu_xenial": None,
     }[docker_image]
     if release is None:
         with pytest.raises(NotImplementedError):
@@ -70,6 +73,7 @@ def test_systeminfo(docker_image, SystemInfo):
         "centos_7": ("^7$", "centos", None),
         "fedora": ("^25$", "fedora", None),
         "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
+        "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
     }[docker_image]
 
     assert SystemInfo.distribution == distribution
@@ -85,12 +89,15 @@ def test_ssh_service(docker_image, Service):
         name = "ssh"
 
     ssh = Service(name)
-    assert ssh.is_running
-
-    if docker_image != "ubuntu_trusty":
-        assert ssh.is_enabled
+    if docker_image == "ubuntu_xenial":
+        assert not ssh.is_running
     else:
+        assert ssh.is_running
+
+    if docker_image in ("ubuntu_trusty", "ubuntu_xenial"):
         assert not ssh.is_enabled
+    else:
+        assert ssh.is_enabled
 
 
 @pytest.mark.parametrize("name,running,enabled", [
@@ -178,6 +185,7 @@ def test_process(docker_image, Process):
         "centos_7": ("/usr/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
         "ubuntu_trusty": ("/usr/sbin/sshd -D", "sshd"),
+        "ubuntu_xenial": ("/sbin/init", "systemd"),
         "debian_wheezy": ("/usr/sbin/sshd -D", "sshd"),
     }[docker_image]
     assert init.args == args
