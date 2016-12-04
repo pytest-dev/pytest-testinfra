@@ -68,7 +68,7 @@ def test_systeminfo(docker_image, SystemInfo):
         "debian_jessie": ("^8\.", "debian", "jessie"),
         "debian_wheezy": ("^7$", "debian", None),
         "centos_7": ("^7$", "centos", None),
-        "fedora": ("^23$", "fedora", None),
+        "fedora": ("^25$", "fedora", None),
         "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
     }[docker_image]
 
