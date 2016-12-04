@@ -56,6 +56,7 @@ class SystemInfo(InstanceModule):
                 for key, attname in (
                     ("ID=", "distribution"),
                     ("VERSION_ID=", "release"),
+                    ("VERSION_CODENAME=", "codename"),
                 ):
                     if line.startswith(key):
                         sysinfo[attname] = (
