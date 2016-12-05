@@ -17,6 +17,7 @@ from six.moves import urllib
 
 from testinfra.backend import ansible
 from testinfra.backend import docker
+from testinfra.backend import kubectl
 from testinfra.backend import local
 from testinfra.backend import paramiko
 from testinfra.backend import salt
@@ -30,6 +31,7 @@ BACKENDS = dict((klass.get_connection_type(), klass) for klass in (
     salt.SaltBackend,
     docker.DockerBackend,
     ansible.AnsibleBackend,
+    kubectl.KubectlBackend,
 ))
 
 
