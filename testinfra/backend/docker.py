@@ -21,11 +21,7 @@ class DockerBackend(base.BaseBackend):
     NAME = "docker"
 
     def __init__(self, name, *args, **kwargs):
-        if "@" in name:
-            self.user, self.name = name.split("@", 1)
-        else:
-            self.name = name
-            self.user = None
+        self.name, self.user = self.parse_containerspec(name)
         super(DockerBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
