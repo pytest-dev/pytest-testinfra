@@ -21,12 +21,7 @@ class KubectlBackend(base.BaseBackend):
     NAME = "kubectl"
 
     def __init__(self, name, *args, **kwargs):
-        if "@" in name:
-            self.user, self.name = name.split("@", 1)
-        else:
-            self.name = name
-            self.user = None
-
+        self.name, self.user = self.parse_containerspec(name)
         if "/" in self.name:
             self.name, self.container = self.name.split("/", 1)
         else:

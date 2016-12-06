@@ -186,6 +186,14 @@ class BaseBackend(object):
             host, port = host.split(":", 1)
         return host, user, port
 
+    @staticmethod
+    def parse_containerspec(containerspec):
+        name = containerspec
+        user = None
+        if "@" in name:
+            user, name = name.split("@", 1)
+        return name, user
+
     def get_encoding(self):
         cmd = self.run(
             "python -c 'import locale;print(locale.getpreferredencoding())'")
