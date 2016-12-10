@@ -41,6 +41,7 @@ exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
 
 See also the :ref:`Test docker images` example.
 
+
 ssh
 ~~~
 
@@ -85,3 +86,12 @@ You can use an alternative `inventory` with the ``--ansible-inventory`` option.
 
 Note: Ansible settings such as ``remote_user``, etc., may be configured by using Ansible's
 `environment variables <http://docs.ansible.com/ansible/intro_configuration.html#environmental-configuration>`_.
+
+
+kubectl
+~~~~~~~
+
+The kubectl backend can be used to test containers running in Kubernetes.
+It use the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command::
+
+    $ testinfra --connection=kubectl --hosts=pod_id-123456789-9fng/container_name
