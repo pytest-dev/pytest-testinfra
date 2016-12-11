@@ -43,7 +43,7 @@ def test_package(docker_image, Package):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "fedora": "6.fc",
+        "fedora": "7.fc25",
         "centos_7": "25.el7",
         "debian_jessie": None,
         "debian_wheezy": None,
