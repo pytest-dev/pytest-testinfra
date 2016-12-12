@@ -70,7 +70,7 @@ class File(Module):
     def user(self):
         """Return file owner as string
 
-        >>> File("/etc/passwd").group
+        >>> File("/etc/passwd").user
         'root'
         """
         raise NotImplementedError
