@@ -19,17 +19,19 @@ import os
 try:
     import paramiko
 except ImportError:
-    HAS_PARAMIKO = False
-else:
-    HAS_PARAMIKO = True
-    import paramiko.ssh_exception
+    raise RuntimeError((
+        "You must install paramiko package (pip install paramiko) "
+        "to use the paramiko backend"))
 
-    class IgnorePolicy(paramiko.MissingHostKeyPolicy):
-        """Policy for ignoring missing host key."""
-        def missing_host_key(self, client, hostname, key):
-            pass
+import paramiko.ssh_exception
 
 from testinfra.backend import base
+
+
+class IgnorePolicy(paramiko.MissingHostKeyPolicy):
+    """Policy for ignoring missing host key."""
+    def missing_host_key(self, client, hostname, key):
+        pass
 
 
 class ParamikoBackend(base.BaseBackend):
@@ -44,10 +46,6 @@ class ParamikoBackend(base.BaseBackend):
     @property
     def client(self):
         if self._client is None:
-            if not HAS_PARAMIKO:
-                raise RuntimeError((
-                    "You must install paramiko package (pip install paramiko) "
-                    "to use the paramiko backend"))
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.WarningPolicy())
             cfg = {
