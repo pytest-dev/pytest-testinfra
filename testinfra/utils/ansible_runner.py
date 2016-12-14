@@ -21,24 +21,24 @@ import pprint
 try:
     import ansible
 except ImportError:
-    _has_ansible = False
-else:
-    _has_ansible = True
-    _ansible_major_version = int(ansible.__version__.split(".", 1)[0])
-    import ansible.constants
-    if _ansible_major_version == 1:
-        import ansible.inventory
-        import ansible.runner
-        import ansible.utils
-    elif _ansible_major_version == 2:
-        import ansible.cli
-        import ansible.executor.task_queue_manager
-        import ansible.inventory
-        import ansible.parsing.dataloader
-        import ansible.playbook.play
-        import ansible.plugins.callback
-        import ansible.utils.vars
-        import ansible.vars
+    raise RuntimeError(
+        "You must install ansible package to use the ansible backend")
+
+import ansible.constants
+_ansible_major_version = int(ansible.__version__.split(".", 1)[0])
+if _ansible_major_version == 1:
+    import ansible.inventory
+    import ansible.runner
+    import ansible.utils
+elif _ansible_major_version == 2:
+    import ansible.cli
+    import ansible.executor.task_queue_manager
+    import ansible.inventory
+    import ansible.parsing.dataloader
+    import ansible.playbook.play
+    import ansible.plugins.callback
+    import ansible.utils.vars
+    import ansible.vars
 
 
 def _reload_constants():
@@ -61,20 +61,6 @@ class AnsibleRunnerBase(object):
 
     def run(self, module_name, module_args, **kwargs):
         raise NotImplementedError
-
-
-class AnsibleRunnerUnavailable(AnsibleRunnerBase):
-    _unavailable = RuntimeError(
-        "You must install ansible package to use the ansible backend")
-
-    def get_hosts(self, pattern=None):
-        raise self._unavailable
-
-    def get_variables(self, host):
-        raise self._unavailable
-
-    def run(self, host, module_name, module_args, **kwargs):
-        raise self._unavailable
 
 
 class AnsibleRunnerV1(AnsibleRunnerBase):
@@ -118,7 +104,7 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
         return result["contacted"][host]
 
 
-if _has_ansible and _ansible_major_version == 2:
+if _ansible_major_version == 2:
     class Callback(ansible.plugins.callback.CallbackBase):
 
         def __init__(self, *args, **kwargs):
@@ -222,9 +208,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         return callback.result
 
 
-if not _has_ansible:
-    AnsibleRunner = AnsibleRunnerUnavailable
-elif _ansible_major_version == 1:
+if _ansible_major_version == 1:
     AnsibleRunner = AnsibleRunnerV1
 elif _ansible_major_version == 2:
     AnsibleRunner = AnsibleRunnerV2

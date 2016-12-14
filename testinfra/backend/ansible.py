@@ -18,6 +18,7 @@ import logging
 import pprint
 
 from testinfra.backend import base
+from testinfra.utils.ansible_runner import AnsibleRunner
 
 logger = logging.getLogger("testinfra")
 
@@ -35,7 +36,6 @@ class AnsibleBackend(base.BaseBackend):
     @property
     def ansible_runner(self):
         if self._ansible_runner is None:
-            from testinfra.utils.ansible_runner import AnsibleRunner
             self._ansible_runner = AnsibleRunner(self.ansible_inventory)
         return self._ansible_runner
 
@@ -79,5 +79,4 @@ class AnsibleBackend(base.BaseBackend):
 
     @classmethod
     def get_hosts(cls, host, **kwargs):
-        from testinfra.utils.ansible_runner import AnsibleRunner
         return AnsibleRunner(kwargs.get("ansible_inventory")).get_hosts(host)

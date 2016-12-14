@@ -17,9 +17,8 @@ from __future__ import absolute_import
 try:
     import salt.client
 except ImportError:
-    HAS_SALT = False
-else:
-    HAS_SALT = True
+    raise RuntimeError(
+        "You must install salt package to use the salt backend")
 
 from testinfra.backend import base
 
@@ -33,16 +32,9 @@ class SaltBackend(base.BaseBackend):
         self._client = None
         super(SaltBackend, self).__init__(self.host, *args, **kwargs)
 
-    @staticmethod
-    def _check_salt():
-        if not HAS_SALT:
-            raise RuntimeError(
-                "You must install salt package to use the salt backend")
-
     @property
     def client(self):
         if self._client is None:
-            self._check_salt()
             self._client = salt.client.LocalClient()
         return self._client
 
@@ -65,7 +57,6 @@ class SaltBackend(base.BaseBackend):
         if host is None:
             host = "*"
         if any([c in host for c in "@*[?"]):
-            cls._check_salt()
             client = salt.client.LocalClient()
             if "@" in host:
                 hosts = client.cmd(

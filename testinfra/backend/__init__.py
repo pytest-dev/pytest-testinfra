@@ -13,33 +13,29 @@
 
 from __future__ import unicode_literals
 
+import importlib
+
 from six.moves import urllib
 
-from testinfra.backend import ansible
-from testinfra.backend import docker
-from testinfra.backend import kubectl
-from testinfra.backend import local
-from testinfra.backend import paramiko
-from testinfra.backend import salt
-from testinfra.backend import ssh
-
-BACKENDS = dict((klass.get_connection_type(), klass) for klass in (
-    local.LocalBackend,
-    ssh.SshBackend,
-    ssh.SafeSshBackend,
-    paramiko.ParamikoBackend,
-    salt.SaltBackend,
-    docker.DockerBackend,
-    ansible.AnsibleBackend,
-    kubectl.KubectlBackend,
-))
+BACKENDS = {
+    'local': 'testinfra.backend.local.LocalBackend',
+    'ssh': 'testinfra.backend.ssh.SshBackend',
+    'safe-ssh': 'testinfra.backend.ssh.SafeSshBackend',
+    'paramiko': 'testinfra.backend.paramiko.ParamikoBackend',
+    'salt': 'testinfra.backend.salt.SaltBackend',
+    'docker': 'testinfra.backend.docker.DockerBackend',
+    'ansible': 'testinfra.backend.ansible.AnsibleBackend',
+    'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
+}
 
 
 def get_backend_class(connection):
     try:
-        return BACKENDS[connection]
+        classpath = BACKENDS[connection]
     except KeyError:
         raise RuntimeError("Unknown connection type '%s'" % (connection,))
+    module, name = classpath.rsplit('.', 1)
+    return getattr(importlib.import_module(module), name)
 
 
 def parse_hostspec(hostspec):
