@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 from testinfra.modules.ansible import Ansible
+from testinfra.modules.certificate import Certificate
 from testinfra.modules.command import Command
 from testinfra.modules.file import File
 from testinfra.modules.group import Group
@@ -39,4 +40,5 @@ __all__ = [
     "Service", "SystemInfo", "User", "Salt", "PuppetResource",
     "Facter", "Sysctl", "Socket", "Ansible", "Process",
     "Supervisor", "MountPoint", "Sudo", "PipPackage",
+    "Certificate"
 ]
