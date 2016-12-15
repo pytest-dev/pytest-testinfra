@@ -13,15 +13,17 @@
 
 from __future__ import unicode_literals
 
-import datetime
-from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography import x509
 from cryptography.x509.oid import NameOID
+import datetime
 from testinfra.modules.base import Module
+
 
 class Record(object):
     """Record object collecting certificate name info"""
     pass
+
 
 class Certificate(Module):
     """Test X509 public certificate info"""
@@ -49,10 +51,10 @@ class Certificate(Module):
             contents = str(self._file.content_string)
             if self._fmt == "PEM":
                 self._cert = x509.load_pem_x509_certificate(contents,
-                    default_backend())
+                                                            default_backend())
             elif self._fmt == "DER":
                 self._cert = x509.load_der_x509_certificate(contents,
-                    default_backend())
+                                                            default_backend())
             else:
                 RuntimeError("Invalid certificate format: %s" % self._fmt)
 
@@ -68,7 +70,6 @@ class Certificate(Module):
         'root'
         """
         return self._file
-
 
     @property
     def has_expired(self):
@@ -87,7 +88,6 @@ class Certificate(Module):
         datetime(.datetime(2017, 05, 27, 23, 59, 59)
         """
         return self._cert.not_valid_after
-
 
     @property
     def start_date(self):
@@ -109,11 +109,11 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.CN
         'GeoTrust SSL CA - G3'
         """
-        oiss = self._cert.issuer
+        nis = self._cert.issuer
         niss = Record()
-        niss.C = oiss.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
-        niss.O = oiss.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
-        niss.CN = oiss.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+        niss.C = nis.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
+        niss.O = nis.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
+        niss.CN = nis.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
         return niss
 
     @property
@@ -133,12 +133,13 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").subject.OU
         'ACME R&D'
         """
-        osbj = self._cert.subject
-        nsbj = Record()
-        nsbj.C = osbj.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
-        nsbj.O = osbj.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
-        nsbj.OU = osbj.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
-        nsbj.CN = osbj.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
-        nsbj.ST = osbj.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value
-        nsbj.L = oobj.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value
-        return nsbj
+        osb = self._cert.subject
+        nsb = Record()
+        nsb.C = osb.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
+        nsb.O = osb.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
+        nsb.OU = osb.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
+        nsb.CN = osb.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+        nsb.ST = osb.get_attributes_for_oid(
+            NameOID.STATE_OR_PROVINCE_NAME)[0].value
+        nsb.L = osb.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value
+        return nsb
