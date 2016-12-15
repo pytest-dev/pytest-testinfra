@@ -96,7 +96,7 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").has_expired
         False
         """
-        return self._cert.has_expired
+        return self._cert.has_expired()
 
     @property
     def expiration_date(self):
