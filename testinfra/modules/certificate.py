@@ -16,24 +16,27 @@ from __future__ import unicode_literals
 import datetime
 
 from OpenSSL import crypto
-from testinfra.modules.file import File
 from testinfra.modules.base import Module
 
 
 class Certificate(Module):
     """Test X509 public certificate info"""
 
+    # File module to be loaded
+    File = None
+
     def __init__(self, path, fmt=crypto.FILETYPE_PEM):
         super(Certificate, self).__init__()
         self._path = path
         self._fmt = fmt
         self._cert = None
-        self._file = None
+        self._load_certificate()
 
     def _load_certificate(self):
         """Lazy certificate loading"""
         if self._cert is None:
-            self._file = File(self._path)
+          
+            self._file = self.File(self._path)
             if self._fmt == crypto.FILETYPE_PEM:
                 content = self._file.content_string
             else:
@@ -63,7 +66,6 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.CN
         'GeoTrust SSL CA - G3'
         """
-        self._load_certificate()
         return self._cert.get_issuer()
 
     @property
@@ -85,7 +87,6 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").subject.CN
         'server.acme.com'
         """
-        self._load_certificate()
         return self._cert.get_subject()
 
     @property
@@ -95,7 +96,6 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").has_expired
         False
         """
-        self._load_certificate()
         return self._cert.has_expired
 
     @property
@@ -105,7 +105,6 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").expiration_date
         datetime(.datetime(2017, 05, 27, 23, 59, 59)
         """
-        self._load_certificate()
         return datetime.datetime.strptime(
             self._cert.get_notAfter(), "%Y%m%d%H%M%SZ")
 
@@ -114,5 +113,6 @@ class Certificate(Module):
 
     @classmethod
     def get_module_class(cls, _backend):
+        cls.File = _backend.get_module("File")
         return cls
 
