@@ -84,7 +84,7 @@ class SystemInfo(InstanceModule):
             "codename": None,
             "release": None,
         }
-        sysinfo["type"] = self.check_output("uname -s").lower()
+        sysinfo["type"] = self.check_output("uname -s").lower().strip()
         if sysinfo["type"] == "linux":
             sysinfo.update(**self._get_linux_sysinfo())
         else:
