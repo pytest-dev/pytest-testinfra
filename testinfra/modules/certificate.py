@@ -14,10 +14,14 @@
 from __future__ import unicode_literals
 
 import datetime
-
-from OpenSSL import crypto
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509.oid import NameOID
 from testinfra.modules.base import Module
 
+class Record(object):
+    """Record object collecting certificate name info"""
+    pass
 
 class Certificate(Module):
     """Test X509 public certificate info"""
@@ -25,69 +29,46 @@ class Certificate(Module):
     # File module to be loaded
     File = None
 
-    def __init__(self, path, fmt=crypto.FILETYPE_PEM):
+    def __init__(self, path, fmt="PEM"):
         super(Certificate, self).__init__()
         self._path = path
         self._fmt = fmt
+        self._file = None
         self._cert = None
         self._load_certificate()
 
+    @classmethod
+    def get_module_class(cls, _backend):
+        cls.File = _backend.get_module("File")
+        return cls
+
     def _load_certificate(self):
         """Lazy certificate loading"""
-        if self._cert is None:
-          
+        if self._file is None:
             self._file = self.File(self._path)
-            if self._fmt == crypto.FILETYPE_PEM:
-                content = self._file.content_string
+            contents = str(self._file.content_string)
+            if self._fmt == "PEM":
+                self._cert = x509.load_pem_x509_certificate(contents,
+                    default_backend())
+            elif self._fmt == "DER":
+                self._cert = x509.load_der_x509_certificate(contents,
+                    default_backend())
             else:
-                content = self._file.content
-            self._cert = crypto.load_certificate(self._fmt, content)
+                RuntimeError("Invalid certificate format: %s" % self._fmt)
+
+    def __repr__(self):
+        return "<certificate %s>" % (self._path,)
 
     @property
     def file(self):
         """Return the underlying testinfra File object
 
         You can perform further related file tests to the underlying file.
-        >>> Certificate("/etc/pki/tls/certs/server.pem").file
-        <file '/etc/pki/tls/certs/server.pem'>
+        >>> Certificate("/etc/pki/tls/certs/server.pem").file.user
+        'root'
         """
         return self._file
 
-    @property
-    def issuer(self):
-        """Return the certificate issuer info as a X509Name object
-
-        >>> Certificate("/etc/pki/tls/certs/server.pem").issuer
-        <X509Name object '/C=US/O=GeoTrust Inc./CN=GeoTrust SSL CA - G3'>
-        >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.C
-        'US'
-        >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.O
-        'GeoTrust Unc.'
-        >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.CN
-        'GeoTrust SSL CA - G3'
-        """
-        return self._cert.get_issuer()
-
-    @property
-    def subject(self):
-        """Return the certificate subject info as a X509Name object
-
-        >>> Certificate("/etc/pki/tls/certs/server.pem").subject
-        <X509Name object '/C=ES/ST=MADRID/L=MADRID/O=Telefonica Investigacion y Desarrollo SA/OU=IoT Platform/CN=*.iotplatform.telefonica.com'>
-        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.C
-        'ES'
-        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.ST
-        'MADRID'
-        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.L
-        'ALCORCON'
-        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.O
-        'ACME'
-        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.OU
-        'ACME R&D'
-        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.CN
-        'server.acme.com'
-        """
-        return self._cert.get_subject()
 
     @property
     def has_expired(self):
@@ -96,7 +77,7 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").has_expired
         False
         """
-        return self._cert.has_expired()
+        return self._cert.not_valid_after < datetime.datetime.utcnow()
 
     @property
     def expiration_date(self):
@@ -105,14 +86,59 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").expiration_date
         datetime(.datetime(2017, 05, 27, 23, 59, 59)
         """
-        return datetime.datetime.strptime(
-            self._cert.get_notAfter(), "%Y%m%d%H%M%SZ")
+        return self._cert.not_valid_after
 
-    def __repr__(self):
-        return "<certificate %s>" % (self._path,)
 
-    @classmethod
-    def get_module_class(cls, _backend):
-        cls.File = _backend.get_module("File")
-        return cls
+    @property
+    def start_date(self):
+        """Return certificate UTC valid start date as a naive datetime object
 
+        >>> Certificate("/etc/pki/tls/certs/server.pem").expiration_date
+        datetime(.datetime(2016, 01, 3, 0, 0, 0)
+        """
+        return self._cert.not_valid_before
+
+    @property
+    def issuer(self):
+        """Return the certificate issuer info as a Record object
+
+        >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.C
+        'US'
+        >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.O
+        'GeoTrust Unc.'
+        >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.CN
+        'GeoTrust SSL CA - G3'
+        """
+        oiss = self._cert.issuer
+        niss = Record()
+        niss.C = oiss.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
+        niss.O = oiss.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
+        niss.CN = oiss.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+        return niss
+
+    @property
+    def subject(self):
+        """Return the certificate subject info as a Record object
+
+        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.C
+        'ES'
+        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.ST
+        'MADRID'
+        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.L
+        'ALCORCON'
+        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.O
+        'ACME'
+        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.CN
+        'server.acme.com'
+        >>> Certificate("/etc/pki/tls/certs/server.pem").subject.OU
+        'ACME R&D'
+        """
+        osbj = self._cert.subject
+        nsbj = Record()
+        nsbj.C = osbj.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
+        nsbj.O = osbj.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
+        nsbj.OU = osbj.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
+        nsbj.CN = osbj.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+        nsbj.ST = osbj.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value
+        nsbj.L = oobj.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value
+        return nsbj
