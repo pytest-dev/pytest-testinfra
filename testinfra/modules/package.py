@@ -152,8 +152,12 @@ class RpmPackage(Package):
 
     @property
     def version(self):
-        return self._get_package_info("Version")
+        return self.check_output('rpm -q --queryformat="%%{VERSION}" %s',self.name)
 
     @property
     def release(self):
-        return self._get_package_info("Release")
+        return self.check_output('rpm -q --queryformat="%%{RELEASE}" %s',self.name)
+
+    @property
+    def releaseversion(self):
+        return self.check_output('rpm -q --queryformat="%%{EVR}" %s',self.name)
