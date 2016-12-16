@@ -57,7 +57,7 @@ class Certificate(Module):
         if self._file is None:
             self._file = self.File(self._path)
             contents = self._file.content_string
-            contents = str(contents) if sys.version_info[0] < 3 else contents
+            contents = str(contents) if sys.version_info[0] < 3 else bytes(contents)
             if self._fmt == "PEM":
                 self._cert = x509.load_pem_x509_certificate(contents,
                                                             default_backend())
