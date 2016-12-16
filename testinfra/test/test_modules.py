@@ -269,6 +269,50 @@ def test_file(Command, SystemInfo, File):
     assert File("/d/p").is_pipe
 
 
+def test_certificate(Certificate, Command):
+    CERT = """
+-----BEGIN CERTIFICATE-----
+MIID4TCCAsmgAwIBAgIJAOlVzUel/AWRMA0GCSqGSIb3DQEBCwUAMFsxCzAJBgNV
+BAYTAkVTMQ8wDQYDVQQIDAZNQURSSUQxDzANBgNVBAcMBk1BRFJJRDEMMAoGA1UE
+CgwDVElEMQwwCgYDVQQLDANUR1IxDjAMBgNVBAMMBUNBVEdSMB4XDTE2MDQxNDEz
+NDYzMFoXDTI2MDQxMjEzNDYzMFowgaAxCzAJBgNVBAYTAkVTMQ8wDQYDVQQIDAZN
+QURSSUQxDzANBgNVBAcMBk1BRFJJRDExMC8GA1UECgwoVGVsZWZvbmljYSBJbnZl
+c3RpZ2FjaW9uIHkgRGVzYXJyb2xsbyBTQTEVMBMGA1UECwwMSW9UIFBsYXRmb3Jt
+MSUwIwYDVQQDDBwqLmlvdHBsYXRmb3JtLnRlbGVmb25pY2EuY29tMIIBIjANBgkq
+hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA09DbQHmaKVcZGVZK+PbG6e5bEyuoqE+D
+JtwRQCIOKhigpWob5r5/PgA9Wn2FM982yr8fmc7ptxhTy8Y0vXIY7DKcF92I1HXP
+B8j2pKzHaQycqvKkZKkwZP16xqmJohnX3F+7mqfEYJAQTkgK7OuTty2F4PwXYQM5
+WGR+LCx+okDqvcJJE1gAFGe6yyHMcMDxNJTviatGoRVVpVAnOPIanRzNSOIIn0GH
+YiQufg32MDDCMgciT/oY74HkLDStBIvGvurTSQX9jlUAnxY5TS7fnTwCGb2nr6BG
+bEAPxjV+C2rQZ68aKPVPUrnbi9S970bWiWRGC9FR3JlVkP0hcMCSwwIDAQABo2Iw
+YDAMBgNVHRMBAf8EAjAAMBMGA1UdJQQMMAoGCCsGAQUFBwMBMDsGA1UdEQQ0MDKC
+HCouaW90cGxhdGZvcm0udGVsZWZvbmljYS5jb22CEioudmxjaS52YWxlbmNpYS5l
+czANBgkqhkiG9w0BAQsFAAOCAQEAvpAbe1xQR6FEZehhjAk5WE9FYS1pdvOCasa8
+fCYxXUr7RqP84r/nt+XC24y9Qa3xeXiPnfIhQZA5HraUjzkWE+9FdymAEUqXcHXP
+zYIw6aMVT8ViQ+DnSKes0HBGquEYH+h4+hPoHZ0pMR7OiV/nY6E6uNF8VgOhLS1W
+gfzanS4SMbeqZYZYBps3KH5zkjrK5aTu5mN04ZDpXme/HDSoKx6DmXb0JDZ5HEWY
+uHwMUHQkln9KXVcfRGHiYepnZPSR6zxxyNFoReKC/cwfOlDiBN2EFkKgVATfajvy
+t4Hawei8sdH+uxhnM2pBSDbS4wUcj/+GBJNcFyJ8RepRP4Movw==
+-----END CERTIFICATE-----
+"""
+    Command.check_output("touch /tmp/cert.pem")
+    for l in CERT.split('\n'):
+        Command.check_output("echo %s >> /tmp/cert.pem" % l)
+    cert = Certificate("/tmp/cert.pem")
+    assert cert.file.exists
+    assert cert.issuer.C == "ES"
+    assert cert.issuer.O == "TID"
+    assert cert.issuer.CN == "CATGR"
+    assert cert.subject.C == "ES"
+    assert cert.subject.ST == "MADRID"
+    assert cert.subject.L == "MADRID"
+    assert cert.subject.O == "Telefonica Investigacion y Desarrollo SA"
+    assert cert.subject.OU == "Telefonica Investigacion y Desarrollo SA"
+    assert cert.subject.CN == "*.iotplatform.telefonica.com"
+    assert cert.start_date == datetime.datetime(2016, 4, 14, 13, 46, 30)
+    assert cert.expiration_date == datetime.datetime(2026, 4, 12, 13, 46, 30)
+
+
 def test_ansible_unavailable(Ansible):
     with pytest.raises(RuntimeError) as excinfo:
         Ansible("setup")

@@ -21,6 +21,7 @@ import testinfra
 from testinfra import modules
 
 File = modules.File.as_fixture()
+Certificate = modules.Certificate.as_fixture()
 Command = modules.Command.as_fixture()
 Package = modules.Package.as_fixture()
 Group = modules.Group.as_fixture()
