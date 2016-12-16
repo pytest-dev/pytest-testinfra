@@ -167,7 +167,7 @@ MountPoint
 
 
 Certificate
-~~~~~~~~~
+~~~~~~~~~~~
 
 .. autoclass:: testinfra.modules.Certificate(path, fmt="PEM")
    :members:
