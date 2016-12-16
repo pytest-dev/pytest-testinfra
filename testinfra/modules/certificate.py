@@ -13,10 +13,11 @@
 
 from __future__ import unicode_literals
 
+import datetime
+
 from cryptography.hazmat.backends import default_backend
 from cryptography import x509
 from cryptography.x509.oid import NameOID
-import datetime
 from testinfra.modules.base import Module
 
 
