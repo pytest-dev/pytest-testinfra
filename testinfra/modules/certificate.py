@@ -31,6 +31,7 @@ class Record(object):
         self.ST = None
         self.L = None
 
+
 class Certificate(Module):
     """Test X509 public certificate attributes"""
 
