@@ -88,7 +88,7 @@ class User(Module):
 
     @property
     def gecos(self):
-        """Same as comment, gecos is the actual name (see 'man 5 getpwent')"""
+        """Same as comment, gecos is the actual name (see 'man getpwent')"""
         return self.comment()
 
     @property
