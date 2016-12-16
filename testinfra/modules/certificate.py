@@ -23,8 +23,13 @@ from testinfra.modules.base import Module
 
 class Record(object):
     """Record object collecting certificate name info"""
-    pass
-
+    def __init__(self):
+        self.CN = None
+        self.O = None
+        self.OU = None
+        self.C = None
+        self.ST = None
+        self.L = None
 
 class Certificate(Module):
     """Test X509 public certificate attributes"""
