@@ -56,8 +56,8 @@ class Certificate(Module):
         """Lazy certificate loading"""
         if self._file is None:
             self._file = self.File(self._path)
-            contents = self._file.content_string
-            contents = str(contents) if sys.version_info[0] < 3 else bytes(contents)
+            c = self._file.content
+            contents = str(c) if sys.version_info[0] < 3 else c
             if self._fmt == "PEM":
                 self._cert = x509.load_pem_x509_certificate(contents,
                                                             default_backend())
