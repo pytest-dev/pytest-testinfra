@@ -57,6 +57,29 @@ class Certificate(Module):
                                                             default_backend())
             else:
                 RuntimeError("Invalid certificate format: %s" % self._fmt)
+            # Fill in issuer and subject records
+            nis = self._cert.issuer
+            self._issuer = Record()
+            self._issuer.C = nis.get_attributes_for_oid(
+                NameOID.COUNTRY_NAME)[0].value
+            self._issuer.O = nis.get_attributes_for_oid(
+                NameOID.ORGANIZATION_NAME)[0].value
+            self._issuer.CN = nis.get_attributes_for_oid(
+                NameOID.COMMON_NAME)[0].value
+            osb = self._cert.subject
+            self._subject = Record()
+            self._subject.C = osb.get_attributes_for_oid(
+                NameOID.COUNTRY_NAME)[0].value
+            self._subject.O = osb.get_attributes_for_oid(
+                NameOID.ORGANIZATION_NAME)[0].value
+            self._subject.OU = osb.get_attributes_for_oid(
+                NameOID.ORGANIZATION_NAME)[0].value
+            self._subject.CN = osb.get_attributes_for_oid(
+                NameOID.COMMON_NAME)[0].value
+            self._subject.ST = osb.get_attributes_for_oid(
+                NameOID.STATE_OR_PROVINCE_NAME)[0].value
+            self._subject.L = osb.get_attributes_for_oid(
+                NameOID.LOCALITY_NAME)[0].value
 
     def __repr__(self):
         return "<certificate %s>" % (self._path,)
@@ -109,12 +132,7 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").issuer.CN
         'GeoTrust SSL CA - G3'
         """
-        nis = self._cert.issuer
-        niss = Record()
-        niss.C = nis.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
-        niss.O = nis.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
-        niss.CN = nis.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
-        return niss
+        return self._issuer
 
     @property
     def subject(self):
@@ -133,13 +151,4 @@ class Certificate(Module):
         >>> Certificate("/etc/pki/tls/certs/server.pem").subject.OU
         'ACME R&D'
         """
-        osb = self._cert.subject
-        nsb = Record()
-        nsb.C = osb.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value
-        nsb.O = osb.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
-        nsb.OU = osb.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value
-        nsb.CN = osb.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
-        nsb.ST = osb.get_attributes_for_oid(
-            NameOID.STATE_OR_PROVINCE_NAME)[0].value
-        nsb.L = osb.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value
-        return nsb
+        return self._subject
