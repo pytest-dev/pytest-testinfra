@@ -26,7 +26,7 @@ class Record(object):
 
 
 class Certificate(Module):
-    """Test X509 public certificate info"""
+    """Test X509 public certificate attributes"""
 
     # File module to be loaded
     File = None
@@ -105,7 +105,7 @@ class Certificate(Module):
 
     @property
     def expiration_date(self):
-        """Return certificate UTC expiration date as a naive datetime object
+        """Return certificate expiration date as a naive datetime object
 
         >>> Certificate("/etc/pki/tls/certs/server.pem").expiration_date
         datetime(.datetime(2017, 05, 27, 23, 59, 59)
@@ -114,7 +114,7 @@ class Certificate(Module):
 
     @property
     def start_date(self):
-        """Return certificate UTC valid start date as a naive datetime object
+        """Return certificate valid start date as a naive datetime object
 
         >>> Certificate("/etc/pki/tls/certs/server.pem").expiration_date
         datetime(.datetime(2016, 01, 3, 0, 0, 0)

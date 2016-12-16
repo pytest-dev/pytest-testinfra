@@ -309,6 +309,8 @@ t4Hawei8sdH+uxhnM2pBSDbS4wUcj/+GBJNcFyJ8RepRP4Movw==
     assert cert.subject.O == "Telefonica Investigacion y Desarrollo SA"
     assert cert.subject.OU == "Telefonica Investigacion y Desarrollo SA"
     assert cert.subject.CN == "*.iotplatform.telefonica.com"
+    assert cert.start_date == datetime.datetime(2016, 4, 14, 13, 46, 30)
+    assert cert.expiration_date == datetime.datetime(2026, 4, 12, 13, 46, 30)
 
 
 def test_ansible_unavailable(Ansible):

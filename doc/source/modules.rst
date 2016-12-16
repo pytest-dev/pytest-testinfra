@@ -164,3 +164,12 @@ MountPoint
    :members:
 
 .. _pytest fixtures: https://pytest.org/latest/fixture.html
+
+
+Certificate
+~~~~~~~~~
+
+.. autoclass:: testinfra.modules.Certificate(path, fmt="PEM")
+   :members:
+   :undoc-members:
+   :exclude-members: get_module_class, _load_certificate
