@@ -135,25 +135,16 @@ class OpenBSDPackage(Package):
 
 class RpmPackage(Package):
 
-    def _get_package_info(self, header):
-        # Name        : bash
-        # Version     : 4.2.46
-        # Release     : 0.g9b0f0e9
-        # ...
-        out = self.check_output("rpm -qi %s", self.name)
-        for line in out.splitlines():
-            if line.startswith(header):
-                return line.split(":", 1)[1].strip()
-        raise RuntimeError("Cannot parse output '%s'" % (out,))
-
     @property
     def is_installed(self):
         return self.run_test("rpm -q %s", self.name).rc == 0
 
     @property
     def version(self):
-        return self._get_package_info("Version")
+        return self.check_output('rpm -q --queryformat="%%{VERSION}" %s',
+                                 self.name)
 
     @property
     def release(self):
-        return self._get_package_info("Release")
+        return self.check_output('rpm -q --queryformat="%%{RELEASE}" %s',
+                                 self.name)
