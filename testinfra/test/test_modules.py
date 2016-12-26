@@ -206,6 +206,12 @@ def test_user(User):
     assert user.password == "*"
 
 
+def test_user_user(User):
+    user = User("user")
+    assert user.exists
+    assert user.gecos == "gecos.comment"
+
+
 def test_user_expiration_date(User):
     assert User("root").expiration_date is None
     assert User("user").expiration_date == datetime.datetime(2024, 10, 4, 0, 0)

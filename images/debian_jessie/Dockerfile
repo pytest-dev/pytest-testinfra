@@ -22,7 +22,7 @@ RUN apt-get update && \
     echo "fr_FR.ISO-8859-15 ISO-8859-15" >> /etc/locale.gen && \
     locale-gen && \
     update-locale && \
-    useradd -m user && \
+    useradd -m user -c "gecos.comment" && \
     adduser user sudo && \
     echo "user ALL=NOPASSWD: ALL" > /etc/sudoers.d/user && \
     mkdir -p /root/.ssh && \
