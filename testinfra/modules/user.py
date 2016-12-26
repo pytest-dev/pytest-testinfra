@@ -82,6 +82,11 @@ class User(Module):
         return self.check_output("getent shadow %s", self.name).split(":")[1]
 
     @property
+    def gecos(self):
+        """Return the user comment/gecos field"""
+        return self.check_output("getent passwd %s", self.name).split(":")[4]
+
+    @property
     def expiration_date(self):
         """Return the account expiration date
 
