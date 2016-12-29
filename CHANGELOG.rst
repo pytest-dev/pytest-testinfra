@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.5.1
+=====
+
+* Add dependency on importlib on python 2.6
+
+
 1.5.0
 =====
 
