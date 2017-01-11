@@ -138,7 +138,8 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         super(AnsibleRunnerV2, self).__init__(host_list)
         _reload_constants()
         self.variable_manager = ansible.vars.VariableManager()
-        self.options = ansible.cli.CLI(None).base_parser(
+        self.cli = ansible.cli.CLI(None)
+        self.cli.options = ansible.cli.CLI(None).base_parser(
             connect_opts=True,
             meta_opts=True,
             runas_opts=True,
@@ -150,17 +151,18 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
             fork_opts=True,
             module_opts=True,
         ).parse_args([])[0]
-        self.options.connection = "smart"
+        self.cli.normalize_become_options()
+        self.cli.options.connection = "smart"
         self.loader = ansible.parsing.dataloader.DataLoader()
-        if self.options.vault_password_file:
+        if self.cli.options.vault_password_file:
             vault_pass = ansible.cli.CLI.read_vault_password_file(
-                self.options.vault_password_file, loader=self.loader)
+                self.cli.options.vault_password_file, loader=self.loader)
             self.loader.set_vault_password(vault_pass)
 
         self.inventory = ansible.inventory.Inventory(
             loader=self.loader,
             variable_manager=self.variable_manager,
-            host_list=host_list or self.options.inventory,
+            host_list=host_list or self.cli.options.inventory,
         )
         self.variable_manager.set_inventory(self.inventory)
 
@@ -175,7 +177,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
             self.loader, host=self.inventory.get_host(host))
 
     def run(self, host, module_name, module_args=None, **kwargs):
-        self.options.check = kwargs.get("check", False)
+        self.cli.options.check = kwargs.get("check", False)
         action = {"module": module_name}
         if module_args is not None:
             if module_name in ("command", "shell"):
@@ -196,7 +198,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
                 inventory=self.inventory,
                 variable_manager=self.variable_manager,
                 loader=self.loader,
-                options=self.options,
+                options=self.cli.options,
                 passwords=None,
                 stdout_callback=callback,
             )
