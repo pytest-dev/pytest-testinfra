@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.5.2
+=====
+
+* Honnor become_user when using the ansible backend
+
 1.5.1
 =====
 
