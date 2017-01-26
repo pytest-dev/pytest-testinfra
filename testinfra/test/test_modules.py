@@ -43,8 +43,8 @@ def test_package(docker_image, Package):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "fedora": "1.fc25",
-        "centos_7": "31.el7",
+        "fedora": ".fc25",
+        "centos_7": ".el7",
         "debian_jessie": None,
         "debian_wheezy": None,
         "ubuntu_trusty": None,
@@ -54,7 +54,7 @@ def test_package(docker_image, Package):
         with pytest.raises(NotImplementedError):
             ssh.release
     else:
-        assert ssh.release.startswith(release)
+        assert release in ssh.release
 
 
 def test_held_package(Package):
