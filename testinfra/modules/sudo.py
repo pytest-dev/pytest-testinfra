@@ -46,8 +46,10 @@ class Sudo(InstanceModule):
                 get_sudo_command(quote(command, *args), user))
 
         self._backend.get_command = get_command
-        yield
-        self._backend.get_command = old_get_command
+        try:
+            yield
+        finally:
+            self._backend.get_command = old_get_command
 
     def __repr__(self):
         return "<sudo>"

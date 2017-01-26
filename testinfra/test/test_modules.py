@@ -402,6 +402,17 @@ def test_sudo_from_root(Sudo, User):
     assert User().name == "root"
 
 
+def test_sudo_fail_from_root(Command, Sudo, User):
+    assert User().name == "root"
+    with pytest.raises(Exception) as exc:
+        with Sudo("unprivileged"):
+            assert User().name == "unprivileged"
+            Command.check_output('ls /root/invalid')
+    assert exc.value.msg.startswith('Unexpected exit code')
+    with Sudo():
+        assert User().name == "root"
+
+
 @pytest.mark.testinfra_hosts("docker://user@debian_jessie")
 def test_sudo_to_root(Sudo, User):
     assert User().name == "user"
