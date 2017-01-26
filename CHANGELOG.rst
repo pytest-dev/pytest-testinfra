@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.5.3
+=====
+
+* Sudo: restore backend command in case of exceptions
+
 1.5.2
 =====
 
