@@ -283,7 +283,7 @@ Then create a `test_docker.py` file with our testinfra tests:
     def test_destructive(Command, File, content):
         assert not File("/foo").exists
         Command.check_output("echo %s > /foo", content)
-        assert File("/foo").content == content + "\n"
+        assert File("/foo").content_string == content + "\n"
 
 
 Now let's run it::
