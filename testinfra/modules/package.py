@@ -37,6 +37,7 @@ class Package(Module):
         - pkg_info (OpenBSD)
         - pkg_info (NetBSD)
         - pkg (FreeBSD)
+        - portage (Gentoo)
         """
         raise NotImplementedError
 
@@ -73,6 +74,8 @@ class Package(Module):
             return DebianPackage
         elif Command.exists("rpm"):
             return RpmPackage
+        elif Command.exists("emerge"):
+            return GentooPackage
         else:
             raise NotImplementedError
 
@@ -147,4 +150,21 @@ class RpmPackage(Package):
     @property
     def release(self):
         return self.check_output('rpm -q --queryformat="%%{RELEASE}" %s',
+                                 self.name)
+
+
+class GentooPackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test("eix '\/%s$' -c -#", self.name).rc == 0
+
+    @property
+    def version(self):
+        return self.check_output("equery -q list -F '$version' %s",
+                                 self.name)
+
+    @property
+    def release(self):
+        return self.check_output("equery -q list -F '$revision' %s",
                                  self.name)
