@@ -157,7 +157,7 @@ class GentooPackage(Package):
 
     @property
     def is_installed(self):
-        return self.run_test("eix '\/%s$' -c -#", self.name).rc == 0
+        return self.run_test("eix '\\/%s$' -c -#", self.name).rc == 0
 
     @property
     def version(self):
