@@ -19,3 +19,8 @@ pytest documentation
 
 testinfra is implemented as pytest plugin so to get the most out of please
 read `pytest documentation <http://pytest.org>`_
+
+Community Contributions
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* `Molecule <http://molecule.readthedocs.io>`_ is an Automated testing framework for Ansible roles, with native Testinfra support.
