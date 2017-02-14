@@ -128,6 +128,14 @@ class UpstartService(SysvService):
             # Fallback on SysV
             return super(UpstartService, self).is_enabled
 
+    @property
+    def is_running(self):
+        cmd = self.run_test('status %s', self.name)
+        if cmd.rc == 0 and len(cmd.stdout.split()) > 1:
+            return 'running' in cmd.stdout.split()[1]
+        else:
+            return super(UpstartService, self).is_running
+
 
 class FreeBSDService(Service):
 
