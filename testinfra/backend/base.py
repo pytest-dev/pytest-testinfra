@@ -203,6 +203,9 @@ class BaseBackend(object):
             # Python is not installed, we hope the encoding to be the same as
             # local machine...
             encoding = locale.getpreferredencoding()
+        if encoding == "ANSI_X3.4-1968":
+            # Workaround defaut encoding ascii without LANG set
+            encoding = "UTF-8"
         return encoding
 
     @property

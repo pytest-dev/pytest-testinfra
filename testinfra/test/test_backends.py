@@ -90,3 +90,13 @@ def test_backend_importables():
             pytest.skip()
         obj = testinfra.backend.get_backend_class(connection_type)
         assert obj.get_connection_type() == connection_type
+
+
+@pytest.mark.testinfra_hosts("docker://centos_7", "ssh://centos_7")
+def test_docker_encoding(Command, File):
+    encoding = Command.check_output(
+        "python -c 'import locale;print(locale.getpreferredencoding())'")
+    assert encoding == "ANSI_X3.4-1968"
+    string = "ťēꞩƫìṇḟřặ ṧꝕèȃǩ ửƫᵮ8"
+    assert Command.check_output("echo %s | tee /tmp/s.txt", string) == string
+    assert File("/tmp/s.txt").content_string.strip() == string
