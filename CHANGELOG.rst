@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.5.4
+=====
+
+* backends: fallback to UTF-8 encoding when system encoding is ASCII.
+* Service: fix is_running() on systems using Upstart
+
 1.5.3
 =====
 
