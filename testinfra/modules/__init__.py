@@ -13,30 +13,33 @@
 
 from __future__ import unicode_literals
 
-from testinfra.modules.ansible import Ansible
-from testinfra.modules.command import Command
-from testinfra.modules.file import File
-from testinfra.modules.group import Group
-from testinfra.modules.interface import Interface
-from testinfra.modules.mountpoint import MountPoint
-from testinfra.modules.package import Package
-from testinfra.modules.pip import PipPackage
-from testinfra.modules.process import Process
-from testinfra.modules.puppet import Facter
-from testinfra.modules.puppet import PuppetResource
-from testinfra.modules.salt import Salt
-from testinfra.modules.service import Service
-from testinfra.modules.socket import Socket
-from testinfra.modules.sudo import Sudo
-from testinfra.modules.supervisor import Supervisor
-from testinfra.modules.sysctl import Sysctl
-from testinfra.modules.systeminfo import SystemInfo
-from testinfra.modules.user import User
+import importlib
+
+modules = {
+    'Ansible': 'ansible:Ansible',
+    'Command': 'command:Command',
+    'File': 'file:File',
+    'Group': 'group:Group',
+    'Interface': 'interface:Interface',
+    'MountPoint': 'mountpoint:MountPoint',
+    'Package': 'package:Package',
+    'PipPackage': 'pip:PipPackage',
+    'Process': 'process:Process',
+    'PuppetResource': 'puppet:PuppetResource',
+    'Facter': 'puppet:Facter',
+    'Salt': 'salt:Salt',
+    'Service': 'service:Service',
+    'Socket': 'socket:Socket',
+    'Sudo': 'sudo:Sudo',
+    'Supervisor': 'supervisor:Supervisor',
+    'Sysctl': 'sysctl:Sysctl',
+    'SystemInfo': 'systeminfo:SystemInfo',
+    'User': 'user:User',
+}
 
 
-__all__ = [
-    "Command", "File", "Package", "Group", "Interface",
-    "Service", "SystemInfo", "User", "Salt", "PuppetResource",
-    "Facter", "Sysctl", "Socket", "Ansible", "Process",
-    "Supervisor", "MountPoint", "Sudo", "PipPackage",
-]
+def get_module_class(name):
+    modname, classname = modules[name].split(':')
+    modname = '.'.join([__name__, modname])
+    module = importlib.import_module(modname)
+    return getattr(module, classname)

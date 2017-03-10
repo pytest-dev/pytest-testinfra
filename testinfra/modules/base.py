@@ -64,14 +64,6 @@ class Module(object):
     def get_module_class(cls, _backend):
         return cls
 
-    @classmethod
-    def as_fixture(cls):
-        @pytest.fixture()
-        def f(TestinfraBackend):
-            return TestinfraBackend.get_module(cls.__name__)
-        f.__doc__ = cls.__doc__
-        return f
-
 
 class InstanceModule(Module):
 

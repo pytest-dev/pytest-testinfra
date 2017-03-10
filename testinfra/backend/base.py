@@ -250,6 +250,6 @@ class BaseBackend(object):
         try:
             module = self._module_cache[name]
         except KeyError:
-            module = getattr(testinfra.modules, name).get_module(self)
+            module = testinfra.modules.get_module_class(name).get_module(self)
             self._module_cache[name] = module
         return module

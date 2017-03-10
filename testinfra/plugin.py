@@ -15,31 +15,27 @@
 from __future__ import unicode_literals
 
 import logging
+import sys
 
 import pytest
 import testinfra
-from testinfra import modules
+import testinfra.modules
 
-File = modules.File.as_fixture()
-Command = modules.Command.as_fixture()
-Package = modules.Package.as_fixture()
-Group = modules.Group.as_fixture()
-Interface = modules.Interface.as_fixture()
-Command = modules.Command.as_fixture()
-Service = modules.Service.as_fixture()
-SystemInfo = modules.SystemInfo.as_fixture()
-User = modules.User.as_fixture()
-Salt = modules.Salt.as_fixture()
-PuppetResource = modules.PuppetResource.as_fixture()
-Facter = modules.Facter.as_fixture()
-Sysctl = modules.Sysctl.as_fixture()
-Socket = modules.Socket.as_fixture()
-Ansible = modules.Ansible.as_fixture()
-Process = modules.Process.as_fixture()
-Supervisor = modules.Supervisor.as_fixture()
-MountPoint = modules.MountPoint.as_fixture()
-Sudo = modules.Sudo.as_fixture()
-PipPackage = modules.PipPackage.as_fixture()
+
+def _generate_fixtures():
+    self = sys.modules[__name__]
+    for modname in testinfra.modules.modules:
+        def get_fixture(name):
+            @pytest.fixture()
+            def f(TestinfraBackend):
+                return TestinfraBackend.get_module(name)
+            f.__name__ = str(name)
+            f.__doc__ = ('https://testinfra.readthedocs.io/en/latest/'
+                         'modules.html#{0}'.format(name.lower()))
+            return f
+        setattr(self, modname, get_fixture(modname))
+
+_generate_fixtures()
 
 
 @pytest.fixture()
