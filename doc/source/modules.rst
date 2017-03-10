@@ -15,7 +15,7 @@ Note that you can also :ref:`make modules`.
 Command
 ~~~~~~~
 
-.. autoclass:: testinfra.modules.Command(command, *args)
+.. autoclass:: testinfra.modules.command.Command(command, *args)
    :members: check_output, run_expect, run_test, exists
 
 
@@ -36,22 +36,22 @@ TestinfraBackend
 Sudo
 ~~~~
 
-.. autoclass:: testinfra.modules.Sudo(user=None)
+.. autoclass:: testinfra.modules.sudo.Sudo(user=None)
 
 
 File
 ~~~~
 
-.. autoclass:: testinfra.modules.File
+.. autoclass:: testinfra.modules.file.File
    :members:
    :undoc-members:
-   :exclude-members: as_fixture, get_module_class
+   :exclude-members: get_module_class
 
 
 User
 ~~~~
 
-.. autoclass:: testinfra.modules.User
+.. autoclass:: testinfra.modules.user.User
    :members:
    :undoc-members:
 
@@ -59,7 +59,7 @@ User
 Group
 ~~~~~
 
-.. autoclass:: testinfra.modules.Group
+.. autoclass:: testinfra.modules.group.Group
    :members:
    :undoc-members:
 
@@ -67,7 +67,7 @@ Group
 Interface
 ~~~~~~~~~
 
-.. autoclass:: testinfra.modules.Interface
+.. autoclass:: testinfra.modules.interface.Interface
    :members:
    :undoc-members:
    :exclude-members: get_module_class
@@ -76,40 +76,40 @@ Interface
 Package
 ~~~~~~~
 
-.. autoclass:: testinfra.modules.Package
+.. autoclass:: testinfra.modules.package.Package
    :members:
 
 
 PipPackage
 ~~~~~~~~~~
 
-.. autoclass:: testinfra.modules.PipPackage
+.. autoclass:: testinfra.modules.pip.PipPackage
    :members:
 
 Process
 ~~~~~~~
 
-.. autoclass:: testinfra.modules.Process
+.. autoclass:: testinfra.modules.process.Process
    :members:
 
 Service
 ~~~~~~~
 
-.. autoclass:: testinfra.modules.Service
+.. autoclass:: testinfra.modules.service.Service
    :members:
 
 
 Supervisor
 ~~~~~~~~~~
 
-.. autoclass:: testinfra.modules.Supervisor
+.. autoclass:: testinfra.modules.supervisor.Supervisor
    :members:
 
 
 Socket
 ~~~~~~
 
-.. autoclass:: testinfra.modules.Socket
+.. autoclass:: testinfra.modules.socket.Socket
    :members:
 
 
@@ -117,7 +117,7 @@ SystemInfo
 ~~~~~~~~~~
 
 
-.. autoclass:: testinfra.modules.SystemInfo
+.. autoclass:: testinfra.modules.systeminfo.SystemInfo
    :members:
 
 
@@ -125,13 +125,13 @@ Salt
 ~~~~
 
 
-.. autoclass:: testinfra.modules.Salt(function, args=None)
+.. autoclass:: testinfra.modules.salt.Salt(function, args=None)
    :members:
 
 Ansible
 ~~~~~~~
 
-.. autoclass:: testinfra.modules.Ansible(module_name, module_args=None, check=True)
+.. autoclass:: testinfra.modules.ansible.Ansible(module_name, module_args=None, check=True)
    :members:
 
 
@@ -139,7 +139,7 @@ PuppetResource
 ~~~~~~~~~~~~~~
 
 
-.. autoclass:: testinfra.modules.PuppetResource(type, name=None)
+.. autoclass:: testinfra.modules.puppet.PuppetResource(type, name=None)
    :members:
 
 
@@ -147,20 +147,20 @@ Facter
 ~~~~~~
 
 
-.. autoclass:: testinfra.modules.Facter(*facts)
+.. autoclass:: testinfra.modules.puppet.Facter(*facts)
    :members:
 
 Sysctl
 ~~~~~~
 
-.. autoclass:: testinfra.modules.Sysctl(name)
+.. autoclass:: testinfra.modules.sysctl.Sysctl(name)
    :members:
 
 
 MountPoint
 ~~~~~~~~~~
 
-.. autoclass:: testinfra.modules.MountPoint(path)
+.. autoclass:: testinfra.modules.mountpoint.MountPoint(path)
    :members:
 
 .. _pytest fixtures: https://pytest.org/latest/fixture.html
