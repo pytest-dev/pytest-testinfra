@@ -404,11 +404,11 @@ def test_sudo_from_root(Sudo, User):
 
 def test_sudo_fail_from_root(Command, Sudo, User):
     assert User().name == "root"
-    with pytest.raises(Exception) as exc:
+    with pytest.raises(AssertionError) as exc:
         with Sudo("unprivileged"):
             assert User().name == "unprivileged"
             Command.check_output('ls /root/invalid')
-    assert exc.value.msg.startswith('Unexpected exit code')
+    assert str(exc.value).startswith('Unexpected exit code')
     with Sudo():
         assert User().name == "root"
 
