@@ -13,8 +13,6 @@
 
 from __future__ import unicode_literals
 
-import pytest
-
 
 class Module(object):
     _backend = None
@@ -30,8 +28,8 @@ class Module(object):
         """
         __tracebackhide__ = True  # pylint: disable=unused-variable
         out = self.run(command, *args, **kwargs)
-        if out.rc not in expected:
-            pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
+        assert out.rc in expected, (
+            'Unexpected exit code %s for %s' % (out.rc, out))
         return out
 
     def run_test(self, command, *args, **kwargs):
@@ -49,8 +47,8 @@ class Module(object):
         """
         __tracebackhide__ = True  # pylint: disable=unused-variable
         out = self.run(command, *args, **kwargs)
-        if out.rc != 0:
-            pytest.fail("Unexpected exit code %s for %s" % (out.rc, out))
+        assert out.rc == 0, (
+            'Unexpected exit code %s for %s' % (out.rc, out))
         return out.stdout.rstrip("\r\n")
 
     @classmethod
