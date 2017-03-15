@@ -15,30 +15,33 @@ from __future__ import unicode_literals
 
 import importlib
 
+import testinfra.utils
+
 modules = {
-    'Ansible': 'ansible:Ansible',
-    'Command': 'command:Command',
-    'File': 'file:File',
-    'Group': 'group:Group',
-    'Interface': 'interface:Interface',
-    'MountPoint': 'mountpoint:MountPoint',
-    'Package': 'package:Package',
-    'PipPackage': 'pip:PipPackage',
-    'Process': 'process:Process',
-    'PuppetResource': 'puppet:PuppetResource',
-    'Facter': 'puppet:Facter',
-    'Salt': 'salt:Salt',
-    'Service': 'service:Service',
-    'Socket': 'socket:Socket',
-    'Sudo': 'sudo:Sudo',
-    'Supervisor': 'supervisor:Supervisor',
-    'Sysctl': 'sysctl:Sysctl',
-    'SystemInfo': 'systeminfo:SystemInfo',
-    'User': 'user:User',
+    'ansible': 'ansible:Ansible',
+    'command': 'command:Command',
+    'file': 'file:File',
+    'group': 'group:Group',
+    'interface': 'interface:Interface',
+    'mount_point': 'mountpoint:MountPoint',
+    'package': 'package:Package',
+    'pip_package': 'pip:PipPackage',
+    'process': 'process:Process',
+    'puppet_resource': 'puppet:PuppetResource',
+    'facter': 'puppet:Facter',
+    'salt': 'salt:Salt',
+    'service': 'service:Service',
+    'socket': 'socket:Socket',
+    'sudo': 'sudo:Sudo',
+    'supervisor': 'supervisor:Supervisor',
+    'sysctl': 'sysctl:Sysctl',
+    'system_info': 'systeminfo:SystemInfo',
+    'user': 'user:User',
 }
 
 
 def get_module_class(name):
+    name = testinfra.utils.un_camel_case(name)
     modname, classname = modules[name].split(':')
     modname = '.'.join([__name__, modname])
     module = importlib.import_module(modname)

@@ -27,7 +27,7 @@ class Package(Module):
     def is_installed(self):
         """Test if the package is installed
 
-        >>> Package("nginx").is_installed
+        >>> host.package("nginx").is_installed
         True
 
         Supported package systems:
@@ -44,7 +44,7 @@ class Package(Module):
     def release(self):
         """Return the release specific info from the package version
 
-        >>> Package("nginx").release
+        >>> host.package("nginx").release
         '1.el6'
         """
         raise NotImplementedError
@@ -53,7 +53,7 @@ class Package(Module):
     def version(self):
         """Return package version as returned by the package system
 
-        >>> Package("nginx").version
+        >>> host.package("nginx").version
         '1.2.1-2.2+wheezy3'
         """
         raise NotImplementedError
@@ -62,16 +62,14 @@ class Package(Module):
         return "<package %s>" % (self.name,)
 
     @classmethod
-    def get_module_class(cls, _backend):
-        Command = _backend.get_module("Command")
-        SystemInfo = _backend.get_module("SystemInfo")
-        if SystemInfo.type == "freebsd":
+    def get_module_class(cls, host):
+        if host.system_info.type == "freebsd":
             return FreeBSDPackage
-        elif SystemInfo.type in ("openbsd", "netbsd"):
+        elif host.system_info.type in ("openbsd", "netbsd"):
             return OpenBSDPackage
-        elif Command.exists("dpkg-query"):
+        elif host.exists("dpkg-query"):
             return DebianPackage
-        elif Command.exists("rpm"):
+        elif host.exists("rpm"):
             return RpmPackage
         else:
             raise NotImplementedError

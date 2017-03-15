@@ -13,24 +13,19 @@
 
 from __future__ import unicode_literals
 
-from testinfra import backend
+import warnings
 
-__all__ = ["get_backend", "get_backends"]
-
-
-_BACKEND_CACHE = {}
-_BACKENDS_CACHE = {}
+from testinfra.host import get_host
+from testinfra.host import get_hosts
 
 
 def get_backend(hostspec, **kwargs):
-    key = (hostspec, frozenset(kwargs.items()))
-    if key not in _BACKEND_CACHE:
-        _BACKEND_CACHE[key] = backend.get_backend(hostspec, **kwargs)
-    return _BACKEND_CACHE[key]
+    warnings.warn("get_backend() is deprecated, use get_host() instead",
+                  DeprecationWarning, stacklevel=2)
+    return get_host(hostspec, **kwargs).backend
 
 
 def get_backends(hosts, **kwargs):
-    key = (frozenset(hosts), frozenset(kwargs.items()))
-    if key not in _BACKENDS_CACHE:
-        _BACKENDS_CACHE[key] = backend.get_backends(hosts, **kwargs)
-    return _BACKENDS_CACHE[key]
+    warnings.warn("get_backends() is deprecated, use get_hosts() instead",
+                  DeprecationWarning, stacklevel=2)
+    return [host.backend for host in get_hosts(hosts, **kwargs)]

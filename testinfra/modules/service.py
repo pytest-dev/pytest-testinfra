@@ -45,25 +45,22 @@ class Service(Module):
         raise NotImplementedError
 
     @classmethod
-    def get_module_class(cls, _backend):
-        SystemInfo = _backend.get_module("SystemInfo")
-        File = _backend.get_module("File")
-        Command = _backend.get_module("Command")
-        if SystemInfo.type == "linux":
+    def get_module_class(cls, host):
+        if host.system_info.type == "linux":
             if (
-                Command.exists("systemctl")
-                and "systemd" in File("/sbin/init").linked_to
+                host.exists("systemctl")
+                and "systemd" in host.file("/sbin/init").linked_to
             ):
                 return SystemdService
-            elif Command.exists("initctl"):
+            elif host.exists("initctl"):
                 return UpstartService
             else:
                 return SysvService
-        elif SystemInfo.type == "freebsd":
+        elif host.system_info.type == "freebsd":
             return FreeBSDService
-        elif SystemInfo.type == "openbsd":
+        elif host.system_info.type == "openbsd":
             return OpenBSDService
-        elif SystemInfo.type == "netbsd":
+        elif host.system_info.type == "netbsd":
             return NetBSDService
         else:
             raise NotImplementedError

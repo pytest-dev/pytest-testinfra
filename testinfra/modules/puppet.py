@@ -61,7 +61,7 @@ class PuppetResource(InstanceModule):
 
     Run ``puppet resource --types`` to get a list of available types.
 
-    >>> PuppetResource("user", "www-data")
+    >>> host.puppet_resource("user", "www-data")
     {
         'www-data': {
             'ensure': 'present',
@@ -90,13 +90,13 @@ class PuppetResource(InstanceModule):
 class Facter(InstanceModule):
     """Get facts with `facter <https://puppetlabs.com/facter>`_
 
-    >>> Facter()
+    >>> host.facter()
     {
         "operatingsystem": "Debian",
         "kernel": "linux",
         [...]
     }
-    >>> Facter("kernelversion", "is_virtual")
+    >>> host.facter("kernelversion", "is_virtual")
     {
       "kernelversion": "3.16.0",
       "is_virtual": "false"

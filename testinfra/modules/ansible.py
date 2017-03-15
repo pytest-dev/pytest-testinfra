@@ -25,8 +25,8 @@ class AnsibleException(Exception):
     result from ansible can be accessed through the ``result`` attribute
 
     >>> try:
-    ...     Ansible("command", "echo foo")
-    ... except Ansible.AnsibleException as exc:
+    ...     host.ansible("command", "echo foo")
+    ... except host.ansible.AnsibleException as exc:
     ...     assert exc.result['failed'] is True
     ...     assert exc.result['msg'] == 'check mode not supported for command'
     """
@@ -47,24 +47,24 @@ class Ansible(InstanceModule):
     <https://docs.ansible.com/ansible/playbooks_checkmode.html>`_ is
     enabled by default, you can disable it with `check=False`.
 
-    >>> Ansible("apt", "name=nginx state=present")["changed"]
+    >>> host.ansible("apt", "name=nginx state=present")["changed"]
     False
-    >>> Ansible("command", "echo foo", check=False)["stdout"]
+    >>> host.ansible("command", "echo foo", check=False)["stdout"]
     'foo'
-    >>> Ansible("setup")["ansible_facts"]["ansible_lsb"]["codename"]
+    >>> host.ansible("setup")["ansible_facts"]["ansible_lsb"]["codename"]
     'jessie'
-    >>> Ansible("file", "path=/etc/passwd")["mode"]
+    >>> host.ansible("file", "path=/etc/passwd")["mode"]
     '0640'
 
     """
     AnsibleException = AnsibleException
 
     def __call__(self, module_name, module_args=None, check=True, **kwargs):
-        if not self._backend.HAS_RUN_ANSIBLE:
+        if not self._host.backend.HAS_RUN_ANSIBLE:
             raise RuntimeError((
                 "Ansible module is only available with ansible "
                 "connection backend"))
-        result = self._backend.run_ansible(
+        result = self._host.backend.run_ansible(
             module_name, module_args, check=check, **kwargs)
         if result.get("failed", False) is True:
             raise AnsibleException(result)
@@ -73,7 +73,7 @@ class Ansible(InstanceModule):
     def get_variables(self):
         """Returns a dict of ansible variables
 
-        >>> Ansible.get_variables()
+        >>> host.ansible.get_variables()
         {
             'inventory_hostname': 'localhost',
             'group_names': ['ungrouped'],
@@ -81,7 +81,7 @@ class Ansible(InstanceModule):
         }
 
         """
-        return self._backend.get_variables()
+        return self._host.backend.get_variables()
 
     def __repr__(self):
         return "<ansible>"

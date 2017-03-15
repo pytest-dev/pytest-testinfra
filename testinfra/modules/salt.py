@@ -25,11 +25,11 @@ class Salt(InstanceModule):
     """Run salt module functions
 
 
-    >>> Salt("pkg.version", "nginx")
+    >>> host.salt("pkg.version", "nginx")
     '1.6.2-5'
-    >>> Salt("pkg.version", ["nginx", "php5-fpm"])
+    >>> host.salt("pkg.version", ["nginx", "php5-fpm"])
     {'nginx': '1.6.2-5', 'php5-fpm': '5.6.7+dfsg-1'}
-    >>> Salt("grains.item", ["osarch", "mem_total", "num_cpus"])
+    >>> host.salt("grains.item", ["osarch", "mem_total", "num_cpus"])
     {'osarch': 'amd64', 'num_cpus': 4, 'mem_total': 15520}
 
     Run ``salt-call sys.doc`` to get a complete list of functions
@@ -39,8 +39,8 @@ class Salt(InstanceModule):
         args = args or []
         if isinstance(args, six.string_types):
             args = [args]
-        if self._backend.HAS_RUN_SALT:
-            return self._backend.run_salt(function, args)
+        if self._host.backend.HAS_RUN_SALT:
+            return self._host.backend.run_salt(function, args)
         else:
             cmd = "salt-call --out=json"
             if local:

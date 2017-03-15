@@ -24,7 +24,7 @@ class PipPackage(InstanceModule):
     def get_packages(self, pip_path="pip"):
         """Get all installed packages and versions returned by `pip list`:
 
-        >>> PipPackage.get_packages(pip_path='~/venv/website/bin/pip')
+        >>> host.pip_package.get_packages(pip_path='~/venv/website/bin/pip')
         {'Django': {'version': '1.10.2'},
          'mywebsite': {'version': '1.0a3', 'path': '/srv/website'},
          'psycopg2': {'version': '2.6.2'}}
@@ -51,7 +51,8 @@ class PipPackage(InstanceModule):
     def get_outdated_packages(self, pip_path="pip"):
         """Get all outdated packages with current and latest version
 
-        >>> PipPackage.get_outdated_packages(pip_path='~/venv/website/bin/pip')
+        >>> host.pip_package.get_outdated_packages(
+        ...     pip_path='~/venv/website/bin/pip')
         {'Django': {'current': '1.10.2', 'latest': '1.10.3'}}
         """
         output_re = [re.compile(r) for r in [

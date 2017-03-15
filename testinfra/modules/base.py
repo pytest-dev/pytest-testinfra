@@ -15,57 +15,27 @@ from __future__ import unicode_literals
 
 
 class Module(object):
-    _backend = None
-
-    def run(self, command, *args, **kwargs):
-        return self._backend.run(command, *args, **kwargs)
-
-    def run_expect(self, expected, command, *args, **kwargs):
-        """Run command and check it return an expected exit status
-
-        :param expected: A list of expected exit status
-        :raises: AssertionError
-        """
-        __tracebackhide__ = True  # pylint: disable=unused-variable
-        out = self.run(command, *args, **kwargs)
-        assert out.rc in expected, (
-            'Unexpected exit code %s for %s' % (out.rc, out))
-        return out
-
-    def run_test(self, command, *args, **kwargs):
-        """Run command and check it return an exit status of 0 or 1
-
-        :raises: AssertionError
-        """
-        return self.run_expect([0, 1], command, *args, **kwargs)
-
-    def check_output(self, command, *args, **kwargs):
-        """Get stdout of a command which has run successfully
-
-        :returns: stdout without trailing newline
-        :raises: AssertionError
-        """
-        __tracebackhide__ = True  # pylint: disable=unused-variable
-        out = self.run(command, *args, **kwargs)
-        assert out.rc == 0, (
-            'Unexpected exit code %s for %s' % (out.rc, out))
-        return out.stdout.rstrip("\r\n")
+    _host = None
 
     @classmethod
-    def get_module(cls, _backend):
-        klass = cls.get_module_class(_backend)
+    def get_module(cls, _host):
+        klass = cls.get_module_class(_host)
         return type(klass.__name__, (klass,), {
-            "_backend": _backend,
+            "_host": _host,
+            "run": _host.run,
+            "run_expect": _host.run_expect,
+            "run_test": _host.run_test,
+            "check_output": _host.check_output,
         })
 
     @classmethod
-    def get_module_class(cls, _backend):
+    def get_module_class(cls, host):
         return cls
 
 
 class InstanceModule(Module):
 
     @classmethod
-    def get_module(cls, _backend):
-        klass = super(InstanceModule, cls).get_module(_backend)
+    def get_module(cls, _host):
+        klass = super(InstanceModule, cls).get_module(_host)
         return klass()

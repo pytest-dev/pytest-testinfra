@@ -32,10 +32,10 @@ class MountPoint(Module):
     def exists(self):
         """Return True if the mountpoint exists
 
-        >>> MountPoint("/").exists
+        >>> host.mount_point("/").exists
         True
 
-        >>> MountPoint("/not/a/mountpoint").exists
+        >>> host.mount_point("/not/a/mountpoint").exists
         False
 
         """
@@ -56,7 +56,7 @@ class MountPoint(Module):
     def filesystem(self):
         """Returns the filesystem type associated
 
-        >>> MountPoint("/").filesystem
+        >>> host.mount_point("/").filesystem
         'ext4'
 
         """
@@ -66,7 +66,7 @@ class MountPoint(Module):
     def device(self):
         """Return the device associated
 
-        >>> MountPoint("/").device
+        >>> host.mount_point("/").device
         '/dev/sda1'
 
         """
@@ -76,7 +76,7 @@ class MountPoint(Module):
     def options(self):
         """Return a list of options that a mount point has been created with
 
-        >>> MountPoint("/").options
+        >>> host.mount_point("/").options
         ['rw', 'relatime', 'data=ordered']
 
         """
@@ -86,7 +86,7 @@ class MountPoint(Module):
     def get_mountpoints(cls):
         """Returns a list of MountPoint instances
 
-        >>> MountPoint.get_mountpoints()
+        >>> host.mount_point.get_mountpoints()
         [<MountPoint(path=/proc, device=proc, filesystem=proc, options=rw,nosuid,nodev,noexec,relatime)>
          <MountPoint(path=/, device=/dev/sda1, filesystem=ext4, options=rw,relatime,errors=remount-ro,data=ordered)>]
         """  # noqa
@@ -96,11 +96,10 @@ class MountPoint(Module):
         return mountpoints
 
     @classmethod
-    def get_module_class(cls, _backend):
-        SystemInfo = _backend.get_module("SystemInfo")
-        if SystemInfo.type == "linux":
+    def get_module_class(cls, host):
+        if host.system_info.type == "linux":
             return LinuxMountPoint
-        elif SystemInfo.type.endswith("bsd"):
+        elif host.system_info.type.endswith("bsd"):
             return BSDMountPoint
         else:
             raise NotImplementedError

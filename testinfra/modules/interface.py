@@ -35,7 +35,7 @@ class Interface(Module):
     def addresses(self):
         """Return ipv4 and ipv6 addresses on the interface
 
-        >>> Interface("eth0").addresses
+        >>> host.interface("eth0").addresses
         ['192.168.31.254', '192.168.31.252', 'fe80::e291:f5ff:fe98:6b8c']
         """
         raise NotImplementedError
@@ -44,11 +44,10 @@ class Interface(Module):
         return "<interface %s>" % (self.name,)
 
     @classmethod
-    def get_module_class(cls, _backend):
-        SystemInfo = _backend.get_module("SystemInfo")
-        if SystemInfo.type == "linux":
+    def get_module_class(cls, host):
+        if host.system_info.type == "linux":
             return LinuxInterface
-        elif SystemInfo.type.endswith("bsd"):
+        elif host.system_info.type.endswith("bsd"):
             return BSDInterface
         else:
             raise NotImplementedError

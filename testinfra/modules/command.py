@@ -17,33 +17,12 @@ from testinfra.modules.base import InstanceModule
 
 
 class Command(InstanceModule):
-    """Run given command and return rc (exit status), stdout and stderr
-
-    >>> cmd = Command("ls -l /etc/passwd")
-    >>> cmd.rc
-    0
-    >>> cmd.stdout
-    '-rw-r--r-- 1 root root 1790 Feb 11 00:28 /etc/passwd\\n'
-    >>> cmd.stderr
-    ''
-
-
-    Good practice: always use shell arguments quoting to avoid shell injection
-
-
-    >>> cmd = Command("ls -l -- %s", "/;echo inject")
-    CommandResult(
-        rc=2, stdout='',
-        stderr='ls: cannot access /;echo inject: No such file or directory\\n',
-        command="ls -l '/;echo inject'")
-    """
 
     def __call__(self, command, *args, **kwargs):
         return self.run(command, *args, **kwargs)
 
     def exists(self, command):
-        """Return True if given command exist in $PATH"""
-        return self.run_expect([0, 1, 127], "command -v %s", command).rc == 0
+        return self._host.exists(command)
 
     def __repr__(self):
         return "<command>"
