@@ -19,9 +19,9 @@ from testinfra.modules.base import InstanceModule
 class Sysctl(InstanceModule):
     """Test kernel parameters
 
-    >>> Sysctl("kernel.osrelease")
+    >>> host.sysctl("kernel.osrelease")
     "3.16.0-4-amd64"
-    >>> Sysctl("vm.dirty_ratio")
+    >>> host.sysctl("vm.dirty_ratio")
     20
     """
 

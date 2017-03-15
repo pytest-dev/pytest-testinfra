@@ -90,9 +90,9 @@ class User(Module):
     def expiration_date(self):
         """Return the account expiration date
 
-        >>> User("phil").expiration_date
+        >>> host.user("phil").expiration_date
         datetime.datetime(2020, 1, 1, 0, 0)
-        >>> User("root").expiration_date
+        >>> host.user("root").expiration_date
         None
         """
         days = self.check_output("getent shadow %s", self.name).split(":")[7]
@@ -106,11 +106,10 @@ class User(Module):
             return epoch + datetime.timedelta(days=int(days))
 
     @classmethod
-    def get_module_class(cls, _backend):
-        SystemInfo = _backend.get_module("SystemInfo")
-        if SystemInfo.type.endswith("bsd"):
+    def get_module_class(cls, host):
+        if host.system_info.type.endswith("bsd"):
             return BSDUser
-        return super(User, cls).get_module_class(_backend)
+        return super(User, cls).get_module_class(host)
 
     def __repr__(self):
         return "<user %s>" % (self.name,)

@@ -29,9 +29,9 @@ class File(Module):
     def exists(self):
         """Test if file exists
 
-        >>> File("/etc/passwd").exists
+        >>> host.file("/etc/passwd").exists
         True
-        >>> File("/nonexistent").exists
+        >>> host.file("/nonexistent").exists
         False
 
         """
@@ -61,7 +61,7 @@ class File(Module):
     def linked_to(self):
         """Resolve symlink
 
-        >>> File("/var/lock").linked_to
+        >>> host.file("/var/lock").linked_to
         '/run/lock'
         """
         return self.check_output("readlink -f %s", self.path)
@@ -70,7 +70,7 @@ class File(Module):
     def user(self):
         """Return file owner as string
 
-        >>> File("/etc/passwd").user
+        >>> host.file("/etc/passwd").user
         'root'
         """
         raise NotImplementedError
@@ -79,7 +79,7 @@ class File(Module):
     def uid(self):
         """Return file user id as integer
 
-        >>> File("/etc/passwd").uid
+        >>> host.file("/etc/passwd").uid
         0
         """
         raise NotImplementedError
@@ -96,11 +96,11 @@ class File(Module):
     def mode(self):
         """Return file mode as octal integer
 
-        >>> File("/etc/passwd").mode
+        >>> host.file("/etc/passwd").mode
         384  # 0o600 (octal)
-        >>> File("/etc/password").mode == 0o600
+        >>> host.file("/etc/password").mode == 0o600
         True
-        >>> oct(File("/etc/password").mode) == '0600'
+        >>> oct(host.file("/etc/password").mode) == '0600'
         True
 
         Note: Python 3 oct(x)_ function will produce ``'0o600'``
@@ -109,7 +109,7 @@ class File(Module):
         the stat_ library for testing file mode.
 
         >>> import stat
-        >>> File("/etc/password").mode == stat.S_IRUSR | stat.S_IWUSR
+        >>> host.file("/etc/password").mode == stat.S_IRUSR | stat.S_IWUSR
         True
 
         .. _oct(x): https://docs.python.org/3.5/library/functions.html#oct
@@ -141,7 +141,7 @@ class File(Module):
     def content(self):
         """Return file content as bytes
 
-        >>> File("/tmp/foo").content
+        >>> host.file("/tmp/foo").content
         b'caf\\xc3\\xa9'
         """
         return self._get_content(False)
@@ -150,7 +150,7 @@ class File(Module):
     def content_string(self):
         """Return file content as string
 
-        >>> File("/tmp/foo").content_string
+        >>> host.file("/tmp/foo").content_string
         'café'
         """
         return self._get_content(True)
@@ -159,7 +159,7 @@ class File(Module):
     def mtime(self):
         """Return time of last modification as datetime.datetime object
 
-        >>> File("/etc/passwd").mtime
+        >>> host.file("/etc/passwd").mtime
         datetime.datetime(2015, 3, 15, 20, 25, 40)
         """
         raise NotImplementedError
@@ -173,13 +173,13 @@ class File(Module):
         return "<file %s>" % (self.path,)
 
     @classmethod
-    def get_module_class(cls, _backend):
-        SystemInfo = _backend.get_module("SystemInfo")
-        if SystemInfo.type == "linux":
+    def get_module_class(cls, host):
+        if host.system_info.type == "linux":
             return GNUFile
-        elif SystemInfo.type == "netbsd":
+        elif host.system_info.type == "netbsd":
             return NetBSDFile
-        elif SystemInfo.type.endswith("bsd") or SystemInfo.type == "darwin":
+        elif (host.system_info.type.endswith("bsd")
+                or host.system_info.type == "darwin"):
             return BSDFile
         else:
             raise NotImplementedError

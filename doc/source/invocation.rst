@@ -31,7 +31,7 @@ You can also set hosts per test module::
 
     testinfra_hosts = ["localhost", "root@webserver:2222"]
 
-    def test_foo(File, Package, Service):
+    def test_foo(host):
         [....]
 
 

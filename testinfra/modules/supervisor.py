@@ -23,7 +23,7 @@ STATUS = [
 class Supervisor(Module):
     """Test supervisor managed services
 
-    >>> gunicorn = Supervisor("gunicorn")
+    >>> gunicorn = host.supervisor("gunicorn")
     >>> gunicorn.status
     'RUNNING'
     >>> gunicorn.is_running
@@ -92,7 +92,7 @@ class Supervisor(Module):
     def get_services(cls):
         """Get a list of services running under supervisor
 
-        >>> Supervisor.get_services()
+        >>> host.supervisor.get_services()
         [<Supervisor(name="gunicorn", status="RUNNING", pid=4232)>
          <Supervisor(name="celery", status="FATAL", pid=None)>]
         """

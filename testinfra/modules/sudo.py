@@ -26,10 +26,10 @@ class Sudo(InstanceModule):
 
     >>> Command.check_output("whoami")
     'phil'
-    >>> with Sudo():
-    ...     Command.check_output("whoami")
-    ...     with Sudo("www-data"):
-    ...         Command.check_output("whoami")
+    >>> with host.sudo():
+    ...     host.check_output("whoami")
+    ...     with host.sudo("www-data"):
+    ...         host.check_output("whoami")
     ...
     'root'
     'www-data'
@@ -37,19 +37,19 @@ class Sudo(InstanceModule):
     """
     @contextlib.contextmanager
     def __call__(self, user=None):
-        old_get_command = self._backend.get_command
-        quote = self._backend.quote
-        get_sudo_command = self._backend.get_sudo_command
+        old_get_command = self._host.backend.get_command
+        quote = self._host.backend.quote
+        get_sudo_command = self._host.backend.get_sudo_command
 
         def get_command(command, *args):
             return old_get_command(
                 get_sudo_command(quote(command, *args), user))
 
-        self._backend.get_command = get_command
+        self._host.backend.get_command = get_command
         try:
             yield
         finally:
-            self._backend.get_command = old_get_command
+            self._host.backend.get_command = old_get_command
 
     def __repr__(self):
         return "<sudo>"

@@ -19,40 +19,55 @@ import sys
 
 import pytest
 import testinfra
+import testinfra.host
 import testinfra.modules
+import testinfra.utils as utils
 
 
 def _generate_fixtures():
     self = sys.modules[__name__]
     for modname in testinfra.modules.modules:
+        modname = modname.title().replace("_", "")
+
         def get_fixture(name):
+            new_name = utils.un_camel_case(name)
+
             @pytest.fixture()
             def f(TestinfraBackend):
-                return TestinfraBackend.get_module(name)
+                # pylint: disable=protected-access
+                return getattr(TestinfraBackend._host, new_name)
             f.__name__ = str(name)
-            f.__doc__ = ('https://testinfra.readthedocs.io/en/latest/'
-                         'modules.html#{0}'.format(name.lower()))
+            f.__doc__ = ('DEPRECATED: use host fixture and get {0} module '
+                         'with host.{1}').format(name, new_name)
             return f
         setattr(self, modname, get_fixture(modname))
+
 
 _generate_fixtures()
 
 
 @pytest.fixture()
-def LocalCommand(TestinfraBackend):
-    """Run commands locally
+def LocalCommand(request, TestinfraBackend):
+    """DEPRECATED
 
-    Same as `Command` but run commands locally with subprocess even
-    when the connection backend is not "local".
-
-    Note: `LocalCommand` does NOT respect ``--sudo`` option
+    Use host fixture and get LocalCommand with host.get_host("local://")
     """
-    return testinfra.get_backend("local://").get_module("Command")
+    # pylint: disable=protected-access
+    return TestinfraBackend._host.get_host("local://")
+
+
+@pytest.fixture()
+def TestinfraBackend(host):
+    "DEPRECATED: use host fixture and get TestinfraBackend with host.backend"
+    return host.backend
 
 
 @pytest.fixture(scope="module")
-def TestinfraBackend(_testinfra_backend):
-    return _testinfra_backend
+def host(_testinfra_host):
+    return _testinfra_host
+
+
+host.__doc__ = testinfra.host.Host.__doc__
 
 
 def pytest_addoption(parser):
@@ -105,14 +120,14 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    if "_testinfra_backend" in metafunc.fixturenames:
+    if "_testinfra_host" in metafunc.fixturenames:
         if metafunc.config.option.hosts is not None:
             hosts = metafunc.config.option.hosts.split(",")
         elif hasattr(metafunc.module, "testinfra_hosts"):
             hosts = metafunc.module.testinfra_hosts
         else:
             hosts = [None]
-        params = testinfra.get_backends(
+        params = testinfra.get_hosts(
             hosts,
             connection=metafunc.config.option.connection,
             ssh_config=metafunc.config.option.ssh_config,
@@ -120,9 +135,33 @@ def pytest_generate_tests(metafunc):
             sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
         )
-        ids = [e.get_pytest_id() for e in params]
+        ids = [e.backend.get_pytest_id() for e in params]
         metafunc.parametrize(
-            "_testinfra_backend", params, ids=ids, scope="module")
+            "_testinfra_host", params, ids=ids, scope="module")
+
+
+def pytest_collection_finish(session):
+    deprecated_modules = set(
+        m.title().replace("_", "") for m in testinfra.modules.modules) | set(
+            ['TestinfraBackend', 'LocalCommand'])
+    deprecated_used = set()
+    for item in session.items:
+        deprecated_used |= (set(item.fixturenames) & deprecated_modules)
+    for name in sorted(deprecated_used):
+        if name == 'LocalCommand':
+            msg = ("LocalCommand fixture is deprecated. Use host fixture "
+                   "and get LocalCommand with host.get_host('local://')")
+        elif name == 'TestinfraBackend':
+            msg = ("TestinfraBackend fixture is deprecated. Use host fixture "
+                   "and get backend with host.backend")
+        elif name == 'Command':
+            msg = "Command fixture is deprecated. Use host fixture instead"
+        else:
+            msg = (
+                "{0} fixture is deprecated. Use host fixture and get "
+                "{0} module with host.{1}"
+            ).format(name, utils.un_camel_case(name))
+        session.config.warn('C1', msg)
 
 
 def pytest_configure(config):

@@ -92,14 +92,14 @@ class Socket(Module):
     def is_listening(self):
         """Test if socket is listening
 
-        >>> Socket("unix:///var/run/docker.sock").is_listening
+        >>> host.socket("unix:///var/run/docker.sock").is_listening
         False
         >>> # This HTTP server listen on all ipv4 adresses but not on ipv6
-        >>> Socket("tcp://0.0.0.0:80").is_listening
+        >>> host.socket("tcp://0.0.0.0:80").is_listening
         True
-        >>> Socket("tcp://:::80").is_listening
+        >>> host.socket("tcp://:::80").is_listening
         False
-        >>> Socket("tcp://80").is_listening
+        >>> host.socket("tcp://80").is_listening
         False
 
         .. note:: If you don't specify a host for udp and tcp sockets,
@@ -132,9 +132,9 @@ class Socket(Module):
         For unix sockets a list of None is returned (thus you can make a
         len() for counting clients).
 
-        >>> Socket("tcp://22").clients
+        >>> host.socket("tcp://22").clients
         [('2001:db8:0:1', 44298), ('192.168.31.254', 34866)]
-        >>> Socket("unix:///var/run/docker.sock")
+        >>> host.socket("unix:///var/run/docker.sock")
         [None, None, None]
 
         """
@@ -164,7 +164,7 @@ class Socket(Module):
     def get_listening_sockets(cls):
         """Return a list of all listening sockets
 
-        >>> Socket.get_listening_sockets()
+        >>> host.socket.get_listening_sockets()
         ['tcp://0.0.0.0:22', 'tcp://:::22', 'unix:///run/systemd/private', ...]
         """
         sockets = []
@@ -188,11 +188,10 @@ class Socket(Module):
         )
 
     @classmethod
-    def get_module_class(cls, _backend):
-        SystemInfo = _backend.get_module("SystemInfo")
-        if SystemInfo.type == "linux":
+    def get_module_class(cls, host):
+        if host.system_info.type == "linux":
             return LinuxSocket
-        elif SystemInfo.type.endswith("bsd"):
+        elif host.system_info.type.endswith("bsd"):
             return BSDSocket
         else:
             raise NotImplementedError

@@ -7,13 +7,14 @@ Parametrize your tests
 Pytest support `test parametrization <https://pytest.org/latest/parametrize.html>`_::
 
     # BAD: If the test fails on nginx, python is not tested
-    def test_packages(Package):
+    def test_packages(host):
         for name, version in (
             ("nginx", "1.6"),
             ("python", "2.7"),
         ):
-            assert Package(name).is_installed
-            assert Package(name).version.startswith(version)
+            pkg = host.package(name)
+            assert pkg.is_installed
+            assert pkg.version.startswith(version)
 
 
     # GOOD: Each package is tested
@@ -28,9 +29,10 @@ Pytest support `test parametrization <https://pytest.org/latest/parametrize.html
         ("nginx", "1.6"),
         ("python", "2.7"),
     ])
-    def test_packages(Package, name, version):
-        assert Package(name).is_installed
-        assert Package(name).version.startswith(version)
+    def test_packages(host, name, version):
+        pkg = host.package(name)
+        assert pkg.is_installed
+        assert pkg.version.startswith(version)
 
 
 .. _make modules:
@@ -49,13 +51,13 @@ Testinfra can be used with python standard unit test framework `unittest
     class Test(unittest.TestCase):
 
         def setUp(self):
-            self.b = testinfra.get_backend("paramiko://root@host")
+            self.host = testinfra.get_host("paramiko://root@host")
 
         def test_nginx_config(self):
-            self.assertEqual(self.b.Command("nginx -t").rc, 0)
+            self.assertEqual(self.host.run("nginx -t").rc, 0)
 
         def test_nginx_service(self):
-            service = self.b.Service("nginx")
+            service = self.host.service("nginx")
             self.assertTrue(service.is_running)
             self.assertTrue(service.is_enabled)
 
@@ -72,40 +74,6 @@ Testinfra can be used with python standard unit test framework `unittest
     Ran 2 tests in 0.705s
 
     OK
-
-
-Make your own modules
-~~~~~~~~~~~~~~~~~~~~~
-
-Suppose you want to create a simple wrapper around the `echo` command. You just
-have to declare a `pytest fixture <https://pytest.org/latest/fixture.html>`_::
-
-    import pytest
-
-    @pytest.fixture()
-    def Echo(Command):
-        def f(arg):
-            return Command.check_output("echo %s", arg)
-        return f
-
-
-    def test(Echo):
-        assert Echo("foo") == "foo"
-
-
-If you want to use it in all your test file, just put it in a `conftest.py
-<https://pytest.org/latest/plugins.html>`_ file.
-
-
-Share your modules
-~~~~~~~~~~~~~~~~~~
-
-Suppose you wrote a more useful module than the echo wrapper above and want to
-share with the entire world. You can package your plugin as a `pytest plugin
-<https://pytest.org/latest/plugins.html>`_.
-
-See `philpep/testinfra-echo <https://github.com/philpep/testinfra-echo>`_ to
-see an example of pytest plugin based on testinfra.
 
 
 Integration with vagrant
@@ -198,32 +166,22 @@ Put this code in a `conftest.py` file:
     import pytest
     import testinfra
 
-    # Use testinfra to get a handy function to run commands locally
-    check_output = testinfra.get_backend(
-        "local://"
-    ).get_module("Command").check_output
+    # get check_output from local host
+    check_output = tesintfra.get_host("local://").check_output
 
-
+    # Override the host fixture
     @pytest.fixture
-    def TestinfraBackend(request):
-        # Override the TestinfraBackend fixture,
-        # all testinfra fixtures (i.e. modules) depend on it.
-
+    def host(request):
         docker_id = check_output(
             "docker run -d %s tail -f /dev/null", request.param)
-
-        def teardown():
-            check_output("docker rm -f %s", docker_id)
-
-        # Destroy the container at the end of the fixture life
-        request.addfinalizer(teardown)
-
-        # Return a dynamic created backend
-        return testinfra.get_backend("docker://" + docker_id)
+        # yield a dynamic created host
+        yield testinfra.get_host("docker://" + docker_id)
+        # destroy the container
+        check_output("docker rm -f %s", docker_id)
 
 
     def pytest_generate_tests(metafunc):
-        if "TestinfraBackend" in metafunc.fixturenames:
+        if "host" in metafunc.fixturenames:
 
             # Lookup "docker_images" marker
             marker = getattr(metafunc.function, "docker_images", None)
@@ -242,7 +200,7 @@ Put this code in a `conftest.py` file:
                 scope = "session"
 
             metafunc.parametrize(
-                "TestinfraBackend", images, indirect=True, scope=scope)
+                "host", images, indirect=True, scope=scope)
 
 
 
@@ -266,24 +224,24 @@ Then create a `test_docker.py` file with our testinfra tests:
 
 
     # This test will run on default image (debian:jessie)
-    def test_default(Process):
-        assert Process.get(pid=1).comm == "tail"
+    def test_default(host):
+        assert host.process.get(pid=1).comm == "tail"
 
 
     # This test will run on both debian:jessie and centos:7 images
     @pytest.mark.docker_images("debian:jessie", "centos:7")
-    def test_multiple(Process):
-        assert Process.get(pid=1).comm == "tail"
+    def test_multiple(host):
+        assert host.process.get(pid=1).comm == "tail"
 
 
     # This test is marked as destructive and will run on its own container
     # It will create a /foo file and run 3 times with different params
     @pytest.mark.destructive
     @pytest.mark.parametrize("content", ["bar", "baz", "qux"])
-    def test_destructive(Command, File, content):
-        assert not File("/foo").exists
-        Command.check_output("echo %s > /foo", content)
-        assert File("/foo").content_string == content + "\n"
+    def test_destructive(host, content):
+        assert not host.file("/foo").exists
+        host.check_output("echo %s > /foo", content)
+        assert host.file("/foo").content_string == content + "\n"
 
 
 Now let's run it::
