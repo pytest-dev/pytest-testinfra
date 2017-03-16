@@ -20,6 +20,17 @@ from testinfra.modules.base import Module
 
 
 def parse_socketspec(socketspec):
+    """Test listening tcp/udp sockets
+
+    ``socketspec`` must be specified as ``<protocol>://<host>:<port>``
+
+    Example:
+
+      - All ipv4 tcp sockets on port 22: ``tcp://22``
+      - All ipv4 sockets on port 22: ``tcp://0.0.0.0:22``
+      - udp socket on 127.0.0.1 port 69: ``udp://127.0.0.1:69``
+
+    """
 
     protocol, address = socketspec.split("://", 1)
 
@@ -51,17 +62,7 @@ def parse_socketspec(socketspec):
 
 
 class SocketHost(Module):
-    """Test listening tcp/udp sockets
-
-    ``socketspec`` must be specified as ``<protocol>://<host>:<port>``
-
-    Example:
-
-      - All ipv4 tcp sockets on port 22: ``tcp://22``
-      - All ipv4 sockets on port 22: ``tcp://0.0.0.0:22``
-      - udp socket on 127.0.0.1 port 69: ``udp://127.0.0.1:69``
-
-    """
+    """Test SocketHost"""
 
     def __init__(self, socketspec, _attrs_cache=None):
         self._attrs_cache = _attrs_cache
@@ -69,6 +70,7 @@ class SocketHost(Module):
             self.protocol, self.host, self.port = parse_socketspec(socketspec)
         else:
             self.protocol = self.host = self.port = None
+        super(SocketHost, self).__init__()
 
     @property
     def _attrs(self):
