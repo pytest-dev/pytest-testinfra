@@ -85,7 +85,7 @@ class SocketHost(Module):
 
     @property
     def is_resolvable(self):
-        """ Test if host is resovable
+        """ Test if host is resolvable
         Translate a host name to IPv4 address format, extended interface.
         Return a triple (hostname, aliaslist, ipaddrlist) where hostname
         is the primary host name responding to the given ip_address,
