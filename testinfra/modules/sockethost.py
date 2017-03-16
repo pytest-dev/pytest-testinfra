@@ -85,7 +85,8 @@ class SocketHost(Module):
 
     @property
     def is_resolvable(self):
-        """ Test if host is resolvable
+        """Test if host is resolvable
+
         Translate a host name to IPv4 address format, extended interface.
         Return a triple (hostname, aliaslist, ipaddrlist) where hostname
         is the primary host name responding to the given ip_address,
@@ -99,7 +100,7 @@ class SocketHost(Module):
 
     @property
     def is_reachable(self):
-        """ Test if host is reachable """
+        """Test if host is reachable"""
         if self.protocol == 'udp':
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         elif self.protocol == 'tcp':
