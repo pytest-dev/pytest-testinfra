@@ -34,10 +34,10 @@ def parse_socketspec(socketspec):
 
     protocol, address = socketspec.split("://", 1)
 
-    if protocol not in ("udp", "tcp"):
-        raise RuntimeError(
-            "Cannot validate protocol '%s'. Should be tcp or udp" % (
-                protocol,))
+    # if protocol not in ("udp", "tcp"):
+    #     raise RuntimeError(
+    #         "Cannot validate protocol '%s'. Should be tcp or udp" % (
+    #             protocol,))
 
     if ":" in address:
         # tcp://127.0.0.1:22
@@ -70,7 +70,6 @@ class SocketHost(Module):
             self.protocol, self.host, self.port = parse_socketspec(socketspec)
         else:
             self.protocol = self.host = self.port = None
-        super(SocketHost, self).__init__()
 
     @property
     def _attrs(self):
@@ -102,10 +101,15 @@ class SocketHost(Module):
 
     @property
     def is_reachable(self):
-        """Test if host is reachable"""
+        """Test if host is reachable
+
+        Assumption is that if protocol provided is not specified as udp,
+        then we are going to use socket.SOCK_STREAM.
+
+        """
         if self.protocol == 'udp':
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        elif self.protocol == 'tcp':
+        else:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if self._attrs:
             try:
