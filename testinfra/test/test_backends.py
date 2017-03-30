@@ -30,20 +30,20 @@ SUDO_USER_HOSTS = [
 
 @pytest.mark.testinfra_hosts(*(
     HOSTS + USER_HOSTS + SUDO_HOSTS + SUDO_USER_HOSTS))
-def test_command(Command):
-    assert Command.check_output("true") == ""
+def test_command(host):
+    assert host.check_output("true") == ""
     # test that quotting is correct
-    assert Command("echo a b | grep -q %s", "a c").rc == 1
+    assert host.run("echo a b | grep -q %s", "a c").rc == 1
 
 
 @pytest.mark.testinfra_hosts(*HOSTS)
-def test_encoding(TestinfraBackend, Command):
-    if TestinfraBackend.get_connection_type() == "ansible":
+def test_encoding(host):
+    if host.backend.get_connection_type() == "ansible":
         pytest.skip("ansible handle encoding himself")
 
     # jessie image is fr_FR@ISO-8859-15
-    cmd = Command("ls -l %s", "/é")
-    if TestinfraBackend.get_connection_type() == "docker":
+    cmd = host.run("ls -l %s", "/é")
+    if host.backend.get_connection_type() == "docker":
         # docker bug ?
         assert cmd.stderr_bytes == (
             b"ls: impossible d'acc\xe9der \xe0 /\xef\xbf\xbd: "
@@ -61,22 +61,22 @@ def test_encoding(TestinfraBackend, Command):
 
 
 @pytest.mark.testinfra_hosts(*(USER_HOSTS + SUDO_USER_HOSTS))
-def test_user_connection(User):
-    assert User().name == "user"
+def test_user_connection(host):
+    assert host.user().name == "user"
 
 
 @pytest.mark.testinfra_hosts(*SUDO_HOSTS)
-def test_sudo(User):
-    assert User().name == "root"
+def test_sudo(host):
+    assert host.user().name == "root"
 
 
 @pytest.mark.testinfra_hosts("ansible://debian_jessie")
-def test_ansible_hosts_expand(TestinfraBackend):
+def test_ansible_hosts_expand(host):
     from testinfra.backend.ansible import AnsibleBackend
 
     def get_hosts(spec):
         return AnsibleBackend.get_hosts(
-            spec, ansible_inventory=TestinfraBackend.ansible_inventory)
+            spec, ansible_inventory=host.backend.ansible_inventory)
     assert get_hosts(["all"]) == ["debian_jessie"]
     assert get_hosts(["testgroup"]) == ["debian_jessie"]
     assert get_hosts(["*ia*jess*"]) == ["debian_jessie"]
@@ -93,10 +93,10 @@ def test_backend_importables():
 
 
 @pytest.mark.testinfra_hosts("docker://centos_7", "ssh://centos_7")
-def test_docker_encoding(Command, File):
-    encoding = Command.check_output(
+def test_docker_encoding(host):
+    encoding = host.check_output(
         "python -c 'import locale;print(locale.getpreferredencoding())'")
     assert encoding == "ANSI_X3.4-1968"
     string = "ťēꞩƫìṇḟřặ ṧꝕèȃǩ ửƫᵮ8"
-    assert Command.check_output("echo %s | tee /tmp/s.txt", string) == string
-    assert File("/tmp/s.txt").content_string.strip() == string
+    assert host.check_output("echo %s | tee /tmp/s.txt", string) == string
+    assert host.file("/tmp/s.txt").content_string.strip() == string

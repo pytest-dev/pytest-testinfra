@@ -145,7 +145,7 @@ initialize_container_fixtures()
 
 
 @pytest.fixture
-def TestinfraBackend(request, tmpdir_factory):
+def host(request, tmpdir_factory):
     if not has_docker():
         pytest.skip()
         return
@@ -208,18 +208,18 @@ def TestinfraBackend(request, tmpdir_factory):
     else:
         hostspec = host
 
-    backend = testinfra.get_backend(hostspec, **kw)
-    backend.get_hostname = lambda: image
-    return backend
+    host = testinfra.host.get_host(hostspec, **kw)
+    host.backend.get_hostname = lambda: image
+    return host
 
 
 @pytest.fixture
-def docker_image(TestinfraBackend):
-    return TestinfraBackend.get_hostname()
+def docker_image(host):
+    return host.backend.get_hostname()
 
 
 def pytest_generate_tests(metafunc):
-    if "TestinfraBackend" in metafunc.fixturenames:
+    if "host" in metafunc.fixturenames:
         marker = getattr(metafunc.function, "testinfra_hosts", None)
         if marker is not None:
             hosts = marker.args
@@ -227,7 +227,7 @@ def pytest_generate_tests(metafunc):
             # Default
             hosts = ["docker://debian_jessie"]
 
-        metafunc.parametrize("TestinfraBackend", hosts, indirect=True,
+        metafunc.parametrize("host", hosts, indirect=True,
                              scope="function")
 
 
