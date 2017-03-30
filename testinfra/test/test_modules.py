@@ -30,8 +30,8 @@ all_images = pytest.mark.testinfra_hosts(*[
 
 
 @all_images
-def test_package(docker_image, Package):
-    ssh = Package("openssh-server")
+def test_package(host, docker_image):
+    ssh = host.package("openssh-server")
     version = {
         "debian_jessie": "1:6.7",
         "debian_wheezy": "1:6.0",
@@ -57,15 +57,15 @@ def test_package(docker_image, Package):
         assert release in ssh.release
 
 
-def test_held_package(Package):
-    python = Package("python")
+def test_held_package(host):
+    python = host.package("python")
     assert python.is_installed
     assert python.version.startswith("2.7.9")
 
 
 @all_images
-def test_systeminfo(docker_image, SystemInfo):
-    assert SystemInfo.type == "linux"
+def test_systeminfo(host, docker_image):
+    assert host.system_info.type == "linux"
 
     release, distribution, codename = {
         "debian_jessie": ("^8\.", "debian", "jessie"),
@@ -76,19 +76,19 @@ def test_systeminfo(docker_image, SystemInfo):
         "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
     }[docker_image]
 
-    assert SystemInfo.distribution == distribution
-    assert SystemInfo.codename == codename
-    assert re.match(release, SystemInfo.release)
+    assert host.system_info.distribution == distribution
+    assert host.system_info.codename == codename
+    assert re.match(release, host.system_info.release)
 
 
 @all_images
-def test_ssh_service(docker_image, Service):
+def test_ssh_service(host, docker_image):
     if docker_image in ("centos_7", "fedora"):
         name = "sshd"
     else:
         name = "ssh"
 
-    ssh = Service(name)
+    ssh = host.service(name)
     if docker_image == "ubuntu_xenial":
         assert not ssh.is_running
     else:
@@ -104,37 +104,37 @@ def test_ssh_service(docker_image, Service):
     ("ntp", False, True),
     ("salt-minion", False, False),
 ])
-def test_service(Command, Service, name, running, enabled):
+def test_service(host, name, running, enabled):
 
     if name == "ntp":
         # Systemd say no but sysv say yes
-        assert Command("systemctl is-enabled ntp").rc == 1
+        assert host.run("systemctl is-enabled ntp").rc == 1
 
-    service = Service(name)
+    service = host.service(name)
     assert service.is_running == running
     assert service.is_enabled == enabled
 
 
-def test_salt(Salt):
-    ssh_version = Salt("pkg.version", "openssh-server", local=True)
+def test_salt(host):
+    ssh_version = host.salt("pkg.version", "openssh-server", local=True)
     assert ssh_version.startswith("1:6.7")
 
 
-def test_puppet_resource(PuppetResource):
-    resource = PuppetResource("package", "openssh-server")
+def test_puppet_resource(host):
+    resource = host.puppet_resource("package", "openssh-server")
     assert resource["openssh-server"]["ensure"].startswith("1:6.7")
 
 
-def test_facter(Facter):
-    assert Facter()["lsbdistcodename"] == "jessie"
-    assert Facter("lsbdistcodename") == {
+def test_facter(host):
+    assert host.facter()["lsbdistcodename"] == "jessie"
+    assert host.facter("lsbdistcodename") == {
         "lsbdistcodename": "jessie",
     }
 
 
-def test_sysctl(Sysctl, Command):
-    assert Sysctl("kernel.hostname") == Command.check_output("hostname")
-    assert isinstance(Sysctl("kernel.panic"), int)
+def test_sysctl(host):
+    assert host.sysctl("kernel.hostname") == host.check_output("hostname")
+    assert isinstance(host.sysctl("kernel.panic"), int)
 
 
 def test_parse_socketspec():
@@ -145,8 +145,8 @@ def test_parse_socketspec():
         "unix", "can:be.any/thing:22", None)
 
 
-def test_socket(TestinfraBackend, Socket):
-    listening = Socket.get_listening_sockets()
+def test_socket(host):
+    listening = host.socket.get_listening_sockets()
     for spec in (
         "tcp://0.0.0.0:22",
         "tcp://:::22",
@@ -160,23 +160,23 @@ def test_socket(TestinfraBackend, Socket):
         "tcp://:::22",
         "tcp://::1:22",
     ):
-        socket = Socket(spec)
+        socket = host.socket(spec)
         assert socket.is_listening
 
-    assert not Socket("tcp://4242").is_listening
+    assert not host.socket("tcp://4242").is_listening
 
-    if not TestinfraBackend.get_connection_type() == "docker":
+    if not host.backend.get_connection_type() == "docker":
         # FIXME
         for spec in (
             "tcp://22",
             "tcp://0.0.0.0:22",
         ):
-            assert len(Socket(spec).clients) >= 1
+            assert len(host.socket(spec).clients) >= 1
 
 
 @all_images
-def test_process(docker_image, Process):
-    init = Process.get(pid=1)
+def test_process(host, docker_image):
+    init = host.process.get(pid=1)
     assert init.ppid == 0
     assert init.euid == 0
 
@@ -192,8 +192,8 @@ def test_process(docker_image, Process):
     assert init.comm == comm
 
 
-def test_user(User):
-    user = User("sshd")
+def test_user(host):
+    user = host.user("sshd")
     assert user.exists
     assert user.name == "sshd"
     assert user.uid == 105
@@ -206,46 +206,47 @@ def test_user(User):
     assert user.password == "*"
 
 
-def test_user_user(User):
-    user = User("user")
+def test_user_user(host):
+    user = host.user("user")
     assert user.exists
     assert user.gecos == "gecos.comment"
 
 
-def test_user_expiration_date(User):
-    assert User("root").expiration_date is None
-    assert User("user").expiration_date == datetime.datetime(2024, 10, 4, 0, 0)
+def test_user_expiration_date(host):
+    assert host.user("root").expiration_date is None
+    assert host.user("user").expiration_date == (
+        datetime.datetime(2024, 10, 4, 0, 0))
 
 
-def test_nonexistent_user(User):
-    assert not User("zzzzzzzzzz").exists
+def test_nonexistent_user(host):
+    assert not host.user("zzzzzzzzzz").exists
 
 
-def test_current_user(User):
-    assert User().name == "root"
-    pw = User().password
+def test_current_user(host):
+    assert host.user().name == "root"
+    pw = host.user().password
     assert crypt.crypt("foo", pw) == pw
 
 
-def test_group(Group):
-    assert Group("root").exists
-    assert Group("root").gid == 0
+def test_group(host):
+    assert host.group("root").exists
+    assert host.group("root").gid == 0
 
 
-def test_empty_command_output(Command):
-    assert Command.check_output("printf ''") == ""
+def test_empty_command_output(host):
+    assert host.check_output("printf ''") == ""
 
 
-def test_local_command(LocalCommand):
-    assert LocalCommand.check_output("true") == ""
+def test_local_command(host):
+    assert host.get_host("local://").check_output("true") == ""
 
 
-def test_file(Command, SystemInfo, File):
-    Command.check_output("mkdir -p /d && printf foo > /d/f && chmod 600 /d/f")
-    d = File("/d")
+def test_file(host):
+    host.check_output("mkdir -p /d && printf foo > /d/f && chmod 600 /d/f")
+    d = host.file("/d")
     assert d.is_directory
     assert not d.is_file
-    f = File("/d/f")
+    f = host.file("/d/f")
     assert f.exists
     assert f.is_file
     assert f.content == b"foo"
@@ -265,31 +266,31 @@ def test_file(Command, SystemInfo, File):
     assert f.sha256sum == (
         "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
     )
-    Command.check_output("ln -fsn /d/f /d/l")
-    l = File("/d/l")
+    host.check_output("ln -fsn /d/f /d/l")
+    l = host.file("/d/l")
     assert l.is_symlink
     assert l.is_file
     assert l.linked_to == "/d/f"
 
-    Command.check_output("rm -f /d/p && mkfifo /d/p")
-    assert File("/d/p").is_pipe
+    host.check_output("rm -f /d/p && mkfifo /d/p")
+    assert host.file("/d/p").is_pipe
 
 
-def test_ansible_unavailable(Ansible):
+def test_ansible_unavailable(host):
     with pytest.raises(RuntimeError) as excinfo:
-        Ansible("setup")
+        host.ansible("setup")
     assert (
         'Ansible module is only available with ansible '
         'connection backend') in str(excinfo.value)
 
 
 @pytest.mark.testinfra_hosts("ansible://debian_jessie")
-def test_ansible_module(TestinfraBackend, Ansible):
+def test_ansible_module(host):
     import ansible
     version = int(ansible.__version__.split(".", 1)[0])
-    setup = Ansible("setup")["ansible_facts"]
+    setup = host.ansible("setup")["ansible_facts"]
     assert setup["ansible_lsb"]["codename"] == "jessie"
-    passwd = Ansible("file", "path=/etc/passwd state=file")
+    passwd = host.ansible("file", "path=/etc/passwd state=file")
     assert passwd["changed"] is False
     assert passwd["gid"] == 0
     assert passwd["group"] == "root"
@@ -301,7 +302,7 @@ def test_ansible_module(TestinfraBackend, Ansible):
     assert passwd["state"] in ("file", "hard")
     assert passwd["uid"] == 0
 
-    variables = Ansible.get_variables()
+    variables = host.ansible.get_variables()
     assert variables["myvar"] == "foo"
     assert variables["myhostvar"] == "bar"
     assert variables["mygroupvar"] == "qux"
@@ -309,13 +310,13 @@ def test_ansible_module(TestinfraBackend, Ansible):
     assert variables["group_names"] == ["testgroup"]
 
     # test errors reporting
-    with pytest.raises(Ansible.AnsibleException) as excinfo:
-        Ansible("file", "path=/etc/passwd an_unexpected=variable")
+    with pytest.raises(host.ansible.AnsibleException) as excinfo:
+        host.ansible("file", "path=/etc/passwd an_unexpected=variable")
     tb = str(excinfo.value)
     assert 'unsupported parameter' in tb.lower()
 
-    with pytest.raises(Ansible.AnsibleException) as excinfo:
-        Ansible("command", "zzz")
+    with pytest.raises(host.ansible.AnsibleException) as excinfo:
+        host.ansible("command", "zzz")
     if version == 1:
         msg = "check mode not supported for command"
     else:
@@ -323,8 +324,8 @@ def test_ansible_module(TestinfraBackend, Ansible):
     assert excinfo.value.result['msg'] == msg
 
     try:
-        Ansible("command", "zzz", check=False)
-    except Ansible.AnsibleException as exc:
+        host.ansible("command", "zzz", check=False)
+    except host.ansible.AnsibleException as exc:
         assert exc.result['rc'] == 2
         if version == 1:
             assert exc.result['msg'] == '[Errno 2] No such file or directory'
@@ -332,22 +333,22 @@ def test_ansible_module(TestinfraBackend, Ansible):
             assert exc.result['msg'] == ('[Errno 2] Aucun fichier ou dossier '
                                          'de ce type')
 
-    result = Ansible("command", "echo foo", check=False)
+    result = host.ansible("command", "echo foo", check=False)
     assert result['stdout'] == 'foo'
 
 
 @pytest.mark.destructive
-def test_supervisor(Command, Service, Supervisor, Process):
+def test_supervisor(host):
     # Wait supervisord is running
     for _ in range(20):
-        if Service("supervisor").is_running:
+        if host.service("supervisor").is_running:
             break
         time.sleep(.5)
     else:
         raise RuntimeError("No running supervisor")
 
     for _ in range(20):
-        service = Supervisor("tail")
+        service = host.supervisor("tail")
         if service.status == "RUNNING":
             break
         else:
@@ -357,78 +358,78 @@ def test_supervisor(Command, Service, Supervisor, Process):
         raise RuntimeError("No running tail in supervisor")
 
     assert service.is_running
-    proc = Process.get(pid=service.pid)
+    proc = host.process.get(pid=service.pid)
     assert proc.comm == "tail"
 
-    services = Supervisor.get_services()
+    services = host.supervisor.get_services()
     assert len(services) == 1
     assert services[0].name == "tail"
     assert services[0].is_running
     assert services[0].pid == service.pid
 
-    Command("supervisorctl stop tail")
-    service = Supervisor("tail")
+    host.run("supervisorctl stop tail")
+    service = host.supervisor("tail")
     assert not service.is_running
     assert service.status == "STOPPED"
     assert service.pid is None
 
-    Command("service supervisor stop")
-    assert not Service("supervisor").is_running
+    host.run("service supervisor stop")
+    assert not host.service("supervisor").is_running
     with pytest.raises(RuntimeError) as excinfo:
-        Supervisor("tail").is_running
+        host.supervisor("tail").is_running
     assert 'Is supervisor running' in str(excinfo.value)
 
 
-def test_mountpoint(MountPoint):
-    root_mount = MountPoint('/')
+def test_mountpoint(host):
+    root_mount = host.mount_point('/')
     assert root_mount.exists
     assert isinstance(root_mount.options, list)
     assert 'rw' in root_mount.options
     assert root_mount.filesystem
 
-    fake_mount = MountPoint('/fake/mount')
+    fake_mount = host.mount_point('/fake/mount')
     assert not fake_mount.exists
 
-    mountpoints = MountPoint.get_mountpoints()
+    mountpoints = host.mount_point.get_mountpoints()
     assert mountpoints
-    assert all(isinstance(m, MountPoint) for m in mountpoints)
+    assert all(isinstance(m, host.mount_point) for m in mountpoints)
     assert len([m for m in mountpoints if m.path == "/"]) == 1
 
 
-def test_sudo_from_root(Sudo, User):
-    assert User().name == "root"
-    with Sudo("user"):
-        assert User().name == "user"
-    assert User().name == "root"
+def test_sudo_from_root(host):
+    assert host.user().name == "root"
+    with host.sudo("user"):
+        assert host.user().name == "user"
+    assert host.user().name == "root"
 
 
-def test_sudo_fail_from_root(Command, Sudo, User):
-    assert User().name == "root"
+def test_sudo_fail_from_root(host):
+    assert host.user().name == "root"
     with pytest.raises(AssertionError) as exc:
-        with Sudo("unprivileged"):
-            assert User().name == "unprivileged"
-            Command.check_output('ls /root/invalid')
+        with host.sudo("unprivileged"):
+            assert host.user().name == "unprivileged"
+            host.check_output('ls /root/invalid')
     assert str(exc.value).startswith('Unexpected exit code')
-    with Sudo():
-        assert User().name == "root"
+    with host.sudo():
+        assert host.user().name == "root"
 
 
 @pytest.mark.testinfra_hosts("docker://user@debian_jessie")
-def test_sudo_to_root(Sudo, User):
-    assert User().name == "user"
-    with Sudo():
-        assert User().name == "root"
+def test_sudo_to_root(host):
+    assert host.user().name == "user"
+    with host.sudo():
+        assert host.user().name == "root"
         # Test nested sudo
-        with Sudo("www-data"):
-            assert User().name == "www-data"
-    assert User().name == "user"
+        with host.sudo("www-data"):
+            assert host.user().name == "www-data"
+    assert host.user().name == "user"
 
 
-def test_pip_package(PipPackage):
-    assert PipPackage.get_packages()['pip']['version'] == '1.5.6'
-    pytest = PipPackage.get_packages(pip_path='/v/bin/pip')['pytest']
+def test_pip_package(host):
+    assert host.pip_package.get_packages()['pip']['version'] == '1.5.6'
+    pytest = host.pip_package.get_packages(pip_path='/v/bin/pip')['pytest']
     assert pytest['version'].startswith('2.')
-    outdated = PipPackage.get_outdated_packages(
+    outdated = host.pip_package.get_outdated_packages(
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
