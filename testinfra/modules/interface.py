@@ -62,8 +62,9 @@ class LinuxInterface(Interface):
 
     @property
     def speed(self):
-        return int(self.check_output(
-            "cat /sys/class/net/%s/speed", self.name))
+        speed = self.run("cat /sys/class/net/%s/speed", self.name)
+        if speed.rc == 0:
+            return int(speed.stdout)
 
     @property
     def addresses(self):
