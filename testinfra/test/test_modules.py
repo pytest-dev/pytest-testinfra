@@ -312,7 +312,7 @@ def test_ansible_module(TestinfraBackend, Ansible):
     with pytest.raises(Ansible.AnsibleException) as excinfo:
         Ansible("file", "path=/etc/passwd an_unexpected=variable")
     tb = str(excinfo.value)
-    assert 'unsupported parameter for module: an_unexpected' in tb
+    assert 'unsupported parameter' in tb.lower()
 
     with pytest.raises(Ansible.AnsibleException) as excinfo:
         Ansible("command", "zzz")
