@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.5.5
+=====
+
+* backends: Fix ansible backend with ansible >= 2.3 (#195)
+
 1.5.4
 =====
 
