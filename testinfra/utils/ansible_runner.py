@@ -31,7 +31,7 @@ if _ansible_major_version == 1:
     import ansible.runner
     import ansible.utils
 elif _ansible_major_version == 2:
-    import ansible.cli
+    import ansible.cli.playbook
     import ansible.executor.task_queue_manager
     import ansible.inventory
     import ansible.parsing.dataloader
@@ -138,8 +138,8 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         super(AnsibleRunnerV2, self).__init__(host_list)
         _reload_constants()
         self.variable_manager = ansible.vars.VariableManager()
-        self.cli = ansible.cli.CLI(None)
-        self.cli.options = ansible.cli.CLI(None).base_parser(
+        self.cli = ansible.cli.playbook.PlaybookCLI(None)
+        self.cli.options = self.cli.base_parser(
             connect_opts=True,
             meta_opts=True,
             runas_opts=True,
@@ -155,7 +155,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         self.cli.options.connection = "smart"
         self.loader = ansible.parsing.dataloader.DataLoader()
         if self.cli.options.vault_password_file:
-            vault_pass = ansible.cli.CLI.read_vault_password_file(
+            vault_pass = self.cli.read_vault_password_file(
                 self.cli.options.vault_password_file, loader=self.loader)
             self.loader.set_vault_password(vault_pass)
 
