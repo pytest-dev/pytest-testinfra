@@ -54,16 +54,14 @@ class Service(Module):
                 return SystemdService
             elif host.exists("initctl"):
                 return UpstartService
-            else:
-                return SysvService
+            return SysvService
         elif host.system_info.type == "freebsd":
             return FreeBSDService
         elif host.system_info.type == "openbsd":
             return OpenBSDService
         elif host.system_info.type == "netbsd":
             return NetBSDService
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
     def __repr__(self):
         return "<service %s>" % (self.name,)
@@ -103,10 +101,9 @@ class SystemdService(SysvService):
             return True
         elif cmd.stdout.strip() == "disabled":
             return False
-        else:
-            # Fallback on SysV
-            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
-            return super(SystemdService, self).is_enabled
+        # Fallback on SysV
+        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
+        return super(SystemdService, self).is_enabled
 
 
 class UpstartService(SysvService):
@@ -121,17 +118,15 @@ class UpstartService(SysvService):
             self.name,
         ).rc != 0:
             return True
-        else:
-            # Fallback on SysV
-            return super(UpstartService, self).is_enabled
+        # Fallback on SysV
+        return super(UpstartService, self).is_enabled
 
     @property
     def is_running(self):
         cmd = self.run_test('status %s', self.name)
         if cmd.rc == 0 and len(cmd.stdout.split()) > 1:
             return 'running' in cmd.stdout.split()[1]
-        else:
-            return super(UpstartService, self).is_running
+        return super(UpstartService, self).is_running
 
 
 class FreeBSDService(Service):

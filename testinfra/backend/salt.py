@@ -38,7 +38,7 @@ class SaltBackend(base.BaseBackend):
             self._client = salt.client.LocalClient()
         return self._client
 
-    def run(self, command, *args):
+    def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
         out = self.run_salt("cmd.run_all", [command])
         return self.result(out['retcode'], command, out['stdout'],

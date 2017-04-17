@@ -148,15 +148,13 @@ class BaseBackend(object):
     def quote(command, *args):
         if args:
             return command % tuple(pipes.quote(a) for a in args)
-        else:
-            return command
+        return command
 
     def get_sudo_command(self, command, sudo_user):
         if sudo_user is None:
             return self.quote("sudo /bin/sh -c %s", command)
-        else:
-            return self.quote(
-                "sudo -u %s /bin/sh -c %s", sudo_user, command)
+        return self.quote(
+            "sudo -u %s /bin/sh -c %s", sudo_user, command)
 
     def get_command(self, command, *args):
         command = self.quote(command, *args)

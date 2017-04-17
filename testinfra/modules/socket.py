@@ -110,19 +110,18 @@ class Socket(Module):
         sockets = self.get_sockets(True)
         if self.protocol == "unix":
             return ("unix", self.host) in sockets
-        else:
-            allipv4 = (self.protocol, "0.0.0.0", self.port) in sockets
-            allipv6 = (self.protocol, "::", self.port) in sockets
-            return (
-                all([allipv4, allipv6])
-                or (
-                    self.host is not None
-                    and (
-                        (":" in self.host and allipv6 in sockets)
-                        or (":" not in self.host and allipv4 in sockets)
-                        or (self.protocol, self.host, self.port) in sockets)
-                    )
-            )
+        allipv4 = (self.protocol, "0.0.0.0", self.port) in sockets
+        allipv6 = (self.protocol, "::", self.port) in sockets
+        return (
+            all([allipv4, allipv6])
+            or (
+                self.host is not None
+                and (
+                    (":" in self.host and allipv6 in sockets)
+                    or (":" not in self.host and allipv4 in sockets)
+                    or (self.protocol, self.host, self.port) in sockets)
+                )
+        )
 
     @property
     def clients(self):

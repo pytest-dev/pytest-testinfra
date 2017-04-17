@@ -96,14 +96,13 @@ class Process(InstanceModule):
         matching filters.
         """
         matches = self.filter(**filters)
-        if len(matches) == 0:
+        if not matches:
             raise RuntimeError("No process found")
         elif len(matches) > 1:
             raise RuntimeError("Multiple process found: %s" % (matches,))
-        else:
-            return matches[0]
+        return matches[0]
 
-    def _get_processes(self, *values, **filters):
+    def _get_processes(self, **filters):
         raise NotImplementedError
 
     def _get_process_attribute_by_pid(self, pid, name):
