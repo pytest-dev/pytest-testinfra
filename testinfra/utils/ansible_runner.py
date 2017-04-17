@@ -59,7 +59,7 @@ class AnsibleRunnerBase(object):
     def get_variables(self, host):
         raise NotImplementedError
 
-    def run(self, module_name, module_args, **kwargs):
+    def run(self, host, module_name, module_args, **kwargs):
         raise NotImplementedError
 
 

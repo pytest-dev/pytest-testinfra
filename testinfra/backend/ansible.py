@@ -39,7 +39,7 @@ class AnsibleBackend(base.BaseBackend):
             self._ansible_runner = AnsibleRunner(self.ansible_inventory)
         return self._ansible_runner
 
-    def run(self, command, *args):
+    def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
         out = self.run_ansible("shell", module_args=command)
 

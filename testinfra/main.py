@@ -94,5 +94,4 @@ def main():
         out.seek(0)
         shutil.copyfileobj(out, sys.stdout)
         return ret
-    else:
-        return pytest.main()
+    return pytest.main()

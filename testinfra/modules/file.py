@@ -134,8 +134,7 @@ class File(Module):
             raise RuntimeError("Unexpected output %s" % (out,))
         if decode:
             return out.stdout
-        else:
-            return out.stdout_bytes
+        return out.stdout_bytes
 
     @property
     def content(self):

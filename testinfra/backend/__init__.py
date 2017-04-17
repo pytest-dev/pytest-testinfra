@@ -66,8 +66,7 @@ def get_backend(hostspec, **kwargs):
     klass = get_backend_class(kw["connection"])
     if kw["connection"] == "local":
         return klass(**kw)
-    else:
-        return klass(host, **kw)
+    return klass(host, **kw)
 
 
 def get_backends(hosts, **kwargs):
