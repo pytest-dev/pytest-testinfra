@@ -25,7 +25,9 @@ Install testinfra using pip::
     $ pip install 'git+https://github.com/philpep/testinfra@master#egg=testinfra'
 
 
-Write your first tests file to `test_myinfra.py`::
+Write your first tests file to `test_myinfra.py`:
+
+.. code-block:: python
 
     def test_passwd_file(host):
         passwd = host.file("/etc/passwd")
