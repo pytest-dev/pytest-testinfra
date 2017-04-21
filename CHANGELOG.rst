@@ -2,6 +2,14 @@
 Changelog
 =========
 
+1.6.0
+=====
+
+* New 'host' fixture as a replacement for all other fixtures.
+  See https://testinfra.readthedocs.io/en/latest/modules.html#host
+  (Other fixtures are deprecated and will be removed in 2.0 release).
+
+
 1.5.5
 =====
 
