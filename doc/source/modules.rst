@@ -222,7 +222,7 @@ User
 
 .. autoclass:: testinfra.modules.user.User
    :members:
-   :undoc-members: get_module_class
+   :exclude-members: get_module_class
 
 
 .. _fixture: https://docs.pytest.org/en/latest/fixture.html#fixture
