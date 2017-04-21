@@ -38,14 +38,14 @@ BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir))
 _HAS_DOCKER = None
 
 # Use testinfra to get a handy function to run commands locally
-_Command = testinfra.get_backend("local://").get_module("Command")
-check_output = _Command.check_output
+local_host = testinfra.get_host('local://')
+check_output = local_host.check_output
 
 
 def has_docker():
     global _HAS_DOCKER
     if _HAS_DOCKER is None:
-        _HAS_DOCKER = _Command.exists("docker")
+        _HAS_DOCKER = local_host.exists("docker")
     print(_HAS_DOCKER)
     return _HAS_DOCKER
 
