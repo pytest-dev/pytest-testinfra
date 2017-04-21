@@ -190,9 +190,8 @@ def host(request, tmpdir_factory):
             kw["ssh_config"] = str(ssh_config)
 
         # Wait ssh to be up
-        service = testinfra.get_backend(
-            docker_id, connection="docker"
-        ).get_module("Service")
+        service = testinfra.get_host(
+            docker_id, connection='docker').service
 
         if image in ("centos_7", "fedora"):
             service_name = "sshd"
