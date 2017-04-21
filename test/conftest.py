@@ -34,7 +34,7 @@ from testinfra.backend import parse_hostspec
 
 
 BASETESTDIR = os.path.abspath(os.path.dirname(__file__))
-BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir, os.pardir))
+BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir))
 _HAS_DOCKER = None
 
 # Use testinfra to get a handy function to run commands locally
