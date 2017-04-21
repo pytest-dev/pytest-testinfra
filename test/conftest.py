@@ -46,7 +46,6 @@ def has_docker():
     global _HAS_DOCKER
     if _HAS_DOCKER is None:
         _HAS_DOCKER = local_host.exists("docker")
-    print(_HAS_DOCKER)
     return _HAS_DOCKER
 
 
@@ -236,7 +235,6 @@ def pytest_configure(config):
         return
 
     def build_image(build_failed, dockerfile, image, image_path):
-        print("BUILD", image)
         try:
             subprocess.check_call([
                 "docker", "build", "-f", dockerfile,
