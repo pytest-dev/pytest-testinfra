@@ -433,3 +433,7 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+
+
+def test_hombrew_package(host):
+    assert False, 'need to create this test'

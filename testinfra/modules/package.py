@@ -146,3 +146,18 @@ class RpmPackage(Package):
     def release(self):
         return self.check_output('rpm -q --queryformat="%%{RELEASE}" %s',
                                  self.name)
+
+class HomebrewPackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test('brew list --versions %s', self.name).rc == 0
+
+    @property
+    def version(self):
+        name, version = self.check_output('brew list --versions %s', self.name).split(' ')
+        return version
+
+    @property
+    def release(self):
+        raise NotImplementedError
