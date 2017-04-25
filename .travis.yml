@@ -9,27 +9,43 @@ matrix:
   include:
     - os: linux
       sudo: required
-      env:
-        - TOXENV=py27,ansible1,py34 DOCKER=true
-        - TOXENV=flake8
-        - TOXENV=pylint
-        - TOXENV=sphinxdoc
+      language: python
+      python: 2.7
+      env: TOXENV=py27,ansible1,py34 DOCKER=true
+    - os: linux
+      sudo: required
+      language: python
+      python: 2.7
+      env: TOXENV=flake8
+    - os: linux
+      sudo: required
+      language: python
+      python: 2.7
+      env: TOXENV=pylint
+    - os: linux
+      sudo: required
+      language: python
+      python: 2.7
+      env: TOXENV=sphinxdoc
     - os: osx
-      env:
-        - TOXENV=py27,ansible1,py34
-        - TOXENV=flake8
-        - TOXENV=pylint
-        - TOXENV=sphinxdoc
-
-language: python
-
-python: 2.7
+      language: generic
+      env: TOXENV=py27,ansible1,py34 DOCKER=true
+    - os: osx
+      language: generic
+      env: TOXENV=flake8
+    - os: osx
+      language: generic
+      env: TOXENV=pylint
+    - os: osx
+      language: generic
+      env: TOXENV=sphinxdoc
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && sudo apt-get install -y -o Dpkg::Options::="--force-confnew" docker-engine; docker version; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install python; fi
 
 install:
+  - ./.travis/install.sh
   - pip install tox
 
 script:
