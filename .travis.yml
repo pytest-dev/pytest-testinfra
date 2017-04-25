@@ -1,22 +1,25 @@
 ---
 
-sudo: required
-
-os:
-  - linux
-  - osx
-
 osx_image: xcode8.3
 
 services:
   - docker
 
-env:
-  matrix:
-    - TOXENV=py27,ansible1,py34 DOCKER=true
-    - TOXENV=flake8
-    - TOXENV=pylint
-    - TOXENV=sphinxdoc
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      env:
+        - TOXENV=py27,ansible1,py34 DOCKER=true
+        - TOXENV=flake8
+        - TOXENV=pylint
+        - TOXENV=sphinxdoc
+    - os: osx
+      env:
+        - TOXENV=py27,ansible1,py34
+        - TOXENV=flake8
+        - TOXENV=pylint
+        - TOXENV=sphinxdoc
 
 language: python
 
