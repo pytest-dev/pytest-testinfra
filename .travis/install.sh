@@ -15,11 +15,11 @@ if [ $TRAVIS_OS_NAME == "osx" ]; then
     case $1 in
 
       py27)
-        echo "Found py27 in '${1}'"
+        brew install python
         ;;
 
       py34)
-        echo "Found py34 in '${1}'"
+        brew install python3
         ;;
 
     esac
