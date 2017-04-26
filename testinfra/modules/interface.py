@@ -25,10 +25,20 @@ class Interface(Module):
 
     @property
     def exists(self):
+        """Return if logical interface exists or not
+
+        >>> host.interface("eth0").exists
+        True
+        """
         raise NotImplementedError
 
     @property
     def speed(self):
+        """Return port speed on the interface in Mb/s
+
+        >>> host.interface("eth0").speed
+        1000
+        """
         raise NotImplementedError
 
     @property
@@ -37,6 +47,41 @@ class Interface(Module):
 
         >>> host.interface("eth0").addresses
         ['192.168.31.254', '192.168.31.252', 'fe80::e291:f5ff:fe98:6b8c']
+        """
+        raise NotImplementedError
+
+    @property
+    def is_up(self):
+        """Return if detect interface connected state of network connector or not
+
+        >>> host.interface("eth0").is_up
+        True
+        """
+        raise NotImplementedError
+
+    @property
+    def mtu(self):
+        """Return MTU on the interface in bytes
+
+        >>> host.interface("eth0").mtu
+        1500
+        """
+        raise NotImplementedError
+
+    @property
+    def is_bridge(self):
+        """Return if the interface type is bridge or not
+
+        >>> host.interface("eth0").is_bridge
+        False
+        """
+        raise NotImplementedError
+
+    def is_vlan(self):
+        """Return if the interface type is vlan or not
+
+        >>> host.interface("eth0").is_vlan
+        False
         """
         raise NotImplementedError
 
@@ -73,6 +118,37 @@ class LinuxInterface(Interface):
             if splitted and splitted[0] in ("inet", "inet6"):
                 addrs.append(splitted[1].split("/", 1)[0])
         return addrs
+
+    @property
+    def is_up(self):
+
+        # Check Connection Carrier Status
+        if int(self.check_output(
+                "cat /sys/class/net/%s/carrier", self.name)) == 1:
+
+            # Check Operator Status
+            if str(self.check_output(
+                    "cat /sys/class/net/%s/operstate", self.name)) == "up":
+                return True
+        else:
+            return False
+
+    @property
+    def mtu(self):
+        return int(self.check_output(
+            "cat /sys/class/net/%s/mtu", self.name))
+
+    @property
+    def is_bridge(self):
+        return self.run_expect([0, 1, 255],
+                               "ip link show %s type bridge",
+                               self.name).rc == 0
+
+    @property
+    def is_vlan(self):
+        return self.run_expect([0, 1, 255],
+                               "ip link show %s type vlan",
+                               self.name).rc == 0
 
 
 class BSDInterface(Interface):

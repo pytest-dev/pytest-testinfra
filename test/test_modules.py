@@ -428,3 +428,12 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+
+
+def test_interface(host):
+    iface = host.interface("eth0")
+    assert iface.is_up
+    assert iface.mtu > 0
+    assert iface.speed > 0
+    assert not iface.is_bridge
+    assert not iface.is_vlan
