@@ -37,6 +37,7 @@ modules = {
     'sysctl': 'sysctl:Sysctl',
     'system_info': 'systeminfo:SystemInfo',
     'user': 'user:User',
+    'network': 'network:Network',
 }
 
 

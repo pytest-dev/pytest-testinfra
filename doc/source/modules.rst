@@ -91,6 +91,10 @@ host
 
        :class:`testinfra.modules.user.User` class
 
+    .. attribute:: network
+
+       :class:`testinfra.modules.network.Network` class
+
 
 
 
@@ -224,5 +228,10 @@ User
    :members:
    :exclude-members: get_module_class
 
+Network
+~~~~~~~
+
+.. autoclass:: testinfra.modules.network.Network
+   :members:
 
 .. _fixture: https://docs.pytest.org/en/latest/fixture.html#fixture
