@@ -15,6 +15,8 @@ from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
 
+import re
+
 
 class Service(Module):
     """Test services
@@ -61,6 +63,8 @@ class Service(Module):
             return OpenBSDService
         elif host.system_info.type == "netbsd":
             return NetBSDService
+        elif host.system_info.type == "darwin":
+            return LaunchdService
         raise NotImplementedError
 
     def __repr__(self):
@@ -162,6 +166,24 @@ class NetBSDService(Service):
     @property
     def is_running(self):
         return self.run_test("/etc/rc.d/%s onestatus", self.name).rc == 0
+
+    @property
+    def is_enabled(self):
+        raise NotImplementedError
+
+
+class LaunchdService(Service):
+
+    @property
+    def is_running(self):
+        cmd = self.run_test("sudo /bin/launchctl list | grep '%s' | grep '^[-0-9]'", self.name)
+
+        if cmd.rc == 0:
+            stdout = str(cmd.stdout)
+            # (Pdb) cmd.stdout
+            # u'2034\t0\tcom.openssh.sshd.E8FE00AD-3911-4162-9D6E-6E2B82EDB7A9\n-\t0\tcom.openssh.sshd\n2133\t0\tcom.openssh.sshd.005AE32E-10CA-4368-AFEC-F85A09226D9B\n'
+            # result will be [ [pid, status, label], [pid, status, label], ... ]
+            return [ re.split(r'[\t ]', line) for line in str(cmd.stdout).split('\n') ]
 
     @property
     def is_enabled(self):
