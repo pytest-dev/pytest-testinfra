@@ -16,7 +16,9 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import imp
 import pprint
+
 
 try:
     import ansible
@@ -40,11 +42,19 @@ elif _ansible_major_version == 2:
     import ansible.utils.vars
     import ansible.vars
 
+try:
+    from ansible.module_utils._text import to_bytes
+except ImportError:
+    from ansible.utils.unicode import to_bytes
+
+
+__all__ = ['AnsibleRunner', 'to_bytes']
+
 
 def _reload_constants():
     # Reload defaults that can depend on environment variables and
     # current working directory
-    reload(ansible.constants)
+    imp.reload(ansible.constants)
 
 
 class AnsibleRunnerBase(object):
