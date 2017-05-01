@@ -12,7 +12,6 @@
 # limitations under the License.
 from __future__ import unicode_literals
 import pytest
-import six
 
 import testinfra.backend
 BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
@@ -86,8 +85,6 @@ def test_backend_importables():
     # just check that all declared backend are importable and NAME is set
     # correctly
     for connection_type in testinfra.backend.BACKENDS:
-        if six.PY3 and connection_type == 'ansible':
-            pytest.skip()
         obj = testinfra.backend.get_backend_class(connection_type)
         assert obj.get_connection_type() == connection_type
 

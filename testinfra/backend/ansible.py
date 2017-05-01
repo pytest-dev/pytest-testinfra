@@ -19,6 +19,7 @@ import pprint
 
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
+from testinfra.utils.ansible_runner import to_bytes
 
 logger = logging.getLogger("testinfra")
 
@@ -42,27 +43,16 @@ class AnsibleBackend(base.BaseBackend):
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
         out = self.run_ansible("shell", module_args=command)
-
-        # Ansible may return bytes as an unicode object...
-        # A simple test case is:
-        # >>> assert File("/bin/true").content == open("/bin/true").read()
-        try:
-            stdout_bytes = b"".join((chr(ord(c)) for c in out['stdout']))
-        except ValueError:
-            stdout_bytes = None
-
-        try:
-            stderr_bytes = b"".join((chr(ord(c)) for c in out['stderr']))
-        except ValueError:
-            stderr_bytes = None
-
         return self.result(
             out['rc'],
             command,
-            stdout_bytes=stdout_bytes,
-            stderr_bytes=stderr_bytes,
+            stdout_bytes=None,
+            stderr_bytes=None,
             stdout=out["stdout"], stderr=out["stderr"],
         )
+
+    def encode(self, data):
+        return to_bytes(data)
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
         result = self.ansible_runner.run(
