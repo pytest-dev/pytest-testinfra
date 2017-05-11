@@ -19,8 +19,10 @@ import subprocess
 import sys
 import threading
 import time
-
+import re
 import pytest
+
+from _pytest.fixtures import FixtureLookupError
 from six.moves import urllib
 
 try:
@@ -36,6 +38,7 @@ from testinfra.backend import parse_hostspec
 BASETESTDIR = os.path.abspath(os.path.dirname(__file__))
 BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir))
 _HAS_DOCKER = None
+_HAS_VAGRANT = None
 
 # Use testinfra to get a handy function to run commands locally
 local_host = testinfra.get_host('local://')
@@ -48,6 +51,12 @@ def has_docker():
         _HAS_DOCKER = local_host.exists("docker")
     return _HAS_DOCKER
 
+
+def has_vagrant():
+    global _HAS_VAGRANT
+    if _HAS_VAGRANT is None:
+        _HAS_VAGRANT = local_host.exists('vagrant')
+    return _HAS_VAGRANT
 
 # Generated with
 # $ echo myhostvar: bar > hostvars.yml
@@ -102,6 +111,28 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
     ).format(str(vault_password_file)))
 
 
+def build_vagrant_fixture(box, scope, vagrantfile='test/Vagrantfile', user='vagrant'):
+    @pytest.fixture(scope=scope)
+    def func(request, tmpdir_factory):
+        vagrant = testinfra.get_host('vagrant://' + user, vagrantfile=vagrantfile).backend
+
+        tmpdir = tmpdir_factory.mktemp(str(id(request)))
+        ssh_config = tmpdir.join("ssh_config")
+        if vagrant.status.is_not_running:
+            vagrant.up
+        ssh_config.write(vagrant.ssh_config)
+
+        # def teardown():
+        #     vagrant.suspend
+        #
+        # request.addfinalizer(teardown)
+        #
+        return vagrant
+
+    fname = '_vagrant_{}_{}'.format(box, scope)
+    mod = sys.modules[__name__]
+    setattr(mod, fname, func)
+
 def build_docker_container_fixture(image, scope):
     @pytest.fixture(scope=scope)
     def func(request):
@@ -113,7 +144,7 @@ def build_docker_container_fixture(image, scope):
             docker_host = "localhost"
 
         cmd = ["docker", "run", "-d", "-P"]
-        if image in ("ubuntu_xenial", "debian_jessie", "centos_7", "fedora"):
+        if image in ("ubuntu_xenial", "debian_jessie", "centos_6", "centos_7", "fedora"):
             cmd.append("--privileged")
 
         cmd.append("philpep/testinfra:" + image)
@@ -224,7 +255,6 @@ def pytest_generate_tests(metafunc):
         else:
             # Default
             hosts = ["docker://debian_jessie"]
-
         metafunc.parametrize("host", hosts, indirect=True,
                              scope="function")
 
