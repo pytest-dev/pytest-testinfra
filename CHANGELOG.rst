@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.6.2
+=====
+
+* Fix wheel package for 1.6.1
+
 1.6.1
 =====
 
