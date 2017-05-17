@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.6.1
+=====
+
+* Support ansible 2.3 with python 3 (#197)
+
 1.6.0
 =====
 
