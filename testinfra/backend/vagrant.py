@@ -167,7 +167,7 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
     @property
     def ssh_config_to_tmpfile(self):
         box_ssh_config = tempfile.NamedTemporaryFile(delete=False)
-        os.chmod(box_ssh_config.name, 0600)
+        os.chmod(box_ssh_config.name, 384) # oct 0600
         with box_ssh_config.file as fd:
             fd.write(self.ssh_config)
 

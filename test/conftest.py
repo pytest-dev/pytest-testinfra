@@ -143,7 +143,7 @@ def vagrant_travis_helper(vagrant):
                     fd.write(script + '\n')
                 else:
                     fd.write(item + '\n')
-        os.chmod(travis_helper, 0755)
+        os.chmod(travis_helper, 493) #0755 oct
         return True
 
 def build_vagrant_fixture(box, scope, vagrantfile='vagrant/macos-sierra/Vagrantfile', user='vagrant'):
