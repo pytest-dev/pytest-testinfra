@@ -1,4 +1,5 @@
 mock
+passlib
 pytest-cov
 pytest-xdist
 paramiko
