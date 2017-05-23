@@ -1,31 +1,45 @@
 #!/bin/bash
 
-if [ $TRAVIS_OS_NAME == "osx" ]; then
+function install_osx_package() {
 
-  # Install some requirements on OS X
-  # e.g. brew install pyenv-virtualenv
+  brew list --versions ${1} || brew install ${1}
+  return $?
 
-  set $(echo $TOXENV | tr "," " ") --
+}
 
-  while [ -n "${1%%*-}" ]
-  do
+function setup_osx() {
 
-    echo "USING: '${1}'"
+  install_osx_package 'pyenv'
+  install_osx_package 'pyenv-virtualenv'
+  install_osx_package 'python'
+  install_osx_package 'python3'
 
-    case $1 in
+  [ -d /usr/local/Cellar/python/3.4.2 ] || python-build 3.4.2 /usr/local/Cellar/python/3.4.2
+  cd /usr/local/bin
+  [ -L "python3.4" ] || ln -sf ../Cellar/python/3.4.2/bin/python3.4
 
-      py27)
-        brew install python
-        ;;
+  python3.4 --version
+  python --version
 
-      py34)
-        brew install python3
-        ;;
+}
 
-    esac
+function setup_linux() {
 
-    shift
+  sudo apt-get update -qq && \
+  sudo apt-get install -y -o Dpkg::Options::="--force-confnew" docker-engine
 
-  done
+  docker version
+}
 
-fi
+
+case "${TRAVIS_OS_NAME}" in
+
+  osx)
+    setup_osx
+    ;;
+
+  linux)
+    setup_linux
+    ;;
+
+esac
