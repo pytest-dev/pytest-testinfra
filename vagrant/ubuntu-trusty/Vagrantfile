@@ -1,0 +1,79 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$HOST_FILE = YAML.load_file('../hosts.yml')
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define 'default-master' do |config|
+    config.vm.box = "ubuntu/trusty64"
+    config.vm.hostname = "localhost"
+
+    # Vagrant >= 1.7 wants to replace the insecure_key with public boxes, but
+    # there is a bug in that implentation so we just allow the insecure_key
+    # anyway.
+    config.ssh.insert_key = false
+
+    config.vm.box_check_update = false
+
+    config.vm.provision "shell", path: "install.sh"
+
+    config.vm.network "private_network", ip: $HOST_FILE['ubuntu-trusty']['default-master']
+    config.vm.synced_folder ".", "/vagrant", type: "nfs" # or "rsync"
+
+    config.vm.provider "virtualbox" do |vb|
+      #  # Display the VirtualBox GUI when booting the machine
+      #  vb.gui = true
+
+      vb.cpus = "1"
+      vb.memory = "768"
+
+      # Does this really help make network performance better?
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio" ]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio" ]
+
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    end
+  end
+
+  config.vm.define 'default' do |config|
+    config.vm.box = "ubuntu-trusty"
+    config.vm.hostname = "localhost"
+
+    # Vagrant >= 1.7 wants to replace the insecure_key with public boxes, but
+    # there is a bug in that implentation so we just allow the insecure_key
+    # anyway.
+    config.ssh.insert_key = false
+
+    config.vm.box_check_update = false
+
+    config.vm.provision "shell", path: "install.sh"
+
+    config.vm.network "private_network", ip: $HOST_FILE['ubuntu-trusty']['default']
+    config.vm.synced_folder ".", "/vagrant", type: "nfs" # or "rsync"
+
+    if File.exists?('travis-helper.sh')
+      config.vm.provision "file", source: "travis-helper.sh", destination: "./travis-helper.sh"
+      config.vm.provision "shell", privileged: false, path: "./travis-helper.sh"
+    end
+
+    config.vm.provider "virtualbox" do |vb|
+      #  # Display the VirtualBox GUI when booting the machine
+      #  vb.gui = true
+
+      vb.linked_clone = true
+
+      vb.cpus = "1"
+      vb.memory = "768"
+
+      # Does this really help make network performance better?
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio" ]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio" ]
+
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    end
+  end
+
+end

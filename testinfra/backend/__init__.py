@@ -26,6 +26,7 @@ BACKENDS = {
     'docker': 'testinfra.backend.docker.DockerBackend',
     'ansible': 'testinfra.backend.ansible.AnsibleBackend',
     'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
+    'vagrant': 'testinfra.backend.vagrant.VagrantBackend',
 }
 
 
@@ -53,6 +54,11 @@ def parse_hostspec(hostspec):
         ):
             if key in query:
                 kw[key] = query.get(key)[0]
+
+        # ugh, not sure why parse_qs returns values as a list instead as a unicode string.  We fix that here.
+        for k,v in query.items():
+            kw[unicode(k)] = u''.join(v)
+
     else:
         host = hostspec
     return host, kw

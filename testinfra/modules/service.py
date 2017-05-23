@@ -13,9 +13,94 @@
 
 from __future__ import unicode_literals
 
+import re
+
+from functools import wraps
 from testinfra.modules.base import Module
 
-import re
+
+class ServiceProvider(object):
+
+    @classmethod
+    def provider(cls, host):
+        raise NotImplementedError
+
+
+class LinuxServiceProvider(ServiceProvider):
+
+    @staticmethod
+    def provider(host):
+        if host.system_info.is_linux:
+
+            if host.system_info.has_systemd:
+                return SystemdService
+
+            if host.system_info.is_redhat and host.system_info.has_service:
+                return SysvService
+
+            if host.system_info.has_initctl and host.exists('status'):
+                return UpstartService
+
+            return SysvService
+
+
+class BSDServiceProvider(ServiceProvider):
+
+    @staticmethod
+    def provider(host):
+        if host.system_info.is_bsd:
+
+            if host.system_info.is_freebsd:
+                return FreeBSDService
+
+            if host.system_info.is_openbsd:
+                return OpenBSDService
+
+            if host.system_info.is_netbsd:
+                return NetBSDService
+
+
+class DarwinServiceProvider(ServiceProvider):
+
+    @staticmethod
+    def provider(host):
+        if host.system_info.is_darwin:
+            return LaunchdService
+
+
+def providers(*providerz):
+    '''
+    This can be used as a decorator for @classmethods calls to simplify or override behavior.
+
+    An example of how to use this decorator:
+
+        # If applied to Service.get_module_class
+
+            @classmethod
+            @providers(
+                LinuxServiceProvider,
+                BSDServiceProvider,
+                DarwinServiceProvider,
+            )
+            def get_module_class(cls, host):
+                # the decorators listed in @providers will check to see if a service provider
+                # can be found.
+                #   If found:
+                #       - Return the service provide from the decotor
+                #
+                #   If no provider is found, we just raise NotImplementedError
+                raise NotImplementedError
+    '''
+    def wrapped_method(func):
+        @wraps(func)
+        def on_call(cls, host, *args, **kwargs):
+            for provider_class in providerz:
+                provider = provider_class.provider(host)
+                if provider:
+                    return provider
+            return func(cls, host, *args, **kwargs)
+        return on_call
+    return wrapped_method
 
 
 class Service(Module):
@@ -48,24 +133,22 @@ class Service(Module):
 
     @classmethod
     def get_module_class(cls, host):
-        if host.system_info.type == "linux":
-            if (
-                host.exists("systemctl")
-                and "systemd" in host.file("/sbin/init").linked_to
-            ):
-                return SystemdService
-            elif host.exists("initctl"):
-                return UpstartService
-            return SysvService
-        elif host.system_info.type == "freebsd":
-            return FreeBSDService
-        elif host.system_info.type == "openbsd":
-            return OpenBSDService
-        elif host.system_info.type == "netbsd":
-            return NetBSDService
-        elif host.system_info.type == "darwin":
-            return LaunchdService
+
+        classes = [
+            LinuxServiceProvider,
+            BSDServiceProvider,
+            DarwinServiceProvider,
+        ]
+
+        is_not_none = lambda i: i is not None
+        in_service_providers = [Klass.provider(host) for Klass in classes]
+
+        provider = filter(is_not_none, in_service_providers)
+        if provider:
+            return provider[0]
+
         raise NotImplementedError
+
 
     def __repr__(self):
         return "<service %s>" % (self.name,)
@@ -179,11 +262,10 @@ class LaunchdService(Service):
         cmd = self.run_test("sudo /bin/launchctl list | grep '%s' | grep '^[-0-9]'", self.name)
 
         if cmd.rc == 0:
-            stdout = str(cmd.stdout)
             # (Pdb) cmd.stdout
             # u'2034\t0\tcom.openssh.sshd.E8FE00AD-3911-4162-9D6E-6E2B82EDB7A9\n-\t0\tcom.openssh.sshd\n2133\t0\tcom.openssh.sshd.005AE32E-10CA-4368-AFEC-F85A09226D9B\n'
             # result will be [ [pid, status, label], [pid, status, label], ... ]
-            return [ re.split(r'[\t ]', line) for line in str(cmd.stdout).split('\n') ]
+            return [re.split(r'[\t ]', line) for line in str(cmd.stdout).split('\n')]
 
     @property
     def is_enabled(self):

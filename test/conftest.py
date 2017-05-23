@@ -21,6 +21,7 @@ import threading
 import time
 import re
 import pytest
+import yaml
 
 from _pytest.fixtures import FixtureLookupError
 from six.moves import urllib
@@ -57,6 +58,18 @@ def has_vagrant():
     if _HAS_VAGRANT is None:
         _HAS_VAGRANT = local_host.exists('vagrant')
     return _HAS_VAGRANT
+
+
+def get_travisyml():
+    fname = BASEDIR + '/.travis.yml'
+    if os.path.isfile(fname):
+        return os.path.abspath(fname)
+
+
+def get_travis_install_helper():
+    fname = BASEDIR + '/.travis/install.sh'
+    if os.path.isfile(fname):
+        return os.path.abspath(fname)
 
 # Generated with
 # $ echo myhostvar: bar > hostvars.yml
@@ -111,16 +124,38 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
     ).format(str(vault_password_file)))
 
 
-def build_vagrant_fixture(box, scope, vagrantfile='test/Vagrantfile', user='vagrant'):
+def vagrant_travis_helper(vagrant):
+    travis_yml = get_travisyml()
+    if travis_yml:
+        yml = yaml.load(open(travis_yml, 'r'))
+
+        sut_dir = os.path.dirname(vagrant.vagrantfile)
+        travis_helper = sut_dir + '/travis-helper.sh'
+
+        with open(travis_helper, 'wb') as fd:
+            fd.write('#!/bin/bash\n\n# travis before_install scripts\n')
+            [fd.write(item + '\n') for item in yml.get('before_install')]
+
+            fd.write('\n\n# travis install scripts\n')
+            for item in yml.get('install'):
+                if os.path.isfile(item):
+                    script = file(item, 'r').read()
+                    fd.write(script + '\n')
+                else:
+                    fd.write(item + '\n')
+        os.chmod(travis_helper, 0755)
+        return True
+
+def build_vagrant_fixture(box, scope, vagrantfile='vagrant/macos-sierra/Vagrantfile', user='vagrant'):
     @pytest.fixture(scope=scope)
     def func(request, tmpdir_factory):
-        vagrant = testinfra.get_host('vagrant://' + user, vagrantfile=vagrantfile).backend
+        vagrant = testinfra.get_host('vagrant://' + user + '@' + box, vagrantfile=vagrantfile).backend
 
-        tmpdir = tmpdir_factory.mktemp(str(id(request)))
-        ssh_config = tmpdir.join("ssh_config")
+        vagrant_travis_helper(vagrant)
+
         if vagrant.status.is_not_running:
             vagrant.up
-        ssh_config.write(vagrant.ssh_config)
+            vagrant.provision
 
         # def teardown():
         #     vagrant.suspend
@@ -132,6 +167,7 @@ def build_vagrant_fixture(box, scope, vagrantfile='test/Vagrantfile', user='vagr
     fname = '_vagrant_{}_{}'.format(box, scope)
     mod = sys.modules[__name__]
     setattr(mod, fname, func)
+
 
 def build_docker_container_fixture(image, scope):
     @pytest.fixture(scope=scope)
@@ -166,76 +202,162 @@ def build_docker_container_fixture(image, scope):
 def initialize_container_fixtures():
     for image, scope in itertools.product([
         "debian_jessie", "debian_wheezy", "ubuntu_trusty", "ubuntu_xenial",
-        "fedora", "centos_7",
+        "fedora", "centos_6", "centos_7",
     ], ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
+    for box, scope in itertools.product(['default'], ['function', 'session']):
+        build_vagrant_fixture(box=box, scope=scope)
 
 initialize_container_fixtures()
 
 
+def build_generic_ssh_config(host, hostname, user, port, priv_key):
+    generic_ssh_config = ("Host {}\n"
+            "  Hostname {}\n"
+            "  User {}\n"
+            "  Port {}\n"
+            "  UserKnownHostsFile /dev/null\n"
+            "  StrictHostKeyChecking no\n"
+            "  IdentityFile {}\n"
+            "  IdentitiesOnly yes\n"
+            "  LogLevel FATAL\n").format(host, hostname, user, port, str(priv_key))
+    return generic_ssh_config
+
+
+@pytest.fixture
+def vagrant_sut(request):
+    def on_call(start=True, keep_running=True, args=(), kwargs={}):
+        image, kw = testinfra.backend.parse_hostspec(request.param)
+        vagrant = testinfra.get_host(image, **kw).backend
+
+        # refresh status cache
+        vagrant.status
+        if start and vagrant.status.is_not_running:
+            vagrant.up
+
+        if start is False and vagrant.status.is_running:
+            vagrant.suspend
+
+        def build_box(vagrant):
+            if vagrant.status.is_not_created:
+                # invoke our pre-init script to do initial provisioning to make tests run faster
+                pre_init = vagrant.run('./pre-init')
+                assert pre_init.rc == 0, 'The pre-initialization script ./pre-init for vagrantfile={} has failed'.format(vagrant.vagrantfile)
+
+        def teardown():
+            if not keep_running:
+                if vagrant.status.is_created:
+                    vagrant.suspend
+
+            if vagrant.status.is_not_created:
+                bb_thread = TimedThread(target=build_box, join=True, timeout=1800, args=(vagrant,))
+
+            if keep_running and vagrant.status.is_not_running:
+                vagrant.up
+
+        request.addfinalizer(teardown)
+
+        return vagrant
+    return on_call
+
+
+# helper methods for _vagrant_{}_{} fixture
+def handle_vagrant_fixture(request, host, user,  scope, hostspec, kw):
+    fname = '_vagrant_{}_{}'.format(host, scope)
+    hostname = '127.0.0.1'
+
+    if 'vagrantfile' in kw:
+        vagrant_backend = testinfra.get_host(hostspec, **kw).backend
+    else:
+        vagrant_backend = request.getfixturevalue(fname)
+
+    if vagrant_backend.status.is_not_running:
+        vagrant_backend.up
+
+    service = vagrant_backend.communicate.service
+    port = vagrant_backend.ssh_config_to_json['port']
+
+    return (vagrant_backend, hostname, service, port)
+
+
 @pytest.fixture
 def host(request, tmpdir_factory):
+    image, kw = parse_hostspec(request.param)
+    host, user, _ = BaseBackend.parse_hostspec(image)
+    user = user or 'root'
+    hostspec = host
+
     if not has_docker():
         pytest.skip()
         return
-    image, kw = parse_hostspec(request.param)
-    host, user, _ = BaseBackend.parse_hostspec(image)
 
+    if not has_vagrant():
+        pytest.skip()
+        return
+
+    if kw['connection'] == 'ansible' and ansible is None:
+        pytest.skip()
+        return
+
+    scope = 'session'
     if getattr(request.function, "destructive", None) is not None:
-        scope = "function"
-    else:
-        scope = "session"
+        scope = 'function'
 
-    fname = "_docker_container_%s_%s" % (host, scope)
-    docker_id, docker_host, port = request.getfuncargvalue(fname)
+    sut_ssh_config = None
+    validate_sshd_service = True
+
+    try:
+        fname = "_docker_container_%s_%s" % (host, scope)
+        docker_id, docker_host, port = request.getfixturevalue(fname)
+        hostname = docker_host
+        service = testinfra.get_host(docker_id, connection='docker').service
+    except FixtureLookupError:
+        validate_sshd_service = False
+        hostspec = user + '@' + host
+        vagrant_backend, hostname, service, port = handle_vagrant_fixture(request, host, user, scope, hostspec, kw)
+        sut_ssh_config = vagrant_backend.ssh_config
+
+    if kw['connection'] == 'vagrant':
+        return vagrant_backend
 
     if kw["connection"] == "docker":
         host = docker_id
-    elif kw["connection"] in ("ansible", "ssh", "paramiko", "safe-ssh"):
-        tmpdir = tmpdir_factory.mktemp(str(id(request)))
-        key = tmpdir.join("ssh_key")
-        key.write(open(os.path.join(BASETESTDIR, "ssh_key")).read())
-        key.chmod(384)  # octal 600
-        if kw["connection"] == "ansible":
-            if ansible is None:
-                pytest.skip()
-                return
-            setup_ansible_config(
-                tmpdir, host, docker_host, user or "root", port, str(key))
-            os.environ["ANSIBLE_CONFIG"] = str(tmpdir.join("ansible.cfg"))
-            # this force backend cache reloading
-            kw["ansible_inventory"] = str(tmpdir.join("inventory"))
-        else:
-            ssh_config = tmpdir.join("ssh_config")
-            ssh_config.write((
-                "Host {}\n"
-                "  Hostname {}\n"
-                "  Port {}\n"
-                "  UserKnownHostsFile /dev/null\n"
-                "  StrictHostKeyChecking no\n"
-                "  IdentityFile {}\n"
-                "  IdentitiesOnly yes\n"
-                "  LogLevel FATAL\n"
-            ).format(host, docker_host, port, str(key)))
-            kw["ssh_config"] = str(ssh_config)
+        hostspec = user + '@' + host
 
+        host = testinfra.host.get_host(hostspec, **kw)
+        host.backend.get_hostname = lambda: image
+        return host
+
+    tmpdir = tmpdir_factory.mktemp(str(id(request)))
+    key = tmpdir.join("ssh_key")
+    key.write(open(os.path.join(BASETESTDIR, "ssh_key")).read())
+    key.chmod(384)  # octal 600
+
+    if kw['connection'] == 'ansible':
+        setup_ansible_config(
+            tmpdir, host, hostname, user, port, str(key))
+        os.environ["ANSIBLE_CONFIG"] = str(tmpdir.join("ansible.cfg"))
+        # this force backend cache reloading
+        kw["ansible_inventory"] = str(tmpdir.join("inventory"))
+        hostspec = host
+    else:
+        ssh_config = tmpdir.join("ssh_config")
+        if sut_ssh_config is None:
+            sut_ssh_config = build_generic_ssh_config(host=host, hostname=hostname, user=user, port=port, priv_key=key)
+        ssh_config.write(sut_ssh_config)
+        kw["ssh_config"] = str(ssh_config)
+        hostspec = user + "@" + host
+
+    if validate_sshd_service:
         # Wait ssh to be up
-        service = testinfra.get_host(
-            docker_id, connection='docker').service
-
-        if image in ("centos_7", "fedora"):
+        if image in ("centos_6", "centos_7", "fedora", "vagrant", "vagrant@default"):
             service_name = "sshd"
         else:
             service_name = "ssh"
 
         while not service(service_name).is_running:
             time.sleep(.5)
-
-    if kw["connection"] != "ansible":
-        hostspec = (user or "root") + "@" + host
-    else:
-        hostspec = host
 
     host = testinfra.host.get_host(hostspec, **kw)
     host.backend.get_hostname = lambda: image
@@ -248,6 +370,14 @@ def docker_image(host):
 
 
 def pytest_generate_tests(metafunc):
+    if 'vagrant_sut' in metafunc.fixturenames:
+        marker = getattr(metafunc.function, 'vagrant_sut', None)
+        params = ('vagrant://vagrant@default?vagrantfile=vagrant/macos-sierra/Vagrantfile',)
+        if marker:
+            marker.args = ('vagrant://vagrant@default', )
+            params = ('vagrant://vagrant@default?' + '&'.join(['{}={}'.format(k,v) for k,v in marker.kwargs.items()]),)
+        metafunc.parametrize('vagrant_sut', params, indirect=True, scope='function')
+
     if "host" in metafunc.fixturenames:
         marker = getattr(metafunc.function, "testinfra_hosts", None)
         if marker is not None:
@@ -289,3 +419,47 @@ def pytest_configure(config):
         thread.join()
     if build_failed.is_set():
         raise RuntimeError("One or more docker build failed")
+
+
+class TimedThread(threading.Thread):
+    """
+    A Timed Thread wrapper helper.
+
+    The default arguments specifically @join=False will not time the target execution and therefore will background
+    the thread.
+
+    If you set @join=True then, you will be timing the thread execution and you can check to see if the timeout
+    occured by looking at the @timedout attribute.
+    """
+
+    def __init__(self, target, timeout=1800, join=False, daemon=True, args=(), kwargs={}):
+        super(TimedThread, self).__init__()
+        self._join = join
+        self.timeout = timeout
+        self.target = target
+        self.args = args
+        self.kwargs = kwargs
+        self.timedout = False
+        self.finished = threading.Event()
+        self.result = None
+
+        # thread setup
+        self.setDaemon(daemon)
+        self.start()
+
+    def start(self):
+        super(TimedThread, self).start()
+
+        if self._join:
+            self.join(self.timeout)
+
+            if self.is_alive():
+                 self.timedout = True
+                 self.cancel()
+
+    def cancel(self):
+        self.finished.set()
+
+    def run(self):
+        if not self.finished.is_set():
+            self.result = self.target(*self.args, **self.kwargs)

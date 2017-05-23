@@ -30,11 +30,10 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "debian_jessie", "centos_7", "ubuntu_trusty", "fedora",
+        "debian_jessie", "centos_6", "centos_7", "ubuntu_trusty", "fedora",
         "ubuntu_xenial",
     )
 ])
-
 
 @all_images
 def test_package(host, docker_image):
@@ -45,12 +44,14 @@ def test_package(host, docker_image):
         "fedora": "7.",
         "ubuntu_trusty": "1:6.6",
         "ubuntu_xenial": "1:7.2",
+        "centos_6": "5.3",
         "centos_7": "6.6",
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
         "fedora": ".fc25",
+        "centos_6": ".el6",
         "centos_7": ".el7",
         "debian_jessie": None,
         "debian_wheezy": None,
@@ -77,6 +78,7 @@ def test_systeminfo(host, docker_image):
     release, distribution, codename = {
         "debian_jessie": ("^8\.", "debian", "jessie"),
         "debian_wheezy": ("^7$", "debian", None),
+        "centos_6": ("^6", "CentOS", None),
         "centos_7": ("^7$", "centos", None),
         "fedora": ("^25$", "fedora", None),
         "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
@@ -90,7 +92,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "fedora"):
+    if docker_image in ("centos_6", "centos_7", "fedora"):
         name = "sshd"
     else:
         name = "ssh"
@@ -120,6 +122,14 @@ def test_service(host, name, running, enabled):
     service = host.service(name)
     assert service.is_running == running
     assert service.is_enabled == enabled
+
+
+@pytest.mark.testinfra_hosts("docker://centos_6")
+def test_service_sshd_is_running(host):
+    sshd = host.service('sshd')
+
+    assert sshd.is_running
+    assert sshd.is_enabled
 
 
 def test_salt(host):
@@ -189,6 +199,7 @@ def test_process(host, docker_image):
 
     args, comm = {
         "debian_jessie": ("/sbin/init", "systemd"),
+        "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
         "ubuntu_trusty": ("/usr/sbin/sshd -D", "sshd"),
@@ -446,5 +457,15 @@ def test_pip_package(host):
     assert int(outdated['latest'].split('.')[0]) > 2
 
 
-def test_hombrew_package(host):
-    assert False, 'need to create this test'
+@pytest.mark.testinfra_hosts('vagrant://vagrant@default')
+def test_homebrew_with_ssh_provisioning(host):
+    vagrant = host.backend
+    box = vagrant.communicate
+
+    assert box.check_output('whoami') == 'vagrant'
+    assert box.exists('brew')
+
+    if box.package('bash').is_installed is False:
+        box.run('brew install bash')
+
+    assert box.package('bash').is_installed
