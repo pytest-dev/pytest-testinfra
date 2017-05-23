@@ -12,6 +12,13 @@
 # limitations under the License.
 from __future__ import unicode_literals
 
+
+try:
+    import passlib.hash
+    HAS_PASSLIB=True
+except:
+    HAS_PASSLIB=False
+
 import crypt
 import datetime
 import re
@@ -225,7 +232,11 @@ def test_nonexistent_user(host):
 def test_current_user(host):
     assert host.user().name == "root"
     pw = host.user().password
-    assert crypt.crypt("foo", pw) == pw
+
+    if HAS_PASSLIB:
+        assert passlib.hash.sha512_crypt.verify('foo', pw)
+    else:
+        assert crypt.crypt("foo", pw) == pw
 
 
 def test_group(host):
