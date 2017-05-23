@@ -292,7 +292,7 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
             as_not_running = False
             created = True
         else:
-            raise NotImplementedError, 'This is a bug, un-handled `vagrant status` status "{}"'.format(status)
+            raise NotImplementedError('This is a bug, un-handled `vagrant status` status "{}"'.format(status))
 
         def cmd():
             def add(key, val):
