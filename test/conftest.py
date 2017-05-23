@@ -374,7 +374,6 @@ def pytest_generate_tests(metafunc):
         marker = getattr(metafunc.function, 'vagrant_sut', None)
         params = ('vagrant://vagrant@default?vagrantfile=vagrant/macos-sierra/Vagrantfile',)
         if marker:
-            marker.args = ('vagrant://vagrant@default', )
             params = ('vagrant://vagrant@default?' + '&'.join(['{}={}'.format(k,v) for k,v in marker.kwargs.items()]),)
         metafunc.parametrize('vagrant_sut', params, indirect=True, scope='function')
 
