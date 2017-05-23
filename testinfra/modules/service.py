@@ -140,10 +140,9 @@ class Service(Module):
             DarwinServiceProvider,
         ]
 
-        is_not_none = lambda i: i is not None
         in_service_providers = [Klass.provider(host) for Klass in classes]
 
-        provider = filter(is_not_none, in_service_providers)
+        provider = [provider for provider in in_service_providers if provider is not None]
         if provider:
             return provider[0]
 
