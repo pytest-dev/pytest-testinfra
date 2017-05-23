@@ -59,7 +59,6 @@ def parse_hostspec(hostspec):
         # unicode string.  We fix that here.
         for k, v in query.items():
             kw[k] = ''.join(v)
-
     else:
         host = hostspec
     return host, kw
