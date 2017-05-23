@@ -71,7 +71,7 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         snapshots = self.run_vagrant('vagrant snapshot list {}'.format(self.box)).split('\n')
         return snapshot_name in snapshots
 
-    def has_box(self, box_name, validate_inside=False):
+    def has_box(self, box_name):
         return box_name in self.boxes
 
     def run(self, command, *args, **kwargs):

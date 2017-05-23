@@ -8,21 +8,25 @@ services:
 matrix:
   include:
     - os: linux
+      dist: trusty
       sudo: required
       language: python
       python: 2.7
       env: TOXENV=py27,ansible1,py34 DOCKER=true
     - os: linux
+      dist: trusty
       sudo: required
       language: python
       python: 2.7
       env: TOXENV=flake8
     - os: linux
+      dist: trusty
       sudo: required
       language: python
       python: 2.7
       env: TOXENV=pylint
     - os: linux
+      dist: trusty
       sudo: required
       language: python
       python: 2.7
