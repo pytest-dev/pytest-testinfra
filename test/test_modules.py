@@ -15,9 +15,9 @@ from __future__ import unicode_literals
 
 try:
     import passlib.hash
-    HAS_PASSLIB=True
-except:
-    HAS_PASSLIB=False
+    HAS_PASSLIB = True
+except ImportError:
+    HAS_PASSLIB = False
 
 import crypt
 import datetime
@@ -27,6 +27,7 @@ import time
 import pytest
 from testinfra.modules.socket import parse_socketspec
 
+
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
@@ -34,6 +35,7 @@ all_images = pytest.mark.testinfra_hosts(*[
         "ubuntu_xenial",
     )
 ])
+
 
 @all_images
 def test_package(host, docker_image):
@@ -76,13 +78,13 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename = {
-        "debian_jessie": ("^8\.", "debian", "jessie"),
-        "debian_wheezy": ("^7$", "debian", None),
-        "centos_6": ("^6", "CentOS", None),
-        "centos_7": ("^7$", "centos", None),
-        "fedora": ("^25$", "fedora", None),
-        "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
-        "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
+        "debian_jessie": (r"^8\.", "debian", "jessie"),
+        "debian_wheezy": (r"^7$", "debian", None),
+        "centos_6": (r"^6", "CentOS", None),
+        "centos_7": (r"^7$", "centos", None),
+        "fedora": (r"^25$", "fedora", None),
+        "ubuntu_trusty": (r"^14\.04$", "ubuntu", "trusty"),
+        "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial"),
     }[docker_image]
 
     assert host.system_info.distribution == distribution
@@ -398,7 +400,7 @@ def test_supervisor(host):
     host.run("service supervisor stop")
     assert not host.service("supervisor").is_running
     with pytest.raises(RuntimeError) as excinfo:
-        host.supervisor("tail").is_running
+        assert host.supervisor("tail").is_running
     assert 'Is supervisor running' in str(excinfo.value)
 
 

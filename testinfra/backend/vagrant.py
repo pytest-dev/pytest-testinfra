@@ -169,7 +169,7 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         box_ssh_config = tempfile.NamedTemporaryFile(delete=False)
         os.chmod(box_ssh_config.name, 384) # oct 0600
         with box_ssh_config.file as fd:
-            fd.write(self.ssh_config)
+            fd.write(self.ssh_config.encode('utf-8'))
 
         return box_ssh_config.name
 
@@ -240,7 +240,7 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         pwd = os.path.basename(os.getcwd())
         vagrant_dir = os.path.basename(self.vagrantfile.strip('/Vagrantfile'))
         my_pwd_is_inside_vagrant_dir = vagrant_dir == pwd
-        return (os.path.isfile(self.vagrantfile) or my_pwd_is_inside_vagrant_dir)
+        return os.path.isfile(self.vagrantfile) or my_pwd_is_inside_vagrant_dir
 
     @property
     def should_refresh_status(self):

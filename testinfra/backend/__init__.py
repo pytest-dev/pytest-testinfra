@@ -56,7 +56,7 @@ def parse_hostspec(hostspec):
                 kw[key] = query.get(key)[0]
 
         # ugh, not sure why parse_qs returns values as a list instead as a unicode string.  We fix that here.
-        for k,v in query.items():
+        for k, v in query.items():
             kw[k] = ''.join(v)
 
     else:

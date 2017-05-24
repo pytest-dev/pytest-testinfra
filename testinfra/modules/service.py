@@ -28,8 +28,8 @@ class ServiceProvider(object):
 
 class LinuxServiceProvider(ServiceProvider):
 
-    @staticmethod
-    def provider(host):
+    @classmethod
+    def provider(cls, host):
         if host.system_info.is_linux:
 
             if host.system_info.has_systemd:
@@ -46,8 +46,8 @@ class LinuxServiceProvider(ServiceProvider):
 
 class BSDServiceProvider(ServiceProvider):
 
-    @staticmethod
-    def provider(host):
+    @classmethod
+    def provider(cls, host):
         if host.system_info.is_bsd:
 
             if host.system_info.is_freebsd:
@@ -62,8 +62,8 @@ class BSDServiceProvider(ServiceProvider):
 
 class DarwinServiceProvider(ServiceProvider):
 
-    @staticmethod
-    def provider(host):
+    @classmethod
+    def provider(cls, host):
         if host.system_info.is_darwin:
             return LaunchdService
 

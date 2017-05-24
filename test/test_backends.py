@@ -263,7 +263,7 @@ class Test__VagrantBackend__when_vm_should_stay_running_after_each_test(object):
     def test__ssh_config_to_tmpfile__should_return_tempfile_with_saved_sshconfig_when_vm_is_powered_on(self, stay_running):
         actual_result = self.vagrant.ssh_config_to_tmpfile
         assert os.path.isfile(actual_result)
-        assert oct(os.stat(actual_result).st_mode & int('0o0777', 8)) == '0o600'
+        assert os.stat(actual_result).st_mode & int('0o0777', 8) == 384
 
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
     def test__ssh_config__will_return_ssh_config_string_when_vm_is_powered_on(self, stay_running):

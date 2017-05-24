@@ -170,7 +170,7 @@ class SystemInfo(InstanceModule): #pylint: disable-msg=R0904
 
     @property
     def is_debian(self):
-        return 'debian' in self.system_info.distribution
+        return 'debian' in self.distribution
 
     @property
     def is_linux(self):

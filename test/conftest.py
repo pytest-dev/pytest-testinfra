@@ -127,20 +127,22 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
 def vagrant_travis_helper(vagrant):
     travis_yml = get_travisyml()
     if travis_yml:
-        yml = yaml.load(open(travis_yml, 'r'))
+        with open(travis_yml, 'r') as ymlfd:
+            yml = yaml.load(ymlfd)
 
         sut_dir = os.path.dirname(vagrant.vagrantfile)
         travis_helper = sut_dir + '/travis-helper.sh'
 
-        with open(travis_helper, 'wb') as fd:
+        with open(travis_helper, 'w') as fd:
             fd.write('#!/bin/bash\n\n# travis before_install scripts\n')
             [fd.write(item + '\n') for item in yml.get('before_install')]
 
             fd.write('\n\n# travis install scripts\n')
             for item in yml.get('install'):
                 if os.path.isfile(item):
-                    script = file(item, 'r').read()
-                    fd.write(script + '\n')
+                    with open(item, 'r') as script_fd:
+                        script = script_fd.read()
+                        fd.write(script + '\n')
                 else:
                     fd.write(item + '\n')
         os.chmod(travis_helper, 493) #0755 oct
