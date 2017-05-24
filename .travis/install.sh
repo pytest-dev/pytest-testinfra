@@ -44,6 +44,7 @@ function setup_linux() {
 
   sudo apt-get update -qq && \
   sudo apt-get install -y -o Dpkg::Options::="--force-confnew" \
+    build-essential \
     docker-engine \
     curl
 
