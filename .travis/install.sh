@@ -26,7 +26,24 @@ function setup_osx() {
 function setup_linux() {
 
   sudo apt-get update -qq && \
-  sudo apt-get install -y -o Dpkg::Options::="--force-confnew" docker-engine
+  sudo apt-get install -y -o Dpkg::Options::="--force-confnew" \
+    docker-engine \
+    curl \
+    libfontconfig1 \
+    libfreetype6 \
+    libgl1-mesa-glx \
+    libgl1 \
+    libglib2.0-0 \
+    libice6 \
+    libpython2.7 \
+    libsdl1.2debian \
+    libsm6 \
+    libvpx1 \
+    libx11-6
+
+  curl -o /tmp/vbox.deb http://download.virtualbox.org/virtualbox/5.1.22/virtualbox-5.1_5.1.22-115126~Ubuntu~trusty_amd64.deb
+
+  dpkg -i /tmp/vbox.deb || apt-get -f install
 
   docker version
 }
