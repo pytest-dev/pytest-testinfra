@@ -23,6 +23,8 @@ import crypt
 import datetime
 import re
 import time
+import mock
+import testinfra
 
 import pytest
 from testinfra.modules.socket import parse_socketspec
@@ -459,15 +461,26 @@ def test_pip_package(host):
     assert int(outdated['latest'].split('.')[0]) > 2
 
 
-@pytest.mark.testinfra_hosts('vagrant://vagrant@default')
-def test_homebrew_with_ssh_provisioning(host):
-    vagrant = host.backend
-    box = vagrant.communicate
+def test_homebrew_package(monkeypatch):
+    host = testinfra.get_host('local://')
 
-    assert box.check_output('whoami') == 'vagrant'
-    assert box.exists('brew')
+    def mocked_return(arg):
+        if arg == 'brew':
+            return True
+        return False
 
-    if box.package('bash').is_installed is False:
-        box.run('brew install bash')
+    monkeypatch.setattr(host, 'exists', mocked_return)
+    assert host.package.__name__ == 'HomebrewPackage'
 
-    assert box.package('bash').is_installed
+    with mock.patch.object(host.package, 'run_test', autospec=True) as m:
+        pkg = host.package('foo')
+        assert pkg.is_installed is False
+        m.assert_called_once_with(pkg, 'brew list --versions %s', 'foo')
+
+    with mock.patch.object(host.package, 'check_output', autospec=True) as m:
+        pkg = host.package('foo')
+        pkg.version
+        m.assert_called_once_with(pkg, 'brew list --versions %s', 'foo')
+
+    with pytest.raises(NotImplementedError):
+        host.package('foo').release

@@ -154,9 +154,6 @@ def vagrant_travis_helper(vagrant):
         return True
 
 def build_vagrant_fixture(box, scope, vagrantfile='vagrant/macos-sierra/Vagrantfile', user='vagrant'):
-    if not has_vagrant():
-        pytest.skip()
-
     @pytest.fixture(scope=scope)
     def func(request, tmpdir_factory):
         vagrant = testinfra.get_host('vagrant://' + user + '@' + box, vagrantfile=vagrantfile).backend
@@ -217,7 +214,8 @@ def initialize_container_fixtures():
         build_docker_container_fixture(image, scope)
 
     for box, scope in itertools.product(['default'], ['function', 'session']):
-        build_vagrant_fixture(box=box, scope=scope)
+        if has_vagrant():
+            build_vagrant_fixture(box=box, scope=scope)
 
 initialize_container_fixtures()
 
@@ -234,6 +232,16 @@ def build_generic_ssh_config(host, hostname, user, port, priv_key):
             "  LogLevel FATAL\n").format(host, hostname, user, port, str(priv_key))
     return generic_ssh_config
 
+
+@pytest.fixture
+def build_ssh_config(request, tmpdir_factory):
+    def on_call(*args, **kwargs):
+        tmpdir = tmpdir_factory.mktemp(str(id(request)))
+        key = tmpdir.join("ssh_key")
+        key.write(open(os.path.join(BASETESTDIR, "ssh_key")).read())
+        key.chmod(384)  # octal 600
+        return build_generic_ssh_config(*args, priv_key=key, **kwargs)
+    return on_call
 
 @pytest.fixture
 def vagrant_sut(request):
