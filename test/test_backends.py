@@ -306,7 +306,7 @@ class Test__VagrantBackend__when_vm_should_stay_running_after_each_test(object):
 class Test__VagrantBackend__destructive_vm_tests(object):
 
     @pytest.fixture
-    def reset_vagrant(self, request, vagrant_sut):
+    def reset_vagrant(self, vagrant_sut):
         self.vagrant = vagrant_sut(start=False, keep_running=False)
 
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')

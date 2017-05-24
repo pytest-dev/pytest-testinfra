@@ -149,6 +149,9 @@ def vagrant_travis_helper(vagrant):
         return True
 
 def build_vagrant_fixture(box, scope, vagrantfile='vagrant/macos-sierra/Vagrantfile', user='vagrant'):
+    if not has_vagrant():
+        pytest.skip()
+
     @pytest.fixture(scope=scope)
     def func(request, tmpdir_factory):
         vagrant = testinfra.get_host('vagrant://' + user + '@' + box, vagrantfile=vagrantfile).backend
@@ -229,6 +232,10 @@ def build_generic_ssh_config(host, hostname, user, port, priv_key):
 
 @pytest.fixture
 def vagrant_sut(request):
+
+    if not has_vagrant():
+        pytest.skip()
+
     def on_call(start=True, keep_running=True, args=(), kwargs={}):
         image, kw = testinfra.backend.parse_hostspec(request.param)
         vagrant = testinfra.get_host(image, **kw).backend
