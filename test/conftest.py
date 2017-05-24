@@ -247,7 +247,9 @@ def build_ssh_config(request, tmpdir_factory):
 def vagrant_sut(request):
 
     if not has_vagrant():
+        print('Skipping test because vagrant is not installed')
         pytest.skip('Skipping test because vagrant is not installed')
+        return
 
     def on_call(start=True, keep_running=True, args=(), kwargs={}):
         image, kw = testinfra.backend.parse_hostspec(request.param)
@@ -311,14 +313,17 @@ def host(request, tmpdir_factory):
     hostspec = host
 
     if not has_docker():
+        print('Skipping test because docker is not installed')
         pytest.skip('Skipping test because docker is not installed')
         return
 
     if not has_vagrant():
+        print('Skipping test because vagrant is not installed')
         pytest.skip('Skipping test because vagrant is not installed')
         return
 
     if kw['connection'] == 'ansible' and ansible is None:
+        print('Skipping test because ansible is not installed')
         pytest.skip('Skipping test because ansible is not installed')
         return
 
