@@ -43,7 +43,7 @@ function setup_linux() {
 
   curl -o /tmp/vbox.deb http://download.virtualbox.org/virtualbox/5.1.22/virtualbox-5.1_5.1.22-115126~Ubuntu~trusty_amd64.deb
 
-  dpkg -i /tmp/vbox.deb || apt-get -f install
+  sudo dpkg -i /tmp/vbox.deb || sudo apt-get -f install
 
   docker version
 }
