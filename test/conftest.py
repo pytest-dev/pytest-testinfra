@@ -135,16 +135,21 @@ def vagrant_travis_helper(vagrant):
 
         with open(travis_helper, 'w') as fd:
             fd.write('#!/bin/bash\n\n# travis before_install scripts\n')
-            [fd.write(item + '\n') for item in yml.get('before_install')]
 
-            fd.write('\n\n# travis install scripts\n')
-            for item in yml.get('install'):
-                if os.path.isfile(item):
-                    with open(item, 'r') as script_fd:
-                        script = script_fd.read()
-                        fd.write(script + '\n')
-                else:
-                    fd.write(item + '\n')
+            before_install = yml.get('before_install')
+            if before_install:
+                [fd.write(item + '\n') for item in before_install]
+
+            install_script = yml.get('install')
+            if install_script:
+                fd.write('\n\n# travis install scripts\n')
+                for item in install_script:
+                    if os.path.isfile(item):
+                        with open(item, 'r') as script_fd:
+                            script = script_fd.read()
+                            fd.write(script + '\n')
+                    else:
+                        fd.write(item + '\n')
         os.chmod(travis_helper, 493) #0755 oct
         return True
 
