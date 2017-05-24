@@ -247,7 +247,6 @@ def build_ssh_config(request, tmpdir_factory):
 def vagrant_sut(request):
 
     if not has_vagrant():
-        print('Skipping test because vagrant is not installed')
         pytest.skip('Skipping test because vagrant is not installed')
         return
 
@@ -313,18 +312,7 @@ def host(request, tmpdir_factory):
     hostspec = host
 
     if not has_docker():
-        print('Skipping test because docker is not installed')
         pytest.skip('Skipping test because docker is not installed')
-        return
-
-    if not has_vagrant():
-        print('Skipping test because vagrant is not installed')
-        pytest.skip('Skipping test because vagrant is not installed')
-        return
-
-    if kw['connection'] == 'ansible' and ansible is None:
-        print('Skipping test because ansible is not installed')
-        pytest.skip('Skipping test because ansible is not installed')
         return
 
     scope = 'session'
@@ -340,6 +328,9 @@ def host(request, tmpdir_factory):
         hostname = docker_host
         service = testinfra.get_host(docker_id, connection='docker').service
     except FixtureLookupError:
+        if not has_vagrant():
+            pytest.skip('Skipping test because vagrant is not installed')
+            return
         validate_sshd_service = False
         hostspec = user + '@' + host
         vagrant_backend, hostname, service, port = handle_vagrant_fixture(request, host, user, scope, hostspec, kw)
@@ -362,6 +353,10 @@ def host(request, tmpdir_factory):
     key.chmod(384)  # octal 600
 
     if kw['connection'] == 'ansible':
+        if ansible is None:
+            pytest.skip('Skipping test because ansible is not installed')
+            return
+
         setup_ansible_config(
             tmpdir, host, hostname, user, port, str(key))
         os.environ["ANSIBLE_CONFIG"] = str(tmpdir.join("ansible.cfg"))
