@@ -21,10 +21,10 @@ except ImportError:
 
 import crypt
 import datetime
-import re
-import time
 import mock
+import re
 import testinfra
+import time
 
 import pytest
 from testinfra.modules.socket import parse_socketspec

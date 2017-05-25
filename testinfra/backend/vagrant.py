@@ -13,17 +13,19 @@
 
 from __future__ import unicode_literals
 from contextlib import contextmanager
-import os
-import tempfile
-import re
-import time
+
 import logging
+import os
+import re
+import tempfile
+import time
 
 from testinfra.backend import base
 
 logger = logging.getLogger("testinfra")
 
 BACKEND = 'VagrantBackend'
+
 
 @contextmanager
 def run_command_in_directory(path):
@@ -40,10 +42,13 @@ def run_command_in_directory(path):
         logger.debug(BACKEND + ' Changed directory back to %s', orig_dir)
 
 
-class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
+class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
     NAME = "vagrant"
 
-    def __init__(self, hostspec=None, user='vagrant', vagrantfile='test/Vagrantfile', box='default', provision=None, status_refresh_interval=15, *args, **kwargs):
+    def __init__(self, hostspec=None, user='vagrant',
+                 vagrantfile='test/Vagrantfile', box='default',
+                 provision=None, status_refresh_interval=15,
+                 *args, **kwargs):
         if hostspec:
             box, user, _ = self.parse_hostspec(hostspec)
         super(VagrantBackend, self).__init__(hostname=box, *args, **kwargs)
@@ -68,7 +73,8 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         return 'vagrant'
 
     def has_snapshot(self, snapshot_name):
-        snapshots = self.run_vagrant('vagrant snapshot list {}'.format(self.box)).split('\n')
+        snapshot_cmd = 'vagrant snapshot list {}'.format(self.box)
+        snapshots = self.run_vagrant(snapshot_cmd).split('\n')
         return snapshot_name in snapshots
 
     def has_box(self, box_name):
@@ -85,7 +91,9 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
             out = self.run(command, *args, **kwargs)
             stderr = out.stderr.rstrip('\r\n').rstrip('\n')
             stdout = out.stdout.rstrip('\r\n').rstrip('\n')
-            assert out.rc == 0, 'Got exit code %s from command="%s" result="%s"' % (out.rc, out.command, stderr)
+            err_msg = 'Got exit code %s from command="%s" result="%s"' \
+                % (out.rc, out.command, stderr)
+            assert out.rc == 0, err_msg
             return stdout
 
     def run_box(self, command, *args, **kwargs):
@@ -94,9 +102,6 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         return result
 
     def expire_status_cache(self):
-        '''
-        Forces a status refresh the next time the status property is invoked
-        '''
         self._last_refreshed = None
         self._ssh_config = None
 
@@ -116,7 +121,9 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
     def boxes(self):
         out = self.run('vagrant box list')
         stderr = out.stderr.rstrip('\r\n').rstrip('\n')
-        assert out.rc == 0, 'Unable to get vagrant box list, got stderr="{}"'.format(stderr)
+        err_msg = 'Unable to get vagrant box list,' + \
+                  'got stderr="{}"'.format(stderr)
+        assert out.rc == 0, err_msg
 
         my_boxes = out.stdout.rstrip('\r\n').rstrip('\n').split('\n')
 
@@ -128,7 +135,8 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
 
             bname, bprovider, bver = my_box.split(' ')
 
-            results[bname] = dict(box_name=bname, box_provider=bprovider, box_version=bver)
+            results[bname] = dict(box_name=bname, box_provider=bprovider,
+                                  box_version=bver)
 
         return results
 
@@ -152,10 +160,6 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
 
     @status_refresh_interval.setter
     def status_refresh_interval(self, val):
-        '''
-        A timer in seconds used internally by this class to speed up test execution
-        when the status method maybe called multiple times.
-        '''
         self._status_refresh_interval = val
         self.expire_status_cache()
 
@@ -167,7 +171,7 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
     @property
     def ssh_config_to_tmpfile(self):
         box_ssh_config = tempfile.NamedTemporaryFile(delete=False)
-        os.chmod(box_ssh_config.name, 384) # oct 0600
+        os.chmod(box_ssh_config.name, 384)  # oct 0600
         with box_ssh_config.file as fd:
             fd.write(self.ssh_config.encode('utf-8'))
 
@@ -178,8 +182,14 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         out = self.ssh_config
         if out:
             def create_regex_group(s):
-                lines = (line.strip() for line in s.split('\n') if line.strip())
-                chars = filter(None, (line.split('#')[0].strip() for line in lines))
+                lines = (line.strip()
+                         for line in s.split('\n')
+                         if line.strip()
+                         )
+                chars = filter(None,
+                               (line.split('#')[0].strip()
+                                for line in lines)
+                               )
                 return re.compile(r''.join(chars)).search(out)
             match = create_regex_group(r'''
                 Host\s+(?P<host>.*)
@@ -197,7 +207,10 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
 
     @property
     def communicate(self):
-        ssh = self._host.get_host(self.hostspec, connection='paramiko', ssh_config=self.ssh_config_to_tmpfile)
+        ssh = self._host.get_host(self.hostspec,
+                                  connection='paramiko',
+                                  ssh_config=self.ssh_config_to_tmpfile
+                                  )
         return ssh
 
     @property
@@ -244,9 +257,6 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
 
     @property
     def should_refresh_status(self):
-        '''
-        Return True if we should refresh status, otherwise False.
-        '''
         if self._last_refreshed is None:
             self._last_refreshed = time.time() - self.status_refresh_interval
         time_between_last_run = round(time.time() - self._last_refreshed, 2)
@@ -267,14 +277,17 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         return out
 
     def _validate_requirements(self):
-        '''
-        We validate vagrant is in our path and the Vagrantfile exists and is a file.
-        '''
         if not self.has_vagrant:
-            raise RuntimeError('Vagrant must be installed in order to use this fixture')
+            raise RuntimeError('Vagrant must be installed in order' +
+                               'to use this fixture')
 
         if not self.has_vagrantfile:
-            raise RuntimeError('Unable to find Vagrantfile "{}" and I am in directory {}'.format(self.vagrantfile, os.getcwd()))
+            raise RuntimeError('Unable to find Vagrantfile "{}" ' +
+                               'and I am in ' +
+                               'directory {}'.format(self.vagrantfile,
+                                                     os.getcwd()
+                                                     )
+                               )
 
     def _refresh_status(self):
         out = self.run_vagrant('vagrant status %s', self.box)
@@ -283,7 +296,8 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
         # update the counter that controls this cache
         self._last_refreshed = time.time()
 
-        if status in ('aborted', 'not created', 'paused', 'poweroff', 'saved', 'suspended', 'not running'):
+        if status in ('aborted', 'not created', 'paused', 'poweroff', 'saved',
+                      'suspended', 'not running'):
             as_running = False
             as_not_running = True
             created = status != 'not created'
@@ -292,7 +306,10 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
             as_not_running = False
             created = True
         else:
-            raise NotImplementedError('This is a bug, un-handled `vagrant status` status "{}"'.format(status))
+            raise NotImplementedError('This is a bug, un-handled ' +
+                                      '`vagrant status`' +
+                                      'status "{}"'.format(status)
+                                      )
 
         def cmd():
             def add(key, val):
@@ -315,4 +332,6 @@ class VagrantBackend(base.BaseBackend): #pylint: disable=R0902,R0904
 
     def _refresh_ssh_config(self):
         if self._ssh_config is None:
-            self._ssh_config = self.run_vagrant('vagrant ssh-config %s', self.box)
+            self._ssh_config = self.run_vagrant('vagrant ssh-config %s',
+                                                self.box
+                                                )

@@ -15,12 +15,11 @@ from __future__ import print_function
 
 import itertools
 import os
+import pytest
 import subprocess
 import sys
 import threading
 import time
-import re
-import pytest
 import yaml
 
 from _pytest.fixtures import FixtureLookupError
@@ -150,10 +149,12 @@ def vagrant_travis_helper(vagrant):
                             fd.write(script + '\n')
                     else:
                         fd.write(item + '\n')
-        os.chmod(travis_helper, 493) #0755 oct
+        os.chmod(travis_helper, 493)  # 0755 oct
         return True
 
-def build_vagrant_fixture(box, scope, vagrantfile='vagrant/macos-sierra/Vagrantfile', user='vagrant'):
+
+def build_vagrant_fixture(box, scope, vagrantfile='vagrant/macos-sierra/Vagrantfile',
+                          user='vagrant'):
     @pytest.fixture(scope=scope)
     def func(request, tmpdir_factory):
         vagrant = testinfra.get_host('vagrant://' + user + '@' + box, vagrantfile=vagrantfile).backend
@@ -221,15 +222,17 @@ initialize_container_fixtures()
 
 
 def build_generic_ssh_config(host, hostname, user, port, priv_key):
-    generic_ssh_config = ("Host {}\n"
-            "  Hostname {}\n"
-            "  User {}\n"
-            "  Port {}\n"
-            "  UserKnownHostsFile /dev/null\n"
-            "  StrictHostKeyChecking no\n"
-            "  IdentityFile {}\n"
-            "  IdentitiesOnly yes\n"
-            "  LogLevel FATAL\n").format(host, hostname, user, port, str(priv_key))
+    generic_ssh_config = (
+        "Host {}\n"
+        "  Hostname {}\n"
+        "  User {}\n"
+        "  Port {}\n"
+        "  UserKnownHostsFile /dev/null\n"
+        "  StrictHostKeyChecking no\n"
+        "  IdentityFile {}\n"
+        "  IdentitiesOnly yes\n"
+        "  LogLevel FATAL\n"
+    ).format(host, hostname, user, port, str(priv_key))
     return generic_ssh_config
 
 
@@ -242,6 +245,7 @@ def build_ssh_config(request, tmpdir_factory):
         key.chmod(384)  # octal 600
         return build_generic_ssh_config(*args, priv_key=key, **kwargs)
     return on_call
+
 
 @pytest.fixture
 def vagrant_sut(request):
@@ -264,9 +268,10 @@ def vagrant_sut(request):
 
         def build_box(vagrant):
             if vagrant.status.is_not_created:
-                # invoke our pre-init script to do initial provisioning to make tests run faster
+                # invoke our pre-init script to do initial
+                # provisioning to make tests run faster
                 pre_init = vagrant.run('./pre-init')
-                assert pre_init.rc == 0, 'The pre-initialization script ./pre-init for vagrantfile={} has failed'.format(vagrant.vagrantfile)
+                assert pre_init.rc == 0, './pre-init for vagrantfile={} has failed'.format(vagrant.vagrantfile)
 
         def teardown():
             if not keep_running:
@@ -274,7 +279,9 @@ def vagrant_sut(request):
                     vagrant.suspend
 
             if vagrant.status.is_not_created:
-                bb_thread = TimedThread(target=build_box, join=True, timeout=1800, args=(vagrant,))
+                TimedThread(target=build_box, join=True,
+                            timeout=1800, args=(vagrant,)
+                            )
 
             if keep_running and vagrant.status.is_not_running:
                 vagrant.up
@@ -394,9 +401,16 @@ def docker_image(host):
 def pytest_generate_tests(metafunc):
     if 'vagrant_sut' in metafunc.fixturenames:
         marker = getattr(metafunc.function, 'vagrant_sut', None)
-        params = ('vagrant://vagrant@default?vagrantfile=vagrant/macos-sierra/Vagrantfile',)
+        params = (
+            'vagrant://vagrant@default?vagrantfile=vagrant/macos-sierra/Vagrantfile',
+        )
         if marker:
-            params = ('vagrant://vagrant@default?' + '&'.join(['{}={}'.format(k,v) for k,v in marker.kwargs.items()]),)
+            params = (
+                'vagrant://vagrant@default?'
+                '&'.join(
+                    ['{}={}'.format(k, v) for k, v in marker.kwargs.items()]
+                ),
+            )
         metafunc.parametrize('vagrant_sut', params, indirect=True, scope='function')
 
     if "host" in metafunc.fixturenames:
@@ -443,14 +457,15 @@ def pytest_configure(config):
 
 
 class TimedThread(threading.Thread):
-    """
-    A Timed Thread wrapper helper.
+    """Timed Thread helper
 
-    The default arguments specifically @join=False will not time the target execution and therefore will background
-    the thread.
+    The default arguments specifically @join=False will not time the target
+    execution and therefore will background the thread.
 
-    If you set @join=True then, you will be timing the thread execution and you can check to see if the timeout
-    occured by looking at the @timedout attribute.
+    If you set @join=True then, you will be timing the thread execution
+    and you can check to see if the timeout occured by looking at
+    the @timedout attribute.
+
     """
 
     def __init__(self, target, timeout=1800, join=False, daemon=True, args=(), kwargs={}):
@@ -475,8 +490,8 @@ class TimedThread(threading.Thread):
             self.join(self.timeout)
 
             if self.is_alive():
-                 self.timedout = True
-                 self.cancel()
+                self.timedout = True
+                self.cancel()
 
     def cancel(self):
         self.finished.set()

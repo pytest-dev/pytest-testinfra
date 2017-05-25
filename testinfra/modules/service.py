@@ -69,28 +69,32 @@ class DarwinServiceProvider(ServiceProvider):
 
 
 def providers(*providerz):
-    '''
-    This can be used as a decorator for @classmethods calls to simplify or override behavior.
+    """provider decorator
+
+    This can be used as a decorator for @classmethods
+    calls to simplify or override behavior.
 
     An example of how to use this decorator:
 
-        # If applied to Service.get_module_class
+    If applied to Service.get_module_class
 
-            @classmethod
-            @providers(
-                LinuxServiceProvider,
-                BSDServiceProvider,
-                DarwinServiceProvider,
-            )
-            def get_module_class(cls, host):
-                # the decorators listed in @providers will check to see if a service provider
-                # can be found.
-                #   If found:
-                #       - Return the service provide from the decotor
-                #
-                #   If no provider is found, we just raise NotImplementedError
-                raise NotImplementedError
-    '''
+        @classmethod
+        @providers(
+            LinuxServiceProvider,
+            BSDServiceProvider,
+            DarwinServiceProvider,
+        )
+        def get_module_class(cls, host):
+            the decorators listed in @providers will check to see
+            if a service provider can be found.
+              If found:
+                  - Return the service provide from the decotor
+
+              If no provider is found, we just raise NotImplementedError
+            raise NotImplementedError
+
+    """
+
     def wrapped_method(func):
         @wraps(func)
         def on_call(cls, host, *args, **kwargs):
@@ -142,12 +146,13 @@ class Service(Module):
 
         in_service_providers = [Klass.provider(host) for Klass in classes]
 
-        provider = [provider for provider in in_service_providers if provider is not None]
+        provider = [provider
+                    for provider in in_service_providers
+                    if provider is not None]
         if provider:
             return provider[0]
 
         raise NotImplementedError
-
 
     def __repr__(self):
         return "<service %s>" % (self.name,)
@@ -258,13 +263,16 @@ class LaunchdService(Service):
 
     @property
     def is_running(self):
-        cmd = self.run_test("sudo /bin/launchctl list | grep '%s' | grep '^[-0-9]'", self.name)
+        cmd = self.run_test(
+            "sudo /bin/launchctl list | grep '%s' | grep '^[-0-9]'",
+            self.name
+        )
 
         if cmd.rc == 0:
             # (Pdb) cmd.stdout
-            # u'2034\t0\tcom.openssh.sshd.E8FE00AD-3911-4162-9D6E-6E2B82EDB7A9\n-\t0\tcom.openssh.sshd\n2133\t0\tcom.openssh.sshd.005AE32E-10CA-4368-AFEC-F85A09226D9B\n'
-            # result will be [ [pid, status, label], [pid, status, label], ... ]
-            return [re.split(r'[\t ]', line) for line in str(cmd.stdout).split('\n')]
+            # result will be [ [pid, status, label], [pid, status, label], ...]
+            return [re.split(r'[\t ]', line)
+                    for line in str(cmd.stdout).split('\n')]
 
     @property
     def is_enabled(self):

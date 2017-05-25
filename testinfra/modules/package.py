@@ -153,6 +153,7 @@ class RpmPackage(Package):
         return self.check_output('rpm -q --queryformat="%%{RELEASE}" %s',
                                  self.name)
 
+
 class HomebrewPackage(Package):
 
     @property
@@ -161,7 +162,9 @@ class HomebrewPackage(Package):
 
     @property
     def version(self):
-        version = self.check_output('brew list --versions %s', self.name).split(' ')[1]
+        version = self.check_output('brew list --versions %s',
+                                    self.name
+                                    ).split(' ')[1]
         return version
 
     @property

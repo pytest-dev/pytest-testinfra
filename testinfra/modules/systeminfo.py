@@ -18,7 +18,7 @@ import re
 from testinfra.modules.base import InstanceModule
 
 
-class SystemInfo(InstanceModule): #pylint: disable-msg=R0904
+class SystemInfo(InstanceModule):  # pylint: disable-msg=R0904
     """Return system informations"""
 
     def __init__(self):
@@ -195,7 +195,8 @@ class SystemInfo(InstanceModule): #pylint: disable-msg=R0904
         ]
 
         is_not_none = lambda i: i is not None
-        found_in_redhat_sequences = [re.search(regex, self.distribution) for regex in regexes]
+        found_in_redhat_sequences = [re.search(regex, self.distribution)
+                                     for regex in regexes]
 
         if filter(is_not_none, found_in_redhat_sequences):
             return True
@@ -226,7 +227,9 @@ class SystemInfo(InstanceModule): #pylint: disable-msg=R0904
 
     @property
     def has_systemd(self):
-        return self.run("type systemctl").rc == 0 and "systemd" in self._host.file("/sbin/init").linked_to
+        has_systemd = self.run("type systemctl").rc == 0
+        has_systemd_link = "systemd" in self._host.file("/sbin/init").linked_to
+        return has_systemd and has_systemd_link
 
     @property
     def has_service(self):

@@ -11,11 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import unicode_literals
+import mock
+import os
 import pytest
 import six
-import mock
 import time
-import os
 
 import testinfra.backend
 BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
@@ -120,8 +120,7 @@ def test_vagrant__run_command_in_directory__will_change_directory_when_path_is_a
 
 
 class Test__VagrantBackend__initialization(object):
-
-    @pytest.mark.parametrize('init_kwargs,expected',[
+    @pytest.mark.parametrize('init_kwargs,expected', [
         [
             dict(user='foo', vagrantfile='/vagrant/foo', box='default', status_refresh_interval=1),
             dict(user='foo', vagrantfile='/vagrant/foo/Vagrantfile', box='default', status_refresh_interval=1)
@@ -144,7 +143,7 @@ def test_vagrant__call__will_return_a_new_VagrantBackend():
               vagrantfile='vagrant/ubuntu-trusty',
               user='vagrant',
               box='default',
-             )
+              )
 
     hostspec = kw['user'] + '@' + kw['box']
     vagrant = testinfra.get_host('vagrant@default', **kw).backend
@@ -214,12 +213,13 @@ class Test__VagrantBackend__status_method(object):
 
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
     def test_when_invoked_twice_before_the_status_refresh_interval_expires(self, vagrant_sut, mocked_status_refresh):
-        '''
-        SCENARIO: When invoking `vagrant.status` twice before the status refresh interval expires
-                  It should:
-                    - Store the current time in seconds in vagrant._last_refreshed
-                    - and not invoke vagrant._refresh_status() a second time
-        '''
+        """SCENARIO: When invoking `vagrant.status` twice before the status refresh interval expires
+
+        It should:
+            - Store the current time in seconds in vagrant._last_refreshed
+            - and not invoke vagrant._refresh_status() a second time
+
+        """
         first_status = self.vagrant.status.is_running
         second_status = self.vagrant.status.is_running
 
@@ -229,16 +229,18 @@ class Test__VagrantBackend__status_method(object):
 
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
     def test_when_invoking_a_second_time_but_after_the_status_refresh_interval_expires(self, vagrant_sut, mocked_status_refresh):
-        '''
-        SCENARIO: When invoking `vagrant.status` a second time but after the status refresh interval expires
-                  It should:
-                    - Store the current time in seconds in vagrant._last_refreshed
-                    - and not invoke vagrant._refresh_status() a second time
-        '''
+        """SCENARIO: When invoking `vagrant.status` a second time but after the status refresh interval expires
+
+        It should:
+            - Store the current time in seconds in vagrant._last_refreshed
+            - and not invoke vagrant._refresh_status() a second time
+
+        """
+
         self.vagrant.status_refresh_interval = .5
 
         first_status = self.vagrant.status
-        time.sleep(1) # expire timer
+        time.sleep(1)  # expire timer
         second_status = self.vagrant.status
 
         assert self.vagrant._refresh_status.called == 2
@@ -268,7 +270,6 @@ class Test__VagrantBackend__when_vm_should_stay_running_after_each_test(object):
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
     def test__ssh_config__will_return_ssh_config_string_when_vm_is_powered_on(self, stay_running):
         actual_ssh_config = self.vagrant.ssh_config
-        actual_json = self.vagrant.ssh_config_to_json
 
         local = testinfra.get_host('local://').backend
         orig_dir = os.getcwd()
@@ -311,12 +312,12 @@ class Test__VagrantBackend__destructive_vm_tests(object):
 
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
     def test__ssh_config__should_raise__AssertionError__when_vm_is_powered_off(self, reset_vagrant):
-        with pytest.raises(AssertionError) as exp:
+        with pytest.raises(AssertionError):
             self.vagrant.ssh_config
 
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
     def test__ssh_config_to_tmpfile__should_raise__AssertionError__when_vm_is_powered_off(self, reset_vagrant):
-        with pytest.raises(AssertionError) as exp:
+        with pytest.raises(AssertionError):
             self.vagrant.ssh_config_to_tmpfile
 
     @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
