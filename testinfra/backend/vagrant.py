@@ -45,10 +45,7 @@ def run_command_in_directory(path):
 class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
     NAME = "vagrant"
 
-    def __init__(self, hostspec=None, user='vagrant',
-                 vagrantfile='test/Vagrantfile', box='default',
-                 provision=None, status_refresh_interval=15,
-                 *args, **kwargs):
+    def __init__(self, hostspec=None, user='vagrant', vagrantfile='./Vagrantfile', box='default', provision=None, status_refresh_interval=15, *args, **kwargs):
         if hostspec:
             box, user, _ = self.parse_hostspec(hostspec)
         super(VagrantBackend, self).__init__(hostname=box, *args, **kwargs)
@@ -59,6 +56,7 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
         self._status_refresh_interval = None
         self._last_refreshed = None
         self._ssh_config = None
+        self._ssh_config_tmp = None
         self.status_refresh_interval = status_refresh_interval
         self._provision = provision
 
@@ -175,6 +173,7 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
         with box_ssh_config.file as fd:
             fd.write(self.ssh_config.encode('utf-8'))
 
+        self._ssh_config_tmp = box_ssh_config.name
         return box_ssh_config.name
 
     @property
@@ -207,10 +206,7 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
 
     @property
     def communicate(self):
-        ssh = self._host.get_host(self.hostspec,
-                                  connection='paramiko',
-                                  ssh_config=self.ssh_config_to_tmpfile
-                                  )
+        ssh = self.get_host(self.hostspec, connection='paramiko', ssh_config=self.ssh_config_to_tmpfile)
         return ssh
 
     @property

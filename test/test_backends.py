@@ -174,7 +174,7 @@ def test_vagrant__hostspec__will_return__user_at_host__(hostspec, expected):
     assert host.hostspec == expected
 
 
-@pytest.mark.vagrant_sut('vagrant://vagrant@default?vagrantfile=vagrant/ubuntu-trusty/Vagrantfile')
+@pytest.mark.vagrant_sut('vagrant://vagrant@default', vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
 def test__vagrant_up__will_start_a_non_running_instance(vagrant_sut):
     vagrant = vagrant_sut(start=False, keep_running=True)
     vagrant.up
