@@ -19,53 +19,36 @@ from functools import wraps
 from testinfra.modules.base import Module
 
 
-class ServiceProvider(object):
+def linux_service_provider(host):
+    if host.system_info.is_linux:
+        if host.system_info.has_systemd:
+            return SystemdService
 
-    @classmethod
-    def provider(cls, host):
-        raise NotImplementedError
-
-
-class LinuxServiceProvider(ServiceProvider):
-
-    @classmethod
-    def provider(cls, host):
-        if host.system_info.is_linux:
-
-            if host.system_info.has_systemd:
-                return SystemdService
-
-            if host.system_info.is_redhat and host.system_info.has_service:
-                return SysvService
-
-            if host.system_info.has_initctl and host.exists('status'):
-                return UpstartService
-
+        if host.system_info.is_redhat and host.system_info.has_service:
             return SysvService
 
+        if host.system_info.has_initctl and host.exists('status'):
+            return UpstartService
 
-class BSDServiceProvider(ServiceProvider):
-
-    @classmethod
-    def provider(cls, host):
-        if host.system_info.is_bsd:
-
-            if host.system_info.is_freebsd:
-                return FreeBSDService
-
-            if host.system_info.is_openbsd:
-                return OpenBSDService
-
-            if host.system_info.is_netbsd:
-                return NetBSDService
+        return SysvService
 
 
-class DarwinServiceProvider(ServiceProvider):
+def bsd_service_provider(host):
+    if host.system_info.is_bsd:
 
-    @classmethod
-    def provider(cls, host):
-        if host.system_info.is_darwin:
-            return LaunchdService
+        if host.system_info.is_freebsd:
+            return FreeBSDService
+
+        if host.system_info.is_openbsd:
+            return OpenBSDService
+
+        if host.system_info.is_netbsd:
+            return NetBSDService
+
+
+def darwin_service_provider(host):
+    if host.system_info.is_darwin:
+        return LaunchdService
 
 
 def providers(*providerz):
@@ -80,9 +63,9 @@ def providers(*providerz):
 
         @classmethod
         @providers(
-            LinuxServiceProvider,
-            BSDServiceProvider,
-            DarwinServiceProvider,
+            linux_service_provider,
+            bsd_service_provider,
+            darwin_service_provider,
         )
         def get_module_class(cls, host):
             the decorators listed in @providers will check to see
@@ -138,19 +121,19 @@ class Service(Module):
     @classmethod
     def get_module_class(cls, host):
 
-        classes = [
-            LinuxServiceProvider,
-            BSDServiceProvider,
-            DarwinServiceProvider,
+        providerz = [
+            linux_service_provider,
+            bsd_service_provider,
+            darwin_service_provider,
         ]
 
-        in_service_providers = [Klass.provider(host) for Klass in classes]
+        in_service_providers = [provider(host) for provider in providerz]
 
-        provider = [provider
+        svc_provider = [provider
                     for provider in in_service_providers
                     if provider is not None]
-        if provider:
-            return provider[0]
+        if svc_provider:
+            return svc_provider[0]
 
         raise NotImplementedError
 

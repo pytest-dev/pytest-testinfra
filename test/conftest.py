@@ -260,6 +260,7 @@ def vagrant_sut(request):
 
         # refresh status cache
         vagrant.status
+
         if start and vagrant.status.is_not_running:
             vagrant.up
 
@@ -293,7 +294,7 @@ def vagrant_sut(request):
 
 
 # helper methods for _vagrant_{}_{} fixture
-def handle_vagrant_fixture(request, host, user,  scope, hostspec, kw):
+def handle_vagrant_fixture(request, host, user, scope, hostspec, kw):
     fname = '_vagrant_{}_{}'.format(host, scope)
     hostname = '127.0.0.1'
 
@@ -406,8 +407,7 @@ def pytest_generate_tests(metafunc):
         )
         if marker:
             params = (
-                'vagrant://vagrant@default?'
-                '&'.join(
+                'vagrant://vagrant@default?' + '&'.join(
                     ['{}={}'.format(k, v) for k, v in marker.kwargs.items()]
                 ),
             )

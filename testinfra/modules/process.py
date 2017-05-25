@@ -141,8 +141,8 @@ class PosixProcess(Process):
             i = 0
             for i, key in enumerate(attributes[:-2]):
                 attrs[key] = int_or_float(splitted[i])
-            attrs["lstart"] = " ".join(splitted[i+1:i+6])
-            attrs["args"] = " ".join(splitted[i+6:])
+            attrs["lstart"] = " ".join(splitted[i + 1:i + 6])
+            attrs["args"] = " ".join(splitted[i + 6:])
             procs.append(attrs)
         return procs
 

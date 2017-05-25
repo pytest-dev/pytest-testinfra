@@ -52,11 +52,12 @@ class NagiosReporter(object):
             status = "OK"
             ret = 0
 
-        sys.stdout.write((
-            b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f "
-            b"seconds\n") % (
-                status, self.passed, self.failed, self.skipped, self.total_time
-            ))
+        sys.stdout.write(
+            (
+                b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f "
+                b"seconds\n"
+            ) % (status, self.passed, self.failed, self.skipped, self.total_time)
+        )
         return ret
 
 

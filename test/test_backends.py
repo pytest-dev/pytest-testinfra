@@ -165,16 +165,16 @@ def test_vagrant__get_hosts__will_return_array_of_hosts():
 
 @pytest.mark.parametrize('hostspec, expected', [
     ('vagrant@default', 'vagrant@default'),
-    ('vagrant',         'vagrant@vagrant'),
-    ('@mybox',          'vagrant@mybox'),
-    ('foo@',            'foo@default'),
+    ('vagrant', 'vagrant@vagrant'),
+    ('@mybox', 'vagrant@mybox'),
+    ('foo@', 'foo@default'),
 ])
 def test_vagrant__hostspec__will_return__user_at_host__(hostspec, expected):
     host = testinfra.get_host(hostspec, connection='vagrant').backend
     assert host.hostspec == expected
 
 
-@pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
+@pytest.mark.vagrant_sut('vagrant://vagrant@default?vagrantfile=vagrant/ubuntu-trusty/Vagrantfile')
 def test__vagrant_up__will_start_a_non_running_instance(vagrant_sut):
     vagrant = vagrant_sut(start=False, keep_running=True)
     vagrant.up

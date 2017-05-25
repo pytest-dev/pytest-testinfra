@@ -282,12 +282,12 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
                                'to use this fixture')
 
         if not self.has_vagrantfile:
-            raise RuntimeError('Unable to find Vagrantfile "{}" ' +
-                               'and I am in ' +
-                               'directory {}'.format(self.vagrantfile,
-                                                     os.getcwd()
-                                                     )
-                               )
+            raise RuntimeError(
+                'Unable to find Vagrantfile "{}" and I am in directory {}'.format(
+                    self.vagrantfile,
+                    os.getcwd()
+                )
+            )
 
     def _refresh_status(self):
         out = self.run_vagrant('vagrant status %s', self.box)
