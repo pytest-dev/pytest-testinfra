@@ -105,11 +105,6 @@ def test_ssh_service(host, docker_image):
     ("salt-minion", False, False),
 ])
 def test_service(host, name, running, enabled):
-
-    if name == "ntp":
-        # Systemd say no but sysv say yes
-        assert host.run("systemctl is-enabled ntp").rc == 1
-
     service = host.service(name)
     assert service.is_running == running
     assert service.is_enabled == enabled
