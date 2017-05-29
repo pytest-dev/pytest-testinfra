@@ -157,7 +157,7 @@ def host(request, tmpdir_factory):
         scope = "session"
 
     fname = "_docker_container_%s_%s" % (host, scope)
-    docker_id, docker_host, port = request.getfuncargvalue(fname)
+    docker_id, docker_host, port = request.getfixturevalue(fname)
 
     if kw["connection"] == "docker":
         host = docker_id
