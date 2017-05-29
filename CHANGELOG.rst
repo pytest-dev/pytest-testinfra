@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.6.3
+=====
+
+* Fix unwanted deprecation warning when running tests with pytest 3.1 #204
+
 1.6.2
 =====
 
