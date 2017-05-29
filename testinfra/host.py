@@ -88,7 +88,7 @@ class Host(object):
     def __getattr__(self, name):
         assert name in testinfra.modules.modules, name + " is not a module"
         module_class = testinfra.modules.get_module_class(name)
-        obj = module_class.get_module(self.backend)
+        obj = module_class.get_module(self)
         setattr(self, name, obj)
         return obj
 
