@@ -8,7 +8,7 @@ About
 =====
 
 With Testinfra you can write unit tests in Python to test *actual state* of
-your servers configured by managements tools like Salt_, Ansible_, Puppet_,
+your servers configured by management tools like Salt_, Ansible_, Puppet_,
 Chef_ and so on.
 
 Testinfra aims to be a Serverspec_ equivalent in python and is written as
@@ -66,9 +66,9 @@ And run it::
     =================== 3 passed in 0.66 seconds ====================
 
 
-.. _Salt: http://saltstack.com/
-.. _Ansible: http://www.ansible.com/
+.. _Salt: https://saltstack.com/
+.. _Ansible: https://www.ansible.com/
 .. _Puppet: https://puppetlabs.com/
 .. _Chef: https://www.chef.io/
 .. _Serverspec: http://serverspec.org/
-.. _Pytest: http://pytest.org
+.. _Pytest: https://pytest.org/
