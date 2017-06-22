@@ -6,8 +6,8 @@ API
 Connection API
 ~~~~~~~~~~~~~~
 
-You can use testinfra outside of pytest or you can dynamically get a
-`host` and call fonction from modules::
+You can use testinfra outside of pytest. You can dynamically get a
+`host` instance and call functions or access members of the respective modules::
 
     >>> import testinfra
     >>> host = testinfra.get_host("paramiko://root@server:2222", sudo=True)
