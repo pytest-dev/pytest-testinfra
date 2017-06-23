@@ -9,9 +9,6 @@ env:
     - TOXENV=sphinxdoc
 language: python
 python: 2.7
-before_install:
-  - if [ x"$DOCKER" = x"true" ]; then sudo apt-get update -qq && sudo apt-get install -y -o Dpkg::Options::="--force-confnew" docker-engine; fi
-  - docker version
 install:
   - pip install tox
 script:
