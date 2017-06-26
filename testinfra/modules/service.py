@@ -69,6 +69,24 @@ class Service(Module):
 
 class SysvService(Service):
 
+    def __init__(self, name):
+        super(SysvService, self).__init__(name)
+        self._command = None
+
+    @property
+    def _service_command(self):
+        if self._command is None:
+            if self._host.exists('service'):
+                self._command = 'service'
+            # service command may not exist in PATH for non privileged users
+            elif self._host.file('/sbin/service').exists:
+                self._command = '/sbin/service'
+            elif self._host.file('/usr/sbin/service').exists:
+                self._command = '/usr/sbin/service'
+            else:
+                raise RuntimeError('cannot find "service" command')
+        return self._command
+
     @property
     def is_running(self):
         # based on /lib/lsb/init-functions
@@ -77,7 +95,8 @@ class SysvService(Service):
         # 3: not running and pid file does not exists
         # 4: Unable to determine status
         return self.run_expect(
-            [0, 1, 3], "service %s status", self.name).rc == 0
+            [0, 1, 3], "%s %s status",
+            self._service_command, self.name).rc == 0
 
     @property
     def is_enabled(self):
