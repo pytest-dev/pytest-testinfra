@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.6.4
+=====
+
+* Service: Allow to find 'service' command outside of $PATH #211
+* doc fixes
+
 1.6.3
 =====
 
