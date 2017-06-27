@@ -55,6 +55,7 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
         self._status = None
         self._status_refresh_interval = None
         self._last_refreshed = None
+        self.setting = dict(VALIDATE_HAS_VAGRANT=True)
         self._ssh_config = None
         self._ssh_config_tmp = None
         self.status_refresh_interval = status_refresh_interval
@@ -119,7 +120,7 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
     def boxes(self):
         out = self.run('vagrant box list')
         stderr = out.stderr.rstrip('\r\n').rstrip('\n')
-        err_msg = 'Unable to get vagrant box list,' + \
+        err_msg = 'Unable to get vagrant box list, ' + \
                   'got stderr="{}"'.format(stderr)
         assert out.rc == 0, err_msg
 
@@ -273,8 +274,8 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
         return out
 
     def _validate_requirements(self):
-        if not self.has_vagrant:
-            raise RuntimeError('Vagrant must be installed in order' +
+        if not self.has_vagrant and self.setting.get('VALIDATE_HAS_VAGRANT', True):
+            raise RuntimeError('Vagrant must be installed in order ' +
                                'to use this fixture')
 
         if not self.has_vagrantfile:

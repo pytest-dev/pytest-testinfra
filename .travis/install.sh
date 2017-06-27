@@ -2,7 +2,12 @@
 
 function install_osx_package() {
 
-  brew list --versions ${1} || brew install ${1}
+  if [ -z ${USE_CASK} ]; then
+    brew list --versions ${1} || brew install ${1}
+  else
+    brew cask list --versions ${1} || brew cask install ${1}
+  fi
+
   return $?
 
 }
@@ -13,6 +18,10 @@ function setup_osx() {
   install_osx_package 'pyenv-virtualenv'
   install_osx_package 'python'
   install_osx_package 'python3'
+
+  local USE_CASK=1
+  install_osx_package 'vagrant'
+  USE_CASK=
 
   [ -d /usr/local/Cellar/python/3.4.2 ] || python-build 3.4.2 /usr/local/Cellar/python/3.4.2
   cd /usr/local/bin

@@ -119,22 +119,21 @@ def test_vagrant__run_command_in_directory__will_change_directory_when_path_is_a
     assert os.getcwd() == orig_dir
 
 
-class Test__VagrantBackend__initialization(object):
-    @pytest.mark.parametrize('init_kwargs,expected', [
-        [
-            dict(user='foo', vagrantfile='/vagrant/foo', box='default', status_refresh_interval=1),
-            dict(user='foo', vagrantfile='/vagrant/foo/Vagrantfile', box='default', status_refresh_interval=1)
-        ],
-    ])
-    def test__init__with_custom_args(self, init_kwargs, expected):
+@pytest.mark.parametrize('init_kwargs,expected', [
+    [
+        dict(user='foo', vagrantfile='/vagrant/foo', box='default', status_refresh_interval=1),
+        dict(user='foo', vagrantfile='/vagrant/foo/Vagrantfile', box='default', status_refresh_interval=1)
+    ],
+])
+def test__VagrantBackend__init__with_custom_args(init_kwargs, expected):
 
-        hostspec = init_kwargs['user'] + '@' + init_kwargs['box']
-        bkend = testinfra.get_host(hostspec, connection='vagrant', **init_kwargs).backend
+    hostspec = init_kwargs['user'] + '@' + init_kwargs['box']
+    bkend = testinfra.get_host(hostspec, connection='vagrant', **init_kwargs).backend
 
-        assert bkend.user == expected['user']
-        assert bkend.vagrantfile == expected['vagrantfile']
-        assert bkend.box == expected['box']
-        assert bkend.status_refresh_interval == expected['status_refresh_interval']
+    assert bkend.user == expected['user']
+    assert bkend.vagrantfile == expected['vagrantfile']
+    assert bkend.box == expected['box']
+    assert bkend.status_refresh_interval == expected['status_refresh_interval']
 
 
 def test_vagrant__call__will_return_a_new_VagrantBackend():
