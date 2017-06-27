@@ -14,9 +14,9 @@
 from __future__ import unicode_literals
 
 import mock
+import os
 import pytest
 import testinfra
-import os
 
 from testinfra.backend.base import CommandResult
 
