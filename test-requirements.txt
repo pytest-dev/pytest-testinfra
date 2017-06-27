@@ -3,4 +3,5 @@ passlib
 pytest-cov
 pytest-xdist
 paramiko
+PyYAML
 salt
