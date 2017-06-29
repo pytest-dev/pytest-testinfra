@@ -1,5 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'YAML'
 
 $HOST_FILE = YAML.load_file('../hosts.yml')
 

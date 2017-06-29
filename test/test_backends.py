@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import unicode_literals
-import mock
 import os
 import pytest
 import six
@@ -105,15 +104,18 @@ def test_docker_encoding(host):
     assert host.file("/tmp/s.txt").content_string.strip() == string
 
 
-@pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-def test_vagrant__run_command_in_directory__will_change_directory_when_path_is_a_directory(vagrant_sut):
+def test_VagrantBackend__run_command_in_directory__will_change_directory_when_path_is_a_directory(mock_vagrant_backend):
     from testinfra.backend import vagrant
-    box = vagrant_sut(start=False)
+
+    # this may not be obvious which is why this message is here but we aren't actually
+    # mocking the run_vagrant method.   We just have to mock something I chose for no
+    # particular reason.
+    box, run_vagrant_mock = mock_vagrant_backend('run_vagrant', autospec=True)
 
     orig_dir = os.getcwd()
-    expected_dir = os.path.dirname(orig_dir + '/' + box.vagrantfile)
+    expected_dir = os.path.join(orig_dir, box.vagrantfile)
     with vagrant.run_command_in_directory(box.vagrantfile):
-        assert os.getcwd() == expected_dir
+        assert os.getcwd() == os.path.dirname(expected_dir)
         assert orig_dir != os.getcwd()
 
     assert os.getcwd() == orig_dir
@@ -125,8 +127,7 @@ def test_vagrant__run_command_in_directory__will_change_directory_when_path_is_a
         dict(user='foo', vagrantfile='/vagrant/foo/Vagrantfile', box='default', status_refresh_interval=1)
     ],
 ])
-def test__VagrantBackend__init__with_custom_args(init_kwargs, expected):
-
+def test_VagrantBackend__init__with_custom_args(init_kwargs, expected):
     hostspec = init_kwargs['user'] + '@' + init_kwargs['box']
     bkend = testinfra.get_host(hostspec, connection='vagrant', **init_kwargs).backend
 
@@ -136,8 +137,7 @@ def test__VagrantBackend__init__with_custom_args(init_kwargs, expected):
     assert bkend.status_refresh_interval == expected['status_refresh_interval']
 
 
-def test_vagrant__call__will_return_a_new_VagrantBackend():
-
+def test_VagrantBackend__call__will_return_a_new_VagrantBackend():
     kw = dict(connection='vagrant',
               vagrantfile='vagrant/ubuntu-trusty',
               user='vagrant',
@@ -154,7 +154,7 @@ def test_vagrant__call__will_return_a_new_VagrantBackend():
     assert result.vagrantfile == kw['vagrantfile'] + '/Vagrantfile'
 
 
-def test_vagrant__get_hosts__will_return_array_of_hosts():
+def test_VagrantBackend__get_hosts__will_return_array_of_hosts():
     host = testinfra.get_host('vagrant@default', connection='vagrant').backend
 
     result = host.get_hosts(host)
@@ -168,21 +168,22 @@ def test_vagrant__get_hosts__will_return_array_of_hosts():
     ('@mybox', 'vagrant@mybox'),
     ('foo@', 'foo@default'),
 ])
-def test_vagrant__hostspec__will_return__user_at_host__(hostspec, expected):
+def test_VagrantBackend__hostspec__will_return__user_at_host__(hostspec, expected):
     host = testinfra.get_host(hostspec, connection='vagrant').backend
     assert host.hostspec == expected
 
 
-@pytest.mark.vagrant_sut('vagrant://vagrant@default', vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-def test__vagrant_up__will_start_a_non_running_instance(vagrant_sut):
-    vagrant = vagrant_sut(start=False, keep_running=True)
+def test_VagrantBackend_up__method_will_invoke_run_vagrant_with__vagrant_up_default(mock_vagrant_backend):
+    vagrant, m1 = mock_vagrant_backend('run_vagrant', autospec=True)
+
     vagrant.up
-    assert vagrant.status.is_running
+    m1.assert_any_call('vagrant up %s', 'default')
 
 
-@pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-def test_vagrant_get_pytest_id_returns_vagrant(vagrant_sut):
-    vagrant = vagrant_sut(start=False)
+def test_VagrantBackend_get_pytest_id_returns_vagrant(mock_vagrant_backend):
+    hostspec = 'vagrant@default'
+    vagrant = testinfra.get_host(hostspec, connection='vagrant').backend
+
     assert vagrant.get_pytest_id() == 'vagrant'
 
 
@@ -196,9 +197,35 @@ class Test__VagrantBackend__status_method(object):
         wrapper.__name__ = fn.__name__
         return wrapper
 
+    def create_vagrant_status_output(self, box_data=[]):
+        if not box_data:
+            create_boxes = [
+                dict(box='default-master', box_state='poweroff', box_provider='virtualbox'),
+                dict(box='default', box_state='not created', box_provider='virtualbox')
+            ]
+
+        header = 'Current machine states:\n\n'
+        footer = 'This environment represents multiple VMs. The VMs are all listed\n' \
+            'above with their current state. For more information about a specific\n' \
+            'VM, run `vagrant status NAME`.\n'
+        result = [header]
+
+        for box in create_boxes:
+            faked = '{}                        {}       ({})\n'.format(
+                box['box'],
+                box['box_state'],
+                box['box_provider']
+            )
+            result.append(faked)
+        result.append(footer)
+
+        return '\n'.join(result)
+
     @pytest.fixture
-    def mocked_status_refresh(self, vagrant_sut):
-        self.vagrant = vagrant_sut(start=False)
+    def mocked_status_refresh(self, mock_vagrant_backend):
+        faked_vagrant_status = self.create_vagrant_status_output()
+
+        self.vagrant, self.mocked_method = mock_vagrant_backend('run_vagrant', autospec=True, return_value=faked_vagrant_status)
         self.vagrant.expire_status_cache()
 
         def reset_counter():
@@ -210,8 +237,7 @@ class Test__VagrantBackend__status_method(object):
         reset_counter()
         assert self.vagrant._refresh_status.called == 0
 
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test_when_invoked_twice_before_the_status_refresh_interval_expires(self, vagrant_sut, mocked_status_refresh):
+    def test_when_invoked_twice_before_the_status_refresh_interval_expires(self, mocked_status_refresh):
         """SCENARIO: When invoking `vagrant.status` twice before the status refresh interval expires
 
         It should:
@@ -226,8 +252,7 @@ class Test__VagrantBackend__status_method(object):
         assert first_status == second_status
         assert first_status is not None
 
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test_when_invoking_a_second_time_but_after_the_status_refresh_interval_expires(self, vagrant_sut, mocked_status_refresh):
+    def test_when_invoking_a_second_time_after_the_status_refresh_interval_expires(self, mocked_status_refresh):
         """SCENARIO: When invoking `vagrant.status` a second time but after the status refresh interval expires
 
         It should:
@@ -235,7 +260,6 @@ class Test__VagrantBackend__status_method(object):
             - and not invoke vagrant._refresh_status() a second time
 
         """
-
         self.vagrant.status_refresh_interval = .5
 
         first_status = self.vagrant.status
@@ -248,84 +272,55 @@ class Test__VagrantBackend__status_method(object):
         assert second_status is not None
 
 
-class Test__VagrantBackend__when_vm_should_stay_running_after_each_test(object):
+def test_VagrantBackend__run__will_not_raise_error(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_local', autospec=True)
 
-    @pytest.fixture
-    def stay_running(self, vagrant_sut):
-        self.vagrant = vagrant_sut(start=True, keep_running=True)
+    result = vagrant.run('vagrant status')
+    assert result != ''
+    assert result is not None
 
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__run__will_not_raise_error(self, stay_running):
-        result = self.vagrant.run('vagrant status')
-        assert result != ''
-        assert result is not None
-
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__ssh_config_to_tmpfile__should_return_tempfile_with_saved_sshconfig_when_vm_is_powered_on(self, stay_running):
-        actual_result = self.vagrant.ssh_config_to_tmpfile
-        assert os.path.isfile(actual_result)
-        assert os.stat(actual_result).st_mode & int('0o0777', 8) == 384
-
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__ssh_config__will_return_ssh_config_string_when_vm_is_powered_on(self, stay_running):
-        actual_ssh_config = self.vagrant.ssh_config
-
-        local = testinfra.get_host('local://').backend
-        orig_dir = os.getcwd()
-        os.chdir(os.path.dirname(self.vagrant.vagrantfile))
-        expected_ssh_config = local.run('vagrant ssh-config ' + self.vagrant.box).stdout.strip()
-        os.chdir(orig_dir)
-
-        assert actual_ssh_config == expected_ssh_config
-
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__run_box__will_run_a_command_inside_vagrant_box_and_return_result(self, stay_running):
-        whoami = self.vagrant.run_box('whoami')
-
-        assert whoami.rc == 0
-        assert whoami.stdout.strip() == 'vagrant'
-
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__communicate__will_return_paramiko_backend(self, stay_running):
-        ssh = self.vagrant.communicate
-        assert ssh.backend.NAME == 'paramiko'
-        assert ssh.run('whoami').rc == 0
-        assert ssh.run('whoami').stdout.strip() == 'vagrant'
-
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__vagrant_suspend__will_suspend_a_running_instance(self, stay_running):
-        self.vagrant.suspend
-        assert self.vagrant.status.is_not_running
-
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__vagrant_halt__will_stop_a_running_instance(self, stay_running):
-        self.vagrant.halt
-        assert self.vagrant.status.is_not_running
+    mocked_method.assert_called_once_with('vagrant status')
 
 
-class Test__VagrantBackend__destructive_vm_tests(object):
+def test_VagrantBackend__ssh_config_to_tmpfile__should_return_the_path_to_the_tempfile_with_saved_sshconfig_and_have_the_right_0600_perms(mock_vagrant_backend, build_ssh_config):
+    # We mock run_vagrant because ssh_config -> _refresh_ssh_config -> run_vagrant('vagrant ssh_config')
+    fake_ssh_config = build_ssh_config(host='default', hostname='127.0.0.1', user='vagrant', port='99999')
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True, return_value=fake_ssh_config)
 
-    @pytest.fixture
-    def reset_vagrant(self, vagrant_sut):
-        self.vagrant = vagrant_sut(start=False, keep_running=False)
+    actual_result = vagrant.ssh_config_to_tmpfile
+    mocked_method.assert_called_once_with('vagrant ssh-config %s', 'default')
 
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__ssh_config__should_raise__AssertionError__when_vm_is_powered_off(self, reset_vagrant):
-        with pytest.raises(AssertionError):
-            self.vagrant.ssh_config
+    assert os.path.isfile(actual_result)
+    assert os.stat(actual_result).st_mode & int('0o0777', 8) == 384
 
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__ssh_config_to_tmpfile__should_raise__AssertionError__when_vm_is_powered_off(self, reset_vagrant):
-        with pytest.raises(AssertionError):
-            self.vagrant.ssh_config_to_tmpfile
 
-    @pytest.mark.vagrant_sut(vagrantfile='vagrant/ubuntu-trusty/Vagrantfile')
-    def test__destroy__will_destroy_an_existing_vm(self, reset_vagrant):
-        assert self.vagrant.status.is_created
+def test_VagrantBackend__run_box__method_will_call_communiate_with_wrapped_call_to_get_host_with_paramiko_connection_backend(mock_vagrant_backend, build_ssh_config):
+    # communicate -> get_host(hostspec, connection=paramiko, ssh_config)
+    fake_ssh_config = build_ssh_config(host='default', hostname='127.0.0.1', user='vagrant', port='99999')
+    vagrant, mocked_method = mock_vagrant_backend('get_host', autospec=True)
+    vagrant._ssh_config = fake_ssh_config
 
-        # we assume vagrant does the right thing here, so we just patch the method call
-        # that would otherwise invoke the destroy command and make an assertion that the call
-        # signature looks correct.
-        with mock.patch.object(self.vagrant, 'run_vagrant', autospec=True) as mocked_method:
-            self.vagrant.destroy
-            mocked_method.assert_called_once_with('vagrant destroy default --force')
+    vagrant.run_box('whoami')
+
+    mocked_method.assert_called_once_with(vagrant.hostspec, connection='paramiko', ssh_config=vagrant.ssh_config_to_tmpfile)
+
+
+def test_VagrantBackend__suspend__method_invokes_run_vagrant_with__vagrant_suspend_default(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autspec=True)
+    vagrant.suspend
+
+    mocked_method.assert_called_once_with('vagrant suspend default')
+
+
+def test_VagrantBackend__halt__method_invokes_stop_with__destroy_False(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('_stop', autspec=True)
+    vagrant.halt
+
+    mocked_method.assert_called_once_with(destroy=False)
+
+
+def test_VagrantBackend__destroy__method_invokes_run_vagrant_with__vagrant_destroy_defualt(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+    vagrant.destroy
+    mocked_method.assert_called_once_with('vagrant destroy default --force')

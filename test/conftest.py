@@ -14,6 +14,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import itertools
+import mock
 import os
 import pytest
 import subprocess
@@ -24,6 +25,8 @@ import yaml
 
 from _pytest.fixtures import FixtureLookupError
 from six.moves import urllib
+from testinfra.backend.base import CommandResult
+
 
 try:
     import ansible
@@ -290,6 +293,53 @@ def vagrant_sut(request):
         request.addfinalizer(teardown)
 
         return vagrant
+    return on_call
+
+
+@pytest.fixture
+def mock_vagrant_backend(request, monkeypatch, tmpdir):
+    def on_call(method, hostspec='vagrant@default', vagrantfile='./Vagrantfile', *args, **kwargs):
+
+        my_tmpdir = tmpdir.join('Vagrantfile')
+        content = """
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+end
+
+"""
+        vagrantfile = str(my_tmpdir)
+        if os.path.isfile(vagrantfile):
+            with open(vagrantfile, 'r') as fd:
+                content = fd.read()
+
+        my_tmpdir.write(content)
+        host = testinfra.get_host(hostspec, connection='vagrant', vagrantfile=vagrantfile).backend
+
+        def mocked_has_vagrant(*args):
+            # simulate self.run_local('type vagrant').rc == 0
+            if 'type vagrant' in args:
+                mocked_result = mock.MagicMock(spec=CommandResult, rc=0)
+                mocked_result.return_value.rc = 0
+                return mocked_result
+            return mock.MagicMock(spec=CommandResult)
+
+        monkeypatch.setattr(host, 'run_local', mocked_has_vagrant)
+
+        patcher = mock.patch.object(host, method, **kwargs)
+        mocked_method = patcher.start()
+
+        def teardown():
+            teardown.patcher.stop()
+
+        teardown.patcher = patcher
+        teardown.mocked_method = mocked_method
+
+        # add teardown when fixture goes out of scope
+        request.addfinalizer(teardown)
+
+        return host, mocked_method
+
     return on_call
 
 

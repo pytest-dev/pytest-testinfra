@@ -30,6 +30,14 @@ function setup_osx() {
   python3.4 --version
   python --version
 
+  echo ""
+  echo "*** OS Ruby and Ruby Gems ***"
+  ruby --version
+  gem list
+
+  echo ""
+  echo "*** Vagrant Gems ***"
+  /opt/vagrant/embedded/bin/gem list
 }
 
 function setup_linux() {

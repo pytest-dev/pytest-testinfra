@@ -170,12 +170,15 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
     @property
     def ssh_config_to_tmpfile(self):
         box_ssh_config = tempfile.NamedTemporaryFile(delete=False)
-        os.chmod(box_ssh_config.name, 384)  # oct 0600
-        with box_ssh_config.file as fd:
+
+        if not self._ssh_config_tmp:
+            self._ssh_config_tmp = box_ssh_config.name
+
+        os.chmod(self._ssh_config_tmp, 384)  # oct 0600
+        with open(self._ssh_config_tmp, 'wb') as fd:
             fd.write(self.ssh_config.encode('utf-8'))
 
-        self._ssh_config_tmp = box_ssh_config.name
-        return box_ssh_config.name
+        return self._ssh_config_tmp
 
     @property
     def ssh_config_to_json(self):
@@ -303,9 +306,9 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
             as_not_running = False
             created = True
         else:
-            raise NotImplementedError('This is a bug, un-handled ' +
-                                      '`vagrant status`' +
-                                      'status "{}"'.format(status)
+            raise NotImplementedError('This is a bug, un-handled status from ' +
+                                      '`vagrant status {}` '.format(self.box) +
+                                      'got "{}"'.format(status)
                                       )
 
         def cmd():
