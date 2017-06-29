@@ -261,6 +261,8 @@ def vagrant_sut(request):
         image, kw = testinfra.backend.parse_hostspec(request.param)
         vagrant = testinfra.get_host(image, **kw).backend
 
+        vagrant_travis_helper(vagrant)
+
         # refresh status cache
         vagrant.status
 
