@@ -13,7 +13,6 @@
 from __future__ import unicode_literals
 import os
 import pytest
-import six
 import time
 
 import testinfra.backend

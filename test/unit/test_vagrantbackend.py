@@ -90,7 +90,7 @@ def test__run_box__will_invoke_the_paramiko_backend(mock_vagrant_backend, build_
     get_host_mock.return_value.run.assert_called_once_with('hello world')
 
 
-## property tests
+# property tests
 def test__vagrantfile__property_returns_fully_qualified_path_plus_Vagrantfile(mock_vagrant_backend):
     vagrant, run_vagrant_mock = mock_vagrant_backend('run_vagrant', autospec=True)
     vagrant._vagrantfile = '/tmp/somepath'
