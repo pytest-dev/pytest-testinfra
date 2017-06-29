@@ -38,6 +38,13 @@ def test__has_box__will_return__True__when_box_in_list_of_boxes():
         assert host.has_box('centos/6')
 
 
+def test__run__invokes_run_local_with_valid_commandline_argument(mock_vagrant_backend):
+    host, run_local_mock = mock_vagrant_backend('run_local', autospec=True)
+
+    host.run('somecommand arg1')
+    run_local_mock.assert_called_once_with('somecommand arg1')
+
+
 def test__run_vagrant__will_raise__AssertionError__when_command_fails_to_run(mock_vagrant_backend):
     mocked_run_result = mock.MagicMock(spec=CommandResult, stdout='', rc=1, stderr='boom dizzle wizzle', command='vagrant status default')
     host, run_mock = mock_vagrant_backend('run', autospec=True, return_value=mocked_run_result)
@@ -47,13 +54,6 @@ def test__run_vagrant__will_raise__AssertionError__when_command_fails_to_run(moc
 
     assert 'Got exit code 1 from command="vagrant status default" result="boom dizzle wizzle"' in str(exp)
     run_mock.assert_called_once_with('vagrant status default')
-
-
-def test__run__invokes_run_local_with_valid_commandline_argument(mock_vagrant_backend):
-    host, run_local_mock = mock_vagrant_backend('run_local', autospec=True)
-
-    host.run('somecommand arg1')
-    run_local_mock.assert_called_once_with('somecommand arg1')
 
 
 def test__run_vagrant__will_return_stdout_when_command_runs_without_an_error(mock_vagrant_backend):
@@ -88,3 +88,18 @@ def test__run_box__will_invoke_the_paramiko_backend(mock_vagrant_backend, build_
     host.run_box('hello world')
     get_host_mock.assert_called_once_with('vagrant@default', connection='paramiko', ssh_config=host._ssh_config_tmp)
     get_host_mock.return_value.run.assert_called_once_with('hello world')
+
+
+## property tests
+def test__vagrantfile__property_returns_fully_qualified_path_plus_Vagrantfile(mock_vagrant_backend):
+    vagrant, run_vagrant_mock = mock_vagrant_backend('run_vagrant', autospec=True)
+    vagrant._vagrantfile = '/tmp/somepath'
+
+    assert vagrant.vagrantfile == '/tmp/somepath/Vagrantfile'
+
+
+def test__box__when_fetched_an_uninitialized_will_return_default(mock_vagrant_backend):
+    vagrant, run_vagrant_mock = mock_vagrant_backend('run_vagrant', autospec=True)
+    vagrant._box = None
+
+    assert vagrant.box == 'default'
