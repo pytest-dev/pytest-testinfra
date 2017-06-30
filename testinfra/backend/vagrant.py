@@ -124,7 +124,8 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
                   'got stderr="{}"'.format(stderr)
         assert out.rc == 0, err_msg
 
-        my_boxes = out.stdout.rstrip('\r\n').rstrip('\n').split('\n')
+        my_boxes = re.sub('\r\n$|\n$', '\n', out.stdout).rstrip()
+        my_boxes = re.split('\n', my_boxes)
 
         results = {}
 
@@ -169,10 +170,8 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
 
     @property
     def ssh_config_to_tmpfile(self):
-        box_ssh_config = tempfile.NamedTemporaryFile(delete=False)
-
-        if not self._ssh_config_tmp:
-            self._ssh_config_tmp = box_ssh_config.name
+        if self._ssh_config_tmp is None:
+            self._ssh_config_tmp = tempfile.NamedTemporaryFile(delete=False).name
 
         os.chmod(self._ssh_config_tmp, 384)  # oct 0600
         with open(self._ssh_config_tmp, 'wb') as fd:
@@ -185,17 +184,14 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
         out = self.ssh_config
         if out:
             def create_regex_group(s):
-                lines = (line.strip()
-                         for line in s.split('\n')
-                         if line.strip()
-                         )
+                lines = (line.strip() for line in s.split('\n') if line.strip())
                 chars = filter(None,
                                (line.split('#')[0].strip()
                                 for line in lines)
                                )
                 return re.compile(r''.join(chars)).search(out)
-            match = create_regex_group(r'''
-                Host\s+(?P<host>.*)
+            match = create_regex_group(
+                r'''Host\s+(?P<host>.*)
                 \s*HostName\s+(?P<hostname>.*)
                 \s*User\s+(?P<user>.*)
                 \s*Port\s+(?P<port>\d+)
@@ -204,8 +200,8 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
                 \s*PasswordAuthentication\s+(?P<password_authentication>.*)
                 \s*IdentityFile\s+(?P<identity_file>.*)
                 \s*IdentitiesOnly\s+(?P<identities_only>.*)
-                \s*LogLevel\s+(?P<log_level>.*)
-            ''')
+                \s*LogLevel\s+(?P<log_level>.*)'''
+            )
             return match.groupdict() if match else None
 
     @property

@@ -227,11 +227,12 @@ initialize_container_fixtures()
 def build_generic_ssh_config(host, hostname, user, port, priv_key):
     generic_ssh_config = (
         "Host {}\n"
-        "  Hostname {}\n"
+        "  HostName {}\n"
         "  User {}\n"
         "  Port {}\n"
         "  UserKnownHostsFile /dev/null\n"
         "  StrictHostKeyChecking no\n"
+        "  PasswordAuthentication no\n"
         "  IdentityFile {}\n"
         "  IdentitiesOnly yes\n"
         "  LogLevel FATAL\n"
