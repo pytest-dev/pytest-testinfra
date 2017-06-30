@@ -43,9 +43,8 @@ function setup_osx() {
 function setup_linux() {
 
   sudo apt-get update -qq && \
-  sudo apt-get install -y -o Dpkg::Options::="--force-confnew" \
+  sudo apt-get install -y \
     build-essential \
-    docker-engine \
     curl
 
   docker version
