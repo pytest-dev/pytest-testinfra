@@ -320,4 +320,4 @@ def test_VagrantBackend__destroy__method_invokes_run_vagrant_with__vagrant_destr
     vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
 
     vagrant.destroy
-    mocked_method.assert_called_once_with('vagrant destroy default --force')
+    mocked_method.assert_called_once_with('vagrant destroy --force default')

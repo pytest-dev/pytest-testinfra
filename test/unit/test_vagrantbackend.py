@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 import mock
+import os
 import pytest
 import testinfra
 
@@ -177,3 +178,191 @@ def test__ssh_config_to_json__will_return_None(mock_vagrant_backend):
 
     assert actual_result is None
     mocked_method.assert_called_once_with()
+
+
+def test__up__will_invoke__vagrant_up_provision(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+    # ensure that "vagrant up default --provision' is invoked
+    vagrant._provision = True
+    vagrant.up
+
+    mocked_method.assert_any_call('vagrant up %s --provision', 'default')
+
+
+def test__up__will_invoke__vagrant_up_without_provision_argument(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+    # ensure that "vagrant up default --provision' is invoked
+    vagrant._provision = False
+    vagrant.up
+
+    mocked_method.assert_any_call('vagrant up %s', 'default')
+
+
+def test__provision__will_invoke__vagrant_provision(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+    vagrant.provision
+
+    mocked_method.assert_called_once_with('vagrant provision %s', 'default')
+
+
+class Test__has_vagrantfile__returns_True(object):
+
+    def test__has_vagrantfile__will_return_True_when_vagrantfile_is_a_file_on_disk(self, mock_vagrant_backend):
+        # need to mock something so run_vagrant was choosen, but is not used.
+        vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+        with mock.patch('os.path.basename', autospec=False, return_value='foo') as mocked_method:
+            with mock.patch('os.path.isfile', autospec=True, return_value=True) as is_file_mock:
+                vagrant.has_vagrantfile
+                is_file_mock.assert_called_once_with(vagrant.vagrantfile)
+
+        mocked_method.assert_any_call(vagrant.vagrantfile.strip('/Vagrantfile'))
+
+    def test__has_vagrantfile__will_return_True_when_current_pwd_is_inside_vagrant_directory(self, mock_vagrant_backend):
+        vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+        expected_pwd = os.getcwd()
+        with mock.patch('os.path.basename', autospec=True, return_value='foo') as mocked_method:
+            # we also mock out os.path.isfile = False to make sure we are isolating our test
+            with mock.patch('os.path.isfile', autospec=True, return_value=False) as is_file_mock:
+                actual_result = vagrant.has_vagrantfile
+                vagrant_dir = vagrant.vagrantfile.strip('/Vagrantfile')
+
+                mocked_method.assert_any_call(expected_pwd)
+                mocked_method.assert_any_call(vagrant_dir)
+                is_file_mock.assert_called_once_with(vagrant.vagrantfile)
+                assert actual_result is True
+                assert os.path.isfile(vagrant.vagrantfile) is False
+
+
+def test__stop__will_only_invoke__vagrant_destroy_force(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+    vagrant._stop(destroy=True)
+
+    mocked_method.assert_called_once_with('vagrant destroy --force default')
+
+
+def test__stop__will_only_invoke__vagrant_destroy_halt(mock_vagrant_backend):
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True)
+
+    vagrant._stop(destroy=False)
+
+    mocked_method.assert_called_once_with('vagrant halt --force default')
+
+
+def test__validate_requirements__will_raise__RuntimeError__that_explains_vagrant_must_be_installed(mock_vagrant_backend):
+    # vagrant._validate_requirements -> self.has_vagrant -> self.run_local
+    vagrant, mocked_method = mock_vagrant_backend('run_local', autospec=True, rc=1)
+
+    vagrant.setting['VALIDATE_HAS_VAGRANT'] = True
+
+    with pytest.raises(RuntimeError) as errm:
+        vagrant._validate_requirements()
+
+    assert 'Vagrant must be installed' in str(errm)
+
+
+def test__validate_requirements__will_raise__RuntimeError__that_explains_vagrantfile_cannot_be_found_on_disk(mock_vagrant_backend):
+    # vagrant._validate_requirements -> self.has_vagrant -> self.run_local
+    vagrant, mocked_method = mock_vagrant_backend('run_local', autospec=True, rc=0)
+
+    # ensure that we don't trigger the 'has_vagrant' check
+    vagrant.setting['VALIDATE_HAS_VAGRANT'] = False
+    vagrant._vagrantfile = '/some/path/dne'
+
+    # mock vagrant.has_vagrantfile -> False
+    type(vagrant).has_vagrantfile = mock.PropertyMock(return_value=False)
+
+    with pytest.raises(RuntimeError) as errm:
+        vagrant._validate_requirements()
+
+    assert 'Unable to find Vagrantfile' in str(errm)
+
+
+@pytest.mark.parametrize(
+    'state,is_running',
+    [
+        ('aborted', False),
+        ('not created', False),
+        ('paused', False),
+        ('poweroff', False),
+        ('saved', False),
+        ('suspended', False),
+        ('not running', False),
+    ]
+)
+def test__refresh_status__when_non_running_state_should_return__is_running__eq_to__False(state, is_running, mock_vagrant_backend):
+    fake_vagrant_status = """Current machine states:
+
+default                   {} (virtualbox)
+
+To resume this VM, simply run `vagrant up`.
+    """.format(state)
+
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True, return_value=fake_vagrant_status)
+    vagrant.setting['VALIDATE_HAS_VAGRANT'] = False
+
+    actual_result = vagrant._refresh_status()
+
+    assert actual_result.is_running is is_running, (
+        'Expected result to be "{}" when vagrant status reports "{}"'
+    ).format(is_running, state)
+
+
+@pytest.mark.parametrize(
+    'state,is_running',
+    [
+        ('running', True),
+    ]
+)
+def test__refresh_status__when_in_running_state_should_return__is_running__eq_to__True(state, is_running, mock_vagrant_backend):
+    fake_vagrant_status = """Current machine states:
+
+default                   {} (virtualbox)
+
+To resume this VM, simply run `vagrant up`.
+    """.format(state)
+
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True, return_value=fake_vagrant_status)
+    vagrant.setting['VALIDATE_HAS_VAGRANT'] = False
+
+    actual_result = vagrant._refresh_status()
+
+    assert actual_result.is_running is is_running, (
+        'Expected result to be "{}" when vagrant status reports "{}"'
+    ).format(is_running, state)
+
+
+@pytest.mark.parametrize(
+    'state,is_running',
+    [
+        ('foobazzle', None),
+    ]
+)
+def test__refresh_status__should_raise__NotImplementedError__when_status_is_not_implemented(state, is_running, mock_vagrant_backend):
+    fake_vagrant_status = """Current machine states:
+
+default                   {} (virtualbox)
+
+To resume this VM, simply run `vagrant up`.
+    """.format(state)
+
+    vagrant, mocked_method = mock_vagrant_backend('run_vagrant', autospec=True, return_value=fake_vagrant_status)
+    vagrant.setting['VALIDATE_HAS_VAGRANT'] = False
+
+    with pytest.raises(NotImplementedError) as errm:
+        actual_result = vagrant._refresh_status()
+
+        assert actual_result.is_running is is_running, (
+            'Expected result to be "{}" when vagrant status reports "{}"'
+        ).format(is_running, state)
+
+    expected_errm = (
+        'un-handled status from `vagrant status {}` got "{}"'
+    ).format(vagrant.box, state)
+
+    assert expected_errm in str(errm)

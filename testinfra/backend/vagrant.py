@@ -266,8 +266,8 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
             run_args.append('destroy')
         else:
             run_args.append('halt')
-        run_args.append(self.box)
         run_args.append('--force')
+        run_args.append(self.box)
         run_args = ' '.join(run_args)
         out = self.run_vagrant(run_args)
         return out
