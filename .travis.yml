@@ -1,15 +1,55 @@
-sudo: required
+---
+
+
 services:
   - docker
-env:
-  matrix:
-    - TOXENV=py27,ansible1,py34
-    - TOXENV=flake8
-    - TOXENV=pylint
-    - TOXENV=sphinxdoc
-language: python
-python: 2.7
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: python
+      python: 2.7
+      env: TOXENV=py27,ansible1,py34
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: python
+      python: 2.7
+      env: TOXENV=flake8
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: python
+      python: 2.7
+      env: TOXENV=pylint
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: python
+      python: 2.7
+      env: TOXENV=sphinxdoc
+    - os: osx
+      osx_image: xcode8.3
+      language: generic
+      env: TOXENV=py27,ansible1,py34
+    - os: osx
+      osx_image: xcode8.3
+      language: generic
+      env: TOXENV=flake8
+    - os: osx
+      osx_image: xcode8.3
+      language: generic
+      env: TOXENV=pylint
+    - os: osx
+      osx_image: xcode8.3
+      language: generic
+      env: TOXENV=sphinxdoc
+
 install:
+  - ./.travis/install.sh
   - pip install tox
+
 script:
   - tox -e $TOXENV

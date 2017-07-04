@@ -1,0 +1,103 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$HOST_FILE = YAML.load_file('../hosts.yml')
+
+$INSTALL_HOMEBREW = <<-EOS_INLINE
+#!/bin/bash
+
+function install_homebrew() {
+
+  export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+  export TRAVIS=true
+
+  echo "PATH=\\"${PATH}\\""
+  echo "USER=\\"${USER}\\""
+
+  BREW_INSTALLED=
+
+  which brew >>/dev/null 2>&1 && BREW_INSTALLED='y' || true
+
+  [ -z "${BREW_INSTALLED}" ] && /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" || true
+
+  BREW_VERSION=$(brew config | grep 'HOMEBREW_VERSION: ' | cut -d' ' -f2)
+  XCODE_VERSION=$(pkgutil --packages | grep CLTools_ | while read pkg; do pkgutil --info $pkg | grep 'version: '; done | uniq | cut -d' ' -f2)
+
+  echo "BREW_VERSION=${BREW_VERSION}"
+  echo "XCODE_VERSION=${XCODE_VERSION}"
+
+  BASH_PROFILE="${HOME}/.bash_profile"
+  BASH_RC="${HOME}/.bashrc"
+
+  [ ! -e "${BASH_PROFILE}" ] && echo 'export PATH="/usr/local/bin:/usr/local/sbin:${PATH}"' >> "${BASH_PROFILE}" || true
+  [ ! -e "${BASH_RC}" ]      && echo 'export PATH="/usr/local/bin:/usr/local/sbin:${PATH}"' >> "${BASH_RC}"      || true
+
+  . "${BASH_PROFILE}"
+  . "${BASH_RC}"
+
+  echo "TRAVIS_OS_NAME='${TRAVIS_OS_NAME}'"
+
+  # is TRAVIS_OS_NAME set?
+  if [ -z "${TRAVIS_OS_NAME}" ]; then
+    echo 'export TRAVIS_OS_NAME="osx"' >> "${BASH_PROFILE}"
+    echo 'export TRAVIS_OS_NAME="osx"' >> "${BASH_RC}"
+  fi
+
+}
+
+install_homebrew
+
+EOS_INLINE
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define 'default-master' do |config|
+    config.vm.box = "jhcook/macos-sierra"
+
+    config.vm.network "private_network", ip: $HOST_FILE['macos-sierra']['default-master']
+    config.vm.synced_folder ".", "/vagrant", type: "nfs" # or "rsync"
+
+    config.vm.provision 'shell', privileged: false, inline: "#{$INSTALL_HOMEBREW}"
+    # config.vm.provision "shell", path: "install.sh"
+
+    config.vm.provider "virtualbox" do |vb|
+      #  # Display the VirtualBox GUI when booting the machine
+      #  vb.gui = true
+
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+
+      vb.cpus = "2"
+      vb.memory = "2048"
+    end
+  end
+
+  config.vm.define 'default' do |config|
+    config.vm.box = "macos-sierra"
+
+    config.vm.provision 'shell', privileged: false, inline: "#{$INSTALL_HOMEBREW}"
+
+    config.vm.network "private_network", ip: $HOST_FILE['macos-sierra']['default']
+    config.vm.synced_folder ".", "/vagrant", type: "nfs" # or "rsync"
+
+    if File.exists?('travis-helper.sh')
+      config.vm.provision "file", source: "travis-helper.sh", destination: "./travis-helper.sh"
+      config.vm.provision "shell", privileged: false, path: "./travis-helper.sh"
+    end
+
+    config.vm.provider "virtualbox" do |vb|
+      #  # Display the VirtualBox GUI when booting the machine
+      #  vb.gui = true
+
+      vb.linked_clone = true
+
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+
+      vb.cpus = "2"
+      vb.memory = "2048"
+    end
+  end
+
+end

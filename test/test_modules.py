@@ -12,18 +12,28 @@
 # limitations under the License.
 from __future__ import unicode_literals
 
+
+try:
+    import passlib.hash
+    HAS_PASSLIB = True
+except ImportError:
+    HAS_PASSLIB = False
+
 import crypt
 import datetime
+import mock
 import re
+import testinfra
 import time
 
 import pytest
 from testinfra.modules.socket import parse_socketspec
 
+
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "debian_jessie", "centos_7", "ubuntu_trusty", "fedora",
+        "debian_jessie", "centos_6", "centos_7", "ubuntu_trusty", "fedora",
         "ubuntu_xenial",
     )
 ])
@@ -38,12 +48,14 @@ def test_package(host, docker_image):
         "fedora": "7.",
         "ubuntu_trusty": "1:6.6",
         "ubuntu_xenial": "1:7.2",
+        "centos_6": "5.3",
         "centos_7": "6.6",
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
         "fedora": ".fc25",
+        "centos_6": ".el6",
         "centos_7": ".el7",
         "debian_jessie": None,
         "debian_wheezy": None,
@@ -68,12 +80,13 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename = {
-        "debian_jessie": ("^8\.", "debian", "jessie"),
-        "debian_wheezy": ("^7$", "debian", None),
-        "centos_7": ("^7$", "centos", None),
-        "fedora": ("^25$", "fedora", None),
-        "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
-        "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
+        "debian_jessie": (r"^8\.", "debian", "jessie"),
+        "debian_wheezy": (r"^7$", "debian", None),
+        "centos_6": (r"^6", "CentOS", None),
+        "centos_7": (r"^7$", "centos", None),
+        "fedora": (r"^25$", "fedora", None),
+        "ubuntu_trusty": (r"^14\.04$", "ubuntu", "trusty"),
+        "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial"),
     }[docker_image]
 
     assert host.system_info.distribution == distribution
@@ -83,7 +96,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "fedora"):
+    if docker_image in ("centos_6", "centos_7", "fedora"):
         name = "sshd"
     else:
         name = "ssh"
@@ -108,6 +121,14 @@ def test_service(host, name, running, enabled):
     service = host.service(name)
     assert service.is_running == running
     assert service.is_enabled == enabled
+
+
+@pytest.mark.testinfra_hosts("docker://centos_6")
+def test_service_sshd_is_running(host):
+    sshd = host.service('sshd')
+
+    assert sshd.is_running
+    assert sshd.is_enabled
 
 
 def test_salt(host):
@@ -177,6 +198,7 @@ def test_process(host, docker_image):
 
     args, comm = {
         "debian_jessie": ("/sbin/init", "systemd"),
+        "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
         "ubuntu_trusty": ("/usr/sbin/sshd -D", "sshd"),
@@ -220,7 +242,11 @@ def test_nonexistent_user(host):
 def test_current_user(host):
     assert host.user().name == "root"
     pw = host.user().password
-    assert crypt.crypt("foo", pw) == pw
+
+    if HAS_PASSLIB:
+        assert passlib.hash.sha512_crypt.verify('foo', pw)
+    else:
+        assert crypt.crypt("foo", pw) == pw
 
 
 def test_group(host):
@@ -371,7 +397,7 @@ def test_supervisor(host):
     host.run("service supervisor stop")
     assert not host.service("supervisor").is_running
     with pytest.raises(RuntimeError) as excinfo:
-        host.supervisor("tail").is_running
+        assert host.supervisor("tail").is_running
     assert 'Is supervisor running' in str(excinfo.value)
 
 
@@ -428,3 +454,28 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+
+
+def test_homebrew_package(monkeypatch):
+    host = testinfra.get_host('local://')
+
+    def mocked_return(arg):
+        if arg == 'brew':
+            return True
+        return False
+
+    monkeypatch.setattr(host, 'exists', mocked_return)
+    assert host.package.__name__ == 'HomebrewPackage'
+
+    with mock.patch.object(host.package, 'run_test', autospec=True) as m:
+        pkg = host.package('foo')
+        assert pkg.is_installed is False
+        m.assert_called_once_with(pkg, 'brew list --versions %s', 'foo')
+
+    with mock.patch.object(host.package, 'check_output', autospec=True) as m:
+        pkg = host.package('foo')
+        pkg.version
+        m.assert_called_once_with(pkg, 'brew list --versions %s', 'foo')
+
+    with pytest.raises(NotImplementedError):
+        host.package('foo').release

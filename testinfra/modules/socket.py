@@ -120,7 +120,7 @@ class Socket(Module):
                     (":" in self.host and allipv6 in sockets)
                     or (":" not in self.host and allipv4 in sockets)
                     or (self.protocol, self.host, self.port) in sockets)
-                )
+            )
         )
 
     @property
