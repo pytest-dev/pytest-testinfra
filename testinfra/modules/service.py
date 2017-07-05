@@ -24,7 +24,7 @@ class Service(Module):
     - Linux: detect Systemd or Upstart, fallback to SysV
     - FreeBSD: service(1)
     - OpenBSD: ``/etc/rc.d/$name check`` for ``is_running``
-      (``is_enabled`` is not yet implemented)
+      ``rcctl ls on`` for ``is_enabled`` (only OpenBSD >= 5.8)
     - NetBSD: ``/etc/rc.d/$name onestatus`` for ``is_running``
       (``is_enabled`` is not yet implemented)
 
@@ -173,7 +173,13 @@ class OpenBSDService(Service):
 
     @property
     def is_enabled(self):
-        raise NotImplementedError
+        if self.name in self.check_output('rcctl ls on').splitlines():
+            return True
+        if self.name in self.check_output('rcctl ls off').splitlines():
+            return False
+        raise RuntimeError(
+            "Unable to determine state of {0}. Does this service exist?"
+            .format(self.name))
 
 
 class NetBSDService(Service):
