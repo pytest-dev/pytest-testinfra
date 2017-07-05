@@ -173,14 +173,13 @@ class OpenBSDService(Service):
 
     @property
     def is_enabled(self):
-        # rcctl ls is only available on 5.8 or newer
-        if self.check_output('uname -r') >= '5.8':
-            for service in self.check_output("rcctl ls on").splitlines():
-                if service and service == self.name:
-                    return True
+        if self.name in self.check_output('rcctl ls on').splitlines():
+            return True
+        if self.name in self.check_output('rcctl ls off').splitlines():
             return False
-        else:
-            return NotImplementedError
+        raise RuntimeError(
+            "Unable to determine state of {0}. Does this service exist?"
+            .format(self.name))
 
 
 class NetBSDService(Service):
