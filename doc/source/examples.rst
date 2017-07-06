@@ -140,6 +140,17 @@ You can run these tests from the nagios master or in the target host with
 `NRPE <https://en.wikipedia.org/wiki/Nagios#Nagios_Remote_Plugin_Executor>`_.
 
 
+Integration with KitchenCI
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+KitchenCI (aka Test Kitchen) can use testinfra via its :code:`shell` verifier.
+Add the following verifier to your :code:`.kitchen.yml`::
+
+    verifier:
+      name: shell
+      command: testinfra --host="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
+
+
 .. _test docker images:
 
 Test docker images
