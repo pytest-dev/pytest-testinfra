@@ -37,9 +37,12 @@ class IgnorePolicy(paramiko.MissingHostKeyPolicy):
 class ParamikoBackend(base.BaseBackend):
     NAME = "paramiko"
 
-    def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
+    def __init__(
+            self, hostspec, ssh_config=None, ssh_identity_file=None,
+            *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
+        self.ssh_identity_file = ssh_identity_file
         self._client = None
         super(ParamikoBackend, self).__init__(self.host, *args, **kwargs)
 
@@ -69,7 +72,8 @@ class ParamikoBackend(base.BaseBackend):
                         cfg["key_filename"] = os.path.expanduser(value[0])
                     elif key == "stricthostkeychecking" and value == "no":
                         client.set_missing_host_key_policy(IgnorePolicy())
-
+            if self.ssh_identity_file:
+                cfg["key_filename"] = self.ssh_identity_file
             client.connect(**cfg)
             self._client = client
         return self._client
