@@ -34,18 +34,6 @@ matrix:
       osx_image: xcode8.3
       language: generic
       env: TOXENV=py27,ansible1,py34
-    - os: osx
-      osx_image: xcode8.3
-      language: generic
-      env: TOXENV=flake8
-    - os: osx
-      osx_image: xcode8.3
-      language: generic
-      env: TOXENV=pylint
-    - os: osx
-      osx_image: xcode8.3
-      language: generic
-      env: TOXENV=sphinxdoc
 
 install:
   - ./.travis/install.sh
