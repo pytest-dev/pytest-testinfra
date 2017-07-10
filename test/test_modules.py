@@ -397,7 +397,7 @@ def test_supervisor(host):
     host.run("service supervisor stop")
     assert not host.service("supervisor").is_running
     with pytest.raises(RuntimeError) as excinfo:
-        assert host.supervisor("tail").is_running
+        host.supervisor("tail").is_running
     assert 'Is supervisor running' in str(excinfo.value)
 
 
