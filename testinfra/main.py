@@ -56,7 +56,8 @@ class NagiosReporter(object):
             (
                 b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f "
                 b"seconds\n"
-            ) % (status, self.passed, self.failed, self.skipped, self.total_time)
+            ) % (status, self.passed, self.failed,
+                 self.skipped, self.total_time)
         )
         return ret
 

@@ -89,7 +89,11 @@ class Service(Module):
 
         in_service_providers = [provider(host) for provider in providerz]
 
-        svc_provider = [provider for provider in in_service_providers if provider is not None]
+        svc_provider = [
+            provider
+            for provider in in_service_providers
+            if provider is not None
+        ]
         if svc_provider:
             return svc_provider[0]
 

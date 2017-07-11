@@ -167,7 +167,9 @@ def build_docker_container_fixture(image, scope):
             docker_host = "localhost"
 
         cmd = ["docker", "run", "-d", "-P"]
-        if image in ("ubuntu_xenial", "debian_jessie", "centos_6", "centos_7", "fedora"):
+        if image in ("ubuntu_xenial", "debian_jessie", "centos_6",
+                     "centos_7", "fedora"
+                     ):
             cmd.append("--privileged")
 
         cmd.append("philpep/testinfra:" + image)
@@ -251,7 +253,11 @@ def vagrant_sut(request):
                 # invoke our pre-init script to do initial
                 # provisioning to make tests run faster
                 pre_init = vagrant.run('./pre-init')
-                assert pre_init.rc == 0, './pre-init for vagrantfile={} has failed'.format(vagrant.vagrantfile)
+
+                err_msg = (
+                    './pre-init for vagrantfile={} has failed'
+                ).format(vagrant.vagrantfile)
+                assert pre_init.rc == 0, err_msg
 
         def teardown():
             if not keep_running:
@@ -274,7 +280,8 @@ def vagrant_sut(request):
 
 @pytest.fixture
 def mock_vagrant_backend(request, monkeypatch, tmpdir):
-    def on_call(method, hostspec='vagrant@default', vagrantfile='./Vagrantfile', *args, **kwargs):
+    def on_call(method, hostspec='vagrant@default',
+                vagrantfile='./Vagrantfile', *args, **kwargs):
 
         my_tmpdir = tmpdir.join('Vagrantfile')
         content = """
@@ -290,7 +297,8 @@ end
                 content = fd.read()
 
         my_tmpdir.write(content)
-        host = testinfra.get_host(hostspec, connection='vagrant', vagrantfile=vagrantfile).backend
+        host = testinfra.get_host(hostspec, connection='vagrant',
+                                  vagrantfile=vagrantfile).backend
 
         def mocked_has_vagrant(*args):
             # simulate self.run_local('type vagrant').rc == 0
@@ -401,7 +409,7 @@ def pytest_generate_tests(metafunc):
     if 'vagrant_sut' in metafunc.fixturenames:
         marker = getattr(metafunc.function, 'vagrant_sut', None)
         params = (
-            'vagrant://vagrant@default?vagrantfile=vagrant/macos-sierra/Vagrantfile',
+            'vagrant://vagrant@default?vagrantfile=vagrant/macos-sierra/Vagrantfile',  # noqa: E501
         )
         if marker:
             params = (
@@ -409,7 +417,8 @@ def pytest_generate_tests(metafunc):
                     ['{}={}'.format(k, v) for k, v in marker.kwargs.items()]
                 ),
             )
-        metafunc.parametrize('vagrant_sut', params, indirect=True, scope='function')
+        metafunc.parametrize('vagrant_sut', params,
+                             indirect=True, scope='function')
 
     if "host" in metafunc.fixturenames:
         marker = getattr(metafunc.function, "testinfra_hosts", None)

@@ -16,7 +16,7 @@
 import threading
 
 
-class TimedThread(threading.Thread):  # pylint: disable=too-many-instance-attributes
+class TimedThread(threading.Thread):  # noqa: E501 # pylint: disable=too-many-instance-attributes
     """Timed Thread helper
 
     The default arguments specifically @join=False will not time the target
@@ -28,7 +28,8 @@ class TimedThread(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
     """
 
-    def __init__(self, target, timeout=1800, join=False, daemon=True, args=None, kwargs=None):
+    def __init__(self, target, timeout=1800, join=False, daemon=True,
+                 args=None, kwargs=None):
         super(TimedThread, self).__init__()
         self._join = join
         self.timeout = timeout

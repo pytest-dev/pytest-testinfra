@@ -45,7 +45,9 @@ def run_command_in_directory(path):
 class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
     NAME = "vagrant"
 
-    def __init__(self, hostspec=None, user='vagrant', vagrantfile='./Vagrantfile', box='default', provision=None, status_refresh_interval=15, *args, **kwargs):
+    def __init__(self, hostspec=None, user='vagrant',
+                 vagrantfile='./Vagrantfile', box='default', provision=None,
+                 status_refresh_interval=15, *args, **kwargs):
         if hostspec:
             box, user, _ = self.parse_hostspec(hostspec)
         super(VagrantBackend, self).__init__(hostname=box, *args, **kwargs)
@@ -171,7 +173,8 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
     @property
     def ssh_config_to_tmpfile(self):
         if self._ssh_config_tmp is None:
-            self._ssh_config_tmp = tempfile.NamedTemporaryFile(delete=False).name
+            tmpfile = tempfile.NamedTemporaryFile(delete=False).name
+            self._ssh_config_tmp = tmpfile
 
         os.chmod(self._ssh_config_tmp, 384)  # oct 0600
         with open(self._ssh_config_tmp, 'wb') as fd:
@@ -184,7 +187,11 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
         out = self.ssh_config
         if out:
             def create_regex_group(s):
-                lines = (line.strip() for line in s.split('\n') if line.strip())
+                lines = (
+                    line.strip()
+                    for line in s.split('\n')
+                    if line.strip()
+                )
                 chars = filter(None,
                                (line.split('#')[0].strip()
                                 for line in lines)
@@ -206,7 +213,8 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
 
     @property
     def communicate(self):
-        ssh = self.get_host(self.hostspec, connection='paramiko', ssh_config=self.ssh_config_to_tmpfile)
+        ssh = self.get_host(self.hostspec, connection='paramiko',
+                            ssh_config=self.ssh_config_to_tmpfile)
         return ssh
 
     @property
@@ -273,13 +281,14 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
         return out
 
     def _validate_requirements(self):
-        if not self.has_vagrant and self.setting.get('VALIDATE_HAS_VAGRANT', True):
+        if not self.has_vagrant and self.setting.get('VALIDATE_HAS_VAGRANT',
+                                                     True):
             raise RuntimeError('Vagrant must be installed in order ' +
                                'to use this fixture')
 
         if not self.has_vagrantfile:
             raise RuntimeError(
-                'Unable to find Vagrantfile "{}" and I am in directory {}'.format(
+                'Unable to find Vagrantfile "{}" in directory {}'.format(
                     self.vagrantfile,
                     os.getcwd()
                 )
@@ -302,10 +311,12 @@ class VagrantBackend(base.BaseBackend):  # pylint: disable=R0902,R0904
             as_not_running = False
             created = True
         else:
-            raise NotImplementedError('This is a bug, un-handled status from ' +
-                                      '`vagrant status {}` '.format(self.box) +
-                                      'got "{}"'.format(status)
-                                      )
+            raise NotImplementedError(
+                ('This is a bug, un-handled status from '
+                 '`vagrant status {}` '
+                 'got "{}"'
+                 ).format(self.box, status)
+            )
 
         def cmd():
             def add(key, val):
