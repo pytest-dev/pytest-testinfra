@@ -347,6 +347,71 @@ def test_socket(host):
             assert len(host.socket(spec).clients) >= 1
 
 
+class Test__DarwinSocket(object):
+
+    @pytest.fixture
+    def simulate_darwin(self):
+        self.local = testinfra.get_host('local://').backend
+        self.local.system_info.sysinfo["type"] = 'darwin'
+
+    @pytest.fixture
+    def invalid_dgram_entries(self, simulate_darwin):
+        return (
+            'udp4       0      0  *.*                    *.*\n'
+            'udp4       0      0  *.*                    *.*\n'
+            'udp4       0      0  *.*                    *.*\n'
+            'udp4       0      0  *.*                    *.*\n'
+        )
+
+    @pytest.fixture
+    def valid_sockets(self, simulate_darwin):
+        return (
+            'tcp4       0      0  127.0.0.1.51096     127.0.0.0.443      ESTABLISHED\n'  # noqa: E501
+            'tcp4       0      0  127.0.0.1.51097     127.0.0.0.443      CLOSE_WAIT\n'  # noqa: E501
+            'tcp4       0      0  *.1002                 *.*             LISTEN\n'  # noqa: E501
+            'tcp6       0      0  *.17500                *.*             LISTEN\n'  # noqa: E501
+            'tcp6       0      0  *.997                  *.*             LISTEN\n'  # noqa: E501
+            'tcp6       0      0  ::1.53                 *.*             LISTEN\n'  # noqa: E501
+            'tcp6       0      0  fe80::1%lo0.53         *.*             LISTEN\n'  # noqa: E501
+            'udp6       0      0  *.50935                *.*\n'
+            'udp6       0      0  fe80::544c:9902:.123   *.*\n'
+            'udp6       0      0  ::1.123                *.*\n'
+            'udp4       0      0  *.50935                *.*\n'
+            'udp4       0      0  127.0.0.1.123          *.*\n'
+        )
+
+    def test__get_sockets__will_return_empty_list_when_dgram_entries_are_all_wildcards(self, invalid_dgram_entries):  # noqa: E501
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=invalid_dgram_entries) as mocked_method:  # noqa: E501
+            socket = self.local.socket(None)
+            actual_sockets = socket.get_sockets(True)
+
+            assert isinstance(actual_sockets, list)
+            assert len(actual_sockets) == 0
+
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a')
+
+    def test__get_sockets__will_return_non_empty_list_when_dgram_entries(self, valid_sockets):  # noqa: E501
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=valid_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket(None)
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('tcp', '0.0.0.0', 1002),
+                ('tcp', '::', 17500),
+                ('tcp', '::', 997),
+                ('tcp', '::1', 53),
+                ('tcp', 'fe80::1%lo0', 53),
+                ('udp', '::', 50935),
+                ('udp', 'fe80::544c:9902:', 123),
+                ('udp', '::1', 123),
+                ('udp', '0.0.0.0', 50935),
+                ('udp', '127.0.0.1', 123),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+
+
 @all_images
 def test_process(host, docker_image):
     init = host.process.get(pid=1)
