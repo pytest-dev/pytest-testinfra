@@ -12,12 +12,21 @@
 # limitations under the License.
 from __future__ import unicode_literals
 
+
+try:
+    import passlib.hash
+    HAS_PASSLIB = True
+except ImportError:
+    HAS_PASSLIB = False
+
 import crypt
 import datetime
+import mock
+import pytest
 import re
+import testinfra
 import time
 
-import pytest
 from testinfra.modules.socket import parse_socketspec
 
 all_images = pytest.mark.testinfra_hosts(*[
@@ -220,7 +229,14 @@ def test_nonexistent_user(host):
 def test_current_user(host):
     assert host.user().name == "root"
     pw = host.user().password
-    assert crypt.crypt("foo", pw) == pw
+
+    # when HAS_PASSLIB = True, it's probably because the host OS is OSX.
+    # OSX requires the use of passlib over crypt becuase OSX ships a very old
+    # version of crypt and it doesn't support the proper hash length for sha512
+    if HAS_PASSLIB:
+        assert passlib.hash.sha512_crypt.verify('foo', pw)
+    else:
+        assert crypt.crypt("foo", pw) == pw
 
 
 def test_group(host):
