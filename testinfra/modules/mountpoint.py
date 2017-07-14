@@ -99,10 +99,14 @@ class MountPoint(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             return LinuxMountPoint
-        elif host.system_info.type.endswith("bsd"):
+
+        if host.system_info.type.endswith("bsd"):
             return BSDMountPoint
-        else:
-            raise NotImplementedError
+
+        if host.system_info.is_darwin:
+            return DarwinMountPoint
+
+        raise NotImplementedError
 
     def __repr__(self):
         return (
@@ -150,4 +154,22 @@ class BSDMountPoint(MountPoint):
                 "device": splitted[0],
                 "filesystem": splitted[2],
                 "options": splitted[3].split(","),
+            }
+
+
+class DarwinMountPoint(MountPoint):
+
+    @classmethod
+    def _iter_mountpoints(cls):
+        check_output = cls(None).check_output
+        for line in check_output("mount").splitlines():
+            splitted = line.split()
+
+            options = splitted[-1].replace('(', '').replace(')', '').split(',')
+
+            yield {
+                "path": splitted[2],
+                "device": splitted[0],
+                "filesystem": splitted[4],
+                "options": options,
             }
