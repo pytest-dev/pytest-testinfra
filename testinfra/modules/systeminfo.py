@@ -18,7 +18,7 @@ import re
 from testinfra.modules.base import InstanceModule
 
 
-class SystemInfo(InstanceModule):
+class SystemInfo(InstanceModule):  # pylint: disable-msg=R0904
     """Return system informations"""
 
     def __init__(self):
