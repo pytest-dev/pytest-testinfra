@@ -90,6 +90,175 @@ def test_systeminfo(host, docker_image):
     assert re.match(release, host.system_info.release)
 
 
+@pytest.mark.testinfra_hosts("docker://debian_jessie")
+def test_systeminfo__is_debian_returns_True_if_debian_based_host(host):
+    assert host.system_info.is_debian
+
+
+@pytest.mark.testinfra_hosts("docker://centos_7")
+def test_systeminfo__is_debian_returns_False_if_not_debian_based_host(host):
+    assert host.system_info.is_debian is False
+
+
+@pytest.mark.testinfra_hosts("docker://debian_jessie")
+def test_systeminfo__is_linux_returns_True_if_linux_host(host):
+    assert host.system_info.is_linux
+
+
+def test_systeminfo__is_darwin_returns_True_if_darwin_host():
+    local = testinfra.get_host('local://').backend
+    is_darwin = local.exists('sw_vers')
+    if not is_darwin:
+        pytest.skip('Skipping test because host is not Darwin')
+
+    assert local.system_info.is_darwin
+
+
+@pytest.mark.testinfra_hosts("docker://debian_jessie")
+def test_systeminfo__is_darwin_returns_False_if_darwin_host(host):
+    assert host.system_info.is_darwin is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'CentOS',
+        'Scientific Linux CERN',
+        'Scientific Linux release',
+        'CloudLinux',
+        'Ascendos',
+        'XenServer',
+        'XCP',
+        'Parallels Server Bare Metal',
+        'Fedora release',
+    ]
+)
+def test_systeminfo__is_redhat_returns_True_if_redhat_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['distribution'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['distribution'] = os_rel
+
+    assert local.system_info.is_redhat
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_redhat_returns_False_if_not_redhat_host(host):
+    assert host.system_info.is_redhat is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'freebsd',
+    ],
+)
+def test_systeminfo__is_freebsd_returns_True_if_freebsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_freebsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_freebsd_returns_False_if_not_freebsd_host(host):
+    assert host.system_info.is_freebsd is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'openbsd',
+    ],
+)
+def test_systeminfo__is_openbsd_returns_True_if_openbsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_openbsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_openbsd_returns_False_if_not_openbsd_host(host):
+    assert host.system_info.is_openbsd is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'netbsd',
+    ],
+)
+def test_systeminfo__is_netbsd_returns_True_if_netbsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_netbsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_netbsd_returns_False_if_not_netbsd_host(host):
+    assert host.system_info.is_openbsd is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'freebsd',
+        'openbsd',
+        'netbsd',
+    ],
+)
+def test_systeminfo__is_bsd_returns_True_if_bsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_bsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_bsd_returns_False_if_not_bsd_host(host):
+    assert host.system_info.is_bsd is False
+
+
+@pytest.mark.testinfra_hosts('docker://centos_7')
+def test_systeminfo__has_systemd_returns_True(host):
+    assert host.system_info.has_systemd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_wheezy')
+def test_systeminfo__has_systemd_returns_False(host):
+    assert host.system_info.has_systemd is False
+
+
+@pytest.mark.testinfra_hosts('docker://debian_wheezy')
+def test_systeminfo__has_service_returns_True(host):
+    assert host.system_info.has_service
+
+
+@pytest.mark.testinfra_hosts('docker://centos_7')
+def test_systeminfo__has_service_returns_False(host):
+    assert host.system_info.has_service is False
+
+
+@pytest.mark.testinfra_hosts('docker://debian_wheezy')
+def test_systeminfo__has_initctl_returns_True(host):
+    assert host.system_info.has_initctl
+
+
+@pytest.mark.testinfra_hosts('docker://centos_7')
+def test_systeminfo__has_initctl_returns_False(host):
+    assert host.system_info.has_initctl is False
+
+
 @all_images
 def test_ssh_service(host, docker_image):
     if docker_image in ("centos_7", "fedora"):
