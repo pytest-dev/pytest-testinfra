@@ -365,20 +365,61 @@ class Test__DarwinSocket(object):
 
     @pytest.fixture
     def valid_sockets(self, simulate_darwin):
-        return (
-            'tcp4       0      0  127.0.0.1.51096     127.0.0.0.443      ESTABLISHED\n'  # noqa: E501
-            'tcp4       0      0  127.0.0.1.51097     127.0.0.0.443      CLOSE_WAIT\n'  # noqa: E501
-            'tcp4       0      0  *.1002                 *.*             LISTEN\n'  # noqa: E501
-            'tcp6       0      0  *.17500                *.*             LISTEN\n'  # noqa: E501
-            'tcp6       0      0  *.997                  *.*             LISTEN\n'  # noqa: E501
-            'tcp6       0      0  ::1.53                 *.*             LISTEN\n'  # noqa: E501
-            'tcp6       0      0  fe80::1%lo0.53         *.*             LISTEN\n'  # noqa: E501
-            'udp6       0      0  *.50935                *.*\n'
-            'udp6       0      0  fe80::544c:9902:.123   *.*\n'
-            'udp6       0      0  ::1.123                *.*\n'
-            'udp4       0      0  *.50935                *.*\n'
-            'udp4       0      0  127.0.0.1.123          *.*\n'
-        )
+        def on_call(return_tcp=True, return_udp=True, return_unix=False):
+            tcp = (
+                'tcp4       0      0  127.0.0.1.51096     127.0.0.0.443      ESTABLISHED\n'  # noqa: E501
+                'tcp4       0      0  127.0.0.1.51097     127.0.0.0.443      CLOSE_WAIT\n'  # noqa: E501
+                'tcp4       0      0  *.1002                 *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  *.17500                *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  *.997                  *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  ::1.53                 *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  fe80::1%lo0.53         *.*             LISTEN\n'  # noqa: E501
+            )
+
+            udp = (
+                'udp6       0      0  *.50935                *.*\n'
+                'udp6       0      0  fe80::544c:9902:.123   *.*\n'
+                'udp6       0      0  ::1.123                *.*\n'
+                'udp4       0      0  *.50935                *.*\n'
+                'udp4       0      0  127.0.0.1.123          *.*\n'
+            )
+
+            unix = (
+                'Active LOCAL (UNIX) domain sockets\n'
+                'Address          Type   Recv-Q Send-Q            Inode             Conn             Refs          Nextref Addr\n'  # noqa: E501
+                'eae3c6f3ba092ced stream      0      0                0 eae3c6f3ba092db5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+                'eae3c6f3ba092db5 stream      0      0                0 eae3c6f3ba092ced                0                0\n'  # noqa: E501
+                'eae3c6f3ba0937dd stream      0      0                0 eae3c6f3ba09332d                0                0\n'  # noqa: E501
+                'eae3c6f3bbb93a35 stream      0      0 eae3c6f3b5d9fc15                0                0                0 /tmp/.vbox-codylane-ipc/ipcd\n'  # noqa: E501
+                'eae3c6f3b1b89205 stream      0      0                0 eae3c6f3b1b867d5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+                'eae3c6f3ba092a95 dgram       0      0                0 eae3c6f3b1b87b5d                0 eae3c6f3ba092c25\n'  # noqa: E501
+                'eae3c6f3b1b87b5d dgram       0      0 eae3c6f3b1b762dd                0 eae3c6f3ba092a95                0 /private//var/run/syslog\n'  # noqa: E501
+            )
+
+            if return_tcp and return_udp and return_unix:
+                return tcp + udp + unix
+
+            if return_tcp and return_udp:
+                return tcp + udp
+
+            if return_tcp and return_unix:
+                return tcp + unix
+
+            if return_udp and return_unix:
+                return udp + unix
+
+            if return_tcp:
+                return tcp
+
+            if return_udp:
+                return udp
+
+            if return_unix:
+                return unix
+
+            raise NotImplementedError
+
+        return on_call
 
     def test__get_sockets__will_return_empty_list_when_dgram_entries_are_all_wildcards(self, invalid_dgram_entries):  # noqa: E501
         with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=invalid_dgram_entries) as mocked_method:  # noqa: E501
