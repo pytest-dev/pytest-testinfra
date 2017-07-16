@@ -428,11 +428,10 @@ class Test__DarwinSocket(object):
 
             assert isinstance(actual_sockets, list)
             assert len(actual_sockets) == 0
-
         mocked_method.assert_called_once_with(socket, 'netstat -n -a')
 
-    def test__get_sockets__will_return_non_empty_list_when_dgram_entries(self, valid_sockets):  # noqa: E501
-        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=valid_sockets) as mocked_method:  # noqa: E501
+    def test__get_sockets__will_return_non_empty_list_of_all_listening_sockets_for_protos_udp_tcp_and_unix(self, valid_sockets):  # noqa: E501
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=valid_sockets()) as mocked_method:  # noqa: E501
             socket = self.local.socket(None)
             actual_sockets = socket.get_sockets(True)
 
@@ -451,6 +450,138 @@ class Test__DarwinSocket(object):
 
             assert isinstance(actual_sockets, list)
             assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a')
+
+    def test__get_sockets__will_return_non_empty_list_of_all_NON_listening_sockets_for_protos_udp_tcp_and_unix(self, valid_sockets):  # noqa: E501
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=valid_sockets()) as mocked_method:  # noqa: E501
+            socket = self.local.socket(None)
+            actual_sockets = socket.get_sockets(False)
+
+            expected = [
+                ('tcp', '127.0.0.1', 51096, '127.0.0.0', 443),
+                ('tcp', '127.0.0.1', 51097, '127.0.0.0', 443),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n')
+
+    def test__get_sockets__will_return_tcp_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=True, return_udp=False,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('tcp://0.0.0.0:1002')
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('tcp', '0.0.0.0', 1002),
+                ('tcp', '::', 17500),
+                ('tcp', '::', 997),
+                ('tcp', '::1', 53),
+                ('tcp', 'fe80::1%lo0', 53)
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a -p tcp')
+
+    def test__get_sockets__will_return_NON_listening_tcp_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=True, return_udp=False,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('tcp://0.0.0.0:1002')
+            actual_sockets = socket.get_sockets(False)
+
+            'tcp4       0      0  127.0.0.1.51096     127.0.0.0.443      ESTABLISHED\n'  # noqa: E501
+            'tcp4       0      0  127.0.0.1.51097     127.0.0.0.443      CLOSE_WAIT\n'  # noqa: E501
+            expected = [
+                ('tcp', '127.0.0.1', 51096, '127.0.0.0', 443),
+                ('tcp', '127.0.0.1', 51097, '127.0.0.0', 443),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -p tcp')
+
+    def test__get_sockets__will_return_udp_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=True,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('udp://127.0.0.1:123')
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('udp', '::', 50935),
+                ('udp', 'fe80::544c:9902:', 123),
+                ('udp', '::1', 123),
+                ('udp', '0.0.0.0', 50935),
+                ('udp', '127.0.0.1', 123),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a -p udp')
+
+    def test__get_sockets__will_return_udp_NON_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=True,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('udp://127.0.0.1:123')
+            actual_sockets = socket.get_sockets(False)
+
+            expected = []
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -p udp')
+
+    def test__get_sockets__will_return_unix_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=False,
+                                       return_unix=True
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('unix:///private//var/run/syslog')
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('unix', '/tmp/.vbox-codylane-ipc/ipcd'),
+                ('unix', '/private//var/run/syslog'),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a -f unix')
+
+    def test__get_sockets__will_return_unix_NON_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=False,
+                                       return_unix=True
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('unix:///var/run/docker.sock')
+            actual_sockets = socket.get_sockets(False)
+
+            #    'Active LOCAL (UNIX) domain sockets\n'
+            #    'Address          Type   Recv-Q Send-Q            Inode             Conn             Refs          Nextref Addr\n'  # noqa: E501
+            #    'eae3c6f3ba092ced stream      0      0                0 eae3c6f3ba092db5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+            #    'eae3c6f3ba092db5 stream      0      0                0 eae3c6f3ba092ced                0                0\n'  # noqa: E501
+            #    'eae3c6f3ba0937dd stream      0      0                0 eae3c6f3ba09332d                0                0\n'  # noqa: E501
+            #    'eae3c6f3bbb93a35 stream      0      0 eae3c6f3b5d9fc15                0                0                0 /tmp/.vbox-codylane-ipc/ipcd\n'  # noqa: E501
+            #    'eae3c6f3b1b89205 stream      0      0                0 eae3c6f3b1b867d5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+            #    'eae3c6f3ba092a95 dgram       0      0                0 eae3c6f3b1b87b5d                0 eae3c6f3ba092c25\n'  # noqa: E501
+            #    'eae3c6f3b1b87b5d dgram       0      0 eae3c6f3b1b762dd                0 eae3c6f3ba092a95                0 /private//var/run/syslog\n'  # noqa: E501
+
+            expected = [
+                ('unix', '/var/run/mDNSResponder'),
+                ('unix', '/var/run/mDNSResponder'),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -f unix')
 
 
 @all_images

@@ -305,6 +305,8 @@ class DarwinSocket(Socket):
 
         if self.protocol == 'unix':
             cmd += ' -f unix'
+        elif self.protocol in ('tcp', 'udp'):
+            cmd += ' -p {}'.format(self.protocol)
 
         for line in self.check_output(cmd).splitlines():
             line = line.replace("\t", " ")
@@ -321,19 +323,21 @@ class DarwinSocket(Socket):
                 port = int(port)
 
                 if host == "*":
+                    host = "0.0.0.0"
                     if splitted[0] in ("udp6", "tcp6"):
                         host = "::"
-                    else:
-                        host = "0.0.0.0"
 
-                if splitted[0] in ("udp", "udp6", "udp4"):
-                    protocol = "udp"
-                elif splitted[0] in ("tcp", "tcp6", "tcp4"):
-                    protocol = "tcp"
+                protocol = splitted[0][0:3]
 
                 remote = splitted[4]
                 if remote == "*.*" and listening:
                     sockets.append((protocol, host, port))
+                elif not listening and remote != '*.*':
+                    remote_host, remote_port = remote.rsplit(".", 1)
+                    remote_port = int(remote_port)
+                    sockets.append(
+                        (protocol, host, port, remote_host, remote_port)
+                    )
             elif len(splitted) == 9 and splitted[1] in ("stream", "dgram"):
                 if (
                     (splitted[4] != "0" and listening)
