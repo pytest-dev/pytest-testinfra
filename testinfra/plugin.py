@@ -94,6 +94,12 @@ def pytest_addoption(parser):
         help="SSH config file",
     )
     group.addoption(
+        "--ssh-identity-file",
+        action="store",
+        dest="ssh_identity_file",
+        help="SSH identify file",
+    )
+    group.addoption(
         "--sudo",
         action="store_true",
         dest="sudo",
@@ -131,6 +137,7 @@ def pytest_generate_tests(metafunc):
             hosts,
             connection=metafunc.config.option.connection,
             ssh_config=metafunc.config.option.ssh_config,
+            ssh_identity_file=metafunc.config.option.ssh_identity_file,
             sudo=metafunc.config.option.sudo,
             sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
