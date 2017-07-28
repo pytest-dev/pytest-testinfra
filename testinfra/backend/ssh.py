@@ -22,9 +22,11 @@ class SshBackend(base.BaseBackend):
     """Run command through ssh command"""
     NAME = "ssh"
 
-    def __init__(self, hostspec, ssh_config=None, *args, **kwargs):
+    def __init__(self, hostspec, ssh_config=None, ssh_identity_file=None,
+                 *args, **kwargs):
         self.host, self.user, self.port = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
+        self.ssh_identity_file = ssh_identity_file
         super(SshBackend, self).__init__(self.host, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
@@ -42,6 +44,9 @@ class SshBackend(base.BaseBackend):
         if self.port:
             cmd.append("-o Port=%s")
             cmd_args.append(self.port)
+        if self.ssh_identity_file:
+            cmd.append("-i %s")
+            cmd_args.append(self.ssh_identity_file)
         cmd.append("%s %s")
         cmd_args.extend([self.host, command])
         out = self.run_local(
