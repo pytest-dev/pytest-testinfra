@@ -13,7 +13,41 @@
 
 from __future__ import unicode_literals
 
+import re
+
 from testinfra.modules.base import Module
+
+
+def linux_service_provider(host):
+    if host.system_info.is_linux:
+        if host.system_info.has_systemd:
+            return SystemdService
+
+        if host.system_info.is_redhat and host.system_info.has_service:
+            return SysvService
+
+        if host.system_info.has_initctl and host.exists('status'):
+            return UpstartService
+
+        return SysvService
+
+
+def bsd_service_provider(host):
+    if host.system_info.is_bsd:
+
+        if host.system_info.is_freebsd:
+            return FreeBSDService
+
+        if host.system_info.is_openbsd:
+            return OpenBSDService
+
+        if host.system_info.is_netbsd:
+            return NetBSDService
+
+
+def darwin_service_provider(host):
+    if host.system_info.is_darwin:
+        return LaunchdService
 
 
 class Service(Module):
@@ -46,21 +80,23 @@ class Service(Module):
 
     @classmethod
     def get_module_class(cls, host):
-        if host.system_info.type == "linux":
-            if (
-                host.exists("systemctl")
-                and "systemd" in host.file("/sbin/init").linked_to
-            ):
-                return SystemdService
-            elif host.exists("initctl"):
-                return UpstartService
-            return SysvService
-        elif host.system_info.type == "freebsd":
-            return FreeBSDService
-        elif host.system_info.type == "openbsd":
-            return OpenBSDService
-        elif host.system_info.type == "netbsd":
-            return NetBSDService
+
+        providerz = [
+            linux_service_provider,
+            bsd_service_provider,
+            darwin_service_provider,
+        ]
+
+        in_service_providers = [provider(host) for provider in providerz]
+
+        svc_provider = [
+            provider
+            for provider in in_service_providers
+            if provider is not None
+        ]
+        if svc_provider:
+            return svc_provider[0]
+
         raise NotImplementedError
 
     def __repr__(self):
@@ -187,6 +223,26 @@ class NetBSDService(Service):
     @property
     def is_running(self):
         return self.run_test("/etc/rc.d/%s onestatus", self.name).rc == 0
+
+    @property
+    def is_enabled(self):
+        raise NotImplementedError
+
+
+class LaunchdService(Service):
+
+    @property
+    def is_running(self):
+        cmd = self.run_test(
+            "sudo /bin/launchctl list | grep '%s' | grep '^[-0-9]'",
+            self.name
+        )
+
+        if cmd.rc == 0:
+            # (Pdb) cmd.stdout
+            # result will be [ [pid, status, label], [pid, status, label], ...]
+            return [re.split(r'[\t ]', line)
+                    for line in str(cmd.stdout).split('\n')]
 
     @property
     def is_enabled(self):

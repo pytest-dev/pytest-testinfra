@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+
+import sys
+import testinfra
+import IPython
+import os
+import re
+import logging
+
+from os import environ as ENV
+
+
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASEDIR)
+
+logging.basicConfig()
+logger = logging.getLogger('testinfra')
+logger.setLevel(logging.DEBUG)
+
+
+CI_BOXES = {
+    'ubuntu-trusty': 'ubuntu-trusty',
+    'macos-sierra': 'macos-sierra',
+    'centos-7': 'centos-7',
+}
+
+
+def is_ci_box_valid(box_name):
+    return box_name in CI_BOXES
+
+
+def has_create_master_image(bkend, mbox_name):
+    create_master = ENV.get('CREATE_MASTER_IMAGE')
+
+    if create_master:
+        create_master = create_master in ('True', 'true', 'Y', 'y')
+        ENV['CREATE_MASTER_IMAGE'] = str(create_master)
+    elif create_master == '':
+        create_master = False
+        ENV['CREATE_MASTER_IMAGE'] = str(create_master)
+
+    return (create_master is None and bkend.has_box(mbox_name) is False) or (create_master)
+
+
+def create_master_image(mbox_name, vagrant_env):
+    assert is_ci_box_valid(vagrant_env), "The box '{}' is not a valid CI Box name choose from '{}'".format(vagrant_env, CI_BOXES)
+    bkend = testinfra.get_host('vagrant@' + mbox_name, connection='vagrant', vagrantfile=CI_BOXES[vagrant_env]).backend
+
+    if has_create_master_image(bkend, vagrant_env):
+        bkend.run_vagrant('rm -f {}.box'.format(vagrant_env))
+        logger.debug('PRE-INIT packaging vagrant box {} as {}'.format(mbox_name, vagrant_env))
+        bkend.run_vagrant('vagrant package --output {}.box {}'.format(vagrant_env, mbox_name))
+        if bkend.has_box(vagrant_env):
+            logger.debug('PRE-INIT removing stale vagrant box {}'.format(vagrant_env))
+            bkend.run_vagrant('vagrant box remove --force {}'.format(vagrant_env))
+        logger.debug('PRE-INIT adding new vagrant box {}'.format(vagrant_env))
+        bkend.run_vagrant('vagrant box add --name {} {}.box'.format(vagrant_env, vagrant_env))
+        bkend.run_vagrant('rm -f {}.box'.format(vagrant_env))
+
+
+def create_snapshot(mbox_name, *args):
+    provisioned = {}
+    for box_name in args:
+        assert is_ci_box_valid(box_name), "The box '{}' is not a valid CI Box name choose from '{}'".format(box_name, CI_BOXES)
+        provisioned[mbox_name] = False
+
+        bkend = testinfra.get_host('vagrant@' + mbox_name, connection='vagrant', vagrantfile=CI_BOXES[box_name]).backend
+
+        if bkend.has_snapshot('base'):
+            continue
+
+        if bkend.status.is_not_running:
+            logger.debug('PRE-INIT Firing up the vagrant box {}'.format(bkend.box))
+            bkend.up
+        logger.debug('PRE-INIT provisiong vagrant box {}'.format(bkend.box))
+        bkend.provision
+
+        logger.debug('PRE-INIT saving snap shot of vagrant box'.format(mbox_name))
+        bkend.run_vagrant('vagrant snapshot save {} base'.format(mbox_name))
+        provisioned[mbox_name] = True
+    return provisioned
+
+
+def create_box_regex(vagrant_env, mbox_name):
+    return r'{}_{}'.format(vagrant_env, mbox_name)
+
+
+def main(args=sys.argv[1:]):
+    if not args:
+        args = ['vagrant://vagrant@default-master?vagrantfile=centos-7']
+
+    for arg in args:
+        vagrant = testinfra.get_host(arg)
+        bkend = vagrant.backend
+        vagrant_env = os.path.dirname(bkend.vagrantfile)
+
+        import ipdb; ipdb.set_trace()
+
+        create_snapshot('default-master', vagrant_env)
+
+        if has_create_master_image(bkend, vagrant_env):
+            create_master_image('default-master', vagrant_env)
+
+
+if __name__ == '__main__':
+    main()

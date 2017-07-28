@@ -65,14 +65,20 @@ class Package(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "freebsd":
             return FreeBSDPackage
-        elif host.system_info.type in ("openbsd", "netbsd"):
+
+        if host.system_info.type in ("openbsd", "netbsd"):
             return OpenBSDPackage
-        elif host.exists("dpkg-query"):
+
+        if host.exists("dpkg-query"):
             return DebianPackage
-        elif host.exists("rpm"):
+
+        if host.exists("rpm"):
             return RpmPackage
-        else:
-            raise NotImplementedError
+
+        if host.exists("brew") or host.system_info.type == 'darwin':
+            return HomebrewPackage
+
+        raise NotImplementedError
 
 
 class DebianPackage(Package):
@@ -146,3 +152,21 @@ class RpmPackage(Package):
     def release(self):
         return self.check_output('rpm -q --queryformat="%%{RELEASE}" %s',
                                  self.name)
+
+
+class HomebrewPackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test('brew list --versions %s', self.name).rc == 0
+
+    @property
+    def version(self):
+        version = self.check_output('brew list --versions %s',
+                                    self.name
+                                    ).split(' ')[1]
+        return version
+
+    @property
+    def release(self):
+        raise NotImplementedError
