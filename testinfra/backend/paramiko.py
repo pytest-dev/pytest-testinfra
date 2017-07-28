@@ -58,7 +58,7 @@ class ParamikoBackend(base.BaseBackend):
             }
             if self.ssh_config:
                 ssh_config = paramiko.SSHConfig()
-                with open(os.path.expanduser(self.ssh_config)) as f:
+                with open(self.ssh_config) as f:
                     ssh_config.parse(f)
 
                 for key, value in ssh_config.lookup(self.host).items():
