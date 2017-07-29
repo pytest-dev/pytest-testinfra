@@ -2,6 +2,14 @@
 Changelog
 =========
 
+1.6.5
+=====
+
+* Service: add is_enabled() support for OpenBSD
+* Add ssh identity file option for paramiko and ssh backends
+* Expand tilde (~) to user home directory for ssh-config, ssh-identity-file and
+  ansible-inventory options
+
 1.6.4
 =====
 
