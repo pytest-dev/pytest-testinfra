@@ -163,13 +163,19 @@ class DarwinMountPoint(MountPoint):
     def _iter_mountpoints(cls):
         check_output = cls(None).check_output
         for line in check_output("mount").splitlines():
-            splitted = line.split()
-
-            options = splitted[-1].replace('(', '').replace(')', '').split(',')
+            device, splitted = line.split(' on ')
+            splitted = splitted.replace(',', '').replace(')', '')
+            path, splitted = splitted.split(' (')
+            splitted = splitted.split(' mounted by ')
+            if len(splitted) > 1:
+                splitted = splitted[0:1]
+            splitted = ''.join(splitted).split(' ')
+            filesystem = splitted.pop(0)
+            options = splitted
 
             yield {
-                "path": splitted[2],
-                "device": splitted[0],
-                "filesystem": splitted[4],
+                "device": device,
+                "path": path,
+                "filesystem": filesystem,
                 "options": options,
             }

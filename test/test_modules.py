@@ -813,6 +813,73 @@ def test_mountpoint(host):
     assert len([m for m in mountpoints if m.path == "/"]) == 1
 
 
+class Test_DarwinMountPoint(object):
+
+    @pytest.fixture
+    def simulate_darwin(self):
+        self.local = testinfra.get_host('local://').backend
+        self.local.system_info.sysinfo["type"] = 'darwin'
+
+    @pytest.fixture
+    def mocked_mount(self, simulate_darwin):
+        return (
+            '/dev/disk1 on / (hfs, local, journaled)\n'
+            'devfs on /dev (devfs, local, nobrowse)\n'
+            'map -hosts on /net (autofs, nosuid, automounted, nobrowse)\n'
+            'map auto_home on /home (autofs, automounted, nobrowse)\n'
+            '/dev/disk2s1 on /Volumes/Sublime Text (hfs, local, nodev, nosuid, read-only, noowners, quarantine, mounted by foouser)\n'  # noqa: E501
+            '192.168.1.10:/exports/nfs on /mnt/nfs (nfs, noatime)\n'
+        )
+
+    @pytest.mark.parametrize(
+        'mt_path, expected',
+        [
+            ('/', dict(device='/dev/disk1', path='/', filesystem='hfs',
+                       options=['local', 'journaled']
+                       )
+             ),
+            ('/dev', dict(device='devfs', path='/dev', filesystem='devfs',
+                          options=['local', 'nobrowse']
+                          )
+             ),
+            ('/net', dict(device='map -hosts', path='/net',
+                          filesystem='autofs',
+                          options=['nosuid', 'automounted', 'nobrowse']
+                          )
+             ),
+            ('/home', dict(device='map auto_home', path='/home',
+                           filesystem='autofs',
+                           options=['automounted', 'nobrowse']
+                           )
+             ),
+            ('/Volumes/Sublime Text', dict(device='/dev/disk2s1',
+                                           path='/Volumes/Sublime Text',
+                                           filesystem='hfs',
+                                           options=['local', 'nodev', 'nosuid',
+                                                    'read-only', 'noowners',
+                                                    'quarantine'
+                                                    ]
+                                           )
+             ),
+            ('/mnt/nfs', dict(device='192.168.1.10:/exports/nfs',
+                              path='/mnt/nfs',
+                              filesystem='nfs', options=['noatime']
+                              )
+             )
+        ],
+    )
+    def test__iter_mountpoints__will_return_mounted_filesystems(self, mt_path, expected, mocked_mount):  # noqa: E501
+        with mock.patch.object(self.local.mount_point, 'check_output',
+                               autospec=True, return_value=mocked_mount
+                               ):
+            actual = self.local.mount_point(mt_path)
+
+            assert actual.device == expected['device']
+            assert actual.path == expected['path']
+            assert actual.filesystem == expected['filesystem']
+            assert actual.options == expected['options']
+
+
 def test_sudo_from_root(host):
     assert host.user().name == "root"
     with host.sudo("user"):
