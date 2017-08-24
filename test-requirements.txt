@@ -3,3 +3,4 @@ pytest-cov
 pytest-xdist
 paramiko
 salt
+pywinrm
