@@ -12,12 +12,21 @@
 # limitations under the License.
 from __future__ import unicode_literals
 
+
+try:
+    import passlib.hash
+    HAS_PASSLIB = True
+except ImportError:
+    HAS_PASSLIB = False
+
 import crypt
 import datetime
+import mock
+import pytest
 import re
+import testinfra
 import time
 
-import pytest
 from testinfra.modules.socket import parse_socketspec
 
 all_images = pytest.mark.testinfra_hosts(*[
@@ -79,6 +88,175 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.distribution == distribution
     assert host.system_info.codename == codename
     assert re.match(release, host.system_info.release)
+
+
+@pytest.mark.testinfra_hosts("docker://debian_jessie")
+def test_systeminfo__is_debian_returns_True_if_debian_based_host(host):
+    assert host.system_info.is_debian
+
+
+@pytest.mark.testinfra_hosts("docker://centos_7")
+def test_systeminfo__is_debian_returns_False_if_not_debian_based_host(host):
+    assert host.system_info.is_debian is False
+
+
+@pytest.mark.testinfra_hosts("docker://debian_jessie")
+def test_systeminfo__is_linux_returns_True_if_linux_host(host):
+    assert host.system_info.is_linux
+
+
+def test_systeminfo__is_darwin_returns_True_if_darwin_host():
+    local = testinfra.get_host('local://').backend
+    is_darwin = local.exists('sw_vers')
+    if not is_darwin:
+        pytest.skip('Skipping test because host is not Darwin')
+
+    assert local.system_info.is_darwin
+
+
+@pytest.mark.testinfra_hosts("docker://debian_jessie")
+def test_systeminfo__is_darwin_returns_False_if_darwin_host(host):
+    assert host.system_info.is_darwin is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'CentOS',
+        'Scientific Linux CERN',
+        'Scientific Linux release',
+        'CloudLinux',
+        'Ascendos',
+        'XenServer',
+        'XCP',
+        'Parallels Server Bare Metal',
+        'Fedora release',
+    ]
+)
+def test_systeminfo__is_redhat_returns_True_if_redhat_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['distribution'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['distribution'] = os_rel
+
+    assert local.system_info.is_redhat
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_redhat_returns_False_if_not_redhat_host(host):
+    assert host.system_info.is_redhat is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'freebsd',
+    ],
+)
+def test_systeminfo__is_freebsd_returns_True_if_freebsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_freebsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_freebsd_returns_False_if_not_freebsd_host(host):
+    assert host.system_info.is_freebsd is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'openbsd',
+    ],
+)
+def test_systeminfo__is_openbsd_returns_True_if_openbsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_openbsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_openbsd_returns_False_if_not_openbsd_host(host):
+    assert host.system_info.is_openbsd is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'netbsd',
+    ],
+)
+def test_systeminfo__is_netbsd_returns_True_if_netbsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_netbsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_netbsd_returns_False_if_not_netbsd_host(host):
+    assert host.system_info.is_openbsd is False
+
+
+@pytest.mark.parametrize(
+    'os_rel',
+    [
+        'freebsd',
+        'openbsd',
+        'netbsd',
+    ],
+)
+def test_systeminfo__is_bsd_returns_True_if_bsd_host(os_rel):
+    # we use the local backend because we just need a backend and
+    # we are going to mock the backend.sysinfo['type'] property.
+    local = testinfra.get_host('local://').backend
+    local.system_info.sysinfo['type'] = os_rel
+
+    assert local.system_info.is_bsd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_jessie')
+def test_systeminfo__is_bsd_returns_False_if_not_bsd_host(host):
+    assert host.system_info.is_bsd is False
+
+
+@pytest.mark.testinfra_hosts('docker://centos_7')
+def test_systeminfo__has_systemd_returns_True(host):
+    assert host.system_info.has_systemd
+
+
+@pytest.mark.testinfra_hosts('docker://debian_wheezy')
+def test_systeminfo__has_systemd_returns_False(host):
+    assert host.system_info.has_systemd is False
+
+
+@pytest.mark.testinfra_hosts('docker://debian_wheezy')
+def test_systeminfo__has_service_returns_True(host):
+    assert host.system_info.has_service
+
+
+@pytest.mark.testinfra_hosts('docker://centos_7')
+def test_systeminfo__has_service_returns_False(host):
+    assert host.system_info.has_service is False
+
+
+@pytest.mark.testinfra_hosts('docker://debian_wheezy')
+def test_systeminfo__has_initctl_returns_True(host):
+    assert host.system_info.has_initctl
+
+
+@pytest.mark.testinfra_hosts('docker://centos_7')
+def test_systeminfo__has_initctl_returns_False(host):
+    assert host.system_info.has_initctl is False
 
 
 @all_images
@@ -169,6 +347,243 @@ def test_socket(host):
             assert len(host.socket(spec).clients) >= 1
 
 
+class Test__DarwinSocket(object):
+
+    @pytest.fixture
+    def simulate_darwin(self):
+        self.local = testinfra.get_host('local://').backend
+        self.local.system_info.sysinfo["type"] = 'darwin'
+
+    @pytest.fixture
+    def invalid_dgram_entries(self, simulate_darwin):
+        return (
+            'udp4       0      0  *.*                    *.*\n'
+            'udp4       0      0  *.*                    *.*\n'
+            'udp4       0      0  *.*                    *.*\n'
+            'udp4       0      0  *.*                    *.*\n'
+        )
+
+    @pytest.fixture
+    def valid_sockets(self, simulate_darwin):
+        def on_call(return_tcp=True, return_udp=True, return_unix=False):
+            tcp = (
+                'tcp4       0      0  127.0.0.1.51096     127.0.0.0.443      ESTABLISHED\n'  # noqa: E501
+                'tcp4       0      0  127.0.0.1.51097     127.0.0.0.443      CLOSE_WAIT\n'  # noqa: E501
+                'tcp4       0      0  *.1002                 *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  *.17500                *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  *.997                  *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  ::1.53                 *.*             LISTEN\n'  # noqa: E501
+                'tcp6       0      0  fe80::1%lo0.53         *.*             LISTEN\n'  # noqa: E501
+            )
+
+            udp = (
+                'udp6       0      0  *.50935                *.*\n'
+                'udp6       0      0  fe80::544c:9902:.123   *.*\n'
+                'udp6       0      0  ::1.123                *.*\n'
+                'udp4       0      0  *.50935                *.*\n'
+                'udp4       0      0  127.0.0.1.123          *.*\n'
+            )
+
+            unix = (
+                'Active LOCAL (UNIX) domain sockets\n'
+                'Address          Type   Recv-Q Send-Q            Inode             Conn             Refs          Nextref Addr\n'  # noqa: E501
+                'eae3c6f3ba092ced stream      0      0                0 eae3c6f3ba092db5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+                'eae3c6f3ba092db5 stream      0      0                0 eae3c6f3ba092ced                0                0\n'  # noqa: E501
+                'eae3c6f3ba0937dd stream      0      0                0 eae3c6f3ba09332d                0                0\n'  # noqa: E501
+                'eae3c6f3bbb93a35 stream      0      0 eae3c6f3b5d9fc15                0                0                0 /tmp/.vbox-codylane-ipc/ipcd\n'  # noqa: E501
+                'eae3c6f3b1b89205 stream      0      0                0 eae3c6f3b1b867d5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+                'eae3c6f3ba092a95 dgram       0      0                0 eae3c6f3b1b87b5d                0 eae3c6f3ba092c25\n'  # noqa: E501
+                'eae3c6f3b1b87b5d dgram       0      0 eae3c6f3b1b762dd                0 eae3c6f3ba092a95                0 /private//var/run/syslog\n'  # noqa: E501
+            )
+
+            if return_tcp and return_udp and return_unix:
+                return tcp + udp + unix
+
+            if return_tcp and return_udp:
+                return tcp + udp
+
+            if return_tcp and return_unix:
+                return tcp + unix
+
+            if return_udp and return_unix:
+                return udp + unix
+
+            if return_tcp:
+                return tcp
+
+            if return_udp:
+                return udp
+
+            if return_unix:
+                return unix
+
+            raise NotImplementedError
+
+        return on_call
+
+    def test__get_sockets__will_return_empty_list_when_dgram_entries_are_all_wildcards(self, invalid_dgram_entries):  # noqa: E501
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=invalid_dgram_entries) as mocked_method:  # noqa: E501
+            socket = self.local.socket(None)
+            actual_sockets = socket.get_sockets(True)
+
+            assert isinstance(actual_sockets, list)
+            assert len(actual_sockets) == 0
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a')
+
+    def test__get_sockets__will_return_non_empty_list_of_all_listening_sockets_for_protos_udp_tcp_and_unix(self, valid_sockets):  # noqa: E501
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=valid_sockets()) as mocked_method:  # noqa: E501
+            socket = self.local.socket(None)
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('tcp', '0.0.0.0', 1002),
+                ('tcp', '::', 17500),
+                ('tcp', '::', 997),
+                ('tcp', '::1', 53),
+                ('tcp', 'fe80::1%lo0', 53),
+                ('udp', '::', 50935),
+                ('udp', 'fe80::544c:9902:', 123),
+                ('udp', '::1', 123),
+                ('udp', '0.0.0.0', 50935),
+                ('udp', '127.0.0.1', 123),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a')
+
+    def test__get_sockets__will_return_non_empty_list_of_all_NON_listening_sockets_for_protos_udp_tcp_and_unix(self, valid_sockets):  # noqa: E501
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=valid_sockets()) as mocked_method:  # noqa: E501
+            socket = self.local.socket(None)
+            actual_sockets = socket.get_sockets(False)
+
+            expected = [
+                ('tcp', '127.0.0.1', 51096, '127.0.0.0', 443),
+                ('tcp', '127.0.0.1', 51097, '127.0.0.0', 443),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n')
+
+    def test__get_sockets__will_return_tcp_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=True, return_udp=False,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('tcp://0.0.0.0:1002')
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('tcp', '0.0.0.0', 1002),
+                ('tcp', '::', 17500),
+                ('tcp', '::', 997),
+                ('tcp', '::1', 53),
+                ('tcp', 'fe80::1%lo0', 53)
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a -p tcp')
+
+    def test__get_sockets__will_return_NON_listening_tcp_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=True, return_udp=False,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('tcp://0.0.0.0:1002')
+            actual_sockets = socket.get_sockets(False)
+
+            'tcp4       0      0  127.0.0.1.51096     127.0.0.0.443      ESTABLISHED\n'  # noqa: E501
+            'tcp4       0      0  127.0.0.1.51097     127.0.0.0.443      CLOSE_WAIT\n'  # noqa: E501
+            expected = [
+                ('tcp', '127.0.0.1', 51096, '127.0.0.0', 443),
+                ('tcp', '127.0.0.1', 51097, '127.0.0.0', 443),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -p tcp')
+
+    def test__get_sockets__will_return_udp_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=True,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('udp://127.0.0.1:123')
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('udp', '::', 50935),
+                ('udp', 'fe80::544c:9902:', 123),
+                ('udp', '::1', 123),
+                ('udp', '0.0.0.0', 50935),
+                ('udp', '127.0.0.1', 123),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a -p udp')
+
+    def test__get_sockets__will_return_udp_NON_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=True,
+                                       return_unix=False
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('udp://127.0.0.1:123')
+            actual_sockets = socket.get_sockets(False)
+
+            expected = []
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -p udp')
+
+    def test__get_sockets__will_return_unix_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=False,
+                                       return_unix=True
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('unix:///private//var/run/syslog')
+            actual_sockets = socket.get_sockets(True)
+
+            expected = [
+                ('unix', '/tmp/.vbox-codylane-ipc/ipcd'),
+                ('unix', '/private//var/run/syslog'),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -a -f unix')
+
+    def test__get_sockets__will_return_unix_NON_listening_sockets(self, valid_sockets):  # noqa: E501
+        mocked_sockets = valid_sockets(return_tcp=False, return_udp=False,
+                                       return_unix=True
+                                       )
+        with mock.patch.object(self.local.socket, 'check_output', autospec=True, return_value=mocked_sockets) as mocked_method:  # noqa: E501
+            socket = self.local.socket('unix:///var/run/docker.sock')
+            actual_sockets = socket.get_sockets(False)
+
+            #    'Active LOCAL (UNIX) domain sockets\n'
+            #    'Address          Type   Recv-Q Send-Q            Inode             Conn             Refs          Nextref Addr\n'  # noqa: E501
+            #    'eae3c6f3ba092ced stream      0      0                0 eae3c6f3ba092db5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+            #    'eae3c6f3ba092db5 stream      0      0                0 eae3c6f3ba092ced                0                0\n'  # noqa: E501
+            #    'eae3c6f3ba0937dd stream      0      0                0 eae3c6f3ba09332d                0                0\n'  # noqa: E501
+            #    'eae3c6f3bbb93a35 stream      0      0 eae3c6f3b5d9fc15                0                0                0 /tmp/.vbox-codylane-ipc/ipcd\n'  # noqa: E501
+            #    'eae3c6f3b1b89205 stream      0      0                0 eae3c6f3b1b867d5                0                0 /var/run/mDNSResponder\n'  # noqa: E501
+            #    'eae3c6f3ba092a95 dgram       0      0                0 eae3c6f3b1b87b5d                0 eae3c6f3ba092c25\n'  # noqa: E501
+            #    'eae3c6f3b1b87b5d dgram       0      0 eae3c6f3b1b762dd                0 eae3c6f3ba092a95                0 /private//var/run/syslog\n'  # noqa: E501
+
+            expected = [
+                ('unix', '/var/run/mDNSResponder'),
+                ('unix', '/var/run/mDNSResponder'),
+            ]
+
+            assert isinstance(actual_sockets, list)
+            assert actual_sockets == expected
+        mocked_method.assert_called_once_with(socket, 'netstat -n -f unix')
+
+
 @all_images
 def test_process(host, docker_image):
     init = host.process.get(pid=1)
@@ -220,7 +635,14 @@ def test_nonexistent_user(host):
 def test_current_user(host):
     assert host.user().name == "root"
     pw = host.user().password
-    assert crypt.crypt("foo", pw) == pw
+
+    # when HAS_PASSLIB = True, it's probably because the host OS is OSX.
+    # OSX requires the use of passlib over crypt becuase OSX ships a very old
+    # version of crypt and it doesn't support the proper hash length for sha512
+    if HAS_PASSLIB:
+        assert passlib.hash.sha512_crypt.verify('foo', pw)
+    else:
+        assert crypt.crypt("foo", pw) == pw
 
 
 def test_group(host):
@@ -389,6 +811,73 @@ def test_mountpoint(host):
     assert mountpoints
     assert all(isinstance(m, host.mount_point) for m in mountpoints)
     assert len([m for m in mountpoints if m.path == "/"]) == 1
+
+
+class Test_DarwinMountPoint(object):
+
+    @pytest.fixture
+    def simulate_darwin(self):
+        self.local = testinfra.get_host('local://').backend
+        self.local.system_info.sysinfo["type"] = 'darwin'
+
+    @pytest.fixture
+    def mocked_mount(self, simulate_darwin):
+        return (
+            '/dev/disk1 on / (hfs, local, journaled)\n'
+            'devfs on /dev (devfs, local, nobrowse)\n'
+            'map -hosts on /net (autofs, nosuid, automounted, nobrowse)\n'
+            'map auto_home on /home (autofs, automounted, nobrowse)\n'
+            '/dev/disk2s1 on /Volumes/Sublime Text (hfs, local, nodev, nosuid, read-only, noowners, quarantine, mounted by foouser)\n'  # noqa: E501
+            '192.168.1.10:/exports/nfs on /mnt/nfs (nfs, noatime)\n'
+        )
+
+    @pytest.mark.parametrize(
+        'mt_path, expected',
+        [
+            ('/', dict(device='/dev/disk1', path='/', filesystem='hfs',
+                       options=['local', 'journaled']
+                       )
+             ),
+            ('/dev', dict(device='devfs', path='/dev', filesystem='devfs',
+                          options=['local', 'nobrowse']
+                          )
+             ),
+            ('/net', dict(device='map -hosts', path='/net',
+                          filesystem='autofs',
+                          options=['nosuid', 'automounted', 'nobrowse']
+                          )
+             ),
+            ('/home', dict(device='map auto_home', path='/home',
+                           filesystem='autofs',
+                           options=['automounted', 'nobrowse']
+                           )
+             ),
+            ('/Volumes/Sublime Text', dict(device='/dev/disk2s1',
+                                           path='/Volumes/Sublime Text',
+                                           filesystem='hfs',
+                                           options=['local', 'nodev', 'nosuid',
+                                                    'read-only', 'noowners',
+                                                    'quarantine'
+                                                    ]
+                                           )
+             ),
+            ('/mnt/nfs', dict(device='192.168.1.10:/exports/nfs',
+                              path='/mnt/nfs',
+                              filesystem='nfs', options=['noatime']
+                              )
+             )
+        ],
+    )
+    def test__iter_mountpoints__will_return_mounted_filesystems(self, mt_path, expected, mocked_mount):  # noqa: E501
+        with mock.patch.object(self.local.mount_point, 'check_output',
+                               autospec=True, return_value=mocked_mount
+                               ):
+            actual = self.local.mount_point(mt_path)
+
+            assert actual.device == expected['device']
+            assert actual.path == expected['path']
+            assert actual.filesystem == expected['filesystem']
+            assert actual.options == expected['options']
 
 
 def test_sudo_from_root(host):

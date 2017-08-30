@@ -18,7 +18,7 @@ import re
 from testinfra.modules.base import InstanceModule
 
 
-class SystemInfo(InstanceModule):
+class SystemInfo(InstanceModule):  # pylint: disable-msg=R0904
     """Return system informations"""
 
     def __init__(self):
@@ -167,3 +167,70 @@ class SystemInfo(InstanceModule):
     @property
     def hostname(self):
         return self.check_output("hostname -s")
+
+    @property
+    def is_debian(self):
+        return 'debian' in self.distribution
+
+    @property
+    def is_linux(self):
+        return self.type == "linux"
+
+    @property
+    def is_darwin(self):
+        return self.type == "darwin"
+
+    @property
+    def is_redhat(self):
+        regexes = [
+            r'(?i)centos',
+            r'(?i)scientific linux CERN',
+            r'(?i)scientific linux release',
+            r'(?im)^cloudlinux',
+            r'(?i)Ascendos',
+            r'(?im)^XenServer',
+            r'XCP',
+            r'(?im)^Parallels Server Bare Metal',
+            r'(?im)^Fedora release'
+        ]
+        for regex in regexes:
+            if re.search(regex, self.distribution):
+                return True
+        return False
+
+    @property
+    def is_freebsd(self):
+        return self.type == 'freebsd'
+
+    @property
+    def is_openbsd(self):
+        return self.type == 'openbsd'
+
+    @property
+    def is_netbsd(self):
+        return self.type == 'netbsd'
+
+    @property
+    def is_bsd(self):
+
+        bsds = [
+            'freebsd',
+            'openbsd',
+            'netbsd',
+        ]
+
+        return self.type in bsds
+
+    @property
+    def has_systemd(self):
+        has_systemd = self.run("type systemctl").rc == 0
+        has_systemd_link = "systemd" in self._host.file("/sbin/init").linked_to
+        return has_systemd and has_systemd_link
+
+    @property
+    def has_service(self):
+        return self.run("type service").rc == 0
+
+    @property
+    def has_initctl(self):
+        return self.run("type initctl").rc == 0

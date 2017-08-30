@@ -190,10 +190,14 @@ class Socket(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             return LinuxSocket
-        elif host.system_info.type.endswith("bsd"):
+
+        if host.system_info.type.endswith("bsd"):
             return BSDSocket
-        else:
-            raise NotImplementedError
+
+        if host.system_info.is_darwin:
+            return DarwinSocket
+
+        raise NotImplementedError
 
 
 class LinuxSocket(Socket):
@@ -276,6 +280,59 @@ class BSDSocket(Socket):
                 if remote == "*.*" and listening:
                     sockets.append((protocol, host, port))
                 elif not listening:
+                    remote_host, remote_port = remote.rsplit(".", 1)
+                    remote_port = int(remote_port)
+                    sockets.append(
+                        (protocol, host, port, remote_host, remote_port)
+                    )
+            elif len(splitted) == 9 and splitted[1] in ("stream", "dgram"):
+                if (
+                    (splitted[4] != "0" and listening)
+                    or (splitted[4] == "0" and not listening)
+                ):
+                    sockets.append(("unix", splitted[-1]))
+        return sockets
+
+
+class DarwinSocket(Socket):
+
+    def get_sockets(self, listening):
+        sockets = []
+        cmd = "netstat -n"
+
+        if listening:
+            cmd += " -a"
+
+        if self.protocol == 'unix':
+            cmd += ' -f unix'
+        elif self.protocol in ('tcp', 'udp'):
+            cmd += ' -p {}'.format(self.protocol)
+
+        for line in self.check_output(cmd).splitlines():
+            line = line.replace("\t", " ")
+            splitted = line.split()
+
+            if splitted[0] in ("tcp", "udp", "udp4", "tcp4", "tcp6", "udp6"):
+                # udp4       0      0  *.*                    *.*
+                # skip this entry if we encounter it
+                if splitted[3] == '*.*':
+                    continue
+
+                address = splitted[3]
+                host, port = address.rsplit(".", 1)
+                port = int(port)
+
+                if host == "*":
+                    host = "0.0.0.0"
+                    if splitted[0] in ("udp6", "tcp6"):
+                        host = "::"
+
+                protocol = splitted[0][0:3]
+
+                remote = splitted[4]
+                if remote == "*.*" and listening:
+                    sockets.append((protocol, host, port))
+                elif not listening and remote != '*.*':
                     remote_host, remote_port = remote.rsplit(".", 1)
                     remote_port = int(remote_port)
                     sockets.append(
