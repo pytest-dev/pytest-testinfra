@@ -113,7 +113,7 @@ class Socket(Module):
         allipv4 = (self.protocol, "0.0.0.0", self.port) in sockets
         allipv6 = (self.protocol, "::", self.port) in sockets
         return (
-            all([allipv4, allipv6])
+            any([allipv6, all([allipv4, allipv6])])
             or (
                 self.host is not None
                 and (
