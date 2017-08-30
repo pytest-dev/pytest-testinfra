@@ -42,13 +42,15 @@ class Salt(InstanceModule):
         if self._host.backend.HAS_RUN_SALT:
             return self._host.backend.run_salt(function, args)
         else:
+            cmd_args = []
             cmd = "salt-call --out=json"
             if local:
                 cmd += " --local"
             if config is not None:
-                cmd += " -c {0}".format(config)
+                cmd += " -c %s"
+                cmd_args.append(config)
             cmd += " %s" + len(args) * " %s"
-            cmd_args = [function] + args
+            cmd_args += [function] + args
             return json.loads(self.check_output(cmd, *cmd_args))["local"]
 
     def __repr__(self):
