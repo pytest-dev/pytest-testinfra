@@ -30,33 +30,27 @@ class WinRMBackend(base.BaseBackend):
     """Run command through winrm command"""
     NAME = "winrm"
 
-    def __init__(self, hostspec, ssl=True, verify_ssl=True,
-                 transport='ntlm', *args, **kwargs):
+    def __init__(self, hostspec, no_ssl=False, no_verify_ssl=False,
+                 *args, **kwargs):
         self.host = self.parse_hostspec(hostspec)
-        self.ssl = ssl
-        self.verify_ssl = verify_ssl
-        self.transport = transport
+        self.conn_args = {
+            'endpoint': '{}://{}{}/wsman'.format(
+                'http' if no_ssl else 'http',
+                self.host.name,
+                ':{}'.format(self.host.port) if self.host.port else ''),
+            'transport': 'ntlm',
+            'username': self.host.user,
+            'password': self.host.password,
+        }
+        if no_verify_ssl:
+            self.conn_args['server_cert_validation'] = 'ignore'
         super(WinRMBackend, self).__init__(self.host.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         return self.run_winrm(self.get_command(command, *args))
 
     def run_winrm(self, command, *args):
-        conn_args = {
-            'endpoint': '{proto}://{host}{port}/wsman'.format(
-                proto='https' if self.ssl else 'http',
-                host=self.host.name,
-                port=':{}'.format(self.host.port) if self.host.port else ''
-            ),
-            'transport': self.transport,
-            'username': self.host.user,
-            'password': self.host.password,
-        }
-
-        if self.verify_ssl is False:
-            conn_args['server_cert_validation'] = 'ignore'
-
-        p = winrm.protocol.Protocol(**conn_args)
+        p = winrm.protocol.Protocol(**self.conn_args)
         shell_id = p.open_shell()
         command_id = p.run_command(shell_id, command, *args)
         stdout, stderr, rc = p.get_command_output(shell_id, command_id)

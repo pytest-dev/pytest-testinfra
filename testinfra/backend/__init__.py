@@ -47,8 +47,9 @@ def parse_hostspec(hostspec):
         kw["connection"] = url.scheme
         host = url.netloc
         query = urllib.parse.parse_qs(url.query)
-        if query.get("sudo", ["false"])[0].lower() == "true":
-            kw["sudo"] = True
+        for key in ('sudo', 'ssl', 'verify_ssl'):
+            if query.get(key, ['false'])[0].lower() == 'true':
+                kw[key] = True
         for key in ("sudo_user",):
             if key in query:
                 kw[key] = query.get(key)[0]
