@@ -24,10 +24,10 @@ class SshBackend(base.BaseBackend):
 
     def __init__(self, hostspec, ssh_config=None, ssh_identity_file=None,
                  *args, **kwargs):
-        self.host, self.user, self.port = self.parse_hostspec(hostspec)
+        self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
-        super(SshBackend, self).__init__(self.host, *args, **kwargs)
+        super(SshBackend, self).__init__(self.host.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         return self.run_ssh(self.get_command(command, *args))
@@ -38,17 +38,17 @@ class SshBackend(base.BaseBackend):
         if self.ssh_config:
             cmd.append("-F %s")
             cmd_args.append(self.ssh_config)
-        if self.user:
+        if self.host.user:
             cmd.append("-o User=%s")
-            cmd_args.append(self.user)
-        if self.port:
+            cmd_args.append(self.host.user)
+        if self.host.port:
             cmd.append("-o Port=%s")
-            cmd_args.append(self.port)
+            cmd_args.append(self.host.port)
         if self.ssh_identity_file:
             cmd.append("-i %s")
             cmd_args.append(self.ssh_identity_file)
         cmd.append("%s %s")
-        cmd_args.extend([self.host, command])
+        cmd_args.extend([self.host.name, command])
         out = self.run_local(
             " ".join(cmd), *cmd_args)
         out.command = self.encode(command)

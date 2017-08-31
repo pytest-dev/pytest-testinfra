@@ -14,6 +14,8 @@ from __future__ import unicode_literals
 import pytest
 
 import testinfra.backend
+from testinfra.backend.base import BaseBackend
+from testinfra.backend.base import HostSpec
 BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
 HOSTS = [backend + "://debian_jessie" for backend in BACKENDS]
 USER_HOSTS = [backend + "://user@debian_jessie" for backend in BACKENDS]
@@ -97,3 +99,12 @@ def test_docker_encoding(host):
     string = "ťēꞩƫìṇḟřặ ṧꝕèȃǩ ửƫᵮ8"
     assert host.check_output("echo %s | tee /tmp/s.txt", string) == string
     assert host.file("/tmp/s.txt").content_string.strip() == string
+
+
+@pytest.mark.parametrize('hostspec,expected', [
+    ('u@h:p', HostSpec('h', 'p', 'u')),
+    ('u@h', HostSpec('h', None, 'u')),
+    ('h', HostSpec('h', None, None)),
+])
+def test_parse_hostspec(hostspec, expected):
+    assert BaseBackend.parse_hostspec(hostspec) == expected
