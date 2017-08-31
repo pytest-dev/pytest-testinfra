@@ -30,10 +30,9 @@ class WinRMBackend(base.BaseBackend):
     """Run command through winrm command"""
     NAME = "winrm"
 
-    def __init__(self, hostspec, password=None, ssl=True, verify_ssl=True,
+    def __init__(self, hostspec, ssl=True, verify_ssl=True,
                  transport='ntlm', *args, **kwargs):
         self.host = self.parse_hostspec(hostspec)
-        self.password = password
         self.ssl = ssl
         self.verify_ssl = verify_ssl
         self.transport = transport
@@ -51,7 +50,7 @@ class WinRMBackend(base.BaseBackend):
             ),
             'transport': self.transport,
             'username': self.host.user,
-            'password': self.password,
+            'password': self.host.password,
         }
 
         if self.verify_ssl is False:
