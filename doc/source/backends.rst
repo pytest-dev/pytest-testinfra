@@ -95,3 +95,12 @@ The kubectl backend can be used to test containers running in Kubernetes.
 It use the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command::
 
     $ testinfra --connection=kubectl --hosts=pod_id-123456789-9fng/container_name
+
+
+winrm
+~~~~~
+
+The winrm backend uses `pywinrm <https://pypi.python.org/pypi/pywinrm>`_::
+
+    $ testinfra --hosts='winrm://Administrator:Password@127.0.0.1'
+    $ testinfra --connection=winrm --hosts='vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
