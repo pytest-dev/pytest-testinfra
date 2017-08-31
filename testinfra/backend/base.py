@@ -26,7 +26,7 @@ import testinfra.utils
 logger = logging.getLogger("testinfra")
 
 HostSpec = collections.namedtuple(
-    'HostSpec', ['name', 'port', 'user'])
+    'HostSpec', ['name', 'port', 'user', 'password'])
 
 
 class CommandResult(object):
@@ -185,13 +185,16 @@ class BaseBackend(object):
     @staticmethod
     def parse_hostspec(hostspec):
         name = hostspec
-        user = None
         port = None
+        user = None
+        password = None
         if '@' in name:
             user, name = name.split('@', 1)
+            if ':' in user:
+                user, password = user.split(':', 1)
         if ':' in name:
             name, port = name.split(':', 1)
-        return HostSpec(name, port, user)
+        return HostSpec(name, port, user, password)
 
     @staticmethod
     def parse_containerspec(containerspec):
