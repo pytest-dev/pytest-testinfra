@@ -172,7 +172,7 @@ Facter
 Salt
 ~~~~
 
-.. autoclass:: testinfra.modules.salt.Salt(function, args=None)
+.. autoclass:: testinfra.modules.salt.Salt(function, args=None, local=False, config=None)
    :members:
 
 
