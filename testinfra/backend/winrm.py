@@ -32,12 +32,12 @@ class WinRMBackend(base.BaseBackend):
 
     def __init__(self, hostspec, password=None, ssl=True, verify_ssl=True,
                  transport='ntlm', *args, **kwargs):
-        self.host, self.username, self.port = self.parse_hostspec(hostspec)
+        self.host = self.parse_hostspec(hostspec)
         self.password = password
         self.ssl = ssl
         self.verify_ssl = verify_ssl
         self.transport = transport
-        super(WinRMBackend, self).__init__(self.host, *args, **kwargs)
+        super(WinRMBackend, self).__init__(self.host.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         return self.run_winrm(self.get_command(command, *args))
@@ -46,11 +46,11 @@ class WinRMBackend(base.BaseBackend):
         conn_args = {
             'endpoint': '{proto}://{host}{port}/wsman'.format(
                 proto='https' if self.ssl else 'http',
-                host=self.host,
-                port=':{}'.format(self.port) if self.port else ''
+                host=self.host.name,
+                port=':{}'.format(self.host.port) if self.host.port else ''
             ),
             'transport': self.transport,
-            'username': self.username,
+            'username': self.host.user,
             'password': self.password,
         }
 

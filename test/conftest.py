@@ -149,19 +149,20 @@ def host(request, tmpdir_factory):
         pytest.skip()
         return
     image, kw = parse_hostspec(request.param)
-    host, user, _ = BaseBackend.parse_hostspec(image)
+    spec = BaseBackend.parse_hostspec(image)
 
     if getattr(request.function, "destructive", None) is not None:
         scope = "function"
     else:
         scope = "session"
 
-    fname = "_docker_container_%s_%s" % (host, scope)
+    fname = "_docker_container_%s_%s" % (spec.name, scope)
     docker_id, docker_host, port = request.getfixturevalue(fname)
 
     if kw["connection"] == "docker":
-        host = docker_id
+        hostname = docker_id
     elif kw["connection"] in ("ansible", "ssh", "paramiko", "safe-ssh"):
+        hostname = spec.name
         tmpdir = tmpdir_factory.mktemp(str(id(request)))
         key = tmpdir.join("ssh_key")
         key.write(open(os.path.join(BASETESTDIR, "ssh_key")).read())
@@ -171,7 +172,8 @@ def host(request, tmpdir_factory):
                 pytest.skip()
                 return
             setup_ansible_config(
-                tmpdir, host, docker_host, user or "root", port, str(key))
+                tmpdir, hostname, docker_host, spec.user or "root",
+                port, str(key))
             os.environ["ANSIBLE_CONFIG"] = str(tmpdir.join("ansible.cfg"))
             # this force backend cache reloading
             kw["ansible_inventory"] = str(tmpdir.join("inventory"))
@@ -186,7 +188,7 @@ def host(request, tmpdir_factory):
                 "  IdentityFile {}\n"
                 "  IdentitiesOnly yes\n"
                 "  LogLevel FATAL\n"
-            ).format(host, docker_host, port, str(key)))
+            ).format(hostname, docker_host, port, str(key)))
             kw["ssh_config"] = str(ssh_config)
 
         # Wait ssh to be up
@@ -202,13 +204,13 @@ def host(request, tmpdir_factory):
             time.sleep(.5)
 
     if kw["connection"] != "ansible":
-        hostspec = (user or "root") + "@" + host
+        hostspec = (spec.user or "root") + "@" + hostname
     else:
-        hostspec = host
+        hostspec = spec.name
 
-    host = testinfra.host.get_host(hostspec, **kw)
-    host.backend.get_hostname = lambda: image
-    return host
+    b = testinfra.host.get_host(hostspec, **kw)
+    b.backend.get_hostname = lambda: image
+    return b
 
 
 @pytest.fixture

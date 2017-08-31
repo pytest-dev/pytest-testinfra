@@ -13,6 +13,7 @@
 
 from __future__ import unicode_literals
 
+import collections
 import locale
 import logging
 import pipes
@@ -23,6 +24,9 @@ import testinfra.modules
 import testinfra.utils
 
 logger = logging.getLogger("testinfra")
+
+HostSpec = collections.namedtuple(
+    'HostSpec', ['name', 'port', 'user'])
 
 
 class CommandResult(object):
@@ -180,14 +184,14 @@ class BaseBackend(object):
 
     @staticmethod
     def parse_hostspec(hostspec):
-        host = hostspec
+        name = hostspec
         user = None
         port = None
-        if "@" in host:
-            user, host = host.split("@", 1)
-        if ":" in host:
-            host, port = host.split(":", 1)
-        return host, user, port
+        if '@' in name:
+            user, name = name.split('@', 1)
+        if ':' in name:
+            name, port = name.split(':', 1)
+        return HostSpec(name, port, user)
 
     @staticmethod
     def parse_containerspec(containerspec):
