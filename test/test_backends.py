@@ -102,9 +102,11 @@ def test_docker_encoding(host):
 
 
 @pytest.mark.parametrize('hostspec,expected', [
-    ('u@h:p', HostSpec('h', 'p', 'u')),
-    ('u@h', HostSpec('h', None, 'u')),
-    ('h', HostSpec('h', None, None)),
+    ('u:P@h:p', HostSpec('h', 'p', 'u', 'P')),
+    ('u@h:p', HostSpec('h', 'p', 'u', None)),
+    ('u:P@h', HostSpec('h', None, 'u', 'P')),
+    ('u@h', HostSpec('h', None, 'u', None)),
+    ('h', HostSpec('h', None, None, None)),
 ])
 def test_parse_hostspec(hostspec, expected):
     assert BaseBackend.parse_hostspec(hostspec) == expected
