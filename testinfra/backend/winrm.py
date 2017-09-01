@@ -14,6 +14,9 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import re
+import six
+import string
 from testinfra.backend import base
 
 try:
@@ -24,6 +27,36 @@ except ImportError:
         "to use the winrm backend"))
 
 import winrm.protocol
+
+if six.PY3:
+    # pylint: disable=no-member
+    _find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII)
+    # pylint: enable=no-member
+else:
+    _safechars = frozenset(string.ascii_letters + string.digits + '@%_-+=:,./')
+
+
+# (gtmanfred) This is copied from pipes.quote, but changed to use double quotes
+# instead of single quotes.  This is used by the winrm backend.
+def _quote(s):
+    """Return a shell-escaped version of the string *s*."""
+    if not s:
+        return "''"
+    if six.PY3:
+        if _find_unsafe.search(s) is None:
+            return s
+    else:
+        for c in s:
+            if c not in _safechars:
+                break
+        else:
+            if not s:
+                return "''"
+            return s
+
+    # use single quotes, and put single quotes into double quotes
+    # the string $'b is then quoted as '$'"'"'b'
+    return '"' + s.replace('"', '"\'"\'"') + '"'
 
 
 class WinRMBackend(base.BaseBackend):
@@ -57,3 +90,9 @@ class WinRMBackend(base.BaseBackend):
         p.cleanup_command(shell_id, command_id)
         p.close_shell(shell_id)
         return self.result(rc, command, stdout, stderr)
+
+    @staticmethod
+    def quote(command, *args):
+        if args:
+            return command % tuple(_quote(a) for a in args)
+        return command

@@ -16,6 +16,7 @@ import pytest
 import testinfra.backend
 from testinfra.backend.base import BaseBackend
 from testinfra.backend.base import HostSpec
+from testinfra.backend.winrm import _quote
 BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
 HOSTS = [backend + "://debian_jessie" for backend in BACKENDS]
 USER_HOSTS = [backend + "://user@debian_jessie" for backend in BACKENDS]
@@ -110,3 +111,17 @@ def test_docker_encoding(host):
 ])
 def test_parse_hostspec(hostspec, expected):
     assert BaseBackend.parse_hostspec(hostspec) == expected
+
+
+@pytest.mark.parametrize('arg_string,expected', [
+    (
+        'C:\\Users\\vagrant\\This Dir\\salt',
+        '"C:\\Users\\vagrant\\This Dir\\salt"'
+    ),
+    (
+        'C:\\Users\\vagrant\\AppData\\Local\\Temp\\kitchen\\etc\\salt',
+        '"C:\\Users\\vagrant\\AppData\\Local\\Temp\\kitchen\\etc\\salt"'
+    ),
+])
+def test_winrm_quote(arg_string, expected):
+    assert _quote(arg_string) == expected
