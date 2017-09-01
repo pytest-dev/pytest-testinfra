@@ -2,6 +2,13 @@
 Changelog
 =========
 
+1.7.0
+=====
+
+* Salt: allow specifiy config directory (#230)
+* Add a WinRM backend
+* Socket: ipv6 sockets can handle ipv4 clients (#234)
+
 1.6.5
 =====
 
