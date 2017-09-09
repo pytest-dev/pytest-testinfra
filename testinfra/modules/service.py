@@ -52,7 +52,9 @@ class Service(Module):
                 and "systemd" in host.file("/sbin/init").linked_to
             ):
                 return SystemdService
-            elif host.exists("initctl"):
+            elif (host.exists("initctl")
+                    and host.exists('status')
+                    and host.file('/etc/init').is_directory):
                 return UpstartService
             return SysvService
         elif host.system_info.type == "freebsd":
