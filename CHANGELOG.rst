@@ -8,6 +8,7 @@ Changelog
 * Salt: allow specifiy config directory (#230)
 * Add a WinRM backend
 * Socket: ipv6 sockets can handle ipv4 clients (#234)
+* Service: Enhance upstart detection (#243)
 
 1.6.5
 =====
