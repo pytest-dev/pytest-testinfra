@@ -178,7 +178,7 @@ Put this code in a `conftest.py` file:
     import testinfra
 
     # get check_output from local host
-    check_output = tesintfra.get_host("local://").check_output
+    check_output = testinfra.get_host("local://").check_output
 
     # Override the host fixture
     @pytest.fixture
