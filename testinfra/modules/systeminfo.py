@@ -60,6 +60,19 @@ class SystemInfo(InstanceModule):
                     sysinfo["codename"] = value
             return sysinfo
 
+        # RedHat / CentOS 6 haven't /etc/os-release
+        # CentOS 7 have both /etc/os-release and /etc/redhat-release
+        # We should get system info from special to general
+        redhat_release = self.run("cat /etc/redhat-release")
+        if redhat_release.rc == 0:
+            match = re.match(
+                    r"^(.+) release ([^ ]+) .*$",
+                    redhat_release.stdout.strip())
+            if match:
+                sysinfo["distribution"], sysinfo["release"] = (
+                        match.groups())
+                return sysinfo
+
         # https://www.freedesktop.org/software/systemd/man/os-release.html
         os_release = self.run("cat /etc/os-release")
         if os_release.rc == 0:
@@ -74,17 +87,6 @@ class SystemInfo(InstanceModule):
                             line[len(key):].replace('"', "").
                             replace("'", "").strip())
             return sysinfo
-
-        # RedHat / CentOS 6 haven't /etc/os-release
-        redhat_release = self.run("cat /etc/redhat-release")
-        if redhat_release.rc == 0:
-            match = re.match(
-                r"^(.+) release ([^ ]+) .*$",
-                redhat_release.stdout.strip())
-            if match:
-                sysinfo["distribution"], sysinfo["release"] = (
-                    match.groups())
-                return sysinfo
 
         return sysinfo
 
