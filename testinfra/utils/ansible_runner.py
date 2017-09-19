@@ -27,12 +27,12 @@ except ImportError:
         "You must install ansible package to use the ansible backend")
 
 import ansible.constants
-_ansible_major_version = int(ansible.__version__.split(".", 1)[0])
-if _ansible_major_version == 1:
+_ansible_version = list(map(int, ansible.__version__.split('.', 2)[:2]))
+if _ansible_version[0] == 1:
     import ansible.inventory
     import ansible.runner
     import ansible.utils
-elif _ansible_major_version == 2:
+elif _ansible_version[0] == 2:
     import ansible.cli.playbook
     import ansible.executor.task_queue_manager
     import ansible.inventory
@@ -114,7 +114,7 @@ class AnsibleRunnerV1(AnsibleRunnerBase):
         return result["contacted"][host]
 
 
-if _ansible_major_version == 2:
+if _ansible_version[0] == 2:
     class Callback(ansible.plugins.callback.CallbackBase):
 
         def __init__(self, *args, **kwargs):
@@ -147,7 +147,6 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
     def __init__(self, host_list=None):
         super(AnsibleRunnerV2, self).__init__(host_list)
         _reload_constants()
-        self.variable_manager = ansible.vars.VariableManager()
         self.cli = ansible.cli.playbook.PlaybookCLI(None)
         self.cli.options = self.cli.base_parser(
             connect_opts=True,
@@ -163,18 +162,24 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         ).parse_args([])[0]
         self.cli.normalize_become_options()
         self.cli.options.connection = "smart"
-        self.loader = ansible.parsing.dataloader.DataLoader()
-        if self.cli.options.vault_password_file:
-            vault_pass = self.cli.read_vault_password_file(
-                self.cli.options.vault_password_file, loader=self.loader)
-            self.loader.set_vault_password(vault_pass)
-
-        self.inventory = ansible.inventory.Inventory(
-            loader=self.loader,
-            variable_manager=self.variable_manager,
-            host_list=host_list or self.cli.options.inventory,
-        )
-        self.variable_manager.set_inventory(self.inventory)
+        if _ansible_version[1] >= 4:  # ansible >= 2.4
+            self.cli.options.inventory = host_list
+            # pylint: disable=protected-access
+            self.loader, self.inventory, self.variable_manager = (
+                self.cli._play_prereqs(self.cli.options))
+        else:  # ansible < 2.4
+            self.variable_manager = ansible.vars.VariableManager()
+            self.loader = ansible.parsing.dataloader.DataLoader()
+            if self.cli.options.vault_password_file:
+                vault_pass = self.cli.read_vault_password_file(
+                    self.cli.options.vault_password_file, loader=self.loader)
+                self.loader.set_vault_password(vault_pass)
+            self.inventory = ansible.inventory.Inventory(
+                loader=self.loader,
+                variable_manager=self.variable_manager,
+                host_list=host_list or self.cli.options.inventory,
+            )
+            self.variable_manager.set_inventory(self.inventory)
 
     def get_hosts(self, pattern=None):
         return [
@@ -183,8 +188,11 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         ]
 
     def get_variables(self, host):
-        return self.variable_manager.get_vars(
-            self.loader, host=self.inventory.get_host(host))
+        host = self.inventory.get_host(host)
+        if _ansible_version[1] >= 4:  # ansible >= 2.4
+            return self.variable_manager.get_vars(host=host)
+        # ansible < 2.4
+        return self.variable_manager.get_vars(self.loader, host)
 
     def run(self, host, module_name, module_args=None, **kwargs):
         self.cli.options.check = kwargs.get("check", False)
@@ -220,9 +228,9 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         return callback.result
 
 
-if _ansible_major_version == 1:
+if _ansible_version[0] == 1:
     AnsibleRunner = AnsibleRunnerV1
-elif _ansible_major_version == 2:
+elif _ansible_version[0] == 2:
     AnsibleRunner = AnsibleRunnerV2
 else:
     raise NotImplementedError(
