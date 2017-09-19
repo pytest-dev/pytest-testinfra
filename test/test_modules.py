@@ -38,7 +38,7 @@ def test_package(host, docker_image):
         "fedora": "7.",
         "ubuntu_trusty": "1:6.6",
         "ubuntu_xenial": "1:7.2",
-        "centos_7": "6.6",
+        "centos_7": "7.",
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
