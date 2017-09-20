@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# pylint: disable=import-error
+# pylint: disable=import-error,no-name-in-module,no-member
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
