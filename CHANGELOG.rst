@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.7.1
+=====
+
+* Support for ansible 2.4 (#249)
+
 1.7.0
 =====
 
