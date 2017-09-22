@@ -12,6 +12,8 @@
 # limitations under the License.
 
 # pylint: disable=import-error,no-name-in-module,no-member
+# pylint: disable=unexpected-keyword-arg,no-value-for-parameter
+# pylint: disable=arguments-differ
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
