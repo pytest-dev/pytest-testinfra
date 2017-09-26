@@ -114,7 +114,7 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'logo': 'logo.png',
+    'logo': 'logo.svg',
     'github_user': 'philpep',
     'github_repo': 'testinfra',
     'github_button': True,
