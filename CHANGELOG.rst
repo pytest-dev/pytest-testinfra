@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.8.0
+=====
+
+* Deprecate testinfra command (will be dropped in 2.0), use py.test instead #135
+* Handle --nagios option when using py.test command
+
 1.7.1
 =====
 

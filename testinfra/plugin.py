@@ -16,6 +16,8 @@ from __future__ import unicode_literals
 
 import logging
 import sys
+import tempfile
+import time
 
 import pytest
 import testinfra
@@ -171,7 +173,69 @@ def pytest_collection_finish(session):
         session.config.warn('C1', msg)
 
 
+class NagiosReporter(object):
+
+    def __init__(self, out):
+        self.passed = 0
+        self.failed = 0
+        self.skipped = 0
+        self.start_time = None
+        self.total_time = None
+        self.out = out
+
+    def pytest_sessionstart(self, session):
+        self.start_time = time.time()
+
+    def pytest_sessionfinish(self):
+        self.total_time = time.time() - self.start_time
+
+    def pytest_runtest_logreport(self, report):
+        if report.passed:
+            if report.when == "call":  # ignore setup/teardown
+                self.passed += 1
+        elif report.failed:
+            self.failed += 1
+        elif report.skipped:
+            self.skipped += 1
+
+    def report(self):
+        if self.failed:
+            status = "CRITICAL"
+            ret = 2
+        else:
+            status = "OK"
+            ret = 0
+
+        sys.stdout.write((
+            b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f "
+            b"seconds\n") % (
+                status, self.passed, self.failed, self.skipped, self.total_time
+            ))
+        self.out.seek(0)
+        sys.stdout.write(self.out.read())
+        return ret
+
+
+@pytest.mark.trylast
 def pytest_configure(config):
     if config.option.verbose > 1:
         logging.basicConfig()
         logging.getLogger("testinfra").setLevel(logging.DEBUG)
+    if config.option.nagios:
+        # disable & re-enable terminalreporter to write in a tempfile
+        reporter = config.pluginmanager.getplugin('terminalreporter')
+        if reporter:
+            config.pluginmanager.unregister(reporter)
+            out = tempfile.SpooledTemporaryFile()
+            out.encoding = sys.stdout.encoding
+            reporter = reporter.__class__(config, out)
+            config.pluginmanager.register(reporter, 'terminalreporter')
+            config.pluginmanager.register(NagiosReporter(out),
+                                          'nagiosreporter')
+
+
+@pytest.mark.trylast
+def pytest_unconfigure(config):
+    reporter = config.pluginmanager.getplugin('nagiosreporter')
+    if reporter:
+        sys.exit(reporter.report())

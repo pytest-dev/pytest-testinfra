@@ -14,7 +14,7 @@ This is the default backend when not hosts are provided (either via
 ``--hosts`` or in modules). Commands are run locally in a subprocess under
 the current user::
 
-    $ testinfra --sudo test_myinfra.py
+    $ py.test --sudo test_myinfra.py
 
 
 paramiko
@@ -28,7 +28,7 @@ able to connect without password (using password less keys or using
 
 You can provide an alternate ssh-config and use sudo on the remote host::
 
-    $ testinfra --ssh-config=/path/to/ssh_config --sudo --hosts=server
+    $ py.test --ssh-config=/path/to/ssh_config --sudo --hosts=server
 
 
 docker
@@ -37,7 +37,7 @@ docker
 The docker backend can be used to test *running* containers. It use the `docker
 exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
 
-    $ testinfra --connection=docker --hosts=[user@]docker_id_or_name
+    $ py.test --connection=docker --hosts=[user@]docker_id_or_name
 
 See also the :ref:`Test docker images` example.
 
@@ -47,7 +47,7 @@ ssh
 
 This is a pure ssh backend using the ``ssh`` command available in ``$PATH``. Example::
 
-    $ testinfra --connection=ssh --hosts=server
+    $ py.test --connection=ssh --hosts=server
 
 The ssh backend also accept ``--ssh-config`` and ``--sudo`` parameters.
 
@@ -58,10 +58,10 @@ salt
 The salt backend use the `salt python client API
 <http://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
 
-    $ testinfra --connection=salt # equivalent to --hosts='*'
-    $ testinfra --connection=salt --hosts=minion1,minion2
-    $ testinfra --connection=salt --hosts='web*'
-    $ testinfra --connection=salt --hosts=G@os:Debian
+    $ py.test --connection=salt # equivalent to --hosts='*'
+    $ py.test --connection=salt --hosts=minion1,minion2
+    $ py.test --connection=salt --hosts='web*'
+    $ py.test --connection=salt --hosts=G@os:Debian
 
 Testinfra will use the salt connection channel to run commands.
 
@@ -78,9 +78,9 @@ ansible
 The ansible backend use the `ansible python API
 <https://docs.ansible.com/ansible/developing_api.html>`_::
 
-    $ testinfra --connection=ansible # tests all inventory hosts
-    $ testinfra --connection=ansible --hosts=host1,host2
-    $ testinfra --connection=ansible --hosts='web*'
+    $ py.test --connection=ansible # tests all inventory hosts
+    $ py.test --connection=ansible --hosts=host1,host2
+    $ py.test --connection=ansible --hosts='web*'
 
 You can use an alternative `inventory` with the ``--ansible-inventory`` option.
 
@@ -94,7 +94,7 @@ kubectl
 The kubectl backend can be used to test containers running in Kubernetes.
 It use the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command::
 
-    $ testinfra --connection=kubectl --hosts=pod_id-123456789-9fng/container_name
+    $ py.test --connection=kubectl --hosts=pod_id-123456789-9fng/container_name
 
 
 winrm
@@ -102,5 +102,5 @@ winrm
 
 The winrm backend uses `pywinrm <https://pypi.python.org/pypi/pywinrm>`_::
 
-    $ testinfra --hosts='winrm://Administrator:Password@127.0.0.1'
-    $ testinfra --connection=winrm --hosts='vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
+    $ py.test --hosts='winrm://Administrator:Password@127.0.0.1'
+    $ py.test --connection=winrm --hosts='vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'

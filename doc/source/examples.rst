@@ -18,7 +18,7 @@ Pytest support `test parametrization <https://pytest.org/latest/parametrize.html
 
 
     # GOOD: Each package is tested
-    # $ testinfra -v test.py
+    # $ py.test -v test.py
     # [...]
     # test.py::test_package[local-nginx-1.6] PASSED
     # test.py::test_package[local-python-2.7] PASSED
@@ -101,7 +101,7 @@ If your jenkins slave can run vagrant, your build scripts can be like::
     pip install testinfra paramiko
     vagrant up
     vagrant ssh-config > .vagrant/ssh-config
-    testinfra --hosts=default --ssh-config=.vagrant/ssh-config --junit-xml junit.xml tests.py
+    py.test --hosts=default --ssh-config=.vagrant/ssh-config --junit-xml junit.xml tests.py
 
 
 Then configure jenkins to get tests results from the `junit.xml` file.
@@ -125,12 +125,12 @@ monitoring checks, so let's push them to `Nagios <https://www.nagios.org/>`_ !
 Testinfra has an option `--nagios` that enable a compatible nagios plugin
 beharvior::
 
-    $ testinfra -qq --nagios test_ok.py; echo $?
+    $ py.test -qq --nagios test_ok.py; echo $?
     TESTINFRA OK - 2 passed, 0 failed, 0 skipped in 2.30 seconds
     [...]
     0
 
-    $ testinfra -qq --nagios test_fail.py; echo $?
+    $ py.test -qq --nagios test_fail.py; echo $?
     TESTINFRA CRITICAL - 1 passed, 1 failed, 0 skipped in 2.24 seconds
     [Traceback that explain the failed test]
     2
@@ -148,7 +148,7 @@ Add the following verifier to your :code:`.kitchen.yml`::
 
     verifier:
       name: shell
-      command: testinfra --host="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
+      command: py.test --host="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
 
 
 .. _test docker images:
@@ -257,7 +257,7 @@ Then create a `test_docker.py` file with our testinfra tests:
 
 Now let's run it::
 
-    $ testinfra -v
+    $ py.test -v
     [...]
 
     test_docker.py::test_default[debian:jessie] PASSED
