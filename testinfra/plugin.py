@@ -15,11 +15,13 @@
 from __future__ import unicode_literals
 
 import logging
+import shutil
 import sys
 import tempfile
 import time
 
 import pytest
+import six
 import testinfra
 import testinfra.host
 import testinfra.modules
@@ -179,15 +181,9 @@ class NagiosReporter(object):
         self.passed = 0
         self.failed = 0
         self.skipped = 0
-        self.start_time = None
+        self.start_time = time.time()
         self.total_time = None
         self.out = out
-
-    def pytest_sessionstart(self, session):
-        self.start_time = time.time()
-
-    def pytest_sessionfinish(self):
-        self.total_time = time.time() - self.start_time
 
     def pytest_runtest_logreport(self, report):
         if report.passed:
@@ -200,20 +196,47 @@ class NagiosReporter(object):
 
     def report(self):
         if self.failed:
-            status = "CRITICAL"
+            status = b'CRITICAL'
             ret = 2
         else:
-            status = "OK"
+            status = b'OK'
             ret = 0
 
-        sys.stdout.write((
+        if hasattr(sys.stdout, 'buffer'):
+            out = sys.stdout.buffer
+        else:
+            out = sys.stdout
+
+        out.write((
             b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f "
             b"seconds\n") % (
-                status, self.passed, self.failed, self.skipped, self.total_time
-            ))
+                status, self.passed, self.failed, self.skipped,
+                time.time() - self.start_time))
         self.out.seek(0)
-        sys.stdout.write(self.out.read())
+        shutil.copyfileobj(self.out, out)
         return ret
+
+
+if six.PY2:
+    class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
+
+        def __init__(self, encoding=None, *args, **kwargs):
+            # tempfile.SpooledTemporaryFile is not new style class
+            tempfile.SpooledTemporaryFile.__init__(self, *args, **kwargs)
+            self.encoding = encoding
+else:
+    class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
+
+        def __init__(self, *args, **kwargs):
+            self._out_encoding = kwargs['encoding']
+            super().__init__(*args, **kwargs)
+
+        def write(self, s):
+            # avoid traceback in py.io.terminalwriter.write_out
+            # TypeError: a bytes-like object is required, not 'str'
+            if isinstance(s, str):
+                s = s.encode(self._out_encoding)
+            return super().write(s)
 
 
 @pytest.mark.trylast
@@ -225,9 +248,8 @@ def pytest_configure(config):
         # disable & re-enable terminalreporter to write in a tempfile
         reporter = config.pluginmanager.getplugin('terminalreporter')
         if reporter:
+            out = SpooledTemporaryFile(encoding=sys.stdout.encoding)
             config.pluginmanager.unregister(reporter)
-            out = tempfile.SpooledTemporaryFile()
-            out.encoding = sys.stdout.encoding
             reporter = reporter.__class__(config, out)
             config.pluginmanager.register(reporter, 'terminalreporter')
             config.pluginmanager.register(NagiosReporter(out),
