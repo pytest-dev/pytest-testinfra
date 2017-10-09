@@ -106,14 +106,6 @@ If your jenkins slave can run vagrant, your build scripts can be like::
 
 Then configure jenkins to get tests results from the `junit.xml` file.
 
-If you use the `docker provisioner
-<https://docs.vagrantup.com/v2/provisioning/docker.html>`_ in vagrant, and use
-the `docker plugin
-<https://wiki.jenkins-ci.org/display/JENKINS/Docker+Plugin>`_ in jenkins, you
-might be interested by the `philpep/jenkins-slave:jessie
-<https://github.com/philpep/jenkins-slave>`_ docker image. This is the image
-used to tests testinfra itself using vagrant and docker (in docker).
-
 
 Integration with nagios
 ~~~~~~~~~~~~~~~~~~~~~~~
