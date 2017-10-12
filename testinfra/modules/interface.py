@@ -15,7 +15,10 @@ from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
 
-from distutils import spawn
+import sys
+
+import os
+
 
 class Interface(Module):
     """Test network interfaces"""
@@ -58,7 +61,18 @@ class LinuxInterface(Interface):
 
     @property
     def exists(self):
-        exe = spawn.find_executable('ip')
+        command = 'ip'
+        if sys.version_info < (3,2):
+            for path in os.environ["PATH"].split(os.pathsep):
+                is_exe = os.access(os.path.join(path, command), os.X_OK)
+                if is_exe:
+                    exe = os.path.join(path, command)
+                    break
+                else:
+                    exe = '/sbin/ip'
+        else:
+            import shutil
+            exe = shutil.which(command)
         return self.run_test(exe + " link show %s", self.name).rc == 0
 
     @property
@@ -68,7 +82,18 @@ class LinuxInterface(Interface):
 
     @property
     def addresses(self):
-        exe = spawn.find_executable('ip')
+        command = 'ip'
+        if sys.version_info < (3,2):
+            for path in os.environ["PATH"].split(os.pathsep):
+                is_exe = os.access(os.path.join(path, command), os.X_OK)
+                if is_exe:
+                    exe = os.path.join(path, command)
+                    break
+                else:
+                    exe = '/sbin/ip'
+        else:
+            import shutil
+            exe = shutil.which(command)
         stdout = self.check_output(exe + " addr show %s", self.name)
         addrs = []
         for line in stdout.splitlines():
