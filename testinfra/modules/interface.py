@@ -57,7 +57,7 @@ class LinuxInterface(Interface):
 
     @property
     def exists(self):
-        return self.run_test("ip link show %s", self.name).rc == 0
+        return self.run_test("/usr/sbin/ip link show %s", self.name).rc == 0
 
     @property
     def speed(self):
@@ -66,7 +66,7 @@ class LinuxInterface(Interface):
 
     @property
     def addresses(self):
-        stdout = self.check_output("ip addr show %s", self.name)
+        stdout = self.check_output("/usr/sbin/ip addr show %s", self.name)
         addrs = []
         for line in stdout.splitlines():
             splitted = [e.strip() for e in line.split(" ") if e]
