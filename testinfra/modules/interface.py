@@ -56,12 +56,6 @@ class Interface(Module):
 
 class LinuxInterface(Interface):
 
-#    @classmethod
-#    def which(program):
-#        from distutils import spawn
-#        return spawn.find_executable('ip')
-
-
     @property
     def exists(self):
         exe = spawn.find_executable('ip')
