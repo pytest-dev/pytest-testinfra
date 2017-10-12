@@ -15,6 +15,7 @@ from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
 
+from distutils import spawn
 
 class Interface(Module):
     """Test network interfaces"""
@@ -55,9 +56,16 @@ class Interface(Module):
 
 class LinuxInterface(Interface):
 
+#    @classmethod
+#    def which(program):
+#        from distutils import spawn
+#        return spawn.find_executable('ip')
+
+
     @property
     def exists(self):
-        return self.run_test("/usr/sbin/ip link show %s", self.name).rc == 0
+        exe = spawn.find_executable('ip')
+        return self.run_test(exe + " link show %s", self.name).rc == 0
 
     @property
     def speed(self):
@@ -66,7 +74,8 @@ class LinuxInterface(Interface):
 
     @property
     def addresses(self):
-        stdout = self.check_output("/usr/sbin/ip addr show %s", self.name)
+        exe = spawn.find_executable('ip')
+        stdout = self.check_output(exe + " addr show %s", self.name)
         addrs = []
         for line in stdout.splitlines():
             splitted = [e.strip() for e in line.split(" ") if e]
