@@ -62,7 +62,7 @@ class LinuxInterface(Interface):
     @property
     def exists(self):
         command = 'ip'
-        if sys.version_info < (3,2):
+        if sys.version_info < (3, 2):
             for path in os.environ["PATH"].split(os.pathsep):
                 is_exe = os.access(os.path.join(path, command), os.X_OK)
                 if is_exe:
@@ -83,7 +83,7 @@ class LinuxInterface(Interface):
     @property
     def addresses(self):
         command = 'ip'
-        if sys.version_info < (3,2):
+        if sys.version_info < (3, 2):
             for path in os.environ["PATH"].split(os.pathsep):
                 is_exe = os.access(os.path.join(path, command), os.X_OK)
                 if is_exe:
