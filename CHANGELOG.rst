@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.9.0
+=====
+
+* Interface: allow to find 'ip' command ousite of PATH
+* Fix --nagios option with python 3
+
 1.8.0
 =====
 
