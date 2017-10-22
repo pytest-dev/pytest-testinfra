@@ -15,6 +15,10 @@ from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
 
+import sys
+
+import os
+
 
 class Interface(Module):
     """Test network interfaces"""
@@ -57,7 +61,19 @@ class LinuxInterface(Interface):
 
     @property
     def exists(self):
-        return self.run_test("ip link show %s", self.name).rc == 0
+        command = 'ip'
+        if sys.version_info < (3, 3):
+            for path in os.environ["PATH"].split(os.pathsep):
+                is_exe = os.access(os.path.join(path, command), os.X_OK)
+                if is_exe:
+                    exe = os.path.join(path, command)
+                    break
+                else:
+                    exe = '/sbin/ip'
+        else:
+            import shutil
+            exe = shutil.which(command)
+        return self.run_test(exe + " link show %s", self.name).rc == 0
 
     @property
     def speed(self):
@@ -66,7 +82,19 @@ class LinuxInterface(Interface):
 
     @property
     def addresses(self):
-        stdout = self.check_output("ip addr show %s", self.name)
+        command = 'ip'
+        if sys.version_info < (3, 3):
+            for path in os.environ["PATH"].split(os.pathsep):
+                is_exe = os.access(os.path.join(path, command), os.X_OK)
+                if is_exe:
+                    exe = os.path.join(path, command)
+                    break
+                else:
+                    exe = '/sbin/ip'
+        else:
+            import shutil
+            exe = shutil.which(command)
+        stdout = self.check_output(exe + " addr show %s", self.name)
         addrs = []
         for line in stdout.splitlines():
             splitted = [e.strip() for e in line.split(" ") if e]
