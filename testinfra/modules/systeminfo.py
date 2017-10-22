@@ -139,23 +139,3 @@ class SystemInfo(InstanceModule):
         'wheezy'
         """
         return self.sysinfo["codename"]
-
-    @property
-    def user(self):
-        return self.check_output("id -nu")
-
-    @property
-    def uid(self):
-        return int(self.check_output("id -u"))
-
-    @property
-    def group(self):
-        return self.check_output("id -ng")
-
-    @property
-    def gid(self):
-        return int(self.check_output("id -g"))
-
-    @property
-    def hostname(self):
-        return self.check_output("hostname -s")
