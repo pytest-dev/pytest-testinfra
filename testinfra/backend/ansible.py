@@ -20,6 +20,7 @@ import pprint
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
 from testinfra.utils.ansible_runner import to_bytes
+from testinfra.utils import cached_property
 
 logger = logging.getLogger("testinfra")
 
@@ -31,14 +32,11 @@ class AnsibleBackend(base.BaseBackend):
     def __init__(self, host, ansible_inventory=None, *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
-        self._ansible_runner = None
         super(AnsibleBackend, self).__init__(host, *args, **kwargs)
 
-    @property
+    @cached_property
     def ansible_runner(self):
-        if self._ansible_runner is None:
-            self._ansible_runner = AnsibleRunner(self.ansible_inventory)
-        return self._ansible_runner
+        return AnsibleRunner(self.ansible_inventory)
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
