@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
+from testinfra.utils import cached_property
 
 
 class Interface(Module):
@@ -55,9 +56,13 @@ class Interface(Module):
 
 class LinuxInterface(Interface):
 
+    @cached_property
+    def _ip(self):
+        return self._find_command('ip')
+
     @property
     def exists(self):
-        return self.run_test("ip link show %s", self.name).rc == 0
+        return self.run_test("%s link show %s", self._ip, self.name).rc == 0
 
     @property
     def speed(self):
@@ -66,7 +71,7 @@ class LinuxInterface(Interface):
 
     @property
     def addresses(self):
-        stdout = self.check_output("ip addr show %s", self.name)
+        stdout = self.check_output("%s addr show %s", self._ip, self.name)
         addrs = []
         for line in stdout.splitlines():
             splitted = [e.strip() for e in line.split(" ") if e]
