@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
+from testinfra.utils import cached_property
 
 
 class Service(Module):
@@ -71,23 +72,12 @@ class Service(Module):
 
 class SysvService(Service):
 
-    def __init__(self, name):
-        super(SysvService, self).__init__(name)
-        self._command = None
-
-    @property
+    @cached_property
     def _service_command(self):
-        if self._command is None:
-            if self._host.exists('service'):
-                self._command = 'service'
-            # service command may not exist in PATH for non privileged users
-            elif self._host.file('/sbin/service').exists:
-                self._command = '/sbin/service'
-            elif self._host.file('/usr/sbin/service').exists:
-                self._command = '/usr/sbin/service'
-            else:
-                raise RuntimeError('cannot find "service" command')
-        return self._command
+        for cmd in ('service', '/sbin/service', '/usr/sbin/service'):
+            if self._host.exists(cmd):
+                return cmd
+        raise RuntimeError('cannot find "service" command')
 
     @property
     def is_running(self):
