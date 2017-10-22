@@ -13,9 +13,20 @@
 
 from __future__ import unicode_literals
 
+import os.path
+
 
 class Module(object):
     _host = None
+
+    def _find_command(self, command, paths=('/sbin', '/usr/sbin')):
+        if self._host.exists(command):
+            return command
+        for basedir in paths:
+            path = os.path.join(basedir, command)
+            if self._host.exists(path):
+                return path
+        raise RuntimeError('Cannot find "%s" command' % (command,))
 
     @classmethod
     def get_module(cls, _host):

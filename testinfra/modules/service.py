@@ -74,10 +74,7 @@ class SysvService(Service):
 
     @cached_property
     def _service_command(self):
-        for cmd in ('service', '/sbin/service', '/usr/sbin/service'):
-            if self._host.exists(cmd):
-                return cmd
-        raise RuntimeError('cannot find "service" command')
+        return self._find_command('service')
 
     @property
     def is_running(self):
