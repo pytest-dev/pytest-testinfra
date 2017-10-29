@@ -267,6 +267,24 @@ class BSDFile(File):
         return self.check_output(
             "sha256 < %s", self.path)
 
+    @property
+    def linked_to(self):
+        link_script = '''
+        TARGET_FILE='{0}'
+        cd `dirname $TARGET_FILE`
+        TARGET_FILE=`basename $TARGET_FILE`
+        while [ -L "$TARGET_FILE" ]
+        do
+            TARGET_FILE=`readlink $TARGET_FILE`
+            cd `dirname $TARGET_FILE`
+            TARGET_FILE=`basename $TARGET_FILE`
+        done
+        PHYS_DIR=`pwd -P`
+        RESULT=$PHYS_DIR/$TARGET_FILE
+        echo $RESULT
+        '''.format(self.path)
+        return self.check_output(link_script)
+
 
 class NetBSDFile(BSDFile):
 
