@@ -177,9 +177,10 @@ class File(Module):
             return GNUFile
         elif host.system_info.type == "netbsd":
             return NetBSDFile
-        elif (host.system_info.type.endswith("bsd")
-                or host.system_info.type == "darwin"):
+        elif host.system_info.type.endswith("bsd"):
             return BSDFile
+        elif host.system_info.type == "darwin":
+            return DarwinFile
         else:
             raise NotImplementedError
 
@@ -266,6 +267,9 @@ class BSDFile(File):
     def sha256sum(self):
         return self.check_output(
             "sha256 < %s", self.path)
+
+
+class DarwinFile(BSDFile):
 
     @property
     def linked_to(self):
