@@ -125,9 +125,8 @@ class SystemdService(SysvService):
         # stdout for anything.  Nothing means no warns/errors.
         # Docs at https://www.freedesktop.org/software/systemd/man/systemd
         # -analyze.html#Examples%20for%20verify
-        if not cmd.stdout and not cmd.stderr:
-            return True
-        return False
+        assert (cmd.stdout, cmd.stderr) == ("", "")
+        return True
 
 
 class UpstartService(SysvService):
