@@ -157,7 +157,9 @@ def pytest_collection_finish(session):
             ['TestinfraBackend', 'LocalCommand'])
     deprecated_used = set()
     for item in session.items:
-        deprecated_used |= (set(item.fixturenames) & deprecated_modules)
+        if hasattr(item, 'fixturenames'):
+            # DoctestItem does not have fixturenames attribute
+            deprecated_used |= (set(item.fixturenames) & deprecated_modules)
     for name in sorted(deprecated_used):
         if name == 'LocalCommand':
             msg = ("LocalCommand fixture is deprecated. Use host fixture "
