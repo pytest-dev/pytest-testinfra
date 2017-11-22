@@ -44,6 +44,7 @@ class ParamikoBackend(base.BaseBackend):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
+        self.get_pty = False
         super(ParamikoBackend, self).__init__(self.host.name, *args, **kwargs)
 
     @cached_property
@@ -71,6 +72,9 @@ class ParamikoBackend(base.BaseBackend):
                     cfg["key_filename"] = os.path.expanduser(value[0])
                 elif key == "stricthostkeychecking" and value == "no":
                     client.set_missing_host_key_policy(IgnorePolicy())
+                elif key == "requesttty":
+                    if cfg[key] in ('yes', 'force'):
+                        self.get_pty = True
         if self.ssh_identity_file:
             cfg["key_filename"] = self.ssh_identity_file
         client.connect(**cfg)
@@ -78,6 +82,8 @@ class ParamikoBackend(base.BaseBackend):
 
     def _exec_command(self, command):
         chan = self.client.get_transport().open_session()
+        if self.get_pty:
+            chan.get_pty()
         chan.exec_command(command)
         rc = chan.recv_exit_status()
         stdout = b''.join(chan.makefile('rb'))
