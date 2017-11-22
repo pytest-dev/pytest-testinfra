@@ -113,6 +113,21 @@ class SystemdService(SysvService):
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
         return super(SystemdService, self).is_enabled
 
+    @property
+    def is_valid(self):
+        # systemd-analyze requires a full path.
+        if self.name.endswith(".service"):
+            name = self.name
+        else:
+            name = self.name + ".service"
+        cmd = self.run("systemd-analyze verify %s", name)
+        # A bad unit file still returns a rc of 0, so check the
+        # stdout for anything.  Nothing means no warns/errors.
+        # Docs at https://www.freedesktop.org/software/systemd/man/systemd
+        # -analyze.html#Examples%20for%20verify
+        assert (cmd.stdout, cmd.stderr) == ("", "")
+        return True
+
 
 class UpstartService(SysvService):
 
