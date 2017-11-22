@@ -2,6 +2,13 @@
 Changelog
 =========
 
+1.10.0
+======
+
+* Fix running testinfra within a suite using doctest (#268)
+* Service: add is_valid method for systemd
+* Fix file.linked_to() for Mac OS
+
 1.9.0
 =====
 
