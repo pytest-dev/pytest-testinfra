@@ -2,15 +2,15 @@ Connection backends
 ===================
 
 Testinfra comes with several connections backends for remote command execution,
-they are controlled with the ``--connection`` parameter.
+they are selected with the ``--connection`` option.
 
-For all backends, command can be run as superuser with the ``--sudo``
-option or as specific user by adding a ``--sudo-user`` option.
+For all backends, commands can be run as superuser with the ``--sudo``
+option or as specific user with the ``--sudo-user`` option.
 
 local
 ~~~~~
 
-This is the default backend when not hosts are provided (either via
+This is the default backend when no hosts are provided (either via
 ``--hosts`` or in modules). Commands are run locally in a subprocess under
 the current user::
 
@@ -20,21 +20,21 @@ the current user::
 paramiko
 ~~~~~~~~
 
-This is the default backend when a hosts list is provided, `paramiko
-<http://www.paramiko.org>`_ is a python implementation of SSHv2
+This is the default backend when a hosts list is provided. `Paramiko
+<http://www.paramiko.org>`_ is a Python implementation of the SSHv2
 protocol. Testinfra will not ask you for a password, so you must be
-able to connect without password (using password less keys or using
+able to connect without password (using passwordless keys or using
 ``ssh-agent``).
 
-You can provide an alternate ssh-config and use sudo on the remote host::
+You can provide an alternate ssh-config::
 
-    $ py.test --ssh-config=/path/to/ssh_config --sudo --hosts=server
+    $ py.test --ssh-config=/path/to/ssh_config --hosts=server
 
 
 docker
 ~~~~~~
 
-The docker backend can be used to test *running* containers. It use the `docker
+The Docker backend can be used to test *running* containers. It uses the `docker
 exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
 
     $ py.test --connection=docker --hosts=[user@]docker_id_or_name
@@ -45,17 +45,17 @@ See also the :ref:`Test docker images` example.
 ssh
 ~~~
 
-This is a pure ssh backend using the ``ssh`` command available in ``$PATH``. Example::
+This is a pure SSH backend using the ``ssh`` command available in ``$PATH``. Example::
 
     $ py.test --connection=ssh --hosts=server
 
-The ssh backend also accept ``--ssh-config`` and ``--sudo`` parameters.
+The ssh backend also accepts the ``--ssh-config`` option.
 
 
 salt
 ~~~~
 
-The salt backend use the `salt python client API
+The salt backend uses the `salt Python client API
 <http://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
 
     $ py.test --connection=salt # equivalent to --hosts='*'
@@ -65,7 +65,7 @@ The salt backend use the `salt python client API
 
 Testinfra will use the salt connection channel to run commands.
 
-Host can be seleted using `glob` or `compound matchers
+Hosts can be seleted by using the `glob` and `compound matchers
 <https://docs.saltstack.com/en/latest/topics/targeting/compound.html>`_.
 
 
@@ -75,7 +75,7 @@ ansible
 ~~~~~~~
 
 
-The ansible backend use the `ansible python API
+The ansible backend uses the `ansible Python API
 <https://docs.ansible.com/ansible/developing_api.html>`_::
 
     $ py.test --connection=ansible # tests all inventory hosts
@@ -92,7 +92,7 @@ kubectl
 ~~~~~~~
 
 The kubectl backend can be used to test containers running in Kubernetes.
-It use the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command::
+It uses the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command::
 
     $ py.test --connection=kubectl --hosts=pod_id-123456789-9fng/container_name
 
