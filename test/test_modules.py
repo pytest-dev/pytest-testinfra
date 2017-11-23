@@ -428,3 +428,13 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+
+def test_iptables_rules(host):
+    sshd_rule = host.iptables_rule('-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT')
+    vip_redirect_rule = host.iptables_rule('-A PREROUTING -d 192.168.0.1/32 -p tcp -m tcp --dport 443 -j REDIRECT', 'nat')
+    bad_rule1 = host.iptables_rule('-A INPUT -p tcp -m state --state NEW -m tcp --dport 21 -j ACCEPT')
+    bad_rule2 = host.iptables_rule('-A OUTPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT', 'nat')
+    assert sshd_rule.exists
+    assert vip_redirect_rule.exists
+    assert not bad_rule1.exists
+    assert not bad_rule2.exists
