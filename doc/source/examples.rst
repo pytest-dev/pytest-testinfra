@@ -41,7 +41,7 @@ Pytest support `test parametrization <https://pytest.org/latest/parametrize.html
 Using unittest
 ~~~~~~~~~~~~~~
 
-Testinfra can be used with python standard unit test framework `unittest
+Testinfra can be used with the standard Python unit test framework `unittest
 <https://docs.python.org/3/library/unittest.html>`_ instead of pytest::
 
     import unittest
@@ -76,26 +76,26 @@ Testinfra can be used with python standard unit test framework `unittest
     OK
 
 
-Integration with vagrant
+Integration with Vagrant
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Vagrant <https://www.vagrantup.com/>`_ is a tool that setup and provision
-development environment (virtual machines).
+`Vagrant <https://www.vagrantup.com/>`_ is a tool to setup and provision
+development environments (virtual machines).
 
-When your vagrant machine is up and running, you can easily run your testinfra
+When your Vagrant machine is up and running, you can easily run your testinfra
 test suite on it::
 
     vagrant ssh-config > .vagrant/ssh-config
     testinfra --hosts=default --ssh-config=.vagrant/ssh-config tests.py
 
 
-Integration with jenkins
+Integration with Jenkins
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 `Jenkins <https://jenkins-ci.org/>`_ is a well known open source continuous
 integration server.
 
-If your jenkins slave can run vagrant, your build scripts can be like::
+If your Jenkins slave can run Vagrant, your build scripts can be like::
 
 
     pip install testinfra paramiko
@@ -104,18 +104,18 @@ If your jenkins slave can run vagrant, your build scripts can be like::
     py.test --hosts=default --ssh-config=.vagrant/ssh-config --junit-xml junit.xml tests.py
 
 
-Then configure jenkins to get tests results from the `junit.xml` file.
+Then configure Jenkins to get tests results from the `junit.xml` file.
 
 
-Integration with nagios
+Integration with Nagios
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The tests you will write with testinfra will usually be testing that the
-services you're deploying run correctly. This kind of tests are close to
-monitoring checks, so let's push them to `Nagios <https://www.nagios.org/>`_ !
+Your tests will usually be validating that the services you are deploying run correctly.
+This kind of tests are close to monitoring checks, so let's push them to
+`Nagios <https://www.nagios.org/>`_ !
 
-Testinfra has an option `--nagios` that enable a compatible nagios plugin
-beharvior::
+The Testinfra option `--nagios` enables a behavior compatible with a nagios plugin::
+
 
     $ py.test -qq --nagios --tb line test_ok.py; echo $?
     TESTINFRA OK - 2 passed, 0 failed, 0 skipped in 2.30 seconds
@@ -137,7 +137,7 @@ Integration with KitchenCI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 KitchenCI (aka Test Kitchen) can use testinfra via its :code:`shell` verifier.
-Add the following verifier to your :code:`.kitchen.yml`::
+Add the following to your :code:`.kitchen.yml`::
 
     verifier:
       name: shell
@@ -146,11 +146,11 @@ Add the following verifier to your :code:`.kitchen.yml`::
 
 .. _test docker images:
 
-Test docker images
+Test Docker images
 ~~~~~~~~~~~~~~~~~~
 
-Docker is a handy way to test your infrastructure code. This recipe show how to
-build and run docker containers with testinfra by overwriting the `host`
+Docker is a handy way to test your infrastructure code. This recipe shows how to
+build and run Docker containers with Testinfra by overloading the `host`
 fixture.
 
 .. code-block:: python
@@ -160,8 +160,8 @@ fixture.
     import testinfra
 
 
-    # By using scope = 'session' we use the same container for all tests, use
-    # 'function' if you want a container per test function
+    # scope='session' uses the same container for all the tests;
+    # scope='function' uses a new container per test function.
     @pytest.fixture(scope='session')
     def host(request):
         # build local ./Dockerfile
@@ -176,5 +176,5 @@ fixture.
 
 
     def test_myimage(host):
-        # 'host' now bind to the container
+        # 'host' now binds to the container
         assert host.check_output('myapp -v') == 'Myapp 1.0'
