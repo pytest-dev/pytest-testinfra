@@ -133,6 +133,7 @@ beharvior::
     $ py.test -qq --nagios --tb line test_fail.py; echo $?
     TESTINFRA CRITICAL - 1 passed, 1 failed, 0 skipped in 2.24 seconds
     .F
+    /usr/lib/python3/dist-packages/example/example.py:95: error: [Errno 111] error msg
     2
 
 
