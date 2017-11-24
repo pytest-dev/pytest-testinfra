@@ -117,14 +117,15 @@ monitoring checks, so let's push them to `Nagios <https://www.nagios.org/>`_ !
 Testinfra has an option `--nagios` that enable a compatible nagios plugin
 beharvior::
 
-    $ py.test -qq --nagios test_ok.py; echo $?
+    $ py.test -qq --nagios --tb line test_ok.py; echo $?
     TESTINFRA OK - 2 passed, 0 failed, 0 skipped in 2.30 seconds
-    [...]
+    ..
     0
 
-    $ py.test -qq --nagios test_fail.py; echo $?
+    $ py.test -qq --nagios --tb line test_fail.py; echo $?
     TESTINFRA CRITICAL - 1 passed, 1 failed, 0 skipped in 2.24 seconds
-    [Traceback that explain the failed test]
+    .F
+    /usr/lib/python3/dist-packages/example/example.py:95: error: [Errno 111] error msg
     2
 
 
