@@ -43,7 +43,7 @@ RUN echo "LANG=fr_FR.ISO-8859-15" >> /root/.ssh/environment
 RUN echo "user:foo" | chpasswd
 
 # Iptables rules
-RUN echo "*nat\n:PREROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n-A PREROUTING -d 192.168.0.1/32 -p tcp -m tcp --dport 443 -j REDIRECT\nCOMMIT\n*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT\nCOMMIT" > /etc/iptables/rules.v4
+RUN echo "*nat\n:PREROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n-A PREROUTING -d 192.168.0.1/32 -j REDIRECT\nCOMMIT\n*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT\nCOMMIT" > /etc/iptables/rules.v4
 
 # Expiration date for user "user"
 RUN chage -E 20000 user

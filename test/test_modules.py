@@ -429,12 +429,36 @@ def test_pip_package(host):
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
 
-def test_iptables_rules(host):
-    sshd_rule = host.iptables_rule('-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT')
-    vip_redirect_rule = host.iptables_rule('-A PREROUTING -d 192.168.0.1/32 -p tcp -m tcp --dport 443 -j REDIRECT', 'nat')
-    bad_rule1 = host.iptables_rule('-A INPUT -p tcp -m state --state NEW -m tcp --dport 21 -j ACCEPT')
-    bad_rule2 = host.iptables_rule('-A OUTPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT', 'nat')
+
+def test_iptables_rules1(host):
+    ssh_rule_str = \
+        '-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT'
+    vip_redirect_rule_str = \
+        '-A PREROUTING -d 192.168.0.1/32 -j REDIRECT'
+    bad_rule1_str = \
+        '-A INPUT -p tcp -m state --state NEW -m tcp --dport 21 -j ACCEPT'
+    bad_rule2_str = \
+        '-A OUTPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT',
+    sshd_rule = host.iptables_rule(ssh_rule_str)
+    vip_redirect_rule = host.iptables_rule(vip_redirect_rule_str, 'nat')
+    bad_rule1 = host.iptables_rule(bad_rule1_str)
+    bad_rule2 = host.iptables_rule(bad_rule2_str, 'nat')
     assert sshd_rule.exists
     assert vip_redirect_rule.exists
     assert not bad_rule1.exists
     assert not bad_rule2.exists
+
+
+def test_iptables_rules2(host):
+    ssh_rule_str = \
+        '-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT'
+    vip_redirect_rule_str = \
+        '-A PREROUTING -d 192.168.0.1/32 -j REDIRECT'
+    rules = host.iptables_rule().get_rules()
+    input_rules = host.iptables_rule().get_rules('filter', 'INPUT')
+    nat_rules = host.iptables_rule().get_rules('nat')
+    nat_prerouting_rules = host.iptables_rule().get_rules('nat', 'PREROUTING')
+    assert ssh_rule_str in rules
+    assert ssh_rule_str in input_rules
+    assert vip_redirect_rule_str in nat_rules
+    assert vip_redirect_rule_str in nat_prerouting_rules
