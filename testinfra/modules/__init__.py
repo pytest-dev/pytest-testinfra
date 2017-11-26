@@ -23,7 +23,7 @@ modules = {
     'file': 'file:File',
     'group': 'group:Group',
     'interface': 'interface:Interface',
-    'iptables_rule': 'iptables:Iptables',
+    'iptables': 'iptables:Iptables',
     'mount_point': 'mountpoint:MountPoint',
     'package': 'package:Package',
     'pip_package': 'pip:PipPackage',

@@ -13,48 +13,22 @@
 
 from __future__ import unicode_literals
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
 
-class Iptables(Module):
+class Iptables(InstanceModule):
     """Test iptables rule exists"""
 
-    def __init__(self, rule=None, table=None):
-        self.rule = rule
-        self.table = table
-        super(Iptables, self).__init__()
+    def rules(self, table='filter', chain=None):
+        """Returns list of iptables rules
 
-    @property
-    def exists(self):
-        """Returns true if iptables rule exists in table
-
-        Defaults to looking in 'filter' table.
-
-        >>> host.iptables_rule("-A INPUT -j REJECT").exists
-        True
-        >>> host.iptables_rule("-A INPUT -i lo -j REJECT").exists
-        False
-        >>> host.iptables_rule(
-            "-A PREROUTING -d 192.168.0.1/32 -j REDIRECT",
-            "nat"
-        ).exists
-        True
-
-        """
-
-        rules = self.get_rules()
-        return self.rule in rules
-
-    def get_rules(self, table='filter', chain=None):
-        """Returns list of iptables rules by running
-
-           Based on ouput of 'iptables -S' command
+           Based on ouput of 'iptables -t TABLE -S CHAIN' command
 
              optionally takes takes the following arguments:
                - table: defaults to 'filter'
                - chain: defaults to all chains
 
-        >>> host.iptables().get_rules()
+        >>> host.iptables.rules()
         [
             '-P INPUT ACCEPT',
             '-P FORWARD ACCEPT',
@@ -69,17 +43,10 @@ class Iptables(Module):
         """
 
         rules = []
-        cmd = "iptables"
-
-        if self.table:
-            cmd += " -t %s" % (self.table)
-        else:
-            cmd += " -t %s" % (table)
-
-        cmd += " -S"
-
         if chain:
-            cmd += " %s" % (chain)
+            cmd = "iptables -t {0} -S {1}".format(table, chain)
+        else:
+            cmd = "iptables -t {0} -S".format(table)
 
         for line in self.check_output(cmd).splitlines():
             line = line.replace("\t", " ")
