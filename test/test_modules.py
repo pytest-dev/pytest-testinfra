@@ -428,3 +428,14 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+
+
+def test_network(host):
+    assert host.network("8.8.8.8").be_reachable
+    assert host.network("www.google.com.tw").be_reachable
+    assert not host.network("1.1.1.1").be_reachable
+    assert not host.network("www.google.com.xx").be_reachable
+    assert host.network("8.8.8.8").be_resolvable
+    assert host.network("www.google.com.tw").be_resolvable
+    assert not host.network("1.1.1.1").be_resolvable
+    assert not host.network("www.google.com.xx").be_resolvable
