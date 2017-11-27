@@ -3,7 +3,7 @@ FROM debian:jessie
 # ntpd is linked to /bin/false, so the service is not running but is enabled
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install python openssh-server \
-        puppet salt-minion locales ntp sudo supervisor python-pip python-virtualenv && \
+        puppet salt-minion locales ntp sudo supervisor python-pip python-virtualenv iptables iptables-persistent && \
     mkdir -p /var/run/sshd && \
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
@@ -15,6 +15,7 @@ RUN apt-get update && \
     systemctl disable salt-minion.service && \
     systemctl enable ntp.service && \
     systemctl enable supervisor.service && \
+    systemctl enable netfilter-persistent.service && \
     ln -fsn /bin/false /usr/sbin/ntpd && \
     echo "python hold" | dpkg --set-selections && \
     echo "LANG=fr_FR.ISO-8859-15" > /etc/default/locale && \
@@ -40,6 +41,9 @@ RUN sed -ri 's/^UsePAM yes$/UsePAM no/' /etc/ssh/sshd_config
 RUN echo "PermitUserEnvironment yes" >> /etc/ssh/sshd_config
 RUN echo "LANG=fr_FR.ISO-8859-15" >> /root/.ssh/environment
 RUN echo "user:foo" | chpasswd
+
+# Iptables rules
+RUN echo "*nat\n:PREROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n-A PREROUTING -d 192.168.0.1/32 -j REDIRECT\nCOMMIT\n*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT\nCOMMIT" > /etc/iptables/rules.v4
 
 # Expiration date for user "user"
 RUN chage -E 20000 user
