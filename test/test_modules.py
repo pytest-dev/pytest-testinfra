@@ -428,3 +428,18 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+
+
+def test_iptables(host):
+    ssh_rule_str = \
+        '-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT'
+    vip_redirect_rule_str = \
+        '-A PREROUTING -d 192.168.0.1/32 -j REDIRECT'
+    rules = host.iptables.rules()
+    input_rules = host.iptables.rules('filter', 'INPUT')
+    nat_rules = host.iptables.rules('nat')
+    nat_prerouting_rules = host.iptables.rules('nat', 'PREROUTING')
+    assert ssh_rule_str in rules
+    assert ssh_rule_str in input_rules
+    assert vip_redirect_rule_str in nat_rules
+    assert vip_redirect_rule_str in nat_prerouting_rules
