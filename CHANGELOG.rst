@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.10.0
+======
+
+* New iptables module
+
 1.9.1
 =====
 
