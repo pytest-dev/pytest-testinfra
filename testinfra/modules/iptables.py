@@ -22,10 +22,10 @@ class Iptables(InstanceModule):
     def rules(self, table='filter', chain=None):
         """Returns list of iptables rules
 
-           Based on ouput of 'iptables -t TABLE -S CHAIN' command
+           Based on ouput of `iptables -t TABLE -S CHAIN` command
 
              optionally takes takes the following arguments:
-               - table: defaults to 'filter'
+               - table: defaults to `filter`
                - chain: defaults to all chains
 
         >>> host.iptables.rules()
