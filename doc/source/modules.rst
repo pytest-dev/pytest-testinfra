@@ -35,7 +35,7 @@ host
 
        :class:`testinfra.modules.interface.Interface` class
 
-    .. attribute:: iptables_rule
+    .. attribute:: iptables
 
        :class:`testinfra.modules.iptables.Iptables` class
 
