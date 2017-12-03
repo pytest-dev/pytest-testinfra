@@ -194,7 +194,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         if _ansible_version[1] >= 4:  # ansible >= 2.4
             return self.variable_manager.get_vars(host=host)
         # ansible < 2.4
-        return self.variable_manager.get_vars(self.loader, host)
+        return self.variable_manager.get_vars(self.loader, host=host)
 
     def run(self, host, module_name, module_args=None, **kwargs):
         self.cli.options.check = kwargs.get("check", False)
