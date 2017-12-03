@@ -304,12 +304,6 @@ def test_ansible_module(host):
     assert variables["inventory_hostname"] == "debian_jessie"
     assert variables["group_names"] == ["testgroup"]
 
-    # test errors reporting
-    with pytest.raises(host.ansible.AnsibleException) as excinfo:
-        host.ansible("file", "path=/etc/passwd an_unexpected=variable")
-    tb = str(excinfo.value)
-    assert 'unsupported parameter' in tb.lower()
-
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
         host.ansible("command", "zzz")
     if version == 1:
