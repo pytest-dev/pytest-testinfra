@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.10.1
+======
+
+* Fix get_variables() for ansible>=2.0,<2.4 (#274)
+* Paramiko: Use the RequireTTY setting if specified in a provided SSHConfig (#247)
+
 1.10.0
 ======
 
