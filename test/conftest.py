@@ -135,7 +135,7 @@ def build_docker_container_fixture(image, scope):
 def initialize_container_fixtures():
     for image, scope in itertools.product([
         "debian_jessie", "debian_wheezy", "ubuntu_trusty", "ubuntu_xenial",
-        "fedora", "centos_7",
+        "fedora", "centos_7", "alpine",
     ], ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
@@ -195,7 +195,7 @@ def host(request, tmpdir_factory):
         service = testinfra.get_host(
             docker_id, connection='docker').service
 
-        if image in ("centos_7", "fedora"):
+        if image in ("centos_7", "fedora", "alpine"):
             service_name = "sshd"
         else:
             service_name = "ssh"
