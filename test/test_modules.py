@@ -414,6 +414,15 @@ def test_sudo_to_root(host):
     assert host.user().name == "user"
 
 
+@pytest.mark.testinfra_hosts('docker://alpine')
+def test_alpine_package(host):
+    busybox = host.package('busybox')
+    assert busybox.is_installed
+    assert not host.package('nginx').is_installed
+    assert busybox.version == '1.25.1'
+    assert busybox.release == 'r1'
+
+
 def test_pip_package(host):
     assert host.pip_package.get_packages()['pip']['version'] == '1.5.6'
     pytest = host.pip_package.get_packages(pip_path='/v/bin/pip')['pytest']
