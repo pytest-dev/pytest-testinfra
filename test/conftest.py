@@ -135,7 +135,7 @@ def build_docker_container_fixture(image, scope):
 def initialize_container_fixtures():
     for image, scope in itertools.product([
         "debian_jessie", "debian_wheezy", "ubuntu_trusty", "ubuntu_xenial",
-        "fedora", "centos_7", "alpine_3.5"
+        "fedora", "centos_7", "alpine_35"
     ], ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
