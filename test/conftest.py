@@ -113,7 +113,7 @@ def build_docker_container_fixture(image, scope):
             docker_host = "localhost"
 
         cmd = ["docker", "run", "-d", "-P"]
-        if image in ("ubuntu_xenial", "debian_jessie", "centos_7", "fedora"):
+        if image in ("ubuntu_xenial", "debian_jessie", "centos_7", "fedora", "alpine_35"):
             cmd.append("--privileged")
 
         cmd.append("philpep/testinfra:" + image)
@@ -135,7 +135,7 @@ def build_docker_container_fixture(image, scope):
 def initialize_container_fixtures():
     for image, scope in itertools.product([
         "debian_jessie", "debian_wheezy", "ubuntu_trusty", "ubuntu_xenial",
-        "fedora", "centos_7",
+        "fedora", "centos_7", "alpine_3.5"
     ], ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
