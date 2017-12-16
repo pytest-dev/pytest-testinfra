@@ -437,3 +437,12 @@ def test_iptables(host):
     assert ssh_rule_str in input_rules
     assert vip_redirect_rule_str in nat_rules
     assert vip_redirect_rule_str in nat_prerouting_rules
+
+
+@pytest.mark.testinfra_hosts('docker://alpine_35')
+def test_alpine_package(host):
+    busybox = host.package('busybox')
+    assert busybox.is_installed
+    assert not host.package('nginx').is_installed
+    assert busybox.version == '1.25.1'
+    assert busybox.release == 'r1'

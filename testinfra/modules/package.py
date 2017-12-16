@@ -37,6 +37,7 @@ class Package(Module):
         - pkg_info (OpenBSD)
         - pkg_info (NetBSD)
         - pkg (FreeBSD)
+        - apk (Alpine)
         """
         raise NotImplementedError
 
@@ -71,6 +72,8 @@ class Package(Module):
             return DebianPackage
         elif host.exists("rpm"):
             return RpmPackage
+        elif host.exists("apk"):
+            return AlpinePackage
         else:
             raise NotImplementedError
 
@@ -146,3 +149,20 @@ class RpmPackage(Package):
     def release(self):
         return self.check_output('rpm -q --queryformat="%%{RELEASE}" %s',
                                  self.name)
+
+
+class AlpinePackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test("apk -e info %s", self.name).rc == 0
+
+    @property
+    def version(self):
+        out = self.check_output("apk -e -v info %s", self.name).split("-")
+        return out[-2]
+
+    @property
+    def release(self):
+        out = self.check_output("apk -e -v info %s", self.name).split("-")
+        return out[-1]
