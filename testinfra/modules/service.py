@@ -92,7 +92,7 @@ class SysvService(Service):
         if self.run_expect([0, 127], "rc-status").rc == 0:
             if self.run_test(
                 "rc-service -l | grep -i %s", self.name
-            ).rc
+            ).rc == 0:
                 return True
             else:
                 return False
