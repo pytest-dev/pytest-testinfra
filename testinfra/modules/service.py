@@ -90,7 +90,9 @@ class SysvService(Service):
     @property
     def is_enabled(self):
         if self.run_expect([0, 127], "rc-status").rc == 0:
-            return bool(self.check_output("rc-service -l | grep -i %s", self.name))
+            return bool(self.check_output(
+                "rc-service -l | grep -i %s", self.name
+            ))
         return bool(self.check_output(
             "find /etc/rc?.d/ -name %s",
             "S??" + self.name,
