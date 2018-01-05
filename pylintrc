@@ -10,7 +10,7 @@ disable=
     inconsistent-return-statements,
     keyword-arg-before-vararg,
     wrong-import-order
-max-branches=13
+max-branches=17
 max-bool-expr=6
 max-args=8
 # we have flake8 for that
