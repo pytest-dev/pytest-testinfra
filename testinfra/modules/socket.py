@@ -190,14 +190,68 @@ class Socket(Module):
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
-            return LinuxSocket
+            if host.exists('ss'):
+                return LinuxSocketSS
+            elif host.exists('netstat'):
+                return LinuxSocketNetstat
+            else:
+                raise RuntimeError(
+                    'could not use the Socket module, either "ss" or "netstat"'
+                    ' utility is required in $PATH')
         elif host.system_info.type.endswith("bsd"):
             return BSDSocket
         else:
             raise NotImplementedError
 
 
-class LinuxSocket(Socket):
+class LinuxSocketSS(Socket):
+
+    def _iter_sockets(self, listening):
+        cmd = 'ss --no-header --numeric'
+        if listening:
+            cmd += ' --listening'
+        else:
+            cmd += ' --all'
+        if self.protocol == 'tcp':
+            cmd += ' --tcp'
+        elif self.protocol == 'udp':
+            cmd += ' --udp'
+        elif self.protocol == 'unix':
+            cmd += ' --unix'
+
+        for line in self.check_output(cmd).splitlines():
+            splitted = line.split()
+            if self.protocol:
+                protocol = self.protocol
+                status, local, remote = (
+                    splitted[0], splitted[3], splitted[4])
+            else:
+                protocol, status, local, remote = (
+                    splitted[0], splitted[1], splitted[4], splitted[5])
+            if protocol == 'u_str':
+                protocol = 'unix'
+                host, port = local, None
+            elif protocol in ('tcp', 'udp'):
+                host, port = local.rsplit(':', 1)
+                port = int(port)
+            else:
+                continue
+            if listening and status == 'LISTEN':
+                if host == '*':
+                    yield protocol, '::', port
+                    yield protocol, '0.0.0.0', port
+                else:
+                    yield protocol, host, port
+            elif not listening and status == 'ESTAB':
+                if protocol in ('tcp', 'udp'):
+                    remote_host, remote_port = remote.rsplit(':', 1)
+                    remote_port = int(remote_port)
+                    yield protocol, host, port, remote_host, remote_port
+                else:
+                    yield protocol, remote
+
+
+class LinuxSocketNetstat(Socket):
 
     def _iter_sockets(self, listening):
         cmd = "netstat -n"
