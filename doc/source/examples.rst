@@ -172,7 +172,7 @@ fixture.
         # return a testinfra connection to the container
         yield testinfra.get_host("docker://" + docker_id)
         # at the end of the test suite, destroy the container
-        subprocess.check_all(['docker', 'rm', '-f', docker_id])
+        subprocess.check_call(['docker', 'rm', '-f', docker_id])
 
 
     def test_myimage(host):
