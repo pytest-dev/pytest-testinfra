@@ -110,7 +110,9 @@ class Process(InstanceModule):
 
     @classmethod
     def get_module_class(cls, host):
-        if (host.system_info.type == "linux"
+        if host.system_info.distribution == "alpine":
+            return BusyboxProcess
+        elif (host.system_info.type == "linux"
                 or host.system_info.type.endswith("bsd")):
             return PosixProcess
         else:
@@ -153,4 +155,41 @@ class PosixProcess(Process):
         return {
             "lstart": " ".join(splitted[:5]),
             name: int_or_float(splitted[5]),
+        }
+
+
+class BusyboxProcess(Process):
+
+    def _get_processes(self, **filters):
+        cmd = "ps -A -o %s"
+        attributes = set(["pid", "comm", "stime"]) | set(filters.keys())
+
+        # Theses attributes contains spaces. Put them at the end of the list
+        attributes -= set(["args"])
+        attributes = sorted(attributes)
+        attributes.extend(["args"])
+        arg = ",".join(attributes)
+
+        procs = []
+        # skip first line (header)
+        for line in self.check_output(cmd, arg).splitlines()[1:]:
+            splitted = line.split()
+            attrs = {}
+            i = 0
+            for i, key in enumerate(attributes[:-1]):
+                attrs[key] = int_or_float(splitted[i])
+
+            attrs["lstart"] = attrs["stime"]
+            attrs["args"] = " ".join(splitted[i+1:])
+            procs.append(attrs)
+
+        return procs
+
+    def _get_process_attribute_by_pid(self, pid, name):
+        out = self.check_output(
+            "ps -p %s -o stime,%s", six.text_type(pid), name)
+        splitted = out.splitlines()[1].split()
+        return {
+            "lstart": splitted[0],
+            name: int_or_float(splitted[1]),
         }
