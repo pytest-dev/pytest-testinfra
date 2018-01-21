@@ -7,6 +7,8 @@ disable=
     bad-continuation,
     fixme,
     locally-disabled,
+    inconsistent-return-statements,
+    keyword-arg-before-vararg,
     wrong-import-order
 max-branches=13
 max-bool-expr=6
