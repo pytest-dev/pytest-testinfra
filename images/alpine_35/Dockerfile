@@ -2,6 +2,9 @@ FROM alpine:3.5
 
 RUN apk add --update --no-cache procps python openrc openssh && rm /var/cache/apk/* && \
     sed -i "s/^#PermitRootLogin prohibit-password/PermitRootLogin without-password/g" /etc/ssh/sshd_config && \
+    rm -f /etc/ssh/ssh_host_ecdsa_key /etc/ssh/ssh_host_rsa_key && \
+    ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_ecdsa_key && \
+    ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key && \
     rc-update add sshd && \
     mkdir -p /root/.ssh && \
     chmod 700 /root/.ssh && \
