@@ -181,7 +181,11 @@ def test_socket(host):
 def test_process(host, docker_image):
     init = host.process.get(pid=1)
     assert init.ppid == 0
-    assert init.euid == 0
+    if docker_image != "alpine_35":
+        # busybox ps doesn't have a euid equivalent
+        assert init.euid == 0
+    else:
+        assert init.user == "root"
 
     args, comm = {
         "debian_jessie": ("/sbin/init", "systemd"),

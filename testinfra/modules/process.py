@@ -110,7 +110,7 @@ class Process(InstanceModule):
 
     @classmethod
     def get_module_class(cls, host):
-        if host.system_info.distribution == "alpine":
+        if host.file("/bin/ps").linked_to == "/bin/busybox":
             return BusyboxProcess
         elif (host.system_info.type == "linux"
                 or host.system_info.type.endswith("bsd")):
@@ -162,7 +162,7 @@ class BusyboxProcess(Process):
 
     def _get_processes(self, **filters):
         cmd = "ps -A -o %s"
-        attributes = set(["pid", "comm", "stime"]) | set(filters.keys())
+        attributes = set(["pid", "comm", "time"]) | set(filters.keys())
 
         # Theses attributes contains spaces. Put them at the end of the list
         attributes -= set(["args"])
@@ -179,17 +179,20 @@ class BusyboxProcess(Process):
             for i, key in enumerate(attributes[:-1]):
                 attrs[key] = int_or_float(splitted[i])
 
-            attrs["lstart"] = attrs["stime"]
+            attrs["lstart"] = attrs["time"]
             attrs["args"] = " ".join(splitted[i+1:])
             procs.append(attrs)
 
         return procs
 
     def _get_process_attribute_by_pid(self, pid, name):
-        out = self.check_output(
-            "ps -p %s -o stime,%s", six.text_type(pid), name)
-        splitted = out.splitlines()[1].split()
-        return {
-            "lstart": splitted[0],
-            name: int_or_float(splitted[1]),
-        }
+        out = self.check_output("ps -o pid,time,%s", name)
+
+        # skip first line (header)
+        for line in out.splitlines()[1:]:
+            splitted = line.split()
+            if int(splitted[0]) == pid:
+                return {
+                    "lstart": splitted[1],
+                    name: int_or_float(splitted[2]),
+                }
