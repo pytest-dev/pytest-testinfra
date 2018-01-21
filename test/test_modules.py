@@ -33,6 +33,7 @@ all_images = pytest.mark.testinfra_hosts(*[
 def test_package(host, docker_image):
     ssh = host.package("openssh-server")
     version = {
+        "alpine_35": "7.4_p1",
         "debian_jessie": "1:6.7",
         "debian_wheezy": "1:6.0",
         "fedora": "7.",
@@ -43,6 +44,7 @@ def test_package(host, docker_image):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
+        "alpine_35": "r0",
         "fedora": ".fc25",
         "centos_7": ".el7",
         "debian_jessie": None,
@@ -83,7 +85,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "fedora"):
+    if docker_image in ("centos_7", "fedora", "alpine_35"):
         name = "sshd"
     else:
         name = "ssh"
