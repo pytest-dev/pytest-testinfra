@@ -97,7 +97,7 @@ def test_ssh_service(host, docker_image):
         name = "ssh"
 
     ssh = host.service(name)
-    if docker_image in ["ubuntu_xenial"]:
+    if docker_image == "ubuntu_xenial":
         assert not ssh.is_running
     else:
         assert ssh.is_running
