@@ -24,14 +24,19 @@ all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
         "debian_jessie", "centos_7", "ubuntu_trusty", "fedora",
-        "ubuntu_xenial",
+        "ubuntu_xenial", "alpine_35"
     )
 ])
 
 
 @all_images
 def test_package(host, docker_image):
-    ssh = host.package("openssh-server")
+    if docker_image == "alpine_35":
+        name = "openssh"
+    else:
+        name = "openssh-server"
+
+    ssh = host.package(name)
     version = {
         "debian_jessie": "1:6.7",
         "debian_wheezy": "1:6.0",
@@ -39,6 +44,7 @@ def test_package(host, docker_image):
         "ubuntu_trusty": "1:6.6",
         "ubuntu_xenial": "1:7.2",
         "centos_7": "7.",
+        "alpine_35": "7."
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
@@ -49,6 +55,7 @@ def test_package(host, docker_image):
         "debian_wheezy": None,
         "ubuntu_trusty": None,
         "ubuntu_xenial": None,
+        "alpine_35": "r1"
     }[docker_image]
     if release is None:
         with pytest.raises(NotImplementedError):
@@ -74,6 +81,7 @@ def test_systeminfo(host, docker_image):
         "fedora": ("^25$", "fedora", None),
         "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
         "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
+        "alpine_35": ("^3\.5\.", "alpine", None)
     }[docker_image]
 
     assert host.system_info.distribution == distribution
@@ -83,7 +91,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "fedora"):
+    if docker_image in ("centos_7", "fedora", "alpine_35"):
         name = "sshd"
     else:
         name = "ssh"
@@ -173,7 +181,11 @@ def test_socket(host):
 def test_process(host, docker_image):
     init = host.process.get(pid=1)
     assert init.ppid == 0
-    assert init.euid == 0
+    if docker_image != "alpine_35":
+        # busybox ps doesn't have a euid equivalent
+        assert init.euid == 0
+    else:
+        assert init.user == "root"
 
     args, comm = {
         "debian_jessie": ("/sbin/init", "systemd"),
@@ -182,6 +194,7 @@ def test_process(host, docker_image):
         "ubuntu_trusty": ("/usr/sbin/sshd -D", "sshd"),
         "ubuntu_xenial": ("/sbin/init", "systemd"),
         "debian_wheezy": ("/usr/sbin/sshd -D", "sshd"),
+        "alpine_35": ("/sbin/init", "init")
     }[docker_image]
     assert init.args == args
     assert init.comm == comm
@@ -437,12 +450,3 @@ def test_iptables(host):
     assert ssh_rule_str in input_rules
     assert vip_redirect_rule_str in nat_rules
     assert vip_redirect_rule_str in nat_prerouting_rules
-
-
-@pytest.mark.testinfra_hosts('docker://alpine_35')
-def test_alpine_package(host):
-    busybox = host.package('busybox')
-    assert busybox.is_installed
-    assert not host.package('nginx').is_installed
-    assert busybox.version == '1.25.1'
-    assert busybox.release == 'r1'
