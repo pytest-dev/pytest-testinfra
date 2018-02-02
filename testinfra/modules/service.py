@@ -22,7 +22,7 @@ class Service(Module):
 
     Implementations:
 
-    - Linux: detect Systemd or Upstart, fallback to SysV
+    - Linux: detect Systemd, Upstart or OpenRC, fallback to SysV
     - FreeBSD: service(1)
     - OpenBSD: ``/etc/rc.d/$name check`` for ``is_running``
       ``rcctl ls on`` for ``is_enabled`` (only OpenBSD >= 5.8)
@@ -45,6 +45,7 @@ class Service(Module):
         """Test if service is enabled"""
         raise NotImplementedError
 
+    # pylint: disable=too-many-return-statements
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
@@ -57,6 +58,8 @@ class Service(Module):
                     and host.exists('status')
                     and host.file('/etc/init').is_directory):
                 return UpstartService
+            elif host.exists("rc-service"):
+                return OpenRCService
             return SysvService
         elif host.system_info.type == "freebsd":
             return FreeBSDService
@@ -150,6 +153,20 @@ class UpstartService(SysvService):
         if cmd.rc == 0 and len(cmd.stdout.split()) > 1:
             return 'running' in cmd.stdout.split()[1]
         return super(UpstartService, self).is_running
+
+
+class OpenRCService(SysvService):
+
+    @cached_property
+    def _service_command(self):
+        return self._find_command("rc-service")
+
+    @property
+    def is_enabled(self):
+        return bool(self.check_output(
+            "find /etc/runlevels/ -name %s",
+            self.name,
+        ))
 
 
 class FreeBSDService(Service):
