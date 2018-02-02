@@ -23,7 +23,7 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "debian_jessie", "centos_7", "ubuntu_trusty", "fedora",
+        "debian_stretch", "centos_7", "ubuntu_trusty", "fedora",
         "ubuntu_xenial", "alpine_35"
     )
 ])
@@ -38,8 +38,7 @@ def test_package(host, docker_image):
 
     ssh = host.package(name)
     version = {
-        "debian_jessie": "1:6.7",
-        "debian_wheezy": "1:6.0",
+        "debian_stretch": "1:7.4",
         "fedora": "7.",
         "ubuntu_trusty": "1:6.6",
         "ubuntu_xenial": "1:7.2",
@@ -51,8 +50,7 @@ def test_package(host, docker_image):
     release = {
         "fedora": ".fc25",
         "centos_7": ".el7",
-        "debian_jessie": None,
-        "debian_wheezy": None,
+        "debian_stretch": None,
         "ubuntu_trusty": None,
         "ubuntu_xenial": None,
         "alpine_35": "r1"
@@ -67,7 +65,7 @@ def test_package(host, docker_image):
 def test_held_package(host):
     python = host.package("python")
     assert python.is_installed
-    assert python.version.startswith("2.7.9")
+    assert python.version.startswith("2.7.")
 
 
 @all_images
@@ -75,8 +73,7 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename = {
-        "debian_jessie": ("^8\.", "debian", "jessie"),
-        "debian_wheezy": ("^7$", "debian", None),
+        "debian_stretch": ("^9\.", "debian", "stretch"),
         "centos_7": ("^7$", "centos", None),
         "fedora": ("^25$", "fedora", None),
         "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
@@ -120,18 +117,18 @@ def test_service(host, name, running, enabled):
 
 def test_salt(host):
     ssh_version = host.salt("pkg.version", "openssh-server", local=True)
-    assert ssh_version.startswith("1:6.7")
+    assert ssh_version.startswith("1:7.4")
 
 
 def test_puppet_resource(host):
     resource = host.puppet_resource("package", "openssh-server")
-    assert resource["openssh-server"]["ensure"].startswith("1:6.7")
+    assert resource["openssh-server"]["ensure"].startswith("1:7.4")
 
 
 def test_facter(host):
-    assert host.facter()["lsbdistcodename"] == "jessie"
+    assert host.facter()["lsbdistcodename"] == "stretch"
     assert host.facter("lsbdistcodename") == {
-        "lsbdistcodename": "jessie",
+        "lsbdistcodename": "stretch",
     }
 
 
@@ -187,12 +184,11 @@ def test_process(host, docker_image):
     assert init.user == "root"
 
     args, comm = {
-        "debian_jessie": ("/sbin/init", "systemd"),
+        "debian_stretch": ("/sbin/init", "systemd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
         "ubuntu_trusty": ("/usr/sbin/sshd -D", "sshd"),
         "ubuntu_xenial": ("/sbin/init", "systemd"),
-        "debian_wheezy": ("/usr/sbin/sshd -D", "sshd"),
         "alpine_35": ("/sbin/init", "init")
     }[docker_image]
     assert init.args == args
@@ -203,13 +199,13 @@ def test_user(host):
     user = host.user("sshd")
     assert user.exists
     assert user.name == "sshd"
-    assert user.uid == 105
+    assert user.uid == 107
     assert user.gid == 65534
     assert user.group == "nogroup"
     assert user.gids == [65534]
     assert user.groups == ["nogroup"]
     assert user.shell == "/usr/sbin/nologin"
-    assert user.home == "/var/run/sshd"
+    assert user.home == "/run/sshd"
     assert user.password == "*"
 
 
@@ -291,12 +287,12 @@ def test_ansible_unavailable(host):
         'connection backend') in str(excinfo.value)
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_jessie")
+@pytest.mark.testinfra_hosts("ansible://debian_stretch")
 def test_ansible_module(host):
     import ansible
     version = int(ansible.__version__.split(".", 1)[0])
     setup = host.ansible("setup")["ansible_facts"]
-    assert setup["ansible_lsb"]["codename"] == "jessie"
+    assert setup["ansible_lsb"]["codename"] == "stretch"
     passwd = host.ansible("file", "path=/etc/passwd state=file")
     assert passwd["changed"] is False
     assert passwd["gid"] == 0
@@ -313,7 +309,7 @@ def test_ansible_module(host):
     assert variables["myvar"] == "foo"
     assert variables["myhostvar"] == "bar"
     assert variables["mygroupvar"] == "qux"
-    assert variables["inventory_hostname"] == "debian_jessie"
+    assert variables["inventory_hostname"] == "debian_stretch"
     assert variables["group_names"] == ["testgroup"]
 
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
@@ -415,7 +411,7 @@ def test_sudo_fail_from_root(host):
         assert host.user().name == "root"
 
 
-@pytest.mark.testinfra_hosts("docker://user@debian_jessie")
+@pytest.mark.testinfra_hosts("docker://user@debian_stretch")
 def test_sudo_to_root(host):
     assert host.user().name == "user"
     with host.sudo():
@@ -427,7 +423,7 @@ def test_sudo_to_root(host):
 
 
 def test_pip_package(host):
-    assert host.pip_package.get_packages()['pip']['version'] == '1.5.6'
+    assert host.pip_package.get_packages()['pip']['version'] == '9.0.1'
     pytest = host.pip_package.get_packages(pip_path='/v/bin/pip')['pytest']
     assert pytest['version'].startswith('2.')
     outdated = host.pip_package.get_outdated_packages(
