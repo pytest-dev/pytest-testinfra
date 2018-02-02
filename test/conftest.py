@@ -113,7 +113,7 @@ def build_docker_container_fixture(image, scope):
             docker_host = "localhost"
 
         cmd = ["docker", "run", "-d", "-P"]
-        if image in ("ubuntu_xenial", "debian_jessie", "centos_7", "fedora",
+        if image in ("ubuntu_xenial", "debian_stretch", "centos_7", "fedora",
                      "alpine_35"):
             cmd.append("--privileged")
 
@@ -135,7 +135,7 @@ def build_docker_container_fixture(image, scope):
 
 def initialize_container_fixtures():
     for image, scope in itertools.product([
-        "debian_jessie", "debian_wheezy", "ubuntu_trusty", "ubuntu_xenial",
+        "debian_stretch", "ubuntu_trusty", "ubuntu_xenial",
         "fedora", "centos_7", "alpine_35"
     ], ["function", "session"]):
         build_docker_container_fixture(image, scope)
@@ -226,7 +226,7 @@ def pytest_generate_tests(metafunc):
             hosts = marker.args
         else:
             # Default
-            hosts = ["docker://debian_jessie"]
+            hosts = ["docker://debian_stretch"]
 
         metafunc.parametrize("host", hosts, indirect=True,
                              scope="function")

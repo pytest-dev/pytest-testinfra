@@ -18,14 +18,14 @@ from testinfra.backend.base import BaseBackend
 from testinfra.backend.base import HostSpec
 from testinfra.backend.winrm import _quote
 BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
-HOSTS = [backend + "://debian_jessie" for backend in BACKENDS]
-USER_HOSTS = [backend + "://user@debian_jessie" for backend in BACKENDS]
+HOSTS = [backend + "://debian_stretch" for backend in BACKENDS]
+USER_HOSTS = [backend + "://user@debian_stretch" for backend in BACKENDS]
 SUDO_HOSTS = [
-    backend + "://user@debian_jessie?sudo=True"
+    backend + "://user@debian_stretch?sudo=True"
     for backend in BACKENDS
 ]
 SUDO_USER_HOSTS = [
-    backend + "://debian_jessie?sudo=True&sudo_user=user"
+    backend + "://debian_stretch?sudo=True&sudo_user=user"
     for backend in BACKENDS
 ]
 
@@ -43,21 +43,21 @@ def test_encoding(host):
     if host.backend.get_connection_type() == "ansible":
         pytest.skip("ansible handle encoding himself")
 
-    # jessie image is fr_FR@ISO-8859-15
+    # stretch image is fr_FR@ISO-8859-15
     cmd = host.run("ls -l %s", "/é")
     if host.backend.get_connection_type() == "docker":
         # docker bug ?
         assert cmd.stderr_bytes == (
-            b"ls: impossible d'acc\xe9der \xe0 /\xef\xbf\xbd: "
+            b"ls: impossible d'acc\xe9der \xe0 '/\xef\xbf\xbd': "
             b"Aucun fichier ou dossier de ce type\n"
         )
     else:
         assert cmd.stderr_bytes == (
-            b"ls: impossible d'acc\xe9der \xe0 /\xe9: "
+            b"ls: impossible d'acc\xe9der \xe0 '/\xe9': "
             b"Aucun fichier ou dossier de ce type\n"
         )
         assert cmd.stderr == (
-            "ls: impossible d'accéder à /é: "
+            "ls: impossible d'accéder à '/é': "
             "Aucun fichier ou dossier de ce type\n"
         )
 
@@ -72,16 +72,16 @@ def test_sudo(host):
     assert host.user().name == "root"
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_jessie")
+@pytest.mark.testinfra_hosts("ansible://debian_stretch")
 def test_ansible_hosts_expand(host):
     from testinfra.backend.ansible import AnsibleBackend
 
     def get_hosts(spec):
         return AnsibleBackend.get_hosts(
             spec, ansible_inventory=host.backend.ansible_inventory)
-    assert get_hosts(["all"]) == ["debian_jessie"]
-    assert get_hosts(["testgroup"]) == ["debian_jessie"]
-    assert get_hosts(["*ia*jess*"]) == ["debian_jessie"]
+    assert get_hosts(["all"]) == ["debian_stretch"]
+    assert get_hosts(["testgroup"]) == ["debian_stretch"]
+    assert get_hosts(["*ia*stre*"]) == ["debian_stretch"]
 
 
 def test_backend_importables():
