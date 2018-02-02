@@ -184,8 +184,7 @@ def test_process(host, docker_image):
     if docker_image != "alpine_35":
         # busybox ps doesn't have a euid equivalent
         assert init.euid == 0
-    else:
-        assert init.user == "root"
+    assert init.user == "root"
 
     args, comm = {
         "debian_jessie": ("/sbin/init", "systemd"),
