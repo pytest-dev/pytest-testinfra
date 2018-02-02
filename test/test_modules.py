@@ -23,7 +23,7 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "debian_stretch", "centos_7", "ubuntu_trusty", "fedora",
+        "debian_stretch", "centos_7", "fedora",
         "ubuntu_xenial", "alpine_35"
     )
 ])
@@ -40,7 +40,6 @@ def test_package(host, docker_image):
     version = {
         "debian_stretch": "1:7.4",
         "fedora": "7.",
-        "ubuntu_trusty": "1:6.6",
         "ubuntu_xenial": "1:7.2",
         "centos_7": "7.",
         "alpine_35": "7."
@@ -51,7 +50,6 @@ def test_package(host, docker_image):
         "fedora": ".fc25",
         "centos_7": ".el7",
         "debian_stretch": None,
-        "ubuntu_trusty": None,
         "ubuntu_xenial": None,
         "alpine_35": "r1"
     }[docker_image]
@@ -76,7 +74,6 @@ def test_systeminfo(host, docker_image):
         "debian_stretch": ("^9\.", "debian", "stretch"),
         "centos_7": ("^7$", "centos", None),
         "fedora": ("^25$", "fedora", None),
-        "ubuntu_trusty": ("^14\.04$", "ubuntu", "trusty"),
         "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
         "alpine_35": ("^3\.5\.", "alpine", None)
     }[docker_image]
@@ -99,7 +96,7 @@ def test_ssh_service(host, docker_image):
     else:
         assert ssh.is_running
 
-    if docker_image in ("ubuntu_trusty", "ubuntu_xenial"):
+    if docker_image == "ubuntu_xenial":
         assert not ssh.is_enabled
     else:
         assert ssh.is_enabled
@@ -187,7 +184,6 @@ def test_process(host, docker_image):
         "debian_stretch": ("/sbin/init", "systemd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
-        "ubuntu_trusty": ("/usr/sbin/sshd -D", "sshd"),
         "ubuntu_xenial": ("/sbin/init", "systemd"),
         "alpine_35": ("/sbin/init", "init")
     }[docker_image]
