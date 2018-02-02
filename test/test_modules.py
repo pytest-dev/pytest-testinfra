@@ -47,7 +47,7 @@ def test_package(host, docker_image):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "fedora": ".fc25",
+        "fedora": ".fc27",
         "centos_7": ".el7",
         "debian_stretch": None,
         "ubuntu_xenial": None,
@@ -73,7 +73,7 @@ def test_systeminfo(host, docker_image):
     release, distribution, codename = {
         "debian_stretch": ("^9\.", "debian", "stretch"),
         "centos_7": ("^7$", "centos", None),
-        "fedora": ("^25$", "fedora", None),
+        "fedora": ("^27$", "fedora", None),
         "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
         "alpine_35": ("^3\.5\.", "alpine", None)
     }[docker_image]

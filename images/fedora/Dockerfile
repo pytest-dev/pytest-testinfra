@@ -1,4 +1,4 @@
-FROM fedora:25
+FROM fedora:27
 
 RUN dnf -y install procps python systemd openssh-server && dnf clean all &&\
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done) && \
