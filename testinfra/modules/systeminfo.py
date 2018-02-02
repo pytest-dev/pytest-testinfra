@@ -86,6 +86,13 @@ class SystemInfo(InstanceModule):
                     match.groups())
                 return sysinfo
 
+        # Alpine doesn't have /etc/os-release
+        alpine_release = self.run("cat /etc/alpine-release")
+        if alpine_release.rc == 0:
+            sysinfo["distribution"] = "alpine"
+            sysinfo["release"] = alpine_release.stdout.strip()
+            return sysinfo
+
         return sysinfo
 
     def _get_darwin_sysinfo(self):
