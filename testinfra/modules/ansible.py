@@ -14,6 +14,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import functools
 import pprint
 
 from testinfra.modules.base import InstanceModule
@@ -35,6 +36,18 @@ class AnsibleException(Exception):
         self.result = result
         super(AnsibleException, self).__init__(
             "Unexpected error: {}".format(pprint.pformat(result)))
+
+
+def need_ansible(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # pylint: disable=protected-access
+        if not self._host.backend.HAS_RUN_ANSIBLE:
+            raise RuntimeError((
+                "Ansible module is only available with ansible "
+                "connection backend"))
+        return func(self, *args, **kwargs)
+    return wrapper
 
 
 class Ansible(InstanceModule):
@@ -59,17 +72,15 @@ class Ansible(InstanceModule):
     """
     AnsibleException = AnsibleException
 
+    @need_ansible
     def __call__(self, module_name, module_args=None, check=True, **kwargs):
-        if not self._host.backend.HAS_RUN_ANSIBLE:
-            raise RuntimeError((
-                "Ansible module is only available with ansible "
-                "connection backend"))
         result = self._host.backend.run_ansible(
             module_name, module_args, check=check, **kwargs)
         if result.get("failed", False) is True:
             raise AnsibleException(result)
         return result
 
+    @need_ansible
     def get_variables(self):
         """Returns a dict of ansible variables
 
