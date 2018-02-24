@@ -276,11 +276,14 @@ def test_file(host):
 
 
 def test_ansible_unavailable(host):
+    expected = ('Ansible module is only available with '
+                'ansible connection backend')
     with pytest.raises(RuntimeError) as excinfo:
         host.ansible("setup")
-    assert (
-        'Ansible module is only available with ansible '
-        'connection backend') in str(excinfo.value)
+    assert expected in str(excinfo.value)
+    with pytest.raises(RuntimeError) as excinfo:
+        host.ansible.get_variables()
+    assert expected in str(excinfo.value)
 
 
 @pytest.mark.testinfra_hosts("ansible://debian_stretch")
