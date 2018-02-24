@@ -2,6 +2,13 @@
 Changelog
 =========
 
+1.11.0
+======
+
+* Fix bad error reporting when using ansible module without ansible backend (#288)
+* Socket: add a new implementation using ss instead of netstat (#124)
+* Add service, process, and systeminfo support for Alpine (#283)
+
 1.10.1
 ======
 
