@@ -107,7 +107,7 @@ class Socket(Module):
                   socket listen on **both** all ipv4 and ipv6 addresses
                   (ie 0.0.0.0 and ::)
         """
-        sockets = self.get_sockets(True)
+        sockets = list(self._iter_sockets(True))
         if self.protocol == "unix":
             return ("unix", self.host) in sockets
         allipv4 = (self.protocol, "0.0.0.0", self.port) in sockets
@@ -138,7 +138,7 @@ class Socket(Module):
 
         """
         sockets = []
-        for sock in self.get_sockets(False):
+        for sock in self._iter_sockets(False):
             if sock[0] != self.protocol:
                 continue
 
@@ -167,7 +167,8 @@ class Socket(Module):
         ['tcp://0.0.0.0:22', 'tcp://:::22', 'unix:///run/systemd/private', ...]
         """
         sockets = []
-        for sock in cls(None).get_sockets(True):
+        # pylint: disable=protected-access
+        for sock in cls(None)._iter_sockets(True):
             if sock[0] == "unix":
                 sockets.append("unix://" + sock[1])
             else:
@@ -176,7 +177,7 @@ class Socket(Module):
                 ))
         return sockets
 
-    def get_sockets(self, listening):
+    def _iter_sockets(self, listening):
         raise NotImplementedError
 
     def __repr__(self):
@@ -198,8 +199,7 @@ class Socket(Module):
 
 class LinuxSocket(Socket):
 
-    def get_sockets(self, listening):
-        sockets = []
+    def _iter_sockets(self, listening):
         cmd = "netstat -n"
 
         if listening:
@@ -225,23 +225,19 @@ class LinuxSocket(Socket):
                 host, port = address.rsplit(":", 1)
                 port = int(port)
                 if listening:
-                    sockets.append((protocol, host, port))
+                    yield protocol, host, port
                 else:
                     remote = splitted[4]
                     remote_host, remote_port = remote.rsplit(":", 1)
                     remote_port = int(remote_port)
-                    sockets.append(
-                        (protocol, host, port, remote_host, remote_port)
-                    )
+                    yield protocol, host, port, remote_host, remote_port
             elif protocol == "unix":
-                sockets.append((protocol, splitted[-1]))
-        return sockets
+                yield protocol, splitted[-1]
 
 
 class BSDSocket(Socket):
 
-    def get_sockets(self, listening):
-        sockets = []
+    def _iter_sockets(self, listening):
         cmd = "netstat -n"
 
         if listening:
@@ -274,17 +270,14 @@ class BSDSocket(Socket):
 
                 remote = splitted[4]
                 if remote == "*.*" and listening:
-                    sockets.append((protocol, host, port))
+                    yield protocol, host, port
                 elif not listening:
                     remote_host, remote_port = remote.rsplit(".", 1)
                     remote_port = int(remote_port)
-                    sockets.append(
-                        (protocol, host, port, remote_host, remote_port)
-                    )
+                    yield protocol, host, port, remote_host, remote_port
             elif len(splitted) == 9 and splitted[1] in ("stream", "dgram"):
                 if (
                     (splitted[4] != "0" and listening)
                     or (splitted[4] == "0" and not listening)
                 ):
-                    sockets.append(("unix", splitted[-1]))
-        return sockets
+                    yield 'unix', splitted[-1]
