@@ -207,7 +207,7 @@ class Socket(Module):
 class LinuxSocketSS(Socket):
 
     def _iter_sockets(self, listening):
-        cmd = 'ss --no-header --numeric'
+        cmd = 'ss --numeric'
         if listening:
             cmd += ' --listening'
         else:
