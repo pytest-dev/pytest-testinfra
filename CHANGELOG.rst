@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.11.1
+======
+
+* Socket: fix error with old versions of ss without the --no-header option (#293)
+
 1.11.0
 ======
 
