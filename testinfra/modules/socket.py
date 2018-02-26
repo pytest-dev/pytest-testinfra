@@ -219,8 +219,10 @@ class LinuxSocketSS(Socket):
         elif self.protocol == 'unix':
             cmd += ' --unix'
 
-        for line in self.check_output(cmd).splitlines():
-            splitted = line.split()
+        for line in self.run(cmd).stdout_bytes.splitlines()[1:]:
+            if line.split(None, 1)[0] == b'u_dgr':
+                continue
+            splitted = line.decode().split()
             if self.protocol:
                 protocol = self.protocol
                 status, local, remote = (
