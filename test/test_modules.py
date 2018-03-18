@@ -23,35 +23,37 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "debian_stretch", "centos_7", "fedora",
-        "ubuntu_xenial", "alpine_35"
+        "alpine_35", "archlinux", "centos_7",
+        "debian_stretch", "fedora", "ubuntu_xenial"
     )
 ])
 
 
 @all_images
 def test_package(host, docker_image):
-    if docker_image == "alpine_35":
+    if docker_image in ("alpine_35", "archlinux"):
         name = "openssh"
     else:
         name = "openssh-server"
 
     ssh = host.package(name)
     version = {
+        "alpine_35": "7.",
+        "archlinux": "7.",
+        "centos_7": "7.",
         "debian_stretch": "1:7.4",
         "fedora": "7.",
-        "ubuntu_xenial": "1:7.2",
-        "centos_7": "7.",
-        "alpine_35": "7."
+        "ubuntu_xenial": "1:7.2"
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "fedora": ".fc27",
+        "alpine_35": "r1",
+        "archlinux": None,
         "centos_7": ".el7",
         "debian_stretch": None,
-        "ubuntu_xenial": None,
-        "alpine_35": "r1"
+        "fedora": ".fc27",
+        "ubuntu_xenial": None
     }[docker_image]
     if release is None:
         with pytest.raises(NotImplementedError):
@@ -71,11 +73,12 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename = {
-        "debian_stretch": ("^9\.", "debian", "stretch"),
+        "alpine_35": ("^3\.5\.", "alpine", None),
+        "archlinux": ("rolling", "arch", None),
         "centos_7": ("^7$", "centos", None),
+        "debian_stretch": ("^9\.", "debian", "stretch"),
         "fedora": ("^27$", "fedora", None),
-        "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial"),
-        "alpine_35": ("^3\.5\.", "alpine", None)
+        "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial")
     }[docker_image]
 
     assert host.system_info.distribution == distribution
@@ -85,7 +88,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "fedora", "alpine_35"):
+    if docker_image in ("centos_7", "fedora", "alpine_35", "archlinux"):
         name = "sshd"
     else:
         name = "ssh"
@@ -181,11 +184,12 @@ def test_process(host, docker_image):
     assert init.user == "root"
 
     args, comm = {
-        "debian_stretch": ("/sbin/init", "systemd"),
+        "alpine_35": ("/sbin/init", "init"),
+        "archlinux": ("/usr/sbin/init", "systemd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
+        "debian_stretch": ("/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
-        "ubuntu_xenial": ("/sbin/init", "systemd"),
-        "alpine_35": ("/sbin/init", "init")
+        "ubuntu_xenial": ("/sbin/init", "systemd")
     }[docker_image]
     assert init.args == args
     assert init.comm == comm
