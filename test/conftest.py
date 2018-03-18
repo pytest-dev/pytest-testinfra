@@ -142,7 +142,8 @@ def build_docker_container_fixture(image, scope):
 
 
 def initialize_container_fixtures():
-    for image, scope in itertools.product(DOCKER_IMAGES, ["function", "session"]):
+    for image, scope in itertools.product(
+            DOCKER_IMAGES, ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
 
