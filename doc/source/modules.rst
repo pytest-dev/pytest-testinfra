@@ -23,6 +23,10 @@ host
 
        :class:`testinfra.modules.ansible.Ansible` class
 
+    .. attribute:: docker
+
+       :class:`testinfra.modules.docker.Docker` class
+
     .. attribute:: file
 
        :class:`testinfra.modules.file.File` class
