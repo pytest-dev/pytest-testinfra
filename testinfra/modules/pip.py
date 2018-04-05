@@ -21,6 +21,27 @@ from testinfra.modules.base import InstanceModule
 class PipPackage(InstanceModule):
     """Test pip packages status and version"""
 
+    @staticmethod
+    def _first_match(line, regexes):
+        for r in regexes:
+            match = r.match(line)
+            if match is not None:
+                return match
+        raise RuntimeError("could not parse {0}".format(repr(line)))
+
+    def _pip_list(self, pip_path, outdated=False):
+        extras = " -o " if outdated else " --no-index "
+        out = self.run_expect(
+            [0, 2],
+            "{} list {} --format=columns".format(pip_path, extras)
+        )
+        if out.rc == 0:
+            lines = out.stdout.splitlines()[2:]  # drops column headers
+        else:  # older version of pip, we assume
+            out = self.check_output("{} list {}".format(pip_path, extras))
+            lines = out.splitlines()
+        return lines
+
     def get_packages(self, pip_path="pip"):
         """Get all installed packages and versions returned by `pip list`:
 
@@ -29,16 +50,20 @@ class PipPackage(InstanceModule):
          'mywebsite': {'version': '1.0a3', 'path': '/srv/website'},
          'psycopg2': {'version': '2.6.2'}}
         """
-        output_re = re.compile(r'^(.+) \((.+)\)$')
+        output_re = [
+            re.compile(r) for r in
+            [
+                r'^(.+?)\s+(.+)$',  # newer pip
+                r'^(.+) \((.+)\)$',  # older pip
+            ]
+        ]
         pkgs = {}
-        out = self.check_output("%s list --no-index", pip_path)
-        for line in out.splitlines():
+        lines = self._pip_list(pip_path)
+        for line in lines:
             if line.startswith('Warning: '):
                 # Warning: cannot find svn location for rst2pdf==0.93.dev-r0
                 continue
-            match = output_re.match(line)
-            if match is None:
-                raise RuntimeError("could not parse {0}".format(repr(line)))
+            match = PipPackage._first_match(line.strip(), output_re)
             name, version = match.groups()
             if ',' in version:
                 version, path = version.split(',', 1)
@@ -55,25 +80,21 @@ class PipPackage(InstanceModule):
         ...     pip_path='~/venv/website/bin/pip')
         {'Django': {'current': '1.10.2', 'latest': '1.10.3'}}
         """
-        output_re = [re.compile(r) for r in [
-            # newer pip
-            r'^(.+) \(Current: (.+) Latest: (.+)\)$',
-            # old pip
-            r'^(.+) \((.+)\) - Latest: (.+) .*$',
-        ]]
+        output_re = [
+            re.compile(r) for r in
+            [
+                r'^(.+?)\s+(.+?)\s+(.+?)\s.*$',  # newer pip
+                r'^(.+) \((.+)\) - Latest: (.+) .*$',  # older pip
+            ]
+        ]
         pkgs = {}
-        out = self.check_output("%s list -o", pip_path)
-        for line in out.splitlines():
+        lines = self._pip_list(pip_path, outdated=True)
+        for line in lines:
             # Warning: cannot find svn location for rst2pdf==0.93.dev-r0
             # Could not find any downloads that satisfy the requirement iotop
             if line.startswith('Warning: ') or line.startswith('Could not '):
                 continue
-            for out_re in output_re:
-                match = out_re.match(line)
-                if match:
-                    name, current, latest = match.groups()
-                    pkgs[name] = {'current': current, 'latest': latest}
-                    break
-            else:
-                raise RuntimeError("could not parse {0}".format(repr(line)))
+            match = PipPackage._first_match(line.strip(), output_re)
+            name, current, latest = match.groups()
+            pkgs[name] = {'current': current, 'latest': latest}
         return pkgs
