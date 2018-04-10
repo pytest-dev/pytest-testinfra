@@ -32,12 +32,13 @@ class Package(Module):
 
         Supported package systems:
 
-        - apt (Debian, Ubuntu, ...)
-        - rpm (RHEL, Centos, Fedora, ...)
-        - pkg_info (OpenBSD)
-        - pkg_info (NetBSD)
-        - pkg (FreeBSD)
         - apk (Alpine)
+        - apt (Debian, Ubuntu, ...)
+        - pacman (Arch)
+        - pkg (FreeBSD)
+        - pkg_info (NetBSD)
+        - pkg_info (OpenBSD)
+        - rpm (RHEL, Centos, Fedora, ...)
         """
         raise NotImplementedError
 
@@ -74,6 +75,8 @@ class Package(Module):
             return RpmPackage
         elif host.exists("apk"):
             return AlpinePackage
+        elif host.system_info.distribution == "arch":
+            return ArchPackage
         else:
             raise NotImplementedError
 
@@ -166,3 +169,19 @@ class AlpinePackage(Package):
     def release(self):
         out = self.check_output("apk -e -v info %s", self.name).split("-")
         return out[-1]
+
+
+class ArchPackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test("pacman -Q %s", self.name).rc == 0
+
+    @property
+    def version(self):
+        out = self.check_output("pacman -Q %s", self.name).split(" ")
+        return out[1]
+
+    @property
+    def release(self):
+        raise NotImplementedError

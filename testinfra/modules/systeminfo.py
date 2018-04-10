@@ -73,6 +73,9 @@ class SystemInfo(InstanceModule):
                         sysinfo[attname] = (
                             line[len(key):].replace('"', "").
                             replace("'", "").strip())
+            # Arch doesn't have releases
+            if sysinfo["distribution"] == "arch":
+                sysinfo["release"] = "rolling"
             return sysinfo
 
         # RedHat / CentOS 6 haven't /etc/os-release

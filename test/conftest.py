@@ -62,6 +62,15 @@ ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
 3261
 """
 
+DOCKER_IMAGES = [
+    "alpine_35",
+    "archlinux",
+    "centos_7",
+    "debian_stretch",
+    "fedora",
+    "ubuntu_xenial",
+]
+
 
 def setup_ansible_config(tmpdir, name, host, user, port, key):
     ansible_major_version = int(ansible.__version__.split(".", 1)[0])
@@ -113,8 +122,7 @@ def build_docker_container_fixture(image, scope):
             docker_host = "localhost"
 
         cmd = ["docker", "run", "-d", "-P"]
-        if image in ("ubuntu_xenial", "debian_stretch", "centos_7", "fedora",
-                     "alpine_35"):
+        if image in DOCKER_IMAGES:
             cmd.append("--privileged")
 
         cmd.append("philpep/testinfra:" + image)
@@ -134,10 +142,8 @@ def build_docker_container_fixture(image, scope):
 
 
 def initialize_container_fixtures():
-    for image, scope in itertools.product([
-        "debian_stretch", "ubuntu_xenial",
-        "fedora", "centos_7", "alpine_35"
-    ], ["function", "session"]):
+    for image, scope in itertools.product(
+            DOCKER_IMAGES, ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
 
