@@ -12,10 +12,10 @@
 # limitations under the License.
 from testinfra.modules.base import Module
 
+
 class Docker(Module):
-    """
-    Test docker containers running on system.
- 
+    """Test docker containers running on system.
+
     Example:
 
     >>> host = testinfra.get_host('local://')
@@ -31,35 +31,39 @@ class Docker(Module):
 
     def __init__(self, name):
         self.name = name
+        self._ports = None
         super(Docker, self).__init__()
 
     def running_image(self):
-        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Image}}'", self.name)
+        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Image}}'",
+                       self.name)
         images = cmd.stdout.splitlines()
-        assert all(map(lambda i : i == self.name, images)) and cmd.stdout != ""
+        assert all(map(lambda i: i == self.name, images)) and cmd.stdout != ""
         return images[0]
 
     def running_ports(self):
-        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Ports}}'", self.name)
+        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Ports}}'",
+                       self.name)
         names = cmd.stdout.splitlines()
         return names
 
     @property
     def is_running(self):
-        image = self.running_image()
+        # assert fails if container corresponding to image is not running
+        self.running_image()
         return True
 
     @property
     def is_listening(self):
         ports = self.running_ports()
-        ports = map(lambda p : p.split('->')[0].split(':')[1], ports)
-        assert all(map(lambda i : i in self._ports, ports))
+        ports = map(lambda p: p.split('->')[0].split(':')[1], ports)
+        assert all(map(lambda i: i in self._ports, ports))
         return True
 
     @is_listening.setter
     def is_listening(self, ports):
         self._ports = ports
-        
+
     def versions(self):
         image = self.running_image()
         cmd = self.run("docker images %s --format '{{.Tag}}'", image)
@@ -70,7 +74,6 @@ class Docker(Module):
         version = self.versions()
         assert len(version) == 1
         return version[0]
-
 
     def __repr__(self):
         return "<docker>"
