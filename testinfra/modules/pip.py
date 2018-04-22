@@ -13,34 +13,21 @@
 
 from __future__ import unicode_literals
 
+import json
 import re
 
 from testinfra.modules.base import InstanceModule
 
 
+def _re_match(line, regexp):
+    match = regexp.match(line)
+    if match is None:
+        raise RuntimeError('could not parse {0}'.format(line))
+    return match.groups()
+
+
 class PipPackage(InstanceModule):
     """Test pip packages status and version"""
-
-    @staticmethod
-    def _first_match(line, regexes):
-        for r in regexes:
-            match = r.match(line)
-            if match is not None:
-                return match
-        raise RuntimeError("could not parse {0}".format(repr(line)))
-
-    def _pip_list(self, pip_path, outdated=False):
-        extras = " -o " if outdated else " --no-index "
-        out = self.run_expect(
-            [0, 2],
-            "{} list {} --format=columns".format(pip_path, extras)
-        )
-        if out.rc == 0:
-            lines = out.stdout.splitlines()[2:]  # drops column headers
-        else:  # older version of pip, we assume
-            out = self.check_output("{} list {}".format(pip_path, extras))
-            lines = out.splitlines()
-        return lines
 
     def get_packages(self, pip_path="pip"):
         """Get all installed packages and versions returned by `pip list`:
@@ -50,27 +37,28 @@ class PipPackage(InstanceModule):
          'mywebsite': {'version': '1.0a3', 'path': '/srv/website'},
          'psycopg2': {'version': '2.6.2'}}
         """
-        output_re = [
-            re.compile(r) for r in
-            [
-                r'^(.+?)\s+(.+)$',  # newer pip
-                r'^(.+) \((.+)\)$',  # older pip
-            ]
-        ]
+        out = self.run_expect(
+            [0, 2], '{0} list --no-index --format=json'.format(pip_path))
         pkgs = {}
-        lines = self._pip_list(pip_path)
-        for line in lines:
-            if line.startswith('Warning: '):
-                # Warning: cannot find svn location for rst2pdf==0.93.dev-r0
-                continue
-            match = PipPackage._first_match(line.strip(), output_re)
-            name, version = match.groups()
-            if ',' in version:
-                version, path = version.split(',', 1)
-                path = path.strip()
-                pkgs[name] = {'version': version, 'path': path}
-            else:
-                pkgs[name] = {'version': version}
+        if out.rc == 0:
+            for pkg in json.loads(out.stdout):
+                # XXX: --output=json does not return install path
+                pkgs[pkg['name']] = {'version': pkg['version']}
+        else:
+            # pip < 9
+            output_re = re.compile(r'^(.+) \((.+)\)$')
+            for line in self.check_output(
+                '{0} list --no-index'.format(pip_path)
+            ).splitlines():
+                if line.startswith('Warning: '):
+                    # Warning: cannot find svn location for ...
+                    continue
+                name, version = _re_match(line, output_re)
+                if ',' in version:
+                    version, path = version.split(',', 1)
+                    pkgs[name] = {'version': version, 'path': path.strip()}
+                else:
+                    pkgs[name] = {'version': version}
         return pkgs
 
     def get_outdated_packages(self, pip_path="pip"):
@@ -80,21 +68,27 @@ class PipPackage(InstanceModule):
         ...     pip_path='~/venv/website/bin/pip')
         {'Django': {'current': '1.10.2', 'latest': '1.10.3'}}
         """
-        output_re = [
-            re.compile(r) for r in
-            [
-                r'^(.+?)\s+(.+?)\s+(.+?)\s.*$',  # newer pip
-                r'^(.+) \((.+)\) - Latest: (.+) .*$',  # older pip
-            ]
-        ]
+        out = self.run_expect(
+            [0, 2], '{0} list -o --format=json'.format(pip_path))
         pkgs = {}
-        lines = self._pip_list(pip_path, outdated=True)
-        for line in lines:
-            # Warning: cannot find svn location for rst2pdf==0.93.dev-r0
-            # Could not find any downloads that satisfy the requirement iotop
-            if line.startswith('Warning: ') or line.startswith('Could not '):
-                continue
-            match = PipPackage._first_match(line.strip(), output_re)
-            name, current, latest = match.groups()
-            pkgs[name] = {'current': current, 'latest': latest}
+        if out.rc == 0:
+            for pkg in json.loads(out.stdout):
+                pkgs[pkg['name']] = {'current': pkg['version'],
+                                     'latest': pkg['latest_version']}
+        else:
+            # pip < 9
+            # pip 8: pytest (3.4.2) - Latest: 3.5.0 [wheel]
+            # pip < 8: pytest (Current: 3.4.2 Latest: 3.5.0 [wheel])
+            regexpes = [
+                re.compile(r'^(.+?) \((.+)\) - Latest: (.+) .*$'),
+                re.compile(r'^(.+?) \(Current: (.+) Latest: (.+) .*$'),
+            ]
+            for line in self.check_output(
+                    '{0} list -o'.format(pip_path)).splitlines():
+                if line.startswith('Warning: '):
+                    # Warning: cannot find svn location for ...
+                    continue
+                output_re = regexpes[1] if 'Current:' in line else regexpes[0]
+                name, current, latest = _re_match(line, output_re)
+                pkgs[name] = {'current': current, 'latest': latest}
         return pkgs
