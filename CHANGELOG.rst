@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.12.0
+======
+
+* ansible: fix compatibility with ansible 2.5
+* pip: fix compatibility with pip 10 (#299)
+
 1.11.1
 ======
 
