@@ -20,6 +20,8 @@ import testinfra.utils
 modules = {
     'ansible': 'ansible:Ansible',
     'command': 'command:Command',
+    'environment': 'environment:Environment',
+    'facter': 'puppet:Facter',
     'file': 'file:File',
     'group': 'group:Group',
     'interface': 'interface:Interface',
@@ -29,7 +31,6 @@ modules = {
     'pip_package': 'pip:PipPackage',
     'process': 'process:Process',
     'puppet_resource': 'puppet:PuppetResource',
-    'facter': 'puppet:Facter',
     'salt': 'salt:Salt',
     'service': 'service:Service',
     'socket': 'socket:Socket',
@@ -38,6 +39,7 @@ modules = {
     'sysctl': 'sysctl:Sysctl',
     'system_info': 'systeminfo:SystemInfo',
     'user': 'user:User',
+    'x509': 'x509:X509',
 }
 
 
