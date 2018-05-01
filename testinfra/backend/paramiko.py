@@ -76,9 +76,9 @@ class ParamikoBackend(base.BaseBackend):
                     if cfg[key] in ('yes', 'force'):
                         self.get_pty = True
                 elif key == "GSSAPIKeyExchange":
-                    cfg['gss_auth'] = True if value is 'yes' else False
+                    cfg['gss_auth'] = (value == 'yes')
                 elif key == "GSSAPIAuthentication":
-                    cfg['gss_kex'] = True if value is 'yes' else False
+                    cfg['gss_kex'] = (value == 'yes')
         if self.ssh_identity_file:
             cfg["key_filename"] = self.ssh_identity_file
         client.connect(**cfg)
