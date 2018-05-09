@@ -68,7 +68,7 @@ class WinRMBackend(base.BaseBackend):
         self.host = self.parse_hostspec(hostspec)
         self.conn_args = {
             'endpoint': '{}://{}{}/wsman'.format(
-                'http' if no_ssl else 'http',
+                'http' if no_ssl else 'https',
                 self.host.name,
                 ':{}'.format(self.host.port) if self.host.port else ''),
             'transport': 'ntlm',
