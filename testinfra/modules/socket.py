@@ -238,7 +238,8 @@ class LinuxSocketSS(Socket):
                 port = int(port)
             else:
                 continue
-            if listening and status == 'LISTEN':
+            # udp listening sockets may be in 'UNCONN' status
+            if listening and status in ('LISTEN', 'UNCONN'):
                 if host == '*':
                     yield protocol, '::', port
                     yield protocol, '0.0.0.0', port
