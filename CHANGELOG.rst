@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.13.0
+======
+
+* socket: fix detection of udp listening sockets (#311)
+* ssh backend: Add support for GSSAPI
+
 1.12.0
 ======
 
