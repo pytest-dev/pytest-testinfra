@@ -23,29 +23,28 @@ class Docker(Module):
     >>> nginx = host.docker("nginx")
     >>> assert nginx.is_running
 
-    >>> nginx.is_listening = ['8080', '8081']
-    >>> assert nginx.is_listening
+    >>> assert nginx.is_listening('8000', '8001')
 
     >>> assert nginx.version == 'latest'
     """
 
     def __init__(self, name):
         self.name = name
-        self._ports = None
         super(Docker, self).__init__()
 
     def running_image(self):
         cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Image}}'",
                        self.name)
         images = cmd.stdout.splitlines()
-        assert all(map(lambda i: i == self.name, images)) and cmd.stdout != ""
+        assert all(i == self.name for i in images) and cmd.stdout != ""
         return images[0]
 
     def running_ports(self):
         cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Ports}}'",
                        self.name)
-        names = cmd.stdout.splitlines()
-        return names
+        names = cmd.stdout.strip().split(', ')
+        ports = [p.split('->')[0].split(':')[1] for p in names]
+        return ports
 
     @property
     def is_running(self):
@@ -53,16 +52,10 @@ class Docker(Module):
         self.running_image()
         return True
 
-    @property
-    def is_listening(self):
-        ports = self.running_ports()
-        ports = map(lambda p: p.split('->')[0].split(':')[1], ports)
-        assert all(map(lambda i: i in self._ports, ports))
-        return True
-
-    @is_listening.setter
     def is_listening(self, ports):
-        self._ports = ports
+        run_ports = self.running_ports()
+        assert all(i in ports for i in run_ports)
+        return True
 
     def versions(self):
         image = self.running_image()
