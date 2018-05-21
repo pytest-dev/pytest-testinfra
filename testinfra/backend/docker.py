@@ -35,4 +35,3 @@ class DockerBackend(base.BaseBackend):
                 "docker exec %s /bin/sh -c %s", self.name, cmd)
         out.command = self.encode(cmd)
         return out
-
