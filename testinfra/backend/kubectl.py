@@ -41,10 +41,12 @@ class KubectlBackend(base.BaseBackend):
         # See https://github.com/kubernetes/kubernetes/issues/30656
         if self.container is None:
             out = self.run_local(
-                "kubectl " + self.namespace + " exec %s -- /bin/sh -c %s", self.name, cmd)
+                "kubectl " + self.namespace +
+                " exec %s -- /bin/sh -c %s", self.name, cmd)
         else:
             out = self.run_local(
-                "kubectl " + self.namespace + " exec %s -c %s -- /bin/sh -c %s",
+                "kubectl " + self.namespace +
+                " exec %s -c %s -- /bin/sh -c %s",
                 self.name, self.container, cmd)
         out.command = self.encode(cmd)
         return out
