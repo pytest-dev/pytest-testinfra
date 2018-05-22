@@ -23,19 +23,17 @@ class KubectlBackend(base.BaseBackend):
     def __init__(self, name, *args, **kwargs):
         if "%" in name:
             self.name, self.namespace = name.split("%", 1)
-            self.namespace= "--namespace " + self.namespace
+            self.namespace = "--namespace " + self.namespace
         else:
-            self.namespace= ""
-            self.name= name
+            self.namespace = ""
+            self.name = name
         self.name, self.user = self.parse_containerspec(self.name)
-                
+
         if "/" in self.name:
             self.name, self.container = self.name.split("/", 1)
         else:
             self.container = None
         super(KubectlBackend, self).__init__(self.name, *args, **kwargs)
-        
-   
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)
@@ -43,7 +41,7 @@ class KubectlBackend(base.BaseBackend):
         # See https://github.com/kubernetes/kubernetes/issues/30656
         if self.container is None:
             out = self.run_local(
-                "kubectl " + self.namespace + " exec %s -- /bin/sh -c %s",  self.name, cmd)
+                "kubectl " + self.namespace + " exec %s -- /bin/sh -c %s", self.name, cmd)
         else:
             out = self.run_local(
                 "kubectl " + self.namespace + " exec %s -c %s -- /bin/sh -c %s",
