@@ -120,6 +120,11 @@ def test_salt(host):
     assert ssh_version.startswith("1:7.4")
 
 
+@pytest.mark.parametrize('sudo', [True, 'sudo -E'])
+def test_salt_sudo(host, sudo):
+    assert host.salt('grains.get', 'username', local=True, sudo=sudo) == 'root'
+
+
 def test_puppet_resource(host):
     resource = host.puppet_resource("package", "openssh-server")
     assert resource["openssh-server"]["ensure"].startswith("1:7.4")

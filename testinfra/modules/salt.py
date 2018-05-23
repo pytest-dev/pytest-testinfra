@@ -35,7 +35,7 @@ class Salt(InstanceModule):
     Run ``salt-call sys.doc`` to get a complete list of functions
     """
 
-    def __call__(self, function, args=None, local=False, config=None):
+    def __call__(self, function, args=None, local=False, config=None, sudo=False):
         args = args or []
         if isinstance(args, six.string_types):
             args = [args]
@@ -43,7 +43,14 @@ class Salt(InstanceModule):
             return self._host.backend.run_salt(function, args)
         else:
             cmd_args = []
-            cmd = "salt-call --out=json"
+            cmd = ''
+            if sudo is True:
+                cmd += 'sudo '
+            elif isinstance(sudo, six.text_type):
+                if not sudo.endswith(' '):
+                    sudo += ' '
+                cmd += sudo + ' '
+            cmd += "salt-call --out=json"
             if local:
                 cmd += " --local"
             if config is not None:
