@@ -220,16 +220,26 @@ class LinuxSocketSS(Socket):
             cmd += ' --unix'
 
         for line in self.run(cmd).stdout_bytes.splitlines()[1:]:
+            # Ignore unix datagram sockets.
             if line.split(None, 1)[0] == b'u_dgr':
                 continue
+
+            # Split the output into columns.
             splitted = line.decode().split()
-            if self.protocol:
+
+            # If listing only TCP or UDP sockets, output has 5 columns:
+            # (State, Recv-Q, Send-Q, Local Address:Port, Peer Address:Port)
+            if self.protocol in ('tcp', 'udp'):
                 protocol = self.protocol
                 status, local, remote = (
                     splitted[0], splitted[3], splitted[4])
+            # If listing all or just unix sockets, output has 6 columns:
+            # Netid, State, Recv-Q, Send-Q, LocalAddress:Port, PeerAddress:Port
             else:
                 protocol, status, local, remote = (
                     splitted[0], splitted[1], splitted[4], splitted[5])
+
+            # ss reports unix socket as u_str.
             if protocol == 'u_str':
                 protocol = 'unix'
                 host, port = local, None
@@ -238,13 +248,16 @@ class LinuxSocketSS(Socket):
                 port = int(port)
             else:
                 continue
-            # udp listening sockets may be in 'UNCONN' status
+
+            # UDP listening sockets may be in 'UNCONN' status.
             if listening and status in ('LISTEN', 'UNCONN'):
-                if host == '*':
+                if host == '*' and protocol in ('tcp', 'udp'):
                     yield protocol, '::', port
                     yield protocol, '0.0.0.0', port
-                else:
+                elif protocol in ('tcp', 'udp'):
                     yield protocol, host, port
+                else:
+                    yield protocol, host
             elif not listening and status == 'ESTAB':
                 if protocol in ('tcp', 'udp'):
                     remote_host, remote_port = remote.rsplit(':', 1)
