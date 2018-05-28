@@ -85,8 +85,10 @@ class DebianPackage(Package):
 
     @property
     def is_installed(self):
-        out = self.check_output("dpkg-query -f '${Status}' -W %s" % (
-            self.name,)).split()
+        result = self.run_test("dpkg-query -f '${Status}' -W %s", self.name)
+        if result.rc == 1:
+            return False
+        out = result.stdout.strip().split()
         installed_status = ["ok", "installed"]
         return out[0] in ["install", "hold"] and out[1:3] == installed_status
 
