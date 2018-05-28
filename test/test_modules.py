@@ -31,6 +31,7 @@ all_images = pytest.mark.testinfra_hosts(*[
 
 @all_images
 def test_package(host, docker_image):
+    assert not host.package('zsh').is_installed
     if docker_image in ("alpine_35", "archlinux"):
         name = "openssh"
     else:
