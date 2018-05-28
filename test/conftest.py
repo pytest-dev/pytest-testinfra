@@ -202,7 +202,7 @@ def host(request, tmpdir_factory):
         service = testinfra.get_host(
             docker_id, connection='docker').service
 
-        if image in ("centos_7", "fedora"):
+        if image in ("centos_7", "fedora", "alpine_35", "archlinux"):
             service_name = "sshd"
         else:
             service_name = "ssh"
