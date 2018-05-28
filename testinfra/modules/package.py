@@ -98,10 +98,13 @@ class DebianPackage(Package):
 
     @property
     def version(self):
-        out = self.check_output("dpkg-query -f '${Status} ${Version}' -W %s"
-                                % (self.name,)).split()
-        if out[0].lower() in ["install", "hold"]:
-            return out[3]
+        out = self.check_output("dpkg-query -f '${Status} ${Version}' -W %s",
+                                self.name)
+        splitted = out.split()
+        assert splitted[0].lower() in ('install', 'hold'), (
+            "The package %s is not installed, dpkg-query output: %s" % (
+                self.name, out))
+        return splitted[3]
 
 
 class FreeBSDPackage(Package):

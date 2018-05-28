@@ -69,6 +69,20 @@ def test_held_package(host):
     assert python.version.startswith("2.7.")
 
 
+@pytest.mark.destructive
+def test_uninstalled_package_version(host):
+    with pytest.raises(AssertionError) as excinfo:
+        host.package('zsh').version
+    assert 'Unexpected exit code 1 for CommandResult' in str(excinfo.value)
+    assert host.package('sudo').is_installed
+    host.check_output('apt-get -y remove sudo')
+    assert not host.package('sudo').is_installed
+    with pytest.raises(AssertionError) as excinfo:
+        host.package('sudo').version
+    assert ('The package sudo is not installed, dpkg-query output: '
+            'deinstall ok config-files 1.8.') in str(excinfo.value)
+
+
 @all_images
 def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
