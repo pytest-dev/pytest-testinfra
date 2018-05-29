@@ -290,6 +290,9 @@ def test_file(host):
     assert l.is_symlink
     assert l.is_file
     assert l.linked_to == "/d/f"
+    assert l.linked_to == f
+    assert f == f
+    assert not d == f
 
     host.check_output("rm -f /d/p && mkfifo /d/p")
     assert host.file("/d/p").is_pipe
