@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 import datetime
+import six
 
 from testinfra.modules.base import Module
 
@@ -174,7 +175,7 @@ class File(Module):
     def __eq__(self, other):
         if isinstance(other, File):
             return self.path == other.path
-        elif isinstance(other, str):
+        elif isinstance(other, six.string_types):
             return self.path == other
         return False
 
