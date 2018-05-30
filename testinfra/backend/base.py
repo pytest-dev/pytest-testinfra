@@ -204,6 +204,14 @@ class BaseBackend(object):
             user, name = name.split("@", 1)
         return name, user
 
+    @staticmethod
+    def parse_podspec(podspec):
+        name = podspec
+        container = None
+        if "/" in name:
+            name, container = name.split("/", 1)
+        return name, container
+
     def get_encoding(self):
         cmd = self.run(
             "python -c 'import locale;print(locale.getpreferredencoding())'")

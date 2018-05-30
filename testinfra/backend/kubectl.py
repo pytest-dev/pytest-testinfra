@@ -21,18 +21,18 @@ class KubectlBackend(base.BaseBackend):
     NAME = "kubectl"
 
     def __init__(self, name, *args, **kwargs):
-        if "%" in name:
-            self.name, self.namespace = name.split("%", 1)
-            self.namespace = "--namespace " + self.namespace
-        else:
-            self.namespace = ""
-            self.name = name
-        self.name, self.user = self.parse_containerspec(self.name)
-
+        self.container = None
+        self.name, self.container = self.parse_podspec(name)
+        
+        if kwargs:
+            if "namespace" in kwargs:
+                self.namespace= kwargs.get('namespace')
+            if "container" in kwargs:
+                self.container= kwargs.get('container')
+  
         if "/" in self.name:
             self.name, self.container = self.name.split("/", 1)
-        else:
-            self.container = None
+  
         super(KubectlBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
@@ -40,13 +40,22 @@ class KubectlBackend(base.BaseBackend):
         # `kubectl exec` does not support specifying the user to run as.
         # See https://github.com/kubernetes/kubernetes/issues/30656
         if self.container is None:
-            out = self.run_local(
-                "kubectl " + self.namespace +
-                " exec %s -- /bin/sh -c %s", self.name, cmd)
+            if self.namespace:
+                out = self.run_local(
+                    "kubectl -n %s exec %s -- /bin/sh -c %s", 
+                    self.namespace, self.name, cmd)
+            else:
+                out = self.run_local(
+                    "kubectl exec %s -- /bin/sh -c %s", 
+                    self.name, cmd)          
         else:
-            out = self.run_local(
-                "kubectl " + self.namespace +
-                " exec %s -c %s -- /bin/sh -c %s",
-                self.name, self.container, cmd)
+            if self.namespace:              
+                out = self.run_local(
+                    "kubectl -n %s exec %s -c %s -- /bin/sh -c %s",
+                    self.namespace, self.name, self.container, cmd)
+            else:    
+                out = self.run_local(
+                    "kubectl exec %s -c %s -- /bin/sh -c %s",
+                    self.name, self.container, cmd)
         out.command = self.encode(cmd)
         return out
