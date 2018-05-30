@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.13.1
+======
+
+* package: fix is_installed and version behavior for uninstalled packages (#321 and #326)
+* ansible: Use predictibles test ordering when using pytest-xdist to fix random test collections errors (#316)
+
 1.13.0
 ======
 
