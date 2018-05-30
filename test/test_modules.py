@@ -23,7 +23,7 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "alpine_35", "archlinux", "centos_7",
+        "alpine_35", "archlinux", "centos_6", "centos_7",
         "debian_stretch", "fedora", "ubuntu_xenial"
     )
 ])
@@ -41,6 +41,7 @@ def test_package(host, docker_image):
     version = {
         "alpine_35": "7.",
         "archlinux": "7.",
+        "centos_6": "5.",
         "centos_7": "7.",
         "debian_stretch": "1:7.4",
         "fedora": "7.",
@@ -51,6 +52,7 @@ def test_package(host, docker_image):
     release = {
         "alpine_35": "r1",
         "archlinux": None,
+        "centos_6": ".el6",
         "centos_7": ".el7",
         "debian_stretch": None,
         "fedora": ".fc27",
@@ -90,6 +92,7 @@ def test_systeminfo(host, docker_image):
     release, distribution, codename = {
         "alpine_35": ("^3\.5\.", "alpine", None),
         "archlinux": ("rolling", "arch", None),
+        "centos_6": (r"^6", "CentOS", None),
         "centos_7": ("^7$", "centos", None),
         "debian_stretch": ("^9\.", "debian", "stretch"),
         "fedora": ("^27$", "fedora", None),
@@ -103,7 +106,8 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "fedora", "alpine_35", "archlinux"):
+    if docker_image in ("centos_6", "centos_7", "fedora",
+                        "alpine_35", "archlinux"):
         name = "sshd"
     else:
         name = "ssh"
@@ -129,6 +133,49 @@ def test_service(host, name, running, enabled):
     service = host.service(name)
     assert service.is_running == running
     assert service.is_enabled == enabled
+
+
+@pytest.mark.testinfra_hosts("docker://centos_6")
+def test_service_sshd_is_running(host):
+    sshd = host.service('sshd')
+
+    assert sshd.is_running
+    assert sshd.is_enabled
+
+
+@pytest.mark.destructive
+@pytest.mark.testinfra_hosts("docker://centos_6")
+def test_sysv_service_will_raise_an_AssertionError_that_it_cannot_find_etc_rc_dot_d_as_a_directory_or_symlink(host):  # noqa: E501
+    result = host.run('rm -rf /etc/rc?.d')
+    assert result.rc == 0
+    assert not host.file('/etc/rc0.d').exists
+
+    with pytest.raises(AssertionError):
+        host.service('sshd').is_enabled
+
+
+@pytest.mark.testinfra_hosts("docker://centos_6")
+def test_sysv_service_will_find_start_script_priority_when_etc_rc_dot_d_is_a_directory(host):  # noqa: E501
+    sshd = host.service('sshd')
+
+    assert host.file('/etc/rc0.d').is_directory
+
+    # we repeat this test on purpose to ensure
+    # that we expect the correct output
+    assert sshd.is_running
+    assert sshd.is_enabled
+
+
+@pytest.mark.testinfra_hosts("docker://centos_6")
+def test_sysv_service_will_find_start_script_priority_when_etc_rc_dot_d_is_a_symlink_to_a_directory(host):  # noqa: E501
+    sshd = host.service('sshd')
+
+    assert host.file('/etc/rc0.d').is_symlink
+
+    # we repeat this test on purpose to ensure
+    # that we expect the correct output
+    assert sshd.is_running
+    assert sshd.is_enabled
 
 
 def test_salt(host):
@@ -202,6 +249,7 @@ def test_process(host, docker_image):
     args, comm = {
         "alpine_35": ("/sbin/init", "init"),
         "archlinux": ("/usr/sbin/init", "systemd"),
+        "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "debian_stretch": ("/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
