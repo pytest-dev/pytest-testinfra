@@ -48,7 +48,7 @@ def parse_hostspec(hostspec):
         host = url.netloc
         path = url.path
         if path:
-            kw['path'] = path
+            kw['container'] = path[1:]
         query = urllib.parse.parse_qs(url.query)
         for key in ('sudo', 'ssl', 'verify_ssl'):
             if query.get(key, ['false'])[0].lower() == 'true':
