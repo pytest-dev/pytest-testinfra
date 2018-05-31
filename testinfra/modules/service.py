@@ -99,7 +99,7 @@ class SysvService(Service):
            )
 
         return bool(self.check_output(
-            "find /etc/rc?.d/ -name %s",
+            "find -L /etc/rc?.d/ -name %s",
             "S??" + self.name,
         ))
 
