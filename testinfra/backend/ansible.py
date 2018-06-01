@@ -29,6 +29,8 @@ class AnsibleBackend(base.BaseBackend):
     NAME = "ansible"
     HAS_RUN_ANSIBLE = True
 
+    _runners = {}
+
     def __init__(self, host, ansible_inventory=None, *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
@@ -36,7 +38,7 @@ class AnsibleBackend(base.BaseBackend):
 
     @cached_property
     def ansible_runner(self):
-        return AnsibleRunner(self.ansible_inventory)
+        return type(self).get_runner(self.ansible_inventory)
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
@@ -66,5 +68,13 @@ class AnsibleBackend(base.BaseBackend):
         return self.ansible_runner.get_variables(self.host)
 
     @classmethod
+    def get_runner(cls, ansible_inventory):
+        runners = cls._runners
+        if ansible_inventory not in runners:
+            runners[ansible_inventory] = AnsibleRunner(ansible_inventory)
+        return runners[ansible_inventory]
+
+    @classmethod
     def get_hosts(cls, host, **kwargs):
-        return AnsibleRunner(kwargs.get("ansible_inventory")).get_hosts(host)
+        runner = cls.get_runner(kwargs.get("ansible_inventory"))
+        return runner.get_hosts(host)
