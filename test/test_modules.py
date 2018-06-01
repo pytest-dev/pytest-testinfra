@@ -135,49 +135,6 @@ def test_service(host, name, running, enabled):
     assert service.is_enabled == enabled
 
 
-@pytest.mark.testinfra_hosts("docker://centos_6")
-def test_service_sshd_is_running(host):
-    sshd = host.service('sshd')
-
-    assert sshd.is_running
-    assert sshd.is_enabled
-
-
-@pytest.mark.destructive
-@pytest.mark.testinfra_hosts("docker://centos_6")
-def test_sysv_service_will_raise_an_AssertionError_that_it_cannot_find_etc_rc_dot_d_as_a_directory_or_symlink(host):  # noqa: E501
-    result = host.run('rm -rf /etc/rc?.d')
-    assert result.rc == 0
-    assert not host.file('/etc/rc0.d').exists
-
-    with pytest.raises(AssertionError):
-        host.service('sshd').is_enabled
-
-
-@pytest.mark.testinfra_hosts("docker://centos_6")
-def test_sysv_service_will_find_start_script_priority_when_etc_rc_dot_d_is_a_directory(host):  # noqa: E501
-    sshd = host.service('sshd')
-
-    assert host.file('/etc/rc0.d').is_directory
-
-    # we repeat this test on purpose to ensure
-    # that we expect the correct output
-    assert sshd.is_running
-    assert sshd.is_enabled
-
-
-@pytest.mark.testinfra_hosts("docker://centos_6")
-def test_sysv_service_will_find_start_script_priority_when_etc_rc_dot_d_is_a_symlink_to_a_directory(host):  # noqa: E501
-    sshd = host.service('sshd')
-
-    assert host.file('/etc/rc0.d').is_symlink
-
-    # we repeat this test on purpose to ensure
-    # that we expect the correct output
-    assert sshd.is_running
-    assert sshd.is_enabled
-
-
 def test_salt(host):
     ssh_version = host.salt("pkg.version", "openssh-server", local=True)
     assert ssh_version.startswith("1:7.4")

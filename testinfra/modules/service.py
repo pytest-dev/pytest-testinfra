@@ -92,12 +92,6 @@ class SysvService(Service):
 
     @property
     def is_enabled(self):
-        result = self.run_test('[ -d /etc/rc0.d ] || [ -L /etc/rc0.d ]')
-        assert result.rc == 0, (
-            "Expected to find /etc/rc0.d as a directory or symlink but"
-            "couldn't find either, SysvService detection failed"
-           )
-
         return bool(self.check_output(
             "find -L /etc/rc?.d/ -name %s",
             "S??" + self.name,
