@@ -53,6 +53,7 @@ __all__ = ['AnsibleRunner', 'to_bytes']
 
 
 class AnsibleRunnerBase(object):
+    _runners = {}
 
     def __init__(self, host_list=None):
         self.host_list = host_list
@@ -66,6 +67,14 @@ class AnsibleRunnerBase(object):
 
     def run(self, host, module_name, module_args, **kwargs):
         raise NotImplementedError
+
+    @classmethod
+    def get_runner(cls, inventory):
+        try:
+            return cls._runners[inventory]
+        except KeyError:
+            cls._runners[inventory] = cls(inventory)
+            return cls._runners[inventory]
 
 
 class AnsibleRunnerV1(AnsibleRunnerBase):
