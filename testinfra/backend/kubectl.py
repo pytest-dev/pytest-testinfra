@@ -21,41 +21,24 @@ class KubectlBackend(base.BaseBackend):
     NAME = "kubectl"
 
     def __init__(self, name, *args, **kwargs):
-        self.container = None
-        self.name, self.container = self.parse_podspec(name)
-
-        if kwargs:
-            if "namespace" in kwargs:
-                self.namespace = kwargs.get('namespace')
-            if "container" in kwargs:
-                self.container = kwargs.get('container')
-
-        if "/" in self.name:
-            self.name, self.container = self.name.split("/", 1)
-
+        self.name = name
+        self.container = kwargs.get('container')
+        self.namespace = kwargs.get('namespace')
         super(KubectlBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)
         # `kubectl exec` does not support specifying the user to run as.
         # See https://github.com/kubernetes/kubernetes/issues/30656
-        if self.container is None:
-            if self.namespace:
-                out = self.run_local(
-                    "kubectl -n %s exec %s -- /bin/sh -c %s",
-                    self.namespace, self.name, cmd)
-            else:
-                out = self.run_local(
-                    "kubectl exec %s -- /bin/sh -c %s",
-                    self.name, cmd)
-        else:
-            if self.namespace:
-                out = self.run_local(
-                    "kubectl -n %s exec %s -c %s -- /bin/sh -c %s",
-                    self.namespace, self.name, self.container, cmd)
-            else:
-                out = self.run_local(
-                    "kubectl exec %s -c %s -- /bin/sh -c %s",
-                    self.name, self.container, cmd)
-        out.command = self.encode(cmd)
+        kcmd = 'kubectl '
+        kcmd_args = []
+        if self.namespace is not None:
+            kcmd += '-n %s '
+            kcmd_args.append(self.namespace)
+        if self.container is not None:
+            kcmd += '-c %s '
+            kcmd_args.append(self.container)
+        kcmd += 'exec %s -- /bin/sh -c %s'
+        kcmd_args.extend([self.name, cmd])
+        out = self.run_local(kcmd, *kcmd_args)
         return out
