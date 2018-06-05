@@ -179,6 +179,7 @@ def test_socket(host):
         "tcp://127.0.0.1:22",
         "tcp://:::22",
         "tcp://::1:22",
+        "unix:///run/systemd/private",
     ):
         socket = host.socket(spec)
         assert socket.is_listening
