@@ -113,6 +113,18 @@ def test_parse_hostspec(hostspec, expected):
     assert BaseBackend.parse_hostspec(hostspec) == expected
 
 
+@pytest.mark.parametrize('hostspec,pod,container,namespace', [
+    ('kubectl://pod', 'pod', None, None),
+    ('kubectl://pod?namespace=n', 'pod', None, 'n'),
+    ('kubectl://pod?container=c&namespace=n', 'pod', 'c', 'n'),
+])
+def test_kubectl_hostspec(hostspec, pod, container, namespace):
+    backend = testinfra.get_host(hostspec).backend
+    assert backend.name == pod
+    assert backend.container == container
+    assert backend.namespace == namespace
+
+
 @pytest.mark.parametrize('arg_string,expected', [
     (
         'C:\\Users\\vagrant\\This Dir\\salt',

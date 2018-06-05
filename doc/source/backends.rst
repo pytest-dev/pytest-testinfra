@@ -91,10 +91,15 @@ Note: Ansible settings such as ``remote_user``, etc., may be configured by using
 kubectl
 ~~~~~~~
 
-The kubectl backend can be used to test containers running in Kubernetes.
-It uses the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command::
+The kubectl backend can be used to test containers running in Kubernetes.  It
+uses the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command and
+support connecting to a given container name within a pod and using a given
+namespace::
 
-    $ py.test --connection=kubectl --hosts=pod_id-123456789-9fng/container_name
+    # will use the default namespace and default container
+    $ py.test --hosts='kubectl://mypod-a1b2c3'
+    # specify container name and namespace
+    $ py.test --hosts='kubectl://somepod-2536ab?container=nginx&namespace=web'
 
 
 winrm
