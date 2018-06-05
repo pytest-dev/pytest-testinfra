@@ -223,8 +223,6 @@ class LinuxSocketSS(Socket):
             # Ignore unix datagram sockets.
             if line.split(None, 1)[0] == b'u_dgr':
                 continue
-
-            # Split the output into columns.
             splitted = line.decode().split()
 
             # If listing only TCP or UDP sockets, output has 5 columns:
