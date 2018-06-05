@@ -248,7 +248,6 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_configure(config):
-    return
     if not has_docker():
         return
 
