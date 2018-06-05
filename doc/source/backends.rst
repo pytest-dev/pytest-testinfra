@@ -115,4 +115,4 @@ LXC
 The LXC backend can be used to test *running* LXC containers. It uses the
 `lxc exec <https://linuxcontainers.org/lxd/getting-started-cli/>`_ command::
 
-    $ testinfra --hosts='lxc://container_name'
+    $ py.test --hosts='lxc://container_name'
