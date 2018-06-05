@@ -28,6 +28,7 @@ BACKENDS = {
     'ansible': 'testinfra.backend.ansible.AnsibleBackend',
     'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
     'winrm': 'testinfra.backend.winrm.WinRMBackend',
+    'lxc': 'testinfra.backend.lxc.LxcBackend',
 }
 
 
