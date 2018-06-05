@@ -2,6 +2,16 @@
 Changelog
 =========
 
+1.14.0
+======
+
+* Add a new lxc backend
+* Socket: fix is_listening for unix sockets
+* Add namespace and container support for kubernetes backend
+* Add a cache of parsed ansible inventories for ansible backend
+* Service: fix service detection on Centos 6 hosts
+* File: implement file comparison with string paths
+
 1.13.1
 ======
 
