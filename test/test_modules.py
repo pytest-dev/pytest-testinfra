@@ -297,7 +297,7 @@ def test_file(host):
     assert l.is_file
     assert l.linked_to == "/d/f"
     assert l.linked_to == f
-    assert f == f
+    assert f == host.file('/d/f')
     assert not d == f
 
     host.check_output("rm -f /d/p && mkfifo /d/p")
