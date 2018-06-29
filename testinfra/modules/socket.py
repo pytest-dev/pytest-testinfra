@@ -306,7 +306,7 @@ class LinuxSocketNetstat(Socket):
 class BSDSocket(Socket):
 
     def _iter_sockets(self, listening):
-        cmd = "netstat -n"
+        cmd = "netstat -n -f inet"
 
         if listening:
             cmd += " -a"
