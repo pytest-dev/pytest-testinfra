@@ -322,6 +322,11 @@ class BSDSocket(Socket):
             if splitted[0] in ("tcp", "udp", "udp4", "tcp4", "tcp6", "udp6"):
 
                 address = splitted[3]
+                if address == '*.*':
+                    # On OpenBSD 6.3 (issue #338)
+                    # udp          0      0  *.*                    *.*
+                    # udp6         0      0  *.*                    *.*
+                    continue
                 host, port = address.rsplit(".", 1)
                 port = int(port)
 
