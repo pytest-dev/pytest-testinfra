@@ -97,11 +97,16 @@ host
 
 
 
-
 Ansible
 ~~~~~~~
 
 .. autoclass:: testinfra.modules.ansible.Ansible(module_name, module_args=None, check=True)
+   :members:
+
+Dns
+~~~~~~~
+
+.. autoclass:: testinfra.modules.dns.Dns(record)
    :members:
 
 
