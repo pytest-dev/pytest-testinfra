@@ -17,7 +17,7 @@ from testinfra.modules.base import Module
 
 
 class Dns(Module):
-    """ Test dns record exists """
+    """Test dns record exists """
 
     def __init__(self, record=None):
         self.record = record
