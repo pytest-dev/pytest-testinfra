@@ -67,4 +67,4 @@ class AnsibleBackend(base.BaseBackend):
     @classmethod
     def get_hosts(cls, host, **kwargs):
         inventory = kwargs.get('ansible_inventory')
-        return AnsibleRunner.get_runner(inventory).get_hosts(host)
+        return sorted(AnsibleRunner.get_runner(inventory).get_hosts(host))
