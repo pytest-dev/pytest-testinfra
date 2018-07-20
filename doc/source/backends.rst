@@ -1,8 +1,7 @@
 Connection backends
 ===================
 
-Testinfra comes with several connections backends for remote command execution,
-they are selected with the ``--connection`` option.
+Testinfra comes with several connections backends for remote command execution.
 
 For all backends, commands can be run as superuser with the ``--sudo``
 option or as specific user with the ``--sudo-user`` option.
@@ -37,7 +36,7 @@ docker
 The Docker backend can be used to test *running* containers. It uses the `docker
 exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
 
-    $ py.test --connection=docker --hosts=[user@]docker_id_or_name
+    $ py.test --hosts='docker://[user@]docker_id_or_name'
 
 See also the :ref:`Test docker images` example.
 
@@ -47,7 +46,7 @@ ssh
 
 This is a pure SSH backend using the ``ssh`` command available in ``$PATH``. Example::
 
-    $ py.test --connection=ssh --hosts=server
+    $ py.test --hosts='ssh://server'
 
 The ssh backend also accepts the ``--ssh-config`` option.
 
@@ -58,10 +57,10 @@ salt
 The salt backend uses the `salt Python client API
 <http://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
 
-    $ py.test --connection=salt # equivalent to --hosts='*'
-    $ py.test --connection=salt --hosts=minion1,minion2
-    $ py.test --connection=salt --hosts='web*'
-    $ py.test --connection=salt --hosts=G@os:Debian
+    $ py.test --hosts='salt://*'
+    $ py.test --hosts='salt://minion1,salt://minion2'
+    $ py.test --hosts='salt://web*'
+    $ py.test --hosts='salt://G@os:Debian'
 
 Testinfra will use the salt connection channel to run commands.
 
@@ -78,9 +77,9 @@ ansible
 The ansible backend uses the `ansible Python API
 <https://docs.ansible.com/ansible/developing_api.html>`_::
 
-    $ py.test --connection=ansible # tests all inventory hosts
-    $ py.test --connection=ansible --hosts=host1,host2
-    $ py.test --connection=ansible --hosts='web*'
+    $ py.test --hosts=all # tests all inventory hosts
+    $ py.test --hosts='ansible://host1,ansible://host2'
+    $ py.test --hosts='ansible://web*'
 
 You can use an alternative `inventory` with the ``--ansible-inventory`` option.
 
@@ -91,10 +90,15 @@ Note: Ansible settings such as ``remote_user``, etc., may be configured by using
 kubectl
 ~~~~~~~
 
-The kubectl backend can be used to test containers running in Kubernetes.
-It uses the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command::
+The kubectl backend can be used to test containers running in Kubernetes.  It
+uses the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command and
+support connecting to a given container name within a pod and using a given
+namespace::
 
-    $ py.test --connection=kubectl --hosts=pod_id-123456789-9fng/container_name
+    # will use the default namespace and default container
+    $ py.test --hosts='kubectl://mypod-a1b2c3'
+    # specify container name and namespace
+    $ py.test --hosts='kubectl://somepod-2536ab?container=nginx&namespace=web'
 
 
 winrm
@@ -103,4 +107,12 @@ winrm
 The winrm backend uses `pywinrm <https://pypi.python.org/pypi/pywinrm>`_::
 
     $ py.test --hosts='winrm://Administrator:Password@127.0.0.1'
-    $ py.test --connection=winrm --hosts='vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
+    $ py.test --hosts='winrm://vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
+
+LXC
+~~~
+
+The LXC backend can be used to test *running* LXC containers. It uses the
+`lxc exec <https://linuxcontainers.org/lxd/getting-started-cli/>`_ command::
+
+    $ py.test --hosts='lxc://container_name'

@@ -23,7 +23,7 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "alpine_35", "archlinux", "centos_7",
+        "alpine_35", "archlinux", "centos_6", "centos_7",
         "debian_stretch", "fedora", "ubuntu_xenial"
     )
 ])
@@ -41,6 +41,7 @@ def test_package(host, docker_image):
     version = {
         "alpine_35": "7.",
         "archlinux": "7.",
+        "centos_6": "5.",
         "centos_7": "7.",
         "debian_stretch": "1:7.4",
         "fedora": "7.",
@@ -51,6 +52,7 @@ def test_package(host, docker_image):
     release = {
         "alpine_35": "r1",
         "archlinux": None,
+        "centos_6": ".el6",
         "centos_7": ".el7",
         "debian_stretch": None,
         "fedora": ".fc27",
@@ -90,6 +92,7 @@ def test_systeminfo(host, docker_image):
     release, distribution, codename = {
         "alpine_35": ("^3\.5\.", "alpine", None),
         "archlinux": ("rolling", "arch", None),
+        "centos_6": (r"^6", "CentOS", None),
         "centos_7": ("^7$", "centos", None),
         "debian_stretch": ("^9\.", "debian", "stretch"),
         "fedora": ("^27$", "fedora", None),
@@ -103,7 +106,8 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "fedora", "alpine_35", "archlinux"):
+    if docker_image in ("centos_6", "centos_7", "fedora",
+                        "alpine_35", "archlinux"):
         name = "sshd"
     else:
         name = "ssh"
@@ -175,6 +179,7 @@ def test_socket(host):
         "tcp://127.0.0.1:22",
         "tcp://:::22",
         "tcp://::1:22",
+        "unix:///run/systemd/private",
     ):
         socket = host.socket(spec)
         assert socket.is_listening
@@ -202,6 +207,7 @@ def test_process(host, docker_image):
     args, comm = {
         "alpine_35": ("/sbin/init", "init"),
         "archlinux": ("/usr/sbin/init", "systemd"),
+        "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "debian_stretch": ("/sbin/init", "systemd"),
         "fedora": ("/usr/sbin/init", "systemd"),
@@ -291,7 +297,7 @@ def test_file(host):
     assert l.is_file
     assert l.linked_to == "/d/f"
     assert l.linked_to == f
-    assert f == f
+    assert f == host.file('/d/f')
     assert not d == f
 
     host.check_output("rm -f /d/p && mkfifo /d/p")
