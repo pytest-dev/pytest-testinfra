@@ -67,6 +67,11 @@ def TestinfraBackend(host):
 
 
 @pytest.fixture(scope="module")
+def _testinfra_host(request):
+    return request.param
+
+
+@pytest.fixture(scope="module")
 def host(_testinfra_host):
     return _testinfra_host
 
@@ -148,7 +153,7 @@ def pytest_generate_tests(metafunc):
         )
         ids = sorted([e.backend.get_pytest_id() for e in params])
         metafunc.parametrize(
-            "_testinfra_host", params, ids=ids, scope="module")
+            "_testinfra_host", params, ids=ids, scope="module", indirect=True)
 
 
 def pytest_collection_finish(session):
