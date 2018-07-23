@@ -12,21 +12,12 @@
 # limitations under the License.
 
 import io
+import os
 
 from apacheconfig.lexer import make_lexer
 from apacheconfig.parser import make_parser
 from apacheconfig.loader import ApacheConfigLoader
 from apacheconfig.error import ApacheConfigError
-
-
-def create_utility_class(klass, _host):
-    return type(klass.__name__, (klass,), {
-        "_host": _host,
-        "run": _host.run,
-        "run_expect": _host.run_expect,
-        "run_test": _host.run_test,
-        "check_output": _host.check_output,
-    })
 
 
 class ApacheConfig(Module):
@@ -35,10 +26,8 @@ class ApacheConfig(Module):
     def __init__(self, path, **options):
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
-        remote_host = create_utility_class(RemoteHost, self._host)
+        remote_host = TestInfraHostReader(self._host);
 
-        self.path = path
-        self._config = None
         self._loader = ApacheConfigLoader(
             ApacheConfigParser(ApacheConfigLexer()), host=remote_host, **options)
 
@@ -51,34 +40,47 @@ class ApacheConfig(Module):
         return self._config
 
 
-class RemoteHost(object):
+class TestInfraHostReader(object):
     """RemoteHost for ApacheConfigLoader"""
 
-    def __init__(self):
-        self._path = create_utility_class(Path, self._host)
-        self._env = create_utility_class(Env, self._host)
-
+    def __init__(self, host):
+        self._host = host
+        self._env = host.env();
 
         super(RemoteHost, self).__init__()
-
-    @property
-    def path(self):
-        return self._path
 
     @property
     def env(self):
         return self._env
 
-    def open(self, filename):
-        out = self.run_test("cat -- %s", self.path)
+    def basename(self, filepath):
+        return os.path.basename(filepath)
+
+    def dirname(self, filepath):
+        return os.path.dirname(filepath)
+
+    def exists(self, filepath):
+        return self._host.run_test("test -f %s", filepath).rc == 0
+
+    def isabs(self, filepath):
+        return os.path.isabs(filepath)
+
+    def isdir(self, filepath):
+        return self._host.run_test("test -d %s" % filepath).rc == 0
+
+    def join(self, path, *paths):
+        return os.path.join(path, *paths)
+
+    def listdir(self, filepath):
+        out = self._host.run_test("ls -A %s" filepath)
+        if out.rc != 0:
+            raise OSError
+        else:
+            return out.stdout.split()
+
+    def open(self, filepath):
+        out = self.run_test("cat -- %s", filepath)
         if out.rc != 0:
             raise IOError
-        return out.stdout
+        return io.StringIO(out.stdout)
 
-class Path(object):
-
-    def __init__(self):
-        super(Path, self).__init__.py
-
-    def isabs(filepath):
-        self.run
