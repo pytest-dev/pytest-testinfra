@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.14.1
+======
+
+* Fix multi-host test ordering (#347), regression introduced in 1.13.1
+* Fix Socket on OpenBSD hosts (#338)
+
 1.14.0
 ======
 
