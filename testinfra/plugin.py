@@ -146,7 +146,8 @@ def pytest_generate_tests(metafunc):
             sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
         )
-        ids = sorted([e.backend.get_pytest_id() for e in params])
+        params = sorted(params, key=lambda x: x.backend.get_pytest_id())
+        ids = [e.backend.get_pytest_id() for e in params]
         metafunc.parametrize(
             "_testinfra_host", params, ids=ids, scope="module")
 
