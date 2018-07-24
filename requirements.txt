@@ -1,4 +1,4 @@
 pytest!=3.0.2
 six>=1.4
-apacheconfig>=0.2.4
+apacheconfig>=0.3.0
 importlib; python_version=='2.6'

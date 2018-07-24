@@ -10,12 +10,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import io
 
 from testinfra.modules.base import Module
 from apacheconfig.lexer import make_lexer
 from apacheconfig.parser import make_parser
 from apacheconfig.loader import ApacheConfigLoader
-from apacheconfig.reader import TestInfraHostReader
 
 
 class ApacheConfig(Module):
@@ -43,3 +43,34 @@ class ApacheConfig(Module):
     @property
     def path(self):
         return self._path
+
+
+class TestInfraHostReader(object):
+    """TestInfraHostReader for ApacheConfigLoader"""
+
+    def __init__(self, host):
+        self._host = host
+        self._environ = host.env().environ
+
+    @property
+    def environ(self):
+        return self._environ
+
+    def exists(self, filepath):
+        return self._host.run_test("test -f %s", filepath).rc == 0
+
+    def isdir(self, filepath):
+        return self._host.run_test("test -d %s" % filepath).rc == 0
+
+    def listdir(self, filepath):
+        out = self._host.run_test("ls -A %s" % filepath)
+        if out.rc != 0:
+            raise OSError
+        else:
+            return out.stdout.split()
+
+    def open(self, filepath):
+        out = self.run_test("cat -- %s", filepath)
+        if out.rc != 0:
+            raise IOError
+        return io.StringIO(out.stdout)
