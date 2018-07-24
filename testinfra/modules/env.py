@@ -11,20 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from testinfra.modules.base import Module
+
+
 class Env(Module):
-    """Returns env as a dict"""
+    """Returns Environmentvariables as a dict"""
 
     def __init__(self):
-        env = {}
-        for env_pair in self.check_ouptut('env').split()
-            key, value = env_pair.split('=', 1)
-            env.update(key, value)
-        self._env = env
+        self._env = None
         super(Env, self).__init__()
 
-
     @property
-    def environ():
+    def environ(self):
+        if not self._env:
+            env = {}
+            for env_kv_pair in self.check_output('env').splitlines():
+                key, value = env_kv_pair.split('=', 1)
+                env[key] = value
+                self._env = env
         return self._env
-
-
