@@ -26,7 +26,7 @@ class ApacheConfig(Module):
     def __init__(self, path, **options):
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
-        remote_host = TestInfraHostReader(self._host);
+        remote_host = TestInfraHostReader(self._host)
 
         self._loader = ApacheConfigLoader(
             ApacheConfigParser(ApacheConfigLexer()), host=remote_host, **options)
@@ -53,23 +53,11 @@ class TestInfraHostReader(object):
     def env(self):
         return self._env
 
-    def basename(self, filepath):
-        return os.path.basename(filepath)
-
-    def dirname(self, filepath):
-        return os.path.dirname(filepath)
-
     def exists(self, filepath):
         return self._host.run_test("test -f %s", filepath).rc == 0
 
-    def isabs(self, filepath):
-        return os.path.isabs(filepath)
-
     def isdir(self, filepath):
         return self._host.run_test("test -d %s" % filepath).rc == 0
-
-    def join(self, path, *paths):
-        return os.path.join(path, *paths)
 
     def listdir(self, filepath):
         out = self._host.run_test("ls -A %s" filepath)
