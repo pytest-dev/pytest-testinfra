@@ -18,3 +18,12 @@ flake8.report
 junit*.xml
 doc/build
 .cache
+
+# venv
+bin
+inlude
+lib
+lib64
+pip-selfcheck.json
+.pytest_cache
+include

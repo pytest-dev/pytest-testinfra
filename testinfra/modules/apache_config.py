@@ -27,7 +27,7 @@ class ApacheConfig(Module):
 
         ApacheConfigLexer = make_lexer(**options)
         ApacheConfigParser = make_parser(**options)
-        remote_host = TestInfraHostReader(self._host)
+        remote_host = CachedTestInfraHostReader(self._host)
 
         self._loader = ApacheConfigLoader(
             ApacheConfigParser(ApacheConfigLexer()), host=remote_host, **options)
@@ -74,3 +74,17 @@ class TestInfraHostReader(object):
         if out.rc != 0:
             raise IOError
         return io.StringIO(out.stdout)
+
+class CachedTestInfraHostReader(TestInfraHostReader):
+
+    def __init__(self, host):
+        self._cache = {}
+        super(CachedTestInfraHostReader, self).__init__(host)
+
+    def open(self, filepath):
+        if not filepath in self._cache:
+            out = self.run_test("cat -- %s", filepath)
+            if out.rc != 0:
+                raise IOError
+            self._cache[filepath] = out.stdout
+        return io.StringIO(self._cache[filepath])
