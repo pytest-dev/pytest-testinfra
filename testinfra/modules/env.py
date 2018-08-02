@@ -26,7 +26,9 @@ class Env(Module):
         if not self._env:
             env = {}
             for env_kv_pair in self.check_output('env').splitlines():
+                if not "=" in env_kv_pair:
+                    continue
                 key, value = env_kv_pair.split('=', 1)
                 env[key] = value
-                self._env = env
+            self._env = env
         return self._env
