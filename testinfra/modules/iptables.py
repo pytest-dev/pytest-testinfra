@@ -44,9 +44,9 @@ class Iptables(InstanceModule):
 
         rules = []
         if chain:
-            cmd = "iptables -t {0} -S {1}".format(table, chain)
+            cmd = "iptables -w 90 -t {0} -S {1}".format(table, chain)
         else:
-            cmd = "iptables -t {0} -S".format(table)
+            cmd = "iptables -w 90 -t {0} -S".format(table)
 
         for line in self.check_output(cmd).splitlines():
             line = line.replace("\t", " ")
