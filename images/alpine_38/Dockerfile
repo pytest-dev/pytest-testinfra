@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:3.8
 
 RUN apk add --update --no-cache python openrc openssh && \
     sed -i "s/^#PermitRootLogin prohibit-password/PermitRootLogin without-password/g" /etc/ssh/sshd_config && \
