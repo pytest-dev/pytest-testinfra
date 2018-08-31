@@ -37,7 +37,7 @@ class Iptables(InstanceModule):
             '-A INPUT -j REJECT'
             '-A FORWARD -j REJECT'
         ]
-        >>> host.iptables().get_rules("nat", "INPUT")
+        >>> host.iptables.rules("nat", "INPUT")
         ['-P PREROUTING ACCEPT']
 
         """
