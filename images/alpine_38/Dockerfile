@@ -1,6 +1,6 @@
 FROM alpine:3.5
 
-RUN apk add --update --no-cache python openrc openssh && rm /var/cache/apk/* && \
+RUN apk add --update --no-cache python openrc openssh && \
     sed -i "s/^#PermitRootLogin prohibit-password/PermitRootLogin without-password/g" /etc/ssh/sshd_config && \
     rm -f /etc/ssh/ssh_host_ecdsa_key /etc/ssh/ssh_host_rsa_key && \
     ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_ecdsa_key && \
