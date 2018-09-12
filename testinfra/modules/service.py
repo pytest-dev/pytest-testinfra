@@ -77,7 +77,7 @@ class SysvService(Service):
 
     @cached_property
     def _service_command(self):
-        return self._find_command('service')
+        return self.find_command('service')
 
     @property
     def is_running(self):
@@ -160,7 +160,7 @@ class OpenRCService(SysvService):
 
     @cached_property
     def _service_command(self):
-        return self._find_command("rc-service")
+        return self.find_command("rc-service")
 
     @property
     def is_enabled(self):

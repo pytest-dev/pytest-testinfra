@@ -17,6 +17,7 @@ from __future__ import absolute_import
 import socket
 
 from testinfra.modules.base import Module
+from testinfra.utils import cached_property
 
 
 def parse_socketspec(socketspec):
@@ -80,6 +81,7 @@ class Socket(Module):
       - udp socket on 127.0.0.1 port 69: ``udp://127.0.0.1:69``
 
     """
+    _command = None
 
     def __init__(self, socketspec):
         if socketspec is not None:
@@ -190,14 +192,19 @@ class Socket(Module):
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
-            if host.exists('ss'):
-                return LinuxSocketSS
-            elif host.exists('netstat'):
-                return LinuxSocketNetstat
-            else:
-                raise RuntimeError(
-                    'could not use the Socket module, either "ss" or "netstat"'
-                    ' utility is required in $PATH')
+            for cmd, impl in (
+                ('ss', LinuxSocketSS),
+                ('netstat', LinuxSocketNetstat),
+            ):
+                try:
+                    command = host.find_command(cmd)
+                except ValueError:
+                    pass
+                else:
+                    return type(impl.__name__, (impl,), {'_command': command})
+            raise RuntimeError(
+                'could not use the Socket module, either "ss" or "netstat"'
+                ' utility is required in $PATH')
         elif host.system_info.type.endswith("bsd"):
             return BSDSocket
         else:
@@ -207,7 +214,7 @@ class Socket(Module):
 class LinuxSocketSS(Socket):
 
     def _iter_sockets(self, listening):
-        cmd = 'ss --numeric'
+        cmd = '%s --numeric'
         if listening:
             cmd += ' --listening'
         else:
@@ -219,7 +226,7 @@ class LinuxSocketSS(Socket):
         elif self.protocol == 'unix':
             cmd += ' --unix'
 
-        for line in self.run(cmd).stdout_bytes.splitlines()[1:]:
+        for line in self.run(cmd, self._command).stdout_bytes.splitlines()[1:]:
             # Ignore unix datagram sockets.
             if line.split(None, 1)[0] == b'u_dgr':
                 continue
@@ -268,7 +275,7 @@ class LinuxSocketSS(Socket):
 class LinuxSocketNetstat(Socket):
 
     def _iter_sockets(self, listening):
-        cmd = "netstat -n"
+        cmd = "%s -n"
 
         if listening:
             cmd += " -l"
@@ -280,7 +287,7 @@ class LinuxSocketNetstat(Socket):
         elif self.protocol == "unix":
             cmd += " --unix"
 
-        for line in self.check_output(cmd).splitlines():
+        for line in self.check_output(cmd, self._command).splitlines():
             line = line.replace("\t", " ")
             splitted = line.split()
             protocol = splitted[0]
@@ -305,8 +312,12 @@ class LinuxSocketNetstat(Socket):
 
 class BSDSocket(Socket):
 
+    @cached_property
+    def _command(self):
+        return self.find_command('netstat')
+
     def _iter_sockets(self, listening):
-        cmd = "netstat -n"
+        cmd = "%s -n"
 
         if listening:
             cmd += " -a"
@@ -314,7 +325,7 @@ class BSDSocket(Socket):
         if self.protocol == "unix":
             cmd += " -f unix"
 
-        for line in self.check_output(cmd).splitlines():
+        for line in self.check_output(cmd, self._command).splitlines():
             line = line.replace("\t", " ")
             splitted = line.split()
             # FreeBSD: tcp4/tcp6
