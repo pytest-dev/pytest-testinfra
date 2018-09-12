@@ -2,6 +2,14 @@
 Changelog
 =========
 
+1.15.0
+======
+
+* Fix finding ss and netstat command in "sbin" paths for Centos (359)
+* Add a workaround for https://github.com/pytest-dev/pytest/issues/3542
+* Handle "starting" status for Service module on Alpine linux
+* Fix no_ssl and no_verify_ssl options for WinRM backend
+
 1.14.1
 ======
 
