@@ -24,7 +24,7 @@ all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
         "alpine_38", "archlinux", "centos_6", "centos_7",
-        "debian_stretch", "fedora", "ubuntu_xenial"
+        "debian_stretch", "ubuntu_xenial"
     )
 ])
 
@@ -44,7 +44,6 @@ def test_package(host, docker_image):
         "centos_6": "5.",
         "centos_7": "7.",
         "debian_stretch": "1:7.4",
-        "fedora": "7.",
         "ubuntu_xenial": "1:7.2"
     }[docker_image]
     assert ssh.is_installed
@@ -55,7 +54,6 @@ def test_package(host, docker_image):
         "centos_6": ".el6",
         "centos_7": ".el7",
         "debian_stretch": None,
-        "fedora": ".fc27",
         "ubuntu_xenial": None
     }[docker_image]
     if release is None:
@@ -95,7 +93,6 @@ def test_systeminfo(host, docker_image):
         "centos_6": (r"^6", "CentOS", None),
         "centos_7": ("^7$", "centos", None),
         "debian_stretch": ("^9\.", "debian", "stretch"),
-        "fedora": ("^27$", "fedora", None),
         "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial")
     }[docker_image]
 
@@ -106,7 +103,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_6", "centos_7", "fedora",
+    if docker_image in ("centos_6", "centos_7",
                         "alpine_38", "archlinux"):
         name = "sshd"
     else:
@@ -210,7 +207,6 @@ def test_process(host, docker_image):
         "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "debian_stretch": ("/sbin/init", "systemd"),
-        "fedora": ("/usr/sbin/init", "systemd"),
         "ubuntu_xenial": ("/sbin/init", "systemd")
     }[docker_image]
     assert init.args == args

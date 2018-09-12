@@ -68,7 +68,6 @@ DOCKER_IMAGES = [
     "centos_6",
     "centos_7",
     "debian_stretch",
-    "fedora",
     "ubuntu_xenial",
 ]
 
@@ -206,7 +205,6 @@ def host(request, tmpdir_factory):
         images_with_sshd = (
             "centos_6",
             "centos_7",
-            "fedora",
             "alpine_38",
             "archlinux"
         )
