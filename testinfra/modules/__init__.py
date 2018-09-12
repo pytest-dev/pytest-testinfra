@@ -19,7 +19,9 @@ import testinfra.utils
 
 modules = {
     'ansible': 'ansible:Ansible',
+    'apache_config': 'apache_config:ApacheConfig',
     'command': 'command:Command',
+    'env': 'env:Env',
     'file': 'file:File',
     'group': 'group:Group',
     'interface': 'interface:Interface',
