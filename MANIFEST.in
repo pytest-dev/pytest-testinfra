@@ -1,0 +1,15 @@
+recursive-include testinfra *.py 
+recursive-include test *.py ssh_key
+recursive-include images Dockerfile
+recursive-include doc *.py *.rst *.svg
+include doc/source/_templates/piwik.html
+include doc/Makefile
+include tox.ini 
+include Makefile
+include README.rst CONTRIBUTING.rst CHANGELOG.rst
+include pylintrc
+include MANIFEST.in
+include ansible.cfg
+include dev-requirements.txt
+include test-requirements.txt
+include LICENSE
