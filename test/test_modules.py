@@ -469,3 +469,11 @@ def test_iptables(host):
     assert ssh_rule_str in input_rules
     assert vip_redirect_rule_str in nat_rules
     assert vip_redirect_rule_str in nat_prerouting_rules
+    # test ip6tables call works; ipv6 setup is a whole huge thing, but
+    # ensure we at least see the headings
+    v6_rules = host.iptables.rules(version=6)
+    assert '-P INPUT ACCEPT' in v6_rules
+    assert '-P FORWARD ACCEPT' in v6_rules
+    assert '-P OUTPUT ACCEPT' in v6_rules
+    v6_filter_rules = host.iptables.rules('filter', 'INPUT', version=6)
+    assert '-P INPUT ACCEPT' in v6_filter_rules
