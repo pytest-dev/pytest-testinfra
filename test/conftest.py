@@ -234,7 +234,14 @@ def docker_image(host):
 
 def pytest_generate_tests(metafunc):
     if "host" in metafunc.fixturenames:
-        marker = getattr(metafunc.function, "testinfra_hosts", None)
+        # Supported in pytest 3.6+.  Earlier versions need to use the
+        # MarkInfo object directly as in the else: clause; this is
+        # marked for removal in pytest4.
+        if hasattr(metafunc, 'definition'):
+            marker = metafunc.definition.get_closest_marker(
+                "testinfra_hosts")
+        else:
+            marker = getattr(metafunc.function, "testinfra_hosts", None)
         if marker is not None:
             hosts = marker.args
         else:
