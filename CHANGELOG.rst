@@ -2,6 +2,13 @@
 Changelog
 =========
 
+1.16.0
+======
+
+* packaging: Use setuptools_scm instead of pbr
+* iptables: add ip6tables support
+* sysctl: find sysctl outside of PATH (/sbin)
+
 1.15.0
 ======
 
