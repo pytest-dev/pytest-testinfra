@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 from testinfra.modules.base import InstanceModule
+from testinfra.utils import cached_property
 
 
 class Sysctl(InstanceModule):
@@ -24,9 +25,12 @@ class Sysctl(InstanceModule):
     >>> host.sysctl("vm.dirty_ratio")
     20
     """
+    @cached_property
+    def _sysctl_command(self):
+        return self.find_command('sysctl')
 
     def __call__(self, name):
-        value = self.check_output("sysctl -n %s", name)
+        value = self.check_output("%s -n %s", self._sysctl_command, name)
         try:
             return int(value)
         except ValueError:
