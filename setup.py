@@ -43,7 +43,7 @@ setuptools.setup(
         'Topic :: System :: Systems Administration',
         'Framework :: Pytest',
     ],
-    packages=['testinfra'],
+    packages=setuptools.find_packages(),
     entry_points={
         'console_scripts': [
             'testinfra = testinfra.main:main',
