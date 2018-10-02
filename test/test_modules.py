@@ -446,6 +446,11 @@ def test_sudo_to_root(host):
     assert host.user().name == "user"
 
 
+def test_command_execution(host):
+    assert host.run("false").failed
+    assert host.run("true").succeeded
+
+
 def test_pip_package(host):
     assert host.pip_package.get_packages()['pip']['version'] == '9.0.1'
     pytest = host.pip_package.get_packages(pip_path='/v/bin/pip')['pytest']
