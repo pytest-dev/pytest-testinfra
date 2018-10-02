@@ -46,8 +46,7 @@ class CommandResult(object):
 
     @property
     def succeeded(self):
-        """
-        Returns whether the command was successful
+        """Returns whether the command was successful
 
         >>> host.run("true").succeeded
         True
@@ -56,8 +55,7 @@ class CommandResult(object):
 
     @property
     def failed(self):
-        """
-        Returns whether the command failed
+        """Returns whether the command failed
 
         >>> host.run("false").failed
         True
@@ -66,8 +64,7 @@ class CommandResult(object):
 
     @property
     def rc(self):
-        """
-        Gets the returncode of a command
+        """Gets the returncode of a command
 
         >>> host.run("true").rc
         0
