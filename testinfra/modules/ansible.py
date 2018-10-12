@@ -60,7 +60,13 @@ class Ansible(InstanceModule):
     <https://docs.ansible.com/ansible/playbooks_checkmode.html>`_ is
     enabled by default, you can disable it with `check=False`.
 
+    `Become
+    <https://docs.ansible.com/ansible/user_guide/become.html#id1>`_ is
+    `False` by default. You can enable it with `become=True`.
+
     >>> host.ansible("apt", "name=nginx state=present")["changed"]
+    False
+    >>> host.ansible("apt", "name=nginx state=present", become=True)["changed"]
     False
     >>> host.ansible("command", "echo foo", check=False)["stdout"]
     'foo'
@@ -73,9 +79,10 @@ class Ansible(InstanceModule):
     AnsibleException = AnsibleException
 
     @need_ansible
-    def __call__(self, module_name, module_args=None, check=True, **kwargs):
+    def __call__(self, module_name, module_args=None, check=True,
+                 become=False, **kwargs):
         result = self._host.backend.run_ansible(
-            module_name, module_args, check=check, **kwargs)
+            module_name, module_args, check=check, become=become, **kwargs)
         if result.get("failed", False) is True:
             raise AnsibleException(result)
         return result
