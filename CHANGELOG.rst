@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.17.0
+======
+
+* Add support for ansible "become" user in ansible module
+* Add failed/suceeded property on run() output
+
 1.16.0
 ======
 
