@@ -109,6 +109,11 @@ The winrm backend uses `pywinrm <https://pypi.python.org/pypi/pywinrm>`_::
     $ py.test --hosts='winrm://Administrator:Password@127.0.0.1'
     $ py.test --hosts='winrm://vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
 
+pywinrm's default read and operation timeout can be overridden using query
+arguments ``read_timeout_sec`` and ``operation_timeout_sec``::
+
+    $ py.test --hosts='winrm://vagrant@127.0.0.1:2200?read_timeout_sec=120&operation_timeout_sec=100'
+
 LXC
 ~~~
 
