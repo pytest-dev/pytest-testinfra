@@ -51,7 +51,8 @@ def parse_hostspec(hostspec):
         for key in ('sudo', 'ssl', 'no_ssl', 'no_verify_ssl'):
             if query.get(key, ['false'])[0].lower() == 'true':
                 kw[key] = True
-        for key in ("sudo_user", 'namespace', 'container'):
+        for key in ("sudo_user", 'namespace', 'container', 'read_timeout_sec',
+                    'operation_timeout_sec'):
             if key in query:
                 kw[key] = query.get(key)[0]
         for key in (
