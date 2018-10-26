@@ -250,7 +250,9 @@ else:
 @pytest.mark.trylast
 def pytest_configure(config):
     if config.option.verbose > 1:
-        logging.basicConfig()
+        root = logging.getLogger()
+        if not root.handlers:
+            root.addHandler(logging.NullHandler())
         logging.getLogger("testinfra").setLevel(logging.DEBUG)
     if config.option.nagios:
         # disable & re-enable terminalreporter to write in a tempfile
