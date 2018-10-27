@@ -57,6 +57,5 @@ setuptools.setup(
     install_requires=[
         'pytest!=3.0.2',
         'six>=1.4',
-        "importlib; python_version=='2.6'",
     ],
 )
