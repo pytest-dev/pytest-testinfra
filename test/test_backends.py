@@ -108,6 +108,9 @@ def test_docker_encoding(host):
     ('u:P@h', HostSpec('h', None, 'u', 'P')),
     ('u@h', HostSpec('h', None, 'u', None)),
     ('h', HostSpec('h', None, None, None)),
+    ('pr%C3%A9nom@h', HostSpec('h', None, 'prénom', None)),
+    ('pr%C3%A9nom:p%40ss%3Aw0rd@h', HostSpec('h', None, 'prénom',
+                                             'p@ss:w0rd')),
 ])
 def test_parse_hostspec(hostspec, expected):
     assert BaseBackend.parse_hostspec(hostspec) == expected

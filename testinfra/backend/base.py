@@ -217,6 +217,11 @@ class BaseBackend(object):
                 user, password = user.split(':', 1)
         if ':' in name:
             name, port = name.split(':', 1)
+        name = testinfra.utils.urlunquote(name)
+        if user is not None:
+            user = testinfra.utils.urlunquote(user)
+        if password is not None:
+            password = testinfra.utils.urlunquote(password)
         return HostSpec(name, port, user, password)
 
     @staticmethod
