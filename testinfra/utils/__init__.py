@@ -13,7 +13,11 @@
 
 from __future__ import unicode_literals
 
+import locale
 import re
+
+import six
+from six.moves import urllib
 
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 all_cap_re = re.compile('([a-z0-9])([A-Z])')
@@ -41,3 +45,11 @@ class cached_property(object):
             return self
         value = obj.__dict__[self.func.__name__] = self.func(obj)
         return value
+
+
+if six.PY2:
+    def urlunquote(s):
+        encoding = locale.getpreferredencoding()
+        return urllib.parse.unquote(s.encode(encoding)).decode(encoding)
+else:
+    urlunquote = urllib.parse.unquote
