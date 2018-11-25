@@ -2,6 +2,14 @@
 Changelog
 =========
 
+1.18.0
+======
+
+* Allow to urlencode character in host specification "user:pass@host" (#387)
+* Fix double logging from both pytest and testinfra
+* Drop support for python 2.6
+* Allow to configure timeouts for winrm backend
+
 1.17.0
 ======
 
