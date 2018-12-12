@@ -35,6 +35,9 @@ class Addr(Module):
             pass # do something for icmp
 
         if result.rc != 0:
+            # Had some issues with an LB, was getting connected and remained connected
+            if "Connected to" in result.stderr.strip():
+                return True
             return False
 
         out = result.stdout.strip()
