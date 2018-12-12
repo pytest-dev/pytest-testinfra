@@ -26,10 +26,11 @@ class Addr(Module):
 
     def is_reachable(self):
         result = "command to run"
+
         if self.protocol == "tcp":
-            result = self.run_test("nc -vw 1 %s %s", self.address, self.port)
+            result = self.run_test("echo | nc -vw 1 %s %s", self.address, self.port)
         elif self.protocol == "udp":
-            result = self.run_test("nc -uvw 1 %s %s", self.address, self.port)
+            result = self.run_test("echo | nc -uvw 1 %s %s", self.address, self.port)
         else:
             pass # do something for icmp
 
