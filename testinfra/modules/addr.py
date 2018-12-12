@@ -18,7 +18,7 @@ from testinfra.modules.base import Module
 class Addr(Module):
     """Test connections"""
 
-    def __init__(self, address, port, protocol):
+    def __init__(self, address, port="22", protocol="tcp"):
         self.address = address
         self.port = port
         self.protocol = protocol
@@ -32,7 +32,7 @@ class Addr(Module):
         elif self.protocol == "udp":
             result = self.run_test("echo | nc -uvw 1 %s %s", self.address, self.port)
         else:
-            pass # do something for icmp
+            result = self.run_test("ping -w 1 -c 1 %s", self.address)
 
         if result.rc != 0:
             # Had some issues with an LB, was getting connected and remained connected
