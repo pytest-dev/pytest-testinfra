@@ -40,6 +40,4 @@ class Addr(Module):
                 return True
             return False
 
-        out = result.stdout.strip()
-
         return True
