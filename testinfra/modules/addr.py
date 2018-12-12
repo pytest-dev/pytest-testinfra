@@ -18,7 +18,7 @@ from testinfra.modules.base import Module
 class Addr(Module):
     """Test connections"""
 
-    def __init__(self, address, port="22", protocol="tcp"):
+    def __init__(self, address, port="", protocol="icmp"):
         self.address = address
         self.port = port
         self.protocol = protocol
