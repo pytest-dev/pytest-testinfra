@@ -18,13 +18,20 @@ from testinfra.modules.base import Module
 class Addr(Module):
     """Test connections"""
 
-    def __init__(self, address, port):
+    def __init__(self, address, port, protocol):
         self.address = address
         self.port = port
+        self.protocol = protocol
         super(Addr, self).__init__()
 
     def is_reachable(self):
-        result = self.run_test("nc -vw 1 %s %s", self.address, self.port)
+        result = "command to run"
+        if self.protocol == "tcp":
+            result = self.run_test("nc -vw 1 %s %s", self.address, self.port)
+        elif self.protocol == "udp":
+            result = self.run_test("nc -uvw 1 %s %s", self.address, self.port)
+        else:
+            pass # do something for icmp
 
         if result.rc != 0:
             return False
