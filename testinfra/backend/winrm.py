@@ -64,11 +64,12 @@ class WinRMBackend(base.BaseBackend):
     NAME = "winrm"
 
     def __init__(self, hostspec, no_ssl=False, no_verify_ssl=False,
+                 read_timeout_sec=None, operation_timeout_sec=None,
                  *args, **kwargs):
         self.host = self.parse_hostspec(hostspec)
         self.conn_args = {
             'endpoint': '{}://{}{}/wsman'.format(
-                'http' if no_ssl else 'http',
+                'http' if no_ssl else 'https',
                 self.host.name,
                 ':{}'.format(self.host.port) if self.host.port else ''),
             'transport': 'ntlm',
@@ -77,6 +78,10 @@ class WinRMBackend(base.BaseBackend):
         }
         if no_verify_ssl:
             self.conn_args['server_cert_validation'] = 'ignore'
+        if read_timeout_sec is not None:
+            self.conn_args['read_timeout_sec'] = read_timeout_sec
+        if operation_timeout_sec is not None:
+            self.conn_args['operation_timeout_sec'] = operation_timeout_sec
         super(WinRMBackend, self).__init__(self.host.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):

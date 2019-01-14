@@ -13,6 +13,8 @@
 
 from __future__ import unicode_literals
 
+import os
+
 import testinfra.backend
 import testinfra.modules
 
@@ -28,6 +30,20 @@ class Host(object):
     def exists(self, command):
         """Return True if given command exist in $PATH"""
         return self.run_expect([0, 1, 127], "command -v %s", command).rc == 0
+
+    def find_command(self, command, extrapaths=('/sbin', '/usr/sbin')):
+        """Return path of given command
+
+        raise ValueError if command cannot be found
+        """
+        out = self.run_expect([0, 1, 127], "command -v %s", command)
+        if out.rc == 0:
+            return out.stdout.rstrip('\r\n')
+        for basedir in extrapaths:
+            path = os.path.join(basedir, command)
+            if self.exists(path):
+                return path
+        raise ValueError('cannot find "%s" command' % (command,))
 
     def run(self, command, *args, **kwargs):
         """Run given command and return rc (exit status), stdout and stderr

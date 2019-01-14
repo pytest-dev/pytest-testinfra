@@ -63,11 +63,11 @@ ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
 """
 
 DOCKER_IMAGES = [
-    "alpine_35",
+    "alpine_38",
     "archlinux",
+    "centos_6",
     "centos_7",
     "debian_stretch",
-    "fedora",
     "ubuntu_xenial",
 ]
 
@@ -202,7 +202,14 @@ def host(request, tmpdir_factory):
         service = testinfra.get_host(
             docker_id, connection='docker').service
 
-        if image in ("centos_7", "fedora"):
+        images_with_sshd = (
+            "centos_6",
+            "centos_7",
+            "alpine_38",
+            "archlinux"
+        )
+
+        if image in images_with_sshd:
             service_name = "sshd"
         else:
             service_name = "ssh"
@@ -227,7 +234,14 @@ def docker_image(host):
 
 def pytest_generate_tests(metafunc):
     if "host" in metafunc.fixturenames:
-        marker = getattr(metafunc.function, "testinfra_hosts", None)
+        # Supported in pytest 3.6+.  Earlier versions need to use the
+        # MarkInfo object directly as in the else: clause; this is
+        # marked for removal in pytest4.
+        if hasattr(metafunc, 'definition'):
+            marker = metafunc.definition.get_closest_marker(
+                "testinfra_hosts")
+        else:
+            marker = getattr(metafunc.function, "testinfra_hosts", None)
         if marker is not None:
             hosts = marker.args
         else:

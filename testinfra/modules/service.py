@@ -77,7 +77,7 @@ class SysvService(Service):
 
     @cached_property
     def _service_command(self):
-        return self._find_command('service')
+        return self.find_command('service')
 
     @property
     def is_running(self):
@@ -86,14 +86,15 @@ class SysvService(Service):
         # 1: program is dead and pid file exists
         # 3: not running and pid file does not exists
         # 4: Unable to determine status
+        # 8: starting (alpine specific ?)
         return self.run_expect(
-            [0, 1, 3], "%s %s status",
+            [0, 1, 3, 8], "%s %s status",
             self._service_command, self.name).rc == 0
 
     @property
     def is_enabled(self):
         return bool(self.check_output(
-            "find /etc/rc?.d/ -name %s",
+            "find -L /etc/rc?.d/ -name %s",
             "S??" + self.name,
         ))
 
@@ -159,7 +160,7 @@ class OpenRCService(SysvService):
 
     @cached_property
     def _service_command(self):
-        return self._find_command("rc-service")
+        return self.find_command("rc-service")
 
     @property
     def is_enabled(self):

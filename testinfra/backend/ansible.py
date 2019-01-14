@@ -20,7 +20,6 @@ import pprint
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
 from testinfra.utils.ansible_runner import to_bytes
-from testinfra.utils import cached_property
 
 logger = logging.getLogger("testinfra")
 
@@ -34,9 +33,9 @@ class AnsibleBackend(base.BaseBackend):
         self.ansible_inventory = ansible_inventory
         super(AnsibleBackend, self).__init__(host, *args, **kwargs)
 
-    @cached_property
+    @property
     def ansible_runner(self):
-        return AnsibleRunner(self.ansible_inventory)
+        return AnsibleRunner.get_runner(self.ansible_inventory)
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
@@ -67,4 +66,5 @@ class AnsibleBackend(base.BaseBackend):
 
     @classmethod
     def get_hosts(cls, host, **kwargs):
-        return AnsibleRunner(kwargs.get("ansible_inventory")).get_hosts(host)
+        inventory = kwargs.get('ansible_inventory')
+        return AnsibleRunner.get_runner(inventory).get_hosts(host)

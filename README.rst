@@ -14,6 +14,14 @@ Chef_ and so on.
 Testinfra aims to be a Serverspec_ equivalent in python and is written as
 a plugin to the powerful Pytest_ test engine
 
+License
+=======
+
+`Apache License 2.0 <https://github.com/philpep/testinfra/blob/master/LICENSE>`_
+
+The logo is licensed under the `Creative Commons NoDerivatives 4.0 License <https://creativecommons.org/licenses/by-nd/4.0/>`_
+If you have some other use in mind, contact us.
+
 Quick start
 ===========
 

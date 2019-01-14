@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 import datetime
+import six
 
 from testinfra.modules.base import Module
 
@@ -170,6 +171,16 @@ class File(Module):
 
     def __repr__(self):
         return "<file %s>" % (self.path,)
+
+    def __eq__(self, other):
+        if isinstance(other, File):
+            return self.path == other.path
+        elif isinstance(other, six.string_types):
+            return self.path == other
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @classmethod
     def get_module_class(cls, host):

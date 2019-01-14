@@ -18,7 +18,6 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-import imp
 import pprint
 
 
@@ -53,13 +52,8 @@ except ImportError:
 __all__ = ['AnsibleRunner', 'to_bytes']
 
 
-def _reload_constants():
-    # Reload defaults that can depend on environment variables and
-    # current working directory
-    imp.reload(ansible.constants)
-
-
 class AnsibleRunnerBase(object):
+    _runners = {}
 
     def __init__(self, host_list=None):
         self.host_list = host_list
@@ -74,12 +68,19 @@ class AnsibleRunnerBase(object):
     def run(self, host, module_name, module_args, **kwargs):
         raise NotImplementedError
 
+    @classmethod
+    def get_runner(cls, inventory):
+        try:
+            return cls._runners[inventory]
+        except KeyError:
+            cls._runners[inventory] = cls(inventory)
+            return cls._runners[inventory]
+
 
 class AnsibleRunnerV1(AnsibleRunnerBase):
 
     def __init__(self, host_list=None):
         super(AnsibleRunnerV1, self).__init__(host_list)
-        _reload_constants()
         self.vault_pass = ansible.utils.read_vault_file(
             ansible.constants.DEFAULT_VAULT_PASSWORD_FILE)
         kwargs = {"vault_password": self.vault_pass}
@@ -148,7 +149,6 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
 
     def __init__(self, host_list=None):
         super(AnsibleRunnerV2, self).__init__(host_list)
-        _reload_constants()
         self.cli = ansible.cli.playbook.PlaybookCLI(None)
         self.cli.options = self.cli.base_parser(
             connect_opts=True,
@@ -198,6 +198,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
 
     def run(self, host, module_name, module_args=None, **kwargs):
         self.cli.options.check = kwargs.get("check", False)
+        self.cli.options.become = kwargs.get("become", False)
         action = {"module": module_name}
         if module_args is not None:
             if module_name in ("command", "shell"):
