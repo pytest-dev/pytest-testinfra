@@ -20,53 +20,28 @@ class Docker(Module):
 
     >>> host = testinfra.get_host('local://')
 
-    >>> nginx = host.docker("nginx")
+    >>> nginx = host.docker("nginx:latest")
     >>> assert nginx.is_running
-
-    >>> assert nginx.is_listening('8000', '8001')
-
-    >>> assert nginx.version == 'latest'
     """
 
     def __init__(self, name):
         self.name = name
         super(Docker, self).__init__()
 
-    def running_image(self):
-        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Image}}'",
-                       self.name)
-        images = cmd.stdout.splitlines()
-        assert all(i == self.name for i in images) and cmd.stdout != ""
-        return images[0]
-
-    def running_ports(self):
-        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Ports}}'",
-                       self.name)
-        names = cmd.stdout.strip().split(', ')
-        ports = [p.split('->')[0].split(':')[1] for p in names]
-        return ports
-
     @property
     def is_running(self):
-        # assert fails if container corresponding to image is not running
-        self.running_image()
-        return True
+        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Image}}'",
+                       self.name)
 
-    def is_listening(self, ports):
-        run_ports = self.running_ports()
-        assert all(i in ports for i in run_ports)
-        return True
+        if cmd.stdout == "":
+            return False
 
-    def versions(self):
-        image = self.running_image()
-        cmd = self.run("docker images %s --format '{{.Tag}}'", image)
-        return cmd.stdout.splitlines()
+        images = cmd.stdout.splitlines()
 
-    @property
-    def version(self):
-        version = self.versions()
-        assert len(version) == 1
-        return version[0]
+        if(all(i == self.name for i in images)):
+            return True
+
+        return False
 
     def __repr__(self):
-        return "<docker>"
+        return "<docker %s>" % (self.name)
