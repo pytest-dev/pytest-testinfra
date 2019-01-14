@@ -158,8 +158,10 @@ def host(request, tmpdir_factory):
     image, kw = parse_hostspec(request.param)
     spec = BaseBackend.parse_hostspec(image)
 
-    if getattr(request.function, "destructive", None) is not None:
-        scope = "function"
+    for marker in getattr(request.function, 'pytestmark', []):
+        if marker.name == 'destructive':
+            scope = "function"
+            break
     else:
         scope = "session"
 
@@ -234,20 +236,13 @@ def docker_image(host):
 
 def pytest_generate_tests(metafunc):
     if "host" in metafunc.fixturenames:
-        # Supported in pytest 3.6+.  Earlier versions need to use the
-        # MarkInfo object directly as in the else: clause; this is
-        # marked for removal in pytest4.
-        if hasattr(metafunc, 'definition'):
-            marker = metafunc.definition.get_closest_marker(
-                "testinfra_hosts")
-        else:
-            marker = getattr(metafunc.function, "testinfra_hosts", None)
-        if marker is not None:
-            hosts = marker.args
+        for marker in getattr(metafunc.function, 'pytestmark', []):
+            if marker.name == 'testinfra_hosts':
+                hosts = marker.args
+                break
         else:
             # Default
             hosts = ["docker://debian_stretch"]
-
         metafunc.parametrize("host", hosts, indirect=True,
                              scope="function")
 
