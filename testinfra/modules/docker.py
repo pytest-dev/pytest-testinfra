@@ -38,7 +38,7 @@ class Docker(Module):
 
         images = cmd.stdout.splitlines()
 
-        if(all(i == self.name for i in images)):
+        if all(i == self.name for i in images):
             return True
 
         return False
