@@ -12,36 +12,62 @@
 # limitations under the License.
 from testinfra.modules.base import Module
 
+import json
 
 class Docker(Module):
+
     """Test docker containers running on system.
 
     Example:
 
     >>> host = testinfra.get_host('local://')
 
-    >>> nginx = host.docker("nginx:latest")
+    >>> nginx = host.docker("hardcore_benz")
     >>> assert nginx.is_running
+    >>> print(nginx.id)
+    >>> print(nginx.name)
+    >>> print(nginx.image_id)
+
+    >>> nginx2 = host.docker("6820b6f1121c")
+    >>> nginx2.is_running
     """
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, inst_name):
+        self.inst_name = inst_name
         super(Docker, self).__init__()
 
     @property
     def is_running(self):
-        cmd = self.run("docker ps -q -f ancestor=%s --format '{{.Image}}'",
-                       self.name)
+        cmd = self.run("docker ps --format '{{ .ID }} {{ .Names }}'")
 
         if cmd.stdout == "":
             return False
 
-        images = cmd.stdout.splitlines()
-
-        if all(i == self.name for i in images):
-            return True
+        for entry in cmd.stdout.splitlines():
+            c_id, c_name = entry.split()
+            if c_id == self.inst_name or c_name == self.inst_name:
+                return True
 
         return False
 
+    def inspect(self):
+        cmd = self.run("docker inspect %s", self.inst_name)
+        json_out = json.loads(cmd.stdout)
+
+        if len(json_out) == 1:
+            return json_out[0]
+
+    @property
+    def id(self):
+        return self.inspect()["Id"][:12]  # display only first twelve chars
+
+    @property
+    def name(self):
+        return self.inspect()["Name"][1:]  # get rid of slash in front
+
+    @property
+    def image_id(self):
+        return self.inspect()["Image"].split(':')[1][:12]  # display only first twelve chars
+
     def __repr__(self):
-        return "<docker %s>" % (self.name)
+        return "<docker %s>" % (self.inst_name)
