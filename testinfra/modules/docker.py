@@ -14,6 +14,7 @@ from testinfra.modules.base import Module
 
 import json
 
+
 class Docker(Module):
 
     """Test docker containers running on system.
@@ -67,7 +68,8 @@ class Docker(Module):
 
     @property
     def image_id(self):
-        return self.inspect()["Image"].split(':')[1][:12]  # display only first twelve chars
+        # display only first twelve chars
+        return self.inspect()["Image"].split(':')[1][:12]
 
     def __repr__(self):
         return "<docker %s>" % (self.inst_name)
