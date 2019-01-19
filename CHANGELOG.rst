@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.19.0
+======
+
+* Add docker module
+* Fix pytest 4 compatibility
+
 1.18.0
 ======
 
