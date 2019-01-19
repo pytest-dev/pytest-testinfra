@@ -19,6 +19,7 @@ import shutil
 import sys
 import tempfile
 import time
+import warnings
 
 import pytest
 import six
@@ -180,7 +181,7 @@ def pytest_collection_finish(session):
                 "{0} fixture is deprecated. Use host fixture and get "
                 "{0} module with host.{1}"
             ).format(name, utils.un_camel_case(name))
-        session.config.warn('C1', msg)
+        warnings.warn(msg, DeprecationWarning)
 
 
 class NagiosReporter(object):
