@@ -38,7 +38,7 @@ class SaltRunnerBackend(base.BaseBackend):
     def runner(self):
         if self._runner is None:
             self._runner = salt.runner.RunnerClient(salt.config.client_config(self.config))
-        return self._client
+        return self._runner
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
