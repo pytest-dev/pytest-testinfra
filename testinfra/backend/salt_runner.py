@@ -42,11 +42,11 @@ class SaltRunnerBackend(base.BaseBackend):
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
-        out = self.run_salt(command, config=None, args=args, kwargs=kwargs)
+        out = self.run_salt_runner(command, config=None, args=args, kwargs=kwargs)
         return self.result(out['retcode'], command, out['stdout'],
                            out['stderr'])
 
-    def run_salt(self, func, config=None, args=None, **kwargs):
+    def run_salt_runner(self, func, config=None, args=None, **kwargs):
         if config is not None:
             self.config = config
         out = {}
