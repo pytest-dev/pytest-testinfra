@@ -35,12 +35,12 @@ class SaltRunner(InstanceModule):
     Run ``salt-run sys.doc`` to get a complete list of functions
     """
 
-    def __call__(self, function, args=None, config=None, **kwargs):
+    def __call__(self, fnct, config=None, *args, **kwargs):
         args = args or []
         if isinstance(args, six.string_types):
             args = [args]
         if self._host.backend.HAS_RUN_SALT:
-            return self._host.backend.salt_runner(function, args, config, kwargs)["stdout"]
+            return self._host.backend.salt_runner(fnct, *args, **kwargs)["stdout"]
         else:
             cmd_args = []
             cmd = "salt-run --out=json"
@@ -48,7 +48,7 @@ class SaltRunner(InstanceModule):
                 cmd += " -c %s"
                 cmd_args.append(config)
             cmd += " %s" + len(args) * " %s"
-            cmd_args += [function] + args
+            cmd_args += [fnct] + args
             return json.loads(self.check_output(cmd, *cmd_args))
 
     def __repr__(self):
