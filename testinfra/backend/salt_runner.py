@@ -15,8 +15,8 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 try:
-    import salt.runner
     import salt.config
+    import salt.runner
 except ImportError:
     raise RuntimeError(
         "You must install salt package to use the salt runner backend")
@@ -37,7 +37,8 @@ class SaltRunnerBackend(base.BaseBackend):
     @property
     def runner(self):
         if self._runner is None:
-            self._runner = salt.runner.RunnerClient(salt.config.client_config(self.config))
+            self._runner = salt.runner.RunnerClient(
+                salt.config.client_config(self.config))
         return self._runner
 
     def run(self, command, *args, **kwargs):
@@ -52,7 +53,8 @@ class SaltRunnerBackend(base.BaseBackend):
             out["stdout"] = self.runner.cmd(func, arg=args, kwarg=kwargs)
             out["retcode"] = 0
         except KeyError:
-            out["stderr"] = "Unknown function, check salt-run -d for complete list"
+            out["stderr"] = "Unknown function, check salt-run -d " \
+                            "for complete list"
             out['retcode'] = 1
         except ValueError:
             out["stderr"] = "No result found"
