@@ -54,4 +54,4 @@ class Salt(InstanceModule):
             return json.loads(self.check_output(cmd, *cmd_args))["local"]
 
     def __repr__(self):
-        return "<salt>"
+        return "<__repr__>"
