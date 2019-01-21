@@ -32,6 +32,7 @@ modules = {
     'puppet_resource': 'puppet:PuppetResource',
     'facter': 'puppet:Facter',
     'salt': 'salt:Salt',
+    'saltrunner': 'saltrunner:SaltRunner',
     'service': 'service:Service',
     'socket': 'socket:Socket',
     'sudo': 'sudo:Sudo',
