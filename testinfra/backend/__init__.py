@@ -24,6 +24,7 @@ BACKENDS = {
     'safe-ssh': 'testinfra.backend.ssh.SafeSshBackend',
     'paramiko': 'testinfra.backend.paramiko.ParamikoBackend',
     'salt': 'testinfra.backend.salt.SaltBackend',
+    'saltrunner':'testinfra.backend.salt_runner.SaltRunnerBackend',
     'docker': 'testinfra.backend.docker.DockerBackend',
     'ansible': 'testinfra.backend.ansible.AnsibleBackend',
     'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
