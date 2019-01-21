@@ -49,7 +49,7 @@ class SaltRunnerBackend(base.BaseBackend):
     def salt_runner(self, func, *args):
         out = {}
         try:
-            out["stdout"] = self.runner.cmd(func, arg=args or [], kwargs=kwargs)
+            out["stdout"] = self.runner.cmd(func, arg=args or [])
             out["retcode"] = 0
         except KeyError:
             out["stderr"] = "Unknown function, check salt-run -d for complete list"
