@@ -230,8 +230,11 @@ class LinuxSocketSS(Socket):
             # Ignore unix datagram sockets.
             if line.split(None, 1)[0] == b'u_dgr':
                 continue
-            splitted = line.decode().split()
-
+            try:
+                splitted = line.decode().split()
+            except AttributeError:
+                splitted = line.split()
+            
             # If listing only TCP or UDP sockets, output has 5 columns:
             # (State, Recv-Q, Send-Q, Local Address:Port, Peer Address:Port)
             if self.protocol in ('tcp', 'udp'):
