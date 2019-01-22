@@ -48,11 +48,11 @@ class SaltBackend(base.BaseBackend):
         out = self.client.cmd(self.host, func, args or [])
         hosts = SaltBackend.get_hosts(self.host)
         delta = set(hosts) - set(out.keys())
-        if len(delta) > 0:
+        if delta:
             raise RuntimeError(
                 "Error while running %s(%s): %s. Minion not connected ?" % (
                     func, args, out))
-        return {key:out[key] for key in out.keys() if key in hosts}
+        return { key: out[key] for key in out.keys() if key in hosts }
 
     @classmethod
     def get_hosts(cls, host, **kwargs):
