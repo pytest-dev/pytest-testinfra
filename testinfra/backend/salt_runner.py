@@ -26,7 +26,7 @@ from testinfra.backend import base
 
 class SaltRunnerBackend(base.BaseBackend):
     HAS_RUN_SALT = True
-    NAME = "salt_run"
+    NAME = "saltrunner"
 
     def __init__(self, host, *args, **kwargs):
         self.host = host
@@ -43,11 +43,11 @@ class SaltRunnerBackend(base.BaseBackend):
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
-        out = self.salt_runner(command[0], args, **kwargs)
+        out = self.saltrunner(command[0], args, **kwargs)
         return self.result(out['retcode'], command, out['stdout'],
                            out['stderr'])
 
-    def salt_runner(self, func, *args, **kwargs):
+    def saltrunner(self, func, *args, **kwargs):
         out = {}
         try:
             out["stdout"] = self.runner.cmd(func, arg=args, kwarg=kwargs)

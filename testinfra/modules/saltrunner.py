@@ -40,7 +40,7 @@ class SaltRunner(InstanceModule):
         if isinstance(args, six.string_types):
             args = [args]
         if self._host.backend.HAS_RUN_SALT:
-            return self._host.backend.salt_runner(
+            return self._host.backend.saltrunner(
                 fnct, *args, **kwargs)["stdout"]
         else:
             cmd_args = []
@@ -53,4 +53,4 @@ class SaltRunner(InstanceModule):
             return json.loads(self.check_output(cmd, *cmd_args))
 
     def __repr__(self):
-        return "<salt_runner>"
+        return "<saltrunner>"

@@ -136,9 +136,11 @@ def test_salt(host):
     ssh_version = host.salt("pkg.version", "openssh-server", local=True)
     assert ssh_version.startswith("1:7.4")
 
+
 def test_saltrunner(host):
-    assert host.saltrunner("salt.cmd", fun="test.true") == True
-    assert host.runner("salt.cmd", fun="test.echo", text=True)
+    assert host.saltrunner("salt.cmd", fun="test.true")
+    assert host.saltrunner("salt.cmd", fun="test.echo", text=True)
+
 
 def test_puppet_resource(host):
     resource = host.puppet_resource("package", "openssh-server")
