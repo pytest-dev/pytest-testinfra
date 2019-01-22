@@ -46,7 +46,7 @@ class SaltBackend(base.BaseBackend):
 
     def run_salt(self, func, args=None):
         out = self.client.cmd(self.host, func, args or [])
-        hosts = SaltBackend.get_hosts(self.host))
+        hosts = SaltBackend.get_hosts(self.host)
         delta = set(hosts) - set(out.keys())
         if len(delta) > 0:
             raise RuntimeError(
