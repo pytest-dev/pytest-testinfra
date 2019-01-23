@@ -52,7 +52,7 @@ class SaltBackend(base.BaseBackend):
             raise RuntimeError(
                 "Error while running %s(%s): %s. Minion not connected ?" % (
                     func, args, out))
-        return { key: out[key] for key in out.keys() if key in hosts }
+        return {key: out[key] for key in out.keys() if key in hosts}
 
     @classmethod
     def get_hosts(cls, host, **kwargs):
