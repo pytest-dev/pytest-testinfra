@@ -109,6 +109,13 @@ Ansible
    :members:
 
 
+Docker
+~~~~~~
+
+.. autoclass:: testinfra.modules.docker.Docker(name)
+   :members:
+
+
 File
 ~~~~
 
