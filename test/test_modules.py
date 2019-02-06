@@ -502,6 +502,18 @@ def test_iptables(host):
 
 
 def test_addr(host):
-    non_resolvable = host.addr('some_nonresolvable_host')
+    non_resolvable = host.addr('some_non_resolvable_host')
     assert not non_resolvable.is_resolvable
     assert not non_resolvable.is_reachable
+
+    non_reachable_ip = host.addr('10.42.13.73')  # Some arbitrary internal IP, hopefully non reachable
+    assert non_reachable_ip.is_resolvable  # IP addresses are always resolvable no matter what
+    assert not non_reachable_ip.is_reachable
+
+    google_dns = host.addr('8.8.8.8')
+    assert google_dns.is_resolvable
+    assert google_dns.is_reachable
+
+    google_addr = host.addr('google.com')
+    assert google_addr.is_resolvable
+    assert google_addr.is_reachable
