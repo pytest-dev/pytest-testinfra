@@ -499,3 +499,9 @@ def test_iptables(host):
     assert '-P OUTPUT ACCEPT' in v6_rules
     v6_filter_rules = host.iptables.rules('filter', 'INPUT', version=6)
     assert '-P INPUT ACCEPT' in v6_filter_rules
+
+
+def test_addr(host):
+    non_resolvable = host.addr('some_nonresolvable_host')
+    assert not non_resolvable.is_resolvable
+    assert not non_resolvable.is_reachable
