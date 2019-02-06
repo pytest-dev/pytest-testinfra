@@ -51,13 +51,13 @@ class Addr(Module):
     @property
     def is_resolvable(self):
         """Return if address is resolvable"""
-        return self.run_test("getent ahosts %s", self.name).rc == 0
+        return self.run("getent ahosts %s", self.name).rc == 0
 
     @property
     def is_reachable(self):
         """Return if address is resolvable"""
         if self.proto == 'icmp':
-            return self.run_test("ping -c 1 %s", self.name).rc == 0
+            return self.run("ping -c 1 %s", self.name).rc == 0
         return False
 
     @classmethod
