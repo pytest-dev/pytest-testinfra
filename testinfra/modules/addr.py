@@ -62,7 +62,7 @@ class Addr(Module):
             addr = self.ipv4_address
             if addr is None:
                 return False
-            return self.run("nc -w 10 -nz %s %s", addr, self.port).rc == 0
+            return self.run("nc -w 10 -nz %s %d", addr, self.port).rc == 0
         return False
 
     @property
