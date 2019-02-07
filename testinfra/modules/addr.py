@@ -67,7 +67,8 @@ class Addr(Module):
 
     @property
     def ipv4_address(self):
-        result = self.run("getent ahostsv4 %s | awk '{print $1; exit}'", self.name)
+        result = \
+            self.run("getent ahostsv4 %s | awk '{print $1; exit}'", self.name)
         if result.rc != 0:
             return None
         return result.stdout
