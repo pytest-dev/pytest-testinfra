@@ -60,7 +60,7 @@ class Addr(Module):
             return self.run("ping -c 1 %s", self.name).rc == 0
         if self.proto == 'tcp':
             addr = self.ipv4_address
-            if addr is None:
+            if not addr:
                 return False
             return self.run("nc -w 10 -nz %s %d", addr, self.port).rc == 0
         return False
@@ -69,8 +69,6 @@ class Addr(Module):
     def ipv4_address(self):
         result = \
             self.run("getent ahostsv4 %s | awk '{print $1; exit}'", self.name)
-        if result.rc != 0:
-            return None
         return result.stdout
 
     @classmethod
