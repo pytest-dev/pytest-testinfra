@@ -16,6 +16,27 @@ from __future__ import unicode_literals
 from testinfra.modules.base import Module
 
 
+class _AddrPort:
+    def __init__(self, addr, port):
+        self._addr = addr
+        self._port = str(port)
+
+    @property
+    def is_reachable(self):
+        if not self._has_netcat:
+            # Fallback to bash if netcat is not available
+            return self._addr.run(
+                "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
+                self._addr.name, self._port).rc == 0
+
+        return self._addr.run(
+            "timeout 1 nc -z %s %s", self._addr.name, self._port).rc == 0
+
+    @property
+    def _has_netcat(self):
+        return self._addr.run("command -v nc").rc == 0
+
+
 class Addr(Module):
     """Test remote address
 
@@ -23,10 +44,8 @@ class Addr(Module):
     If protocol is not supplied assume it TCP if port is supplied
     """
 
-    def __init__(self, name, port=None, proto=None):
+    def __init__(self, name):
         self._name = name
-        self._port = port
-        self._proto = proto
         super(Addr, self).__init__()
 
     @property
@@ -35,38 +54,18 @@ class Addr(Module):
         return self._name
 
     @property
-    def port(self):
-        """Return host port"""
-        return self._port
-
-    @property
-    def proto(self):
-        """Return host protocol"""
-        if self._proto is None:
-            if self._port is None:
-                return 'icmp'
-            return 'tcp'
-        return self._proto
-
-    @property
     def is_resolvable(self):
         """Return if address is resolvable"""
         return self.run("getent ahosts %s", self.name).rc == 0
 
     @property
     def is_reachable(self):
-        """Return if address is resolvable"""
-        if self.proto == 'icmp':
-            return self.run("ping -c 1 %s", self.name).rc == 0
-        if self.proto == 'tcp':
-            if self._has_netcat:
-                return self.run(
-                    "timeout 5 nc -z %s %s", self.name, str(self.port)).rc == 0
-            # Try to fallback to bash if netcat is not installed
-            return self.run(
-                "timeout 5 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
-                self.name, str(self.port)).rc == 0
-        return False
+        """Return if address is reachable"""
+        return self.run("ping -W 1 -c 1 %s", self.name).rc == 0
+
+    def port(self, port):
+        """Return address-port pair"""
+        return _AddrPort(self, port)
 
     @classmethod
     def get_module_class(cls, host):
@@ -74,7 +73,3 @@ class Addr(Module):
 
     def __repr__(self):
         return "<addr %s>" % (self.name,)
-
-    @property
-    def _has_netcat(self):
-        return self.run("command -v nc").rc == 0
