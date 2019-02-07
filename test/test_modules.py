@@ -506,16 +506,40 @@ def test_addr(host):
     assert not non_resolvable.is_resolvable
     assert not non_resolvable.is_reachable
 
+    non_resolvable_tcp = host.addr('some_non_resolvable_host', port=80)
+    assert not non_resolvable_tcp.is_resolvable
+    assert not non_resolvable_tcp.is_reachable
+
     # Some arbitrary internal IP, hopefully non reachable
     non_reachable_ip = host.addr('10.42.13.73')
     # IP addresses are always resolvable no matter what
     assert non_reachable_ip.is_resolvable
     assert not non_reachable_ip.is_reachable
 
+    non_reachable_ip_tcp = host.addr('10.42.13.73', port=80)
+    assert non_reachable_ip_tcp.is_resolvable
+    assert not non_reachable_ip_tcp.is_reachable
+
     google_dns = host.addr('8.8.8.8')
     assert google_dns.is_resolvable
     assert google_dns.is_reachable
 
+    google_dns_tcp = host.addr('8.8.8.8', port=53)
+    assert google_dns_tcp.is_resolvable
+    assert google_dns_tcp.is_reachable
+
+    google_dns_tcp_unreachable = host.addr('8.8.8.8', port=666)
+    assert google_dns_tcp_unreachable.is_resolvable
+    assert not google_dns_tcp_unreachable.is_reachable
+
     google_addr = host.addr('google.com')
     assert google_addr.is_resolvable
     assert google_addr.is_reachable
+
+    google_addr_tcp = host.addr('google.com', port=443)
+    assert google_addr_tcp.is_resolvable
+    assert google_addr_tcp.is_reachable
+
+    google_addr_tcp_unreachable = host.addr('google.com', port=666)
+    assert google_addr_tcp_unreachable.is_resolvable
+    assert not google_addr_tcp_unreachable.is_reachable

@@ -58,7 +58,19 @@ class Addr(Module):
         """Return if address is resolvable"""
         if self.proto == 'icmp':
             return self.run("ping -c 1 %s", self.name).rc == 0
+        if self.proto == 'tcp':
+            addr = self.ipv4_address
+            if addr is None:
+                return False
+            return self.run("nc -w 10 -nz %s %s", addr, self.port).rc == 0
         return False
+
+    @property
+    def ipv4_address(self):
+        result = self.run("getent ahostsv4 %s | awk '{print $1; exit}'", self.name)
+        if result.rc != 0:
+            return None
+        return result.stdout
 
     @classmethod
     def get_module_class(cls, host):
