@@ -40,8 +40,19 @@ class _AddrPort(object):
 class Addr(Module):
     """Test remote address
 
-    If port is not supplied test host availability using ping
-    If protocol is not supplied assume it TCP if port is supplied
+    Example:
+
+    >>> google = host.addr("google.com")
+    >>> google.is_resolvable
+    True
+    >>> '173.194.32.225' in google.ipv4_addresses
+    True
+    >>> google.is_reachable
+    True
+    >>> google.port(443).is_reachable
+    True
+    >>> google.port(666).is_reachable
+    False
     """
 
     def __init__(self, name):
