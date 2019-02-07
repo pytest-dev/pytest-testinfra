@@ -468,6 +468,11 @@ def test_command_execution(host):
     assert host.run("true").succeeded
 
 
+def test_command_execution_in_chdir(host):
+    assert host.run("pwd", cwd='/tmp').stdout.strip() == '/tmp'
+    assert host.run("pwd").stdout.strip() != '/tmp'
+
+
 def test_pip_package(host):
     assert host.pip_package.get_packages()['pip']['version'] == '9.0.1'
     pytest = host.pip_package.get_packages(pip_path='/v/bin/pip')['pytest']

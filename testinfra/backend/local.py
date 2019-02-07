@@ -30,4 +30,4 @@ class LocalBackend(base.BaseBackend):
         return [host]
 
     def run(self, command, *args, **kwargs):
-        return self.run_local(self.get_command(command, *args))
+        return self.run_local(self.get_command(command, *args), **kwargs)
