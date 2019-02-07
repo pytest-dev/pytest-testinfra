@@ -16,7 +16,7 @@ from __future__ import unicode_literals
 from testinfra.modules.base import Module
 
 
-class _AddrPort:
+class _AddrPort(object):
     def __init__(self, addr, port):
         self._addr = addr
         self._port = str(port)
