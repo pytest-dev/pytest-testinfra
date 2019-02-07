@@ -59,17 +59,14 @@ class Addr(Module):
         if self.proto == 'icmp':
             return self.run("ping -c 1 %s", self.name).rc == 0
         if self.proto == 'tcp':
-            addr = self.ipv4_address
-            if not addr:
-                return False
-            return self.run("nc -w 10 -nz %s %s", addr, str(self.port)).rc == 0
+            if self._has_netcat:
+                return self.run(
+                    "timeout 5 nc -z %s %s", self.name, str(self.port)).rc == 0
+            # Try to fallback to bash if netcat is not installed
+            return self.run(
+                "timeout 5 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
+                self.name, str(self.port)).rc == 0
         return False
-
-    @property
-    def ipv4_address(self):
-        result = \
-            self.run("getent ahostsv4 %s | awk '{print $1; exit}'", self.name)
-        return result.stdout
 
     @classmethod
     def get_module_class(cls, host):
@@ -77,3 +74,7 @@ class Addr(Module):
 
     def __repr__(self):
         return "<addr %s>" % (self.name,)
+
+    @property
+    def _has_netcat(self):
+        return self.run("command -v nc").rc == 0
