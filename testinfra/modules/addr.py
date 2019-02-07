@@ -63,6 +63,15 @@ class Addr(Module):
         """Return if address is reachable"""
         return self.run("ping -W 1 -c 1 %s", self.name).rc == 0
 
+    @property
+    def ipv4_addresses(self):
+        """Return IPv4 addresses of host"""
+        result = self.run("getent ahostsv4 %s", self.name)
+        if result.rc != 0:
+            return []
+        lines = result.stdout.splitlines()
+        return list(set(line.split()[0] for line in lines))
+
     def port(self, port):
         """Return address-port pair"""
         return _AddrPort(self, port)

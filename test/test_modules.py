@@ -511,11 +511,13 @@ def test_addr(host):
     # IP addresses are always resolvable no matter what
     non_reachable_ip = host.addr('10.42.13.73')
     assert non_reachable_ip.is_resolvable
+    assert non_reachable_ip.ipv4_addresses == ['10.42.13.73']
     assert not non_reachable_ip.is_reachable
     assert not non_reachable_ip.port(80).is_reachable
 
     google_dns = host.addr('8.8.8.8')
     assert google_dns.is_resolvable
+    assert google_dns.ipv4_addresses == ['8.8.8.8']
     assert google_dns.is_reachable
     assert google_dns.port(53).is_reachable
     assert not google_dns.port(666).is_reachable
@@ -525,3 +527,9 @@ def test_addr(host):
     assert google_addr.is_reachable
     assert google_addr.port(443).is_reachable
     assert not google_addr.port(666).is_reachable
+
+    for ip in google_addr.ipv4_addresses:
+        google_ip = host.addr(ip)
+        assert google_ip.ipv4_addresses == [ip]
+        assert google_ip.is_reachable
+        assert google_ip.port(443).is_reachable
