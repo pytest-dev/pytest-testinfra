@@ -42,6 +42,8 @@ elif _ansible_version[0] == 2:
     import ansible.plugins.callback
     import ansible.utils.vars
     import ansible.vars
+    if _ansible_version[1] >= 8:
+        import ansible.cli.arguments
 
 try:
     from ansible.module_utils._text import to_bytes
@@ -150,26 +152,42 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
     def __init__(self, host_list=None):
         super(AnsibleRunnerV2, self).__init__(host_list)
         self.cli = ansible.cli.playbook.PlaybookCLI(None)
-        self.cli.options = self.cli.base_parser(
-            connect_opts=True,
-            meta_opts=True,
-            runas_opts=True,
-            subset_opts=True,
-            check_opts=True,
-            inventory_opts=True,
-            runtask_opts=True,
-            vault_opts=True,
-            fork_opts=True,
-            module_opts=True,
-        ).parse_args([])[0]
-        self.cli.normalize_become_options()
-        self.cli.options.connection = "smart"
-        if _ansible_version[1] >= 4:  # ansible >= 2.4
+        if _ansible_version[1] >= 8:
+            self.cli.init_parser()
+            options, args = self.cli.parser.parse_args([])
+            options, args = ansible.cli.CLI.post_process_args(self.cli, options, args)
+            options.args = args
+            options.inventory = host_list
+            options = ansible.cli.CLI.normalize_become_options(options)
+            self.options = options
+            ansible.context._init_global_context(self.options)
+        else:
+            parser = self.cli.base_parser(
+                connect_opts=True,
+                meta_opts=True,
+                runas_opts=True,
+                subset_opts=True,
+                check_opts=True,
+                inventory_opts=True,
+                runtask_opts=True,
+                vault_opts=True,
+                fork_opts=True,
+                module_opts=True,
+            )
+            self.cli.options = parser.parse_args([])[0]
+            self.cli.normalize_become_options()
+        if _ansible_version[1] >= 8:  # ansible >= 2.8
+            # pylint: disable=protected-access
+            self.loader, self.inventory, self.variable_manager = (
+                self.cli._play_prereqs())
+        elif _ansible_version[1] >= 4:  # ansible >= 2.4
+            self.cli.options.connection = "smart"
             self.cli.options.inventory = host_list
             # pylint: disable=protected-access
             self.loader, self.inventory, self.variable_manager = (
                 self.cli._play_prereqs(self.cli.options))
         else:  # ansible < 2.4
+            self.cli.options.connection = "smart"
             self.variable_manager = ansible.vars.VariableManager()
             self.loader = ansible.parsing.dataloader.DataLoader()
             if self.cli.options.vault_password_file:
@@ -197,8 +215,10 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         return self.variable_manager.get_vars(self.loader, host=host)
 
     def run(self, host, module_name, module_args=None, **kwargs):
-        self.cli.options.check = kwargs.get("check", False)
-        self.cli.options.become = kwargs.get("become", False)
+        self.options.check = kwargs.get("check", False)
+        self.options.become = kwargs.get("become", False)
+        self.options = ansible.cli.CLI.normalize_become_options(self.options)
+        ansible.context._init_global_context(self.options)
         action = {"module": module_name}
         if module_args is not None:
             if module_name in ("command", "shell"):
@@ -219,7 +239,6 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
                 inventory=self.inventory,
                 variable_manager=self.variable_manager,
                 loader=self.loader,
-                options=self.cli.options,
                 passwords=None,
                 stdout_callback=callback,
             )
