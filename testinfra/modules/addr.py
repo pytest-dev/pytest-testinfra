@@ -30,7 +30,7 @@ class _AddrPort(object):
                 self._addr.name, self._port).rc == 0
 
         return self._addr.run(
-            "timeout 1 nc -z %s %s", self._addr.name, self._port).rc == 0
+            "nc -w 1 -z %s %s", self._addr.name, self._port).rc == 0
 
     @property
     def _has_netcat(self):
@@ -72,6 +72,9 @@ class Addr(Module):
     @property
     def is_reachable(self):
         """Return if address is reachable"""
+        if self.run("command -v ping").rc != 0:
+            raise RuntimeError("Command 'ping' not available")
+
         return self.run("ping -W 1 -c 1 %s", self.name).rc == 0
 
     @property

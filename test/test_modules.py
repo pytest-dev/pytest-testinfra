@@ -501,6 +501,7 @@ def test_iptables(host):
     assert '-P INPUT ACCEPT' in v6_filter_rules
 
 
+@all_images
 def test_addr(host):
     non_resolvable = host.addr('some_non_resolvable_host')
     assert not non_resolvable.is_resolvable
