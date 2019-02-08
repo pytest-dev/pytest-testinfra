@@ -3,7 +3,7 @@ services:
   - docker
 env:
   matrix:
-    - TOXENV=py27,ansible1,py35
+    - TOXENV=py{27,35}-ansible{2,devel},ansible1
     - TOXENV=flake8
     - TOXENV=pylint
     - TOXENV=sphinxdoc
