@@ -23,6 +23,7 @@ class _AddrPort(object):
 
     @property
     def is_reachable(self):
+        # pylint: disable=protected-access
         if not self._addr._host.exists('nc'):
             # Fallback to bash if netcat is not available
             return self._addr.run_expect(
