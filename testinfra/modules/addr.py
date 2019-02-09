@@ -25,7 +25,8 @@ class _AddrPort(object):
     def is_reachable(self):
         if not self._addr._host.exists('nc'):
             # Fallback to bash if netcat is not available
-            return self._addr.run_expect([0, 1, 124],
+            return self._addr.run_expect(
+                [0, 1, 124],
                 "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
                 self._addr.name, self._port).rc == 0
 
