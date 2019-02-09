@@ -98,10 +98,10 @@ class Callback(ansible.plugins.callback.CallbackBase):
         }
 
 
-class AnsibleRunnerV2(AnsibleRunnerBase):
+class AnsibleRunner(AnsibleRunnerBase):
 
     def __init__(self, host_list=None):
-        super(AnsibleRunnerV2, self).__init__(host_list)
+        super(AnsibleRunner, self).__init__(host_list)
         self.cli = ansible.cli.playbook.PlaybookCLI(None)
         self.cli.options = self.cli.base_parser(
             connect_opts=True,
@@ -165,6 +165,3 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
                 tqm.cleanup()
 
         return callback.result
-
-
-AnsibleRunner = AnsibleRunnerV2
