@@ -534,3 +534,8 @@ def test_addr(host):
         assert google_ip.ipv4_addresses == [ip]
         assert google_ip.is_reachable
         assert google_ip.port(443).is_reachable
+
+    google_ips4 = google_addr.ipv4_addresses
+    google_ips6 = google_addr.ipv6_addresses
+    google_ips = google_addr.ip_addresses
+    assert set(google_ips) == set(google_ips4 + google_ips6)

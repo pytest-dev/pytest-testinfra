@@ -78,13 +78,19 @@ class Addr(Module):
         return self.run("ping -W 1 -c 1 %s", self.name).rc == 0
 
     @property
+    def ip_addresses(self):
+        """Return IP addresses of host"""
+        return self._resolve("ahosts")
+
+    @property
     def ipv4_addresses(self):
         """Return IPv4 addresses of host"""
-        result = self.run("getent ahostsv4 %s", self.name)
-        if result.rc != 0:
-            return []
-        lines = result.stdout.splitlines()
-        return list(set(line.split()[0] for line in lines))
+        return self._resolve("ahostsv4")
+
+    @property
+    def ipv6_addresses(self):
+        """Return IPv6 addresses of host"""
+        return self._resolve("ahostsv6")
 
     def port(self, port):
         """Return address-port pair"""
@@ -96,3 +102,10 @@ class Addr(Module):
 
     def __repr__(self):
         return "<addr %s>" % (self.name,)
+
+    def _resolve(self, method):
+        result = self.run("getent %s %s", method, self.name)
+        if result.rc != 0:
+            return []
+        lines = result.stdout.splitlines()
+        return list(set(line.split()[0] for line in lines))
