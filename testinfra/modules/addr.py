@@ -104,8 +104,6 @@ class Addr(Module):
         return "<addr %s>" % (self.name,)
 
     def _resolve(self, method):
-        result = self.run("getent %s %s", method, self.name)
-        if result.rc != 0:
-            return []
+        result = self.run_expect([0, 2], "getent %s %s", method, self.name)
         lines = result.stdout.splitlines()
         return list(set(line.split()[0] for line in lines))
