@@ -23,18 +23,14 @@ class _AddrPort(object):
 
     @property
     def is_reachable(self):
-        if not self._has_netcat:
+        if not self._addr._host.exists('nc'):
             # Fallback to bash if netcat is not available
-            return self._addr.run(
+            return self._addr.run_expect([0, 1, 124],
                 "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
                 self._addr.name, self._port).rc == 0
 
         return self._addr.run(
             "nc -w 1 -z %s %s", self._addr.name, self._port).rc == 0
-
-    @property
-    def _has_netcat(self):
-        return self._addr.run("command -v nc").rc == 0
 
 
 class Addr(Module):
@@ -67,15 +63,13 @@ class Addr(Module):
     @property
     def is_resolvable(self):
         """Return if address is resolvable"""
-        return self.run("getent ahosts %s", self.name).rc == 0
+        return len(self.ip_addresses) > 0
 
     @property
     def is_reachable(self):
         """Return if address is reachable"""
-        if self.run("command -v ping").rc != 0:
-            raise RuntimeError("Command 'ping' not available")
-
-        return self.run("ping -W 1 -c 1 %s", self.name).rc == 0
+        return self.run_expect([0, 1, 2],
+                               "ping -W 1 -c 1 %s", self.name).rc == 0
 
     @property
     def ip_addresses(self):
@@ -95,10 +89,6 @@ class Addr(Module):
     def port(self, port):
         """Return address-port pair"""
         return _AddrPort(self, port)
-
-    @classmethod
-    def get_module_class(cls, host):
-        return super(Addr, cls).get_module_class(host)
 
     def __repr__(self):
         return "<addr %s>" % (self.name,)
