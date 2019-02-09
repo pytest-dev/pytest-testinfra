@@ -27,21 +27,17 @@ except ImportError:
     raise RuntimeError(
         "You must install ansible package to use the ansible backend")
 
-import ansible.constants
 _ansible_version = list(map(int, ansible.__version__.split('.', 2)[:2]))
-if _ansible_version[0] == 1:
-    import ansible.inventory
-    import ansible.runner
-    import ansible.utils
-elif _ansible_version[0] == 2:
-    import ansible.cli.playbook
-    import ansible.executor.task_queue_manager
-    import ansible.inventory
-    import ansible.parsing.dataloader
-    import ansible.playbook.play
-    import ansible.plugins.callback
-    import ansible.utils.vars
-    import ansible.vars
+import ansible.cli.playbook
+import ansible.constants
+import ansible.constants
+import ansible.executor.task_queue_manager
+import ansible.inventory
+import ansible.parsing.dataloader
+import ansible.playbook.play
+import ansible.plugins.callback
+import ansible.utils.vars
+import ansible.vars
 
 try:
     from ansible.module_utils._text import to_bytes
@@ -77,72 +73,31 @@ class AnsibleRunnerBase(object):
             return cls._runners[inventory]
 
 
-class AnsibleRunnerV1(AnsibleRunnerBase):
+class Callback(ansible.plugins.callback.CallbackBase):
 
-    def __init__(self, host_list=None):
-        super(AnsibleRunnerV1, self).__init__(host_list)
-        self.vault_pass = ansible.utils.read_vault_file(
-            ansible.constants.DEFAULT_VAULT_PASSWORD_FILE)
-        kwargs = {"vault_password": self.vault_pass}
-        if self.host_list is not None:
-            kwargs["host_list"] = host_list
-        self.inventory = ansible.inventory.Inventory(**kwargs)
+    def __init__(self, *args, **kwargs):
+        self.result = {}
+        super(Callback, self).__init__(*args, **kwargs)
 
-    def get_hosts(self, pattern=None):
-        return [
-            e.name for e in
-            self.inventory.get_hosts(pattern=pattern or "all")
-        ]
+    def runner_on_ok(self, host, result):
+        self.result = result
 
-    def get_variables(self, host):
-        return self.inventory.get_variables(host)
+    def runner_on_failed(self, host, result, ignore_errors=False):
+        self.result = result
 
-    def run(self, host, module_name, module_args=None, **kwargs):
-        kwargs = kwargs.copy()
-        if self.host_list is not None:
-            kwargs["host_list"] = self.host_list
-        if module_args is not None:
-            kwargs["module_args"] = module_args
-        result = ansible.runner.Runner(
-            pattern=host,
-            module_name=module_name,
-            vault_pass=self.vault_pass,
-            inventory=self.inventory,
-            **kwargs).run()
-        if host not in result["contacted"]:
-            raise RuntimeError("Unexpected error: {}".format(result))
-        if result["contacted"][host].get("skipped", False) is True:
-            # For consistency with ansible v2 backend
-            result["contacted"][host]["failed"] = True
-        return result["contacted"][host]
+    # pylint: disable=no-self-use
+    def runner_on_unreachable(self, host, result):
+        raise RuntimeError(
+            'Host {} is unreachable: {}'.format(
+                host, pprint.pformat(result)),
+        )
 
-
-if _ansible_version[0] == 2:
-    class Callback(ansible.plugins.callback.CallbackBase):
-
-        def __init__(self, *args, **kwargs):
-            self.result = {}
-            super(Callback, self).__init__(*args, **kwargs)
-
-        def runner_on_ok(self, host, result):
-            self.result = result
-
-        def runner_on_failed(self, host, result, ignore_errors=False):
-            self.result = result
-
-        # pylint: disable=no-self-use
-        def runner_on_unreachable(self, host, result):
-            raise RuntimeError(
-                'Host {} is unreachable: {}'.format(
-                    host, pprint.pformat(result)),
-            )
-
-        def runner_on_skipped(self, host, item=None):
-            self.result = {
-                'failed': True,
-                'msg': 'Skipped. You might want to try check=False',
-                'item': item,
-            }
+    def runner_on_skipped(self, host, item=None):
+        self.result = {
+            'failed': True,
+            'msg': 'Skipped. You might want to try check=False',
+            'item': item,
+        }
 
 
 class AnsibleRunnerV2(AnsibleRunnerBase):
@@ -231,11 +186,4 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         return callback.result
 
 
-if _ansible_version[0] == 1:
-    AnsibleRunner = AnsibleRunnerV1
-elif _ansible_version[0] == 2:
-    AnsibleRunner = AnsibleRunnerV2
-else:
-    raise NotImplementedError(
-        "Unhandled ansible version " + ansible.__version__
-    )
+AnsibleRunner = AnsibleRunnerV2
