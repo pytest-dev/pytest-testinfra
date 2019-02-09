@@ -27,9 +27,7 @@ except ImportError:
     raise RuntimeError(
         "You must install ansible package to use the ansible backend")
 
-_ansible_version = list(map(int, ansible.__version__.split('.', 2)[:2]))
 import ansible.cli.playbook
-import ansible.constants
 import ansible.constants
 import ansible.executor.task_queue_manager
 import ansible.inventory
@@ -119,24 +117,10 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
         ).parse_args([])[0]
         self.cli.normalize_become_options()
         self.cli.options.connection = "smart"
-        if _ansible_version[1] >= 4:  # ansible >= 2.4
-            self.cli.options.inventory = host_list
-            # pylint: disable=protected-access
-            self.loader, self.inventory, self.variable_manager = (
-                self.cli._play_prereqs(self.cli.options))
-        else:  # ansible < 2.4
-            self.variable_manager = ansible.vars.VariableManager()
-            self.loader = ansible.parsing.dataloader.DataLoader()
-            if self.cli.options.vault_password_file:
-                vault_pass = self.cli.read_vault_password_file(
-                    self.cli.options.vault_password_file, loader=self.loader)
-                self.loader.set_vault_password(vault_pass)
-            self.inventory = ansible.inventory.Inventory(
-                loader=self.loader,
-                variable_manager=self.variable_manager,
-                host_list=host_list or self.cli.options.inventory,
-            )
-            self.variable_manager.set_inventory(self.inventory)
+        self.cli.options.inventory = host_list
+        # pylint: disable=protected-access
+        self.loader, self.inventory, self.variable_manager = (
+            self.cli._play_prereqs(self.cli.options))
 
     def get_hosts(self, pattern=None):
         return [
@@ -146,10 +130,7 @@ class AnsibleRunnerV2(AnsibleRunnerBase):
 
     def get_variables(self, host):
         host = self.inventory.get_host(host)
-        if _ansible_version[1] >= 4:  # ansible >= 2.4
-            return self.variable_manager.get_vars(host=host)
-        # ansible < 2.4
-        return self.variable_manager.get_vars(self.loader, host=host)
+        return self.variable_manager.get_vars(host=host)
 
     def run(self, host, module_name, module_args=None, **kwargs):
         self.cli.options.check = kwargs.get("check", False)
