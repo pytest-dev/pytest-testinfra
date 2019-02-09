@@ -13,19 +13,7 @@
 
 from __future__ import unicode_literals
 
-import warnings
-
 from testinfra.host import get_host
 from testinfra.host import get_hosts
 
-
-def get_backend(hostspec, **kwargs):
-    warnings.warn("get_backend() is deprecated, use get_host() instead",
-                  DeprecationWarning, stacklevel=2)
-    return get_host(hostspec, **kwargs).backend
-
-
-def get_backends(hosts, **kwargs):
-    warnings.warn("get_backends() is deprecated, use get_hosts() instead",
-                  DeprecationWarning, stacklevel=2)
-    return [host.backend for host in get_hosts(hosts, **kwargs)]
+__all__ = ['get_host', 'get_hosts']
