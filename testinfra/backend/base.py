@@ -18,7 +18,6 @@ import locale
 import logging
 import pipes
 import subprocess
-import warnings
 
 import testinfra.modules
 import testinfra.utils
@@ -268,15 +267,3 @@ class BaseBackend(object):
         result = CommandResult(self, *args, **kwargs)
         logger.info("RUN %s", result)
         return result
-
-    def __getattr__(self, name):
-        warnings.warn('get_module() is deprecated, use new host API',
-                      DeprecationWarning, stacklevel=2)
-        module = getattr(self._host, testinfra.utils.un_camel_case(name))
-        setattr(self, name, module)
-        return module
-
-    def get_module(self, name):
-        warnings.warn('get_module() is deprecated, use new host API',
-                      DeprecationWarning, stacklevel=2)
-        return getattr(self, name)
