@@ -45,9 +45,6 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     entry_points={
-        'console_scripts': [
-            'testinfra = testinfra.main:main',
-        ],
         'pytest11': {
             'pytest11.testinfra=testinfra.plugin',
         },
