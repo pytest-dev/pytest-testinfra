@@ -15,8 +15,6 @@ from __future__ import unicode_literals
 
 import importlib
 
-import testinfra.utils
-
 modules = {
     'addr': 'addr:Addr',
     'ansible': 'ansible:Ansible',
@@ -44,7 +42,6 @@ modules = {
 
 
 def get_module_class(name):
-    name = testinfra.utils.un_camel_case(name)
     modname, classname = modules[name].split(':')
     modname = '.'.join([__name__, modname])
     module = importlib.import_module(modname)
