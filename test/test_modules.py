@@ -18,7 +18,10 @@ import re
 import time
 
 import pytest
-from ipaddress import ip_address, IPv4Address, IPv6Address
+
+from ipaddress import ip_address
+from ipaddress import IPv4Address
+from ipaddress import IPv6Address
 
 from testinfra.modules.socket import parse_socketspec
 
