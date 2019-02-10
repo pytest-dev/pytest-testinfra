@@ -18,6 +18,8 @@ import re
 import time
 
 import pytest
+from ipaddress import ip_address, IPv4Address, IPv6Address
+
 from testinfra.modules.socket import parse_socketspec
 
 all_images = pytest.mark.testinfra_hosts(*[
@@ -530,12 +532,10 @@ def test_addr(host):
     assert not google_addr.port(666).is_reachable
 
     for ip in google_addr.ipv4_addresses:
-        google_ip = host.addr(ip)
-        assert google_ip.ipv4_addresses == [ip]
-        assert google_ip.is_reachable
-        assert google_ip.port(443).is_reachable
+        assert isinstance(ip_address(ip), IPv4Address)
 
-    google_ips4 = google_addr.ipv4_addresses
-    google_ips6 = google_addr.ipv6_addresses
-    google_ips = google_addr.ip_addresses
-    assert set(google_ips) == set(google_ips4 + google_ips6)
+    for ip in google_addr.ipv6_addresses:
+        assert isinstance(ip_address(ip), IPv6Address)
+
+    for ip in google_addr.ip_addresses:
+        assert isinstance(ip_address(ip), (IPv4Address, IPv6Address))
