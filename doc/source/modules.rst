@@ -23,6 +23,10 @@ host
 
        :class:`testinfra.modules.ansible.Ansible` class
 
+    .. attribute:: addr
+
+       :class:`testinfra.modules.addr.Addr` class
+
     .. attribute:: docker
 
        :class:`testinfra.modules.docker.Docker` class
@@ -106,6 +110,13 @@ Ansible
 ~~~~~~~
 
 .. autoclass:: testinfra.modules.ansible.Ansible(module_name, module_args=None, check=True)
+   :members:
+
+
+Addr
+~~~~
+
+.. autoclass:: testinfra.modules.addr.Addr(name)
    :members:
 
 

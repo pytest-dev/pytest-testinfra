@@ -18,6 +18,11 @@ import re
 import time
 
 import pytest
+
+from ipaddress import ip_address
+from ipaddress import IPv4Address
+from ipaddress import IPv6Address
+
 from testinfra.modules.socket import parse_socketspec
 
 all_images = pytest.mark.testinfra_hosts(*[
@@ -499,3 +504,41 @@ def test_iptables(host):
     assert '-P OUTPUT ACCEPT' in v6_rules
     v6_filter_rules = host.iptables.rules('filter', 'INPUT', version=6)
     assert '-P INPUT ACCEPT' in v6_filter_rules
+
+
+@all_images
+def test_addr(host):
+    non_resolvable = host.addr('some_non_resolvable_host')
+    assert not non_resolvable.is_resolvable
+    assert not non_resolvable.is_reachable
+    assert not non_resolvable.port(80).is_reachable
+
+    # Some arbitrary internal IP, hopefully non reachable
+    # IP addresses are always resolvable no matter what
+    non_reachable_ip = host.addr('10.42.13.73')
+    assert non_reachable_ip.is_resolvable
+    assert non_reachable_ip.ipv4_addresses == ['10.42.13.73']
+    assert not non_reachable_ip.is_reachable
+    assert not non_reachable_ip.port(80).is_reachable
+
+    google_dns = host.addr('8.8.8.8')
+    assert google_dns.is_resolvable
+    assert google_dns.ipv4_addresses == ['8.8.8.8']
+    assert google_dns.is_reachable
+    assert google_dns.port(53).is_reachable
+    assert not google_dns.port(666).is_reachable
+
+    google_addr = host.addr('google.com')
+    assert google_addr.is_resolvable
+    assert google_addr.is_reachable
+    assert google_addr.port(443).is_reachable
+    assert not google_addr.port(666).is_reachable
+
+    for ip in google_addr.ipv4_addresses:
+        assert isinstance(ip_address(ip), IPv4Address)
+
+    for ip in google_addr.ipv6_addresses:
+        assert isinstance(ip_address(ip), IPv6Address)
+
+    for ip in google_addr.ip_addresses:
+        assert isinstance(ip_address(ip), (IPv4Address, IPv6Address))

@@ -18,6 +18,7 @@ import importlib
 import testinfra.utils
 
 modules = {
+    'addr': 'addr:Addr',
     'ansible': 'ansible:Ansible',
     'command': 'command:Command',
     'docker': 'docker:Docker',
