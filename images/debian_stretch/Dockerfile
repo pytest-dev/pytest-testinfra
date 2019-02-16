@@ -3,7 +3,7 @@ FROM debian:stretch
 # ntpd is linked to /bin/false, so the service is not running but is enabled
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install python openssh-server \
-        puppet salt-minion locales ntp sudo supervisor systemd-sysv python-pip python-virtualenv iptables iptables-persistent && \
+        puppet salt-minion salt-master locales ntp sudo supervisor systemd-sysv python-pip python-virtualenv iptables iptables-persistent && \
     mkdir -p /var/run/sshd && \
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
@@ -13,6 +13,7 @@ RUN apt-get update && \
     rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
     systemctl enable ssh.service && \
     systemctl disable salt-minion.service && \
+    systemctl disable salt-master.service && \
     systemctl enable ntp.service && \
     systemctl enable supervisor.service && \
     systemctl enable netfilter-persistent.service && \
