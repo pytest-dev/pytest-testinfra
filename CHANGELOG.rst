@@ -2,6 +2,14 @@
 Changelog
 =========
 
+2.0.0
+======
+
+* Add addr module, used to test network connectivity
+* Drop deprecated "testinfra" command, you should use "py.test" instead
+* Drop deprecated top level fixtures, access them through the fixture "host" instead.
+* Drop support for ansible <= 2.4
+
 1.19.0
 ======
 
