@@ -14,8 +14,8 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
-from testinfra.utils import cached_property
 from testinfra.modules.base import Module
+from testinfra.utils import cached_property
 
 
 class X509(Module):
@@ -27,6 +27,7 @@ class X509(Module):
     @property
     def issuer(self):
         """Return issuer of certificate
+
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').issuer
         """
 
@@ -35,6 +36,7 @@ class X509(Module):
     @property
     def email(self):
         """Return email of certificate
+
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').email
         """
 
@@ -43,6 +45,7 @@ class X509(Module):
     @property
     def subject(self):
         """Return subject of certificate
+
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').subject
         """
 
@@ -51,6 +54,7 @@ class X509(Module):
     @property
     def enddate(self):
         """Return enddate as datetime of certificate
+
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').enddate
         """
 
@@ -59,6 +63,7 @@ class X509(Module):
     @property
     def serial(self):
         """Return enddate as datetime of certificate
+
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').serial
         """
 

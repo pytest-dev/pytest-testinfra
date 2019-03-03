@@ -28,7 +28,9 @@ class Environment(InstanceModule):
     """
 
     def __call__(self):
-        ret_val = dict(item.split('=') for item in self.check_output('env').split('\n'))
+        ret_val = dict(
+            item.split('=') for item in self.check_output('env').split('\n')
+        )
         return ret_val
 
     def __repr__(self):
