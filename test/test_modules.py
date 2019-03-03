@@ -486,7 +486,7 @@ def test_pip_package(host):
 def test_x509(host):
     host.check_output(
         '''openssl req -new -newkey rsa:4096 -days 365 -nodes
-            -x509 -subj "/CN=test.com" -keyout /tmp/test.key -out /tmp/test.crt'''
+        -x509 -subj "/CN=test.com" -keyout /tmp/test.key -out /tmp/test.crt'''
     )
     assert host.file('/tmp/test.key').is_file
     assert host.file('/tmp/test.ctr').is_file
