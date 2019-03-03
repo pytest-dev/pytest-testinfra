@@ -25,45 +25,11 @@ import six
 import testinfra
 import testinfra.host
 import testinfra.modules
-import testinfra.utils as utils
 
 
-def _generate_fixtures():
-    self = sys.modules[__name__]
-    for modname in testinfra.modules.modules:
-        modname = modname.title().replace("_", "")
-
-        def get_fixture(name):
-            new_name = utils.un_camel_case(name)
-
-            @pytest.fixture()
-            def f(TestinfraBackend):
-                # pylint: disable=protected-access
-                return getattr(TestinfraBackend._host, new_name)
-            f.__name__ = str(name)
-            f.__doc__ = ('DEPRECATED: use host fixture and get {0} module '
-                         'with host.{1}').format(name, new_name)
-            return f
-        setattr(self, modname, get_fixture(modname))
-
-
-_generate_fixtures()
-
-
-@pytest.fixture()
-def LocalCommand(request, TestinfraBackend):
-    """DEPRECATED
-
-    Use host fixture and get LocalCommand with host.get_host("local://")
-    """
-    # pylint: disable=protected-access
-    return TestinfraBackend._host.get_host("local://")
-
-
-@pytest.fixture()
-def TestinfraBackend(host):
-    "DEPRECATED: use host fixture and get TestinfraBackend with host.backend"
-    return host.backend
+@pytest.fixture(scope="module")
+def _testinfra_host(request):
+    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -146,35 +112,10 @@ def pytest_generate_tests(metafunc):
             sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
         )
+        params = sorted(params, key=lambda x: x.backend.get_pytest_id())
         ids = [e.backend.get_pytest_id() for e in params]
         metafunc.parametrize(
-            "_testinfra_host", params, ids=ids, scope="module")
-
-
-def pytest_collection_finish(session):
-    deprecated_modules = set(
-        m.title().replace("_", "") for m in testinfra.modules.modules) | set(
-            ['TestinfraBackend', 'LocalCommand'])
-    deprecated_used = set()
-    for item in session.items:
-        if hasattr(item, 'fixturenames'):
-            # DoctestItem does not have fixturenames attribute
-            deprecated_used |= (set(item.fixturenames) & deprecated_modules)
-    for name in sorted(deprecated_used):
-        if name == 'LocalCommand':
-            msg = ("LocalCommand fixture is deprecated. Use host fixture "
-                   "and get LocalCommand with host.get_host('local://')")
-        elif name == 'TestinfraBackend':
-            msg = ("TestinfraBackend fixture is deprecated. Use host fixture "
-                   "and get backend with host.backend")
-        elif name == 'Command':
-            msg = "Command fixture is deprecated. Use host fixture instead"
-        else:
-            msg = (
-                "{0} fixture is deprecated. Use host fixture and get "
-                "{0} module with host.{1}"
-            ).format(name, utils.un_camel_case(name))
-        session.config.warn('C1', msg)
+            "_testinfra_host", params, ids=ids, scope="module", indirect=True)
 
 
 class NagiosReporter(object):
@@ -244,7 +185,9 @@ else:
 @pytest.mark.trylast
 def pytest_configure(config):
     if config.option.verbose > 1:
-        logging.basicConfig()
+        root = logging.getLogger()
+        if not root.handlers:
+            root.addHandler(logging.NullHandler())
         logging.getLogger("testinfra").setLevel(logging.DEBUG)
     if config.option.nagios:
         # disable & re-enable terminalreporter to write in a tempfile

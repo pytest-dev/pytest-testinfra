@@ -58,7 +58,7 @@ class LinuxInterface(Interface):
 
     @cached_property
     def _ip(self):
-        return self._find_command('ip')
+        return self.find_command('ip')
 
     @property
     def exists(self):

@@ -19,7 +19,7 @@ from testinfra.modules.base import InstanceModule
 class Iptables(InstanceModule):
     """Test iptables rule exists"""
 
-    def rules(self, table='filter', chain=None):
+    def rules(self, table='filter', chain=None, version=4):
         """Returns list of iptables rules
 
            Based on ouput of `iptables -t TABLE -S CHAIN` command
@@ -27,6 +27,7 @@ class Iptables(InstanceModule):
              optionally takes takes the following arguments:
                - table: defaults to `filter`
                - chain: defaults to all chains
+               - version: default 4 (iptables), optionally 6 (ip6tables)
 
         >>> host.iptables.rules()
         [
@@ -37,16 +38,23 @@ class Iptables(InstanceModule):
             '-A INPUT -j REJECT'
             '-A FORWARD -j REJECT'
         ]
-        >>> host.iptables().get_rules("nat", "INPUT")
+        >>> host.iptables.rules("nat", "INPUT")
         ['-P PREROUTING ACCEPT']
 
         """
 
+        if version == 4:
+            iptables = "iptables"
+        elif version == 6:
+            iptables = "ip6tables"
+        else:
+            raise RuntimeError("Invalid version: %s" % version)
+
         rules = []
         if chain:
-            cmd = "iptables -t {0} -S {1}".format(table, chain)
+            cmd = "{0} -t {1} -S {2}".format(iptables, table, chain)
         else:
-            cmd = "iptables -t {0} -S".format(table)
+            cmd = "{0} -t {1} -S".format(iptables, table)
 
         for line in self.check_output(cmd).splitlines():
             line = line.replace("\t", " ")

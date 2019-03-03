@@ -3,10 +3,11 @@ services:
   - docker
 env:
   matrix:
-    - TOXENV=py27,ansible1,py35
+    - TOXENV=py27,py35
     - TOXENV=flake8
     - TOXENV=pylint
     - TOXENV=sphinxdoc
+    - TOXENV=check-manifest
 language: python
 python: 3.5
 install:

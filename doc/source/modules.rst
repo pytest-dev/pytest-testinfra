@@ -27,6 +27,14 @@ host
 
        :class:`testinfra.modules.environment.Environment` class
 
+    .. attribute:: addr
+
+       :class:`testinfra.modules.addr.Addr` class
+
+    .. attribute:: docker
+
+       :class:`testinfra.modules.docker.Docker` class
+
     .. attribute:: file
 
        :class:`testinfra.modules.file.File` class
@@ -109,6 +117,20 @@ Ansible
 ~~~~~~~
 
 .. autoclass:: testinfra.modules.ansible.Ansible(module_name, module_args=None, check=True)
+   :members:
+
+
+Addr
+~~~~
+
+.. autoclass:: testinfra.modules.addr.Addr(name)
+   :members:
+
+
+Docker
+~~~~~~
+
+.. autoclass:: testinfra.modules.docker.Docker(name)
    :members:
 
 

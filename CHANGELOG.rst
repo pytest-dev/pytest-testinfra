@@ -2,6 +2,77 @@
 Changelog
 =========
 
+2.0.0
+======
+
+* Add addr module, used to test network connectivity
+* Drop deprecated "testinfra" command, you should use "py.test" instead
+* Drop deprecated top level fixtures, access them through the fixture "host" instead.
+* Drop support for ansible <= 2.4
+
+1.19.0
+======
+
+* Add docker module
+* Fix pytest 4 compatibility
+
+1.18.0
+======
+
+* Allow to urlencode character in host specification "user:pass@host" (#387)
+* Fix double logging from both pytest and testinfra
+* Drop support for python 2.6
+* Allow to configure timeouts for winrm backend
+
+1.17.0
+======
+
+* Add support for ansible "become" user in ansible module
+* Add failed/suceeded property on run() output
+
+1.16.0
+======
+
+* packaging: Use setuptools_scm instead of pbr
+* iptables: add ip6tables support
+* sysctl: find sysctl outside of PATH (/sbin)
+
+1.15.0
+======
+
+* Fix finding ss and netstat command in "sbin" paths for Centos (359)
+* Add a workaround for https://github.com/pytest-dev/pytest/issues/3542
+* Handle "starting" status for Service module on Alpine linux
+* Fix no_ssl and no_verify_ssl options for WinRM backend
+
+1.14.1
+======
+
+* Fix multi-host test ordering (#347), regression introduced in 1.13.1
+* Fix Socket on OpenBSD hosts (#338)
+
+1.14.0
+======
+
+* Add a new lxc backend
+* Socket: fix is_listening for unix sockets
+* Add namespace and container support for kubernetes backend
+* Add a cache of parsed ansible inventories for ansible backend
+* Service: fix service detection on Centos 6 hosts
+* File: implement file comparison with string paths
+
+1.13.1
+======
+
+* package: fix is_installed and version behavior for uninstalled packages (#321 and #326)
+* ansible: Use predictibles test ordering when using pytest-xdist to fix random test collections errors (#316)
+
+1.13.0
+======
+
+* socket: fix detection of udp listening sockets (#311)
+* ssh backend: Add support for GSSAPI
+
 1.12.0
 ======
 

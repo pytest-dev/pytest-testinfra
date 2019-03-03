@@ -18,7 +18,6 @@ import locale
 import logging
 import pipes
 import subprocess
-import warnings
 
 import testinfra.modules
 import testinfra.utils
@@ -45,7 +44,30 @@ class CommandResult(object):
         super(CommandResult, self).__init__()
 
     @property
+    def succeeded(self):
+        """Returns whether the command was successful
+
+        >>> host.run("true").succeeded
+        True
+        """
+        return self.exit_status == 0
+
+    @property
+    def failed(self):
+        """Returns whether the command failed
+
+        >>> host.run("false").failed
+        True
+        """
+        return self.exit_status != 0
+
+    @property
     def rc(self):
+        """Gets the returncode of a command
+
+        >>> host.run("true").rc
+        0
+        """
         return self.exit_status
 
     @property
@@ -194,6 +216,11 @@ class BaseBackend(object):
                 user, password = user.split(':', 1)
         if ':' in name:
             name, port = name.split(':', 1)
+        name = testinfra.utils.urlunquote(name)
+        if user is not None:
+            user = testinfra.utils.urlunquote(user)
+        if password is not None:
+            password = testinfra.utils.urlunquote(password)
         return HostSpec(name, port, user, password)
 
     @staticmethod
@@ -240,15 +267,3 @@ class BaseBackend(object):
         result = CommandResult(self, *args, **kwargs)
         logger.info("RUN %s", result)
         return result
-
-    def __getattr__(self, name):
-        warnings.warn('get_module() is deprecated, use new host API',
-                      DeprecationWarning, stacklevel=2)
-        module = getattr(self._host, testinfra.utils.un_camel_case(name))
-        setattr(self, name, module)
-        return module
-
-    def get_module(self, name):
-        warnings.warn('get_module() is deprecated, use new host API',
-                      DeprecationWarning, stacklevel=2)
-        return getattr(self, name)
