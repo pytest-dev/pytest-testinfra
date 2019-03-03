@@ -484,7 +484,7 @@ def test_pip_package(host):
 
 
 def test_environment_name(host):
-    assert host.environment().get('NAME') == 'root'
+    assert host.environment().get('TOXENV') == 'py27,py35'
 
 
 def test_iptables(host):

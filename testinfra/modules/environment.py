@@ -29,7 +29,7 @@ class Environment(InstanceModule):
 
     def __call__(self):
         ret_val = dict(
-            item.split('=') for item in self.check_output('env').split('\n')
+            i.split('=') for i in self.check_output('env').rstrip().split('\n')
         )
         return ret_val
 
