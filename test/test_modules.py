@@ -485,7 +485,7 @@ def test_pip_package(host):
 
 def test_x509(host):
     host.check_output(
-        'curl -so /tmp/crt https://letsencrypt.org/certs/isrgrootx1.pem.txt'
+        'wget -qo /tmp/crt https://letsencrypt.org/certs/isrgrootx1.pem.txt'
     )
     assert host.file('/tmp/crt').is_file
     assert 'CN=ISRG Root' in host.x509('/tmp/crt').subject
