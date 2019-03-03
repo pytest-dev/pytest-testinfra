@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from __future__ import unicode_literals
-import json
+
 from testinfra.modules.base import InstanceModule
 
 
@@ -28,8 +28,8 @@ class Environment(InstanceModule):
     """
 
     def __call__(self):
-        cmd = "python -c 'import json, os;print(json.dumps(dict(os.environ)))'"
-        return json.loads(self.check_output(cmd))
+        ret_val = dict(item.split('=') for item in self.check_output('env').split('\n'))
+        return ret_val
 
     def __repr__(self):
         return "<environment>"

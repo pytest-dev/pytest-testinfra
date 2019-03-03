@@ -23,6 +23,10 @@ host
 
        :class:`testinfra.modules.ansible.Ansible` class
 
+    .. attribute:: environment
+
+       :class:`testinfra.modules.environment.Environment` class
+
     .. attribute:: file
 
        :class:`testinfra.modules.file.File` class
@@ -95,6 +99,9 @@ host
 
        :class:`testinfra.modules.user.User` class
 
+    .. attribute:: x509
+
+       :class:`testinfra.modules.x509.X509` class
 
 
 

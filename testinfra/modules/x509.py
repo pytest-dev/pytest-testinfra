@@ -13,9 +13,9 @@
 
 from __future__ import unicode_literals
 
-from testinfra.modules.base import Module
-from testinfra.utils import cached_property
 from datetime import datetime
+from testinfra.utils import cached_property
+from testinfra.modules.base import Module
 
 
 class X509(Module):

@@ -448,3 +448,7 @@ def test_iptables(host):
     assert ssh_rule_str in input_rules
     assert vip_redirect_rule_str in nat_rules
     assert vip_redirect_rule_str in nat_prerouting_rules
+
+
+def test_environment_name(host):
+    assert host.environment().get('NAME') == 'root'
