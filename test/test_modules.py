@@ -485,8 +485,8 @@ def test_pip_package(host):
 
 def test_environment_name(host):
     assert host.environment().get('NAME') == 'root'
-    
-    
+
+
 def test_iptables(host):
     ssh_rule_str = \
         '-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT'

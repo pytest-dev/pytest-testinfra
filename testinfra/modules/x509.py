@@ -29,6 +29,7 @@ class X509(Module):
         """Return issuer of certificate
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').issuer
         """
+
         raise NotImplementedError
 
     @property
@@ -36,6 +37,7 @@ class X509(Module):
         """Return email of certificate
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').email
         """
+
         raise NotImplementedError
 
     @property
@@ -43,6 +45,7 @@ class X509(Module):
         """Return subject of certificate
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').subject
         """
+
         raise NotImplementedError
 
     @property
@@ -50,6 +53,7 @@ class X509(Module):
         """Return enddate as datetime of certificate
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').enddate
         """
+
         raise NotImplementedError
 
     @property
@@ -57,6 +61,7 @@ class X509(Module):
         """Return enddate as datetime of certificate
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').serial
         """
+
         raise NotImplementedError
 
     def __repr__(self):
@@ -71,7 +76,7 @@ class OpenSSL(X509):
 
     @cached_property
     def _openssl(self):
-        return self._find_command('openssl')
+        return self.find_command('openssl')
 
     @property
     def issuer(self):
