@@ -485,14 +485,12 @@ def test_pip_package(host):
 
 def test_x509(host):
     host.check_output(
-        '''openssl req -new -newkey rsa:2048 -days 365 -nodes
-        -x509 -subj "/CN=test.com" -keyout /tmp/test.key -out /tmp/test.crt'''
+        'curl -so /tmp/crt https://letsencrypt.org/certs/isrgrootx1.pem.txt'
     )
-    assert host.file('/tmp/test.key').is_file
-    assert host.file('/tmp/test.ctr').is_file
-    assert 'CN=test.com' in host.x509('/tmp/test.ctr').subject
-    in_200_days = datetime.datetime.now() + datetime.timedelta(days=200)
-    assert host.x509('/tmp/test.ctr').enddate > in_200_days
+    assert host.file('/tmp/crt').is_file
+    assert 'CN=ISRG Root' in host.x509('/tmp/crt').subject
+    in_ten_days = datetime.datetime.now() + datetime.timedelta(days=10)
+    assert host.x509('/tmp/crt').enddate > in_ten_days
 
 
 def test_environment_home(host):
