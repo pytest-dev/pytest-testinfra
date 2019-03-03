@@ -483,8 +483,19 @@ def test_pip_package(host):
     assert int(outdated['latest'].split('.')[0]) > 2
 
 
-def test_environment_name(host):
-    assert host.environment() == 'py27,py35'
+def test_x509(host):
+    host.check_output('''openssl req -new -newkey rsa:4096 -days 365 -nodes
+        -x509 -subj "/CN=test.com" -keyout /tmp/test.key -out /tmp/test.crt'''
+    )
+    assert host.file('/tmp/test.key').is_file
+    assert host.file('/tmp/test.ctr').is_file
+    assert 'CN=test.com' in host.x509('/tmp/test.ctr').subject
+    in_200_days = datetime.datetime.now() + datetime.timedelta(days=200)
+    assert host.x509('/tmp/test.ctr').enddate > in_200_days
+
+
+def test_environment_home(host):
+    assert host.environment().get('HOME') == '/root'
 
 
 def test_iptables(host):
