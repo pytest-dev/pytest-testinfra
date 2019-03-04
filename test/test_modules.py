@@ -489,7 +489,7 @@ def test_x509(host):
         'curl -so /tmp/crt https://letsencrypt.org/certs/isrgrootx1.pem.txt'
     )
     assert host.file('/tmp/crt').is_file
-    assert 'CN=ISRG Root' in host.x509('/tmp/crt').subject
+    assert 'ISRG Root' in host.x509('/tmp/crt').subject
     in_ten_days = datetime.datetime.now() + datetime.timedelta(days=10)
     assert host.x509('/tmp/crt').enddate > in_ten_days
 
