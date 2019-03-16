@@ -63,7 +63,7 @@ ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
 """
 
 DOCKER_IMAGES = [
-    "alpine_38",
+    "alpine",
     "archlinux",
     "centos_6",
     "centos_7",
@@ -207,7 +207,7 @@ def host(request, tmpdir_factory):
         images_with_sshd = (
             "centos_6",
             "centos_7",
-            "alpine_38",
+            "alpine",
             "archlinux"
         )
 

@@ -28,7 +28,7 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "alpine_38", "archlinux", "centos_6", "centos_7",
+        "alpine", "archlinux", "centos_6", "centos_7",
         "debian_stretch", "ubuntu_xenial"
     )
 ])
@@ -37,14 +37,14 @@ all_images = pytest.mark.testinfra_hosts(*[
 @all_images
 def test_package(host, docker_image):
     assert not host.package('zsh').is_installed
-    if docker_image in ("alpine_38", "archlinux"):
+    if docker_image in ("alpine", "archlinux"):
         name = "openssh"
     else:
         name = "openssh-server"
 
     ssh = host.package(name)
     version = {
-        "alpine_38": "7.",
+        "alpine": "7.",
         "archlinux": "7.",
         "centos_6": "5.",
         "centos_7": "7.",
@@ -54,7 +54,7 @@ def test_package(host, docker_image):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "alpine_38": "r3",
+        "alpine": "r4",
         "archlinux": None,
         "centos_6": ".el6",
         "centos_7": ".el7",
@@ -93,7 +93,7 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename = {
-        "alpine_38": ("^3\.8\.", "alpine", None),
+        "alpine": (r"^3\.9\.", "alpine", None),
         "archlinux": ("rolling", "arch", None),
         "centos_6": (r"^6", "CentOS", None),
         "centos_7": ("^7$", "centos", None),
@@ -109,7 +109,7 @@ def test_systeminfo(host, docker_image):
 @all_images
 def test_ssh_service(host, docker_image):
     if docker_image in ("centos_6", "centos_7",
-                        "alpine_38", "archlinux"):
+                        "alpine", "archlinux"):
         name = "sshd"
     else:
         name = "ssh"
@@ -201,13 +201,13 @@ def test_socket(host):
 def test_process(host, docker_image):
     init = host.process.get(pid=1)
     assert init.ppid == 0
-    if docker_image != "alpine_38":
+    if docker_image != "alpine":
         # busybox ps doesn't have a euid equivalent
         assert init.euid == 0
     assert init.user == "root"
 
     args, comm = {
-        "alpine_38": ("/sbin/init", "init"),
+        "alpine": ("/sbin/init", "init"),
         "archlinux": ("/usr/sbin/init", "systemd"),
         "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
