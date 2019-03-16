@@ -2,9 +2,23 @@ FROM debian:stretch
 
 # ntpd is linked to /bin/false, so the service is not running but is enabled
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install python openssh-server \
-        puppet salt-minion locales ntp sudo supervisor systemd-sysv python-pip python-virtualenv iptables iptables-persistent && \
-    mkdir -p /var/run/sshd && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+    lsb-release \
+    python \
+    openssh-server \
+    puppet \
+    salt-minion \
+    locales \
+    ntp \
+    sudo \
+    supervisor \
+    systemd-sysv \
+    python-pip \
+    python-virtualenv \
+    iptables \
+    iptables-persistent && \
+    rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /var/run/sshd && \
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
     rm -f /etc/systemd/system/*.wants/* && \
@@ -49,8 +63,7 @@ RUN echo "*nat\n:PREROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0
 RUN chage -E 20000 user
 
 # Some python virtualenv
-RUN virtualenv /v && /v/bin/pip install 'pytest>2,<3'
-
+RUN python -m virtualenv /v && /v/bin/pip install 'pytest>2,<3'
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR

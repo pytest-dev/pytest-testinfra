@@ -2,8 +2,12 @@ FROM ubuntu:xenial
 
 # sshd is disabled for systemd
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install python iputils-ping openssh-server && \
-    (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+	python \
+	iputils-ping \
+	openssh-server && \
+    rm -rf /var/lib/apt/lists/*
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
     rm -f /etc/systemd/system/*.wants/* && \
     rm -f /lib/systemd/system/local-fs.target.wants/* && \

@@ -222,7 +222,7 @@ def test_user(host):
     user = host.user("sshd")
     assert user.exists
     assert user.name == "sshd"
-    assert user.uid == 107
+    assert user.uid == 106
     assert user.gid == 65534
     assert user.group == "nogroup"
     assert user.gids == [65534]
