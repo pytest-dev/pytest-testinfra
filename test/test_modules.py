@@ -96,9 +96,9 @@ def test_systeminfo(host, docker_image):
         "alpine": (r"^3\.9\.", "alpine", None),
         "archlinux": ("rolling", "arch", None),
         "centos_6": (r"^6", "CentOS", None),
-        "centos_7": ("^7$", "centos", None),
-        "debian_stretch": ("^9\.", "debian", "stretch"),
-        "ubuntu_xenial": ("^16\.04$", "ubuntu", "xenial")
+        "centos_7": (r"^7$", "centos", None),
+        "debian_stretch": (r"^9\.", "debian", "stretch"),
+        "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial")
     }[docker_image]
 
     assert host.system_info.distribution == distribution
