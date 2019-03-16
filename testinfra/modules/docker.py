@@ -50,5 +50,49 @@ class Docker(Module):
     def name(self):
         return self.inspect()["Name"][1:]  # get rid of slash in front
 
+    @classmethod
+    def get_containers(cls, **filters):
+        """Return a list of containers
+
+        By default return list of all containers, including non-running
+        containers.
+
+        Filtering can be done using filters keys defined on
+        https://docs.docker.com/engine/reference/commandline/ps/#filtering
+
+        Multiple filters for a given key is handled by giving a list of string
+        as value.
+
+        # Get all containers
+        >>> host.docker.get_containers()
+        [<docker nginx>, <docker redis>, <docker app>]
+
+        # Get all running containers
+        >>> host.docker.get_containers(status="running")
+        [<docker app>]
+
+        # Get containers named "nginx"
+        >>> host.docker.get_containers(name="nginx")
+        [<docker nginx>]
+
+        # Get containers named "nginx" or "redis"
+        >>> host.docker.get_containers(name=["nginx", "redis"])
+        [<docker nginx>, <docker redis>]
+        """
+        cmd = "docker ps --all --quiet --format '{{.Names}}'"
+        args = []
+        for key, value in filters.items():
+            if isinstance(value, (list, tuple)):
+                values = value
+            else:
+                values = [value]
+            for v in values:
+                cmd += " --filter %s=%s"
+                args += [key, v]
+        result = []
+        for docker_id in cls(None).check_output(cmd, *args).splitlines():
+            result.append(cls(docker_id))
+        return result
+
     def __repr__(self):
         return "<docker %s>" % (self._name)
