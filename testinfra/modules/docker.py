@@ -63,18 +63,14 @@ class Docker(Module):
         Multiple filters for a given key is handled by giving a list of string
         as value.
 
-        # Get all containers
         >>> host.docker.get_containers()
         [<docker nginx>, <docker redis>, <docker app>]
-
         # Get all running containers
         >>> host.docker.get_containers(status="running")
         [<docker app>]
-
         # Get containers named "nginx"
         >>> host.docker.get_containers(name="nginx")
         [<docker nginx>]
-
         # Get containers named "nginx" or "redis"
         >>> host.docker.get_containers(name=["nginx", "redis"])
         [<docker nginx>, <docker redis>]
