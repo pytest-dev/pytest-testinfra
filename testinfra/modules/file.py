@@ -175,7 +175,7 @@ class File(Module):
     def __eq__(self, other):
         if isinstance(other, File):
             return self.path == other.path
-        elif isinstance(other, six.string_types):
+        if isinstance(other, six.string_types):
             return self.path == other
         return False
 
@@ -186,14 +186,13 @@ class File(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             return GNUFile
-        elif host.system_info.type == "netbsd":
+        if host.system_info.type == "netbsd":
             return NetBSDFile
-        elif host.system_info.type.endswith("bsd"):
+        if host.system_info.type.endswith("bsd"):
             return BSDFile
-        elif host.system_info.type == "darwin":
+        if host.system_info.type == "darwin":
             return DarwinFile
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
 
 class GNUFile(File):

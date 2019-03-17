@@ -67,18 +67,17 @@ class Package(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "freebsd":
             return FreeBSDPackage
-        elif host.system_info.type in ("openbsd", "netbsd"):
+        if host.system_info.type in ("openbsd", "netbsd"):
             return OpenBSDPackage
-        elif host.exists("dpkg-query"):
+        if host.exists("dpkg-query"):
             return DebianPackage
-        elif host.exists("rpm"):
+        if host.exists("rpm"):
             return RpmPackage
-        elif host.exists("apk"):
+        if host.exists("apk"):
             return AlpinePackage
-        elif host.system_info.distribution == "arch":
+        if host.system_info.distribution == "arch":
             return ArchPackage
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
 
 class DebianPackage(Package):
