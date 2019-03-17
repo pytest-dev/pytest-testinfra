@@ -54,18 +54,18 @@ class Service(Module):
                 and "systemd" in host.file("/sbin/init").linked_to
             ):
                 return SystemdService
-            elif (host.exists("initctl")
+            if (host.exists("initctl")
                     and host.exists('status')
                     and host.file('/etc/init').is_directory):
                 return UpstartService
-            elif host.exists("rc-service"):
+            if host.exists("rc-service"):
                 return OpenRCService
             return SysvService
-        elif host.system_info.type == "freebsd":
+        if host.system_info.type == "freebsd":
             return FreeBSDService
-        elif host.system_info.type == "openbsd":
+        if host.system_info.type == "openbsd":
             return OpenBSDService
-        elif host.system_info.type == "netbsd":
+        if host.system_info.type == "netbsd":
             return NetBSDService
         raise NotImplementedError
 
@@ -111,7 +111,7 @@ class SystemdService(SysvService):
         cmd = self.run_test("systemctl is-enabled %s", self.name)
         if cmd.rc == 0:
             return True
-        elif cmd.stdout.strip() == "disabled":
+        if cmd.stdout.strip() == "disabled":
             return False
         # Fallback on SysV
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616

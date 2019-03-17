@@ -99,10 +99,9 @@ class MountPoint(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             return LinuxMountPoint
-        elif host.system_info.type.endswith("bsd"):
+        if host.system_info.type.endswith("bsd"):
             return BSDMountPoint
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
     def __repr__(self):
         return (

@@ -205,10 +205,9 @@ class Socket(Module):
             raise RuntimeError(
                 'could not use the Socket module, either "ss" or "netstat"'
                 ' utility is required in $PATH')
-        elif host.system_info.type.endswith("bsd"):
+        if host.system_info.type.endswith("bsd"):
             return BSDSocket
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
 
 class LinuxSocketSS(Socket):

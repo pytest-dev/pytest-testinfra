@@ -48,10 +48,9 @@ class Interface(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             return LinuxInterface
-        elif host.system_info.type.endswith("bsd"):
+        if host.system_info.type.endswith("bsd"):
             return BSDInterface
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
 
 class LinuxInterface(Interface):

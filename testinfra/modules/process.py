@@ -98,7 +98,7 @@ class Process(InstanceModule):
         matches = self.filter(**filters)
         if not matches:
             raise RuntimeError("No process found")
-        elif len(matches) > 1:
+        if len(matches) > 1:
             raise RuntimeError("Multiple process found: %s" % (matches,))
         return matches[0]
 
@@ -112,11 +112,10 @@ class Process(InstanceModule):
     def get_module_class(cls, host):
         if host.file("/bin/ps").linked_to == "/bin/busybox":
             return BusyboxProcess
-        elif (host.system_info.type == "linux"
+        if (host.system_info.type == "linux"
                 or host.system_info.type.endswith("bsd")):
             return PosixProcess
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
     def __repr__(self):
         return "<process>"
