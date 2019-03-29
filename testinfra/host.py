@@ -102,11 +102,13 @@ class Host(object):
         return out.stdout.rstrip("\r\n")
 
     def __getattr__(self, name):
-        assert name in testinfra.modules.modules, name + " is not a module"
-        module_class = testinfra.modules.get_module_class(name)
-        obj = module_class.get_module(self)
-        setattr(self, name, obj)
-        return obj
+        if name in testinfra.modules.modules:
+            module_class = testinfra.modules.get_module_class(name)
+            obj = module_class.get_module(self)
+            setattr(self, name, obj)
+            return obj
+        raise AttributeError("'{}' object has no attribute '{}'".format(
+            self.__class__.__name__, name))
 
     @classmethod
     def get_host(cls, hostspec, **kwargs):
