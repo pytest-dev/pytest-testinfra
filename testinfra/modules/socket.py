@@ -250,6 +250,9 @@ class LinuxSocketSS(Socket):
             elif protocol in ('tcp', 'udp'):
                 host, port = local.rsplit(':', 1)
                 port = int(port)
+                # new versions of ss output ipv6 adresses enclosed in []
+                if host and host[0] == '[' and host[-1] == ']':
+                    host = host[1:-1]
             else:
                 continue
 
