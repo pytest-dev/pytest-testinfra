@@ -2,6 +2,13 @@
 Changelog
 =========
 
+2.1.0
+======
+
+* docker: new get_containers() classmethod
+* socket: fix parsing of ipv6 addresses with new versions of ss
+* service: systemd fallback to sysv when "systemctl is-active" is not working
+
 2.0.0
 ======
 
