@@ -189,3 +189,18 @@ class ArchPackage(Package):
     @property
     def release(self):
         raise NotImplementedError
+
+class ChocolateyPackage(Package):
+
+    @property
+    def is_installed(self):
+        return self.run_test("choco info -lo %s", self.name).rc == 0
+
+    @property
+    def version(self):
+        out = self.check_output("choco info -lo %s -r", self.name).split("|")
+        return out[-1]
+
+    @property
+    def release(self):
+        raise NotImplementedError

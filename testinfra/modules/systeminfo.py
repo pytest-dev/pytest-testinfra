@@ -114,6 +114,22 @@ class SystemInfo(InstanceModule):
 
         return sysinfo
 
+    def _get_windows_sysinfo(self):
+        sysinfo = {}
+
+        sw_vers = self.run("systeminfo | findstr /B /C:\"OS\"")
+        if sw_vers.rc == 0:
+            for line in sw_vers.stdout.splitlines():
+                key, value = line.split(":", 1)
+                key = key.strip().replace(' ', '_').lower()
+                value = value.strip()
+                if key == "os_name":
+                    sysinfo["distribution"] = value
+                elif key == "os_version":
+                    sysinfo["release"] = value
+
+        return sysinfo
+
     @property
     def type(self):
         """OS type
