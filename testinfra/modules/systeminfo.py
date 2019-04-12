@@ -30,7 +30,13 @@ class SystemInfo(InstanceModule):
             "codename": None,
             "release": None,
         }
-        sysinfo["type"] = self.check_output("uname -s").lower()
+
+        try:
+            sysinfo["type"] = self.check_output("uname -s").lower()
+        except AssertionError:
+            sysinfo.update(**self._get_windows_sysinfo())
+            return sysinfo
+
         if sysinfo["type"] == "linux":
             sysinfo.update(**self._get_linux_sysinfo())
         elif sysinfo["type"] == "darwin":
@@ -125,6 +131,7 @@ class SystemInfo(InstanceModule):
                 value = value.strip()
                 if key == "os_name":
                     sysinfo["distribution"] = value
+                    sysinfo["type"] = value.split(" ")[1].lower()
                 elif key == "os_version":
                     sysinfo["release"] = value
 
