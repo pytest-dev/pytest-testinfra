@@ -65,6 +65,8 @@ class Package(Module):
 
     @classmethod
     def get_module_class(cls, host):
+        if host.system_info.type == 'windows':
+            return ChocolateyPackage
         if host.system_info.type == "freebsd":
             return FreeBSDPackage
         if host.system_info.type in ("openbsd", "netbsd"):
@@ -189,6 +191,7 @@ class ArchPackage(Package):
     @property
     def release(self):
         raise NotImplementedError
+
 
 class ChocolateyPackage(Package):
 
