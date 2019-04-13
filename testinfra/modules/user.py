@@ -109,7 +109,7 @@ class User(Module):
     def get_module_class(cls, host):
         if host.system_info.type.endswith("bsd"):
             return BSDUser
-        elif host.system_info.type == 'windows':
+        if host.system_info.type == 'windows':
             return WindowsUser
         return super(User, cls).get_module_class(host)
 
