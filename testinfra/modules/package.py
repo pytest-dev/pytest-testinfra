@@ -64,7 +64,8 @@ class Package(Module):
         return "<package %s>" % (self.name,)
 
     @classmethod
-    def get_module_class(cls, host): # pylint: disable=too-many-return-statements
+    # pylint: disable=too-many-return-statements
+    def get_module_class(cls, host):
         if host.system_info.type == 'windows':
             return ChocolateyPackage
         if host.system_info.type == "freebsd":
@@ -201,8 +202,9 @@ class ChocolateyPackage(Package):
 
     @property
     def version(self):
-        out = self.check_output("choco info -lo %s -r", self.name).split("|")
-        return out[-1]
+        _, version = self.check_output(
+            "choco info -lo %s -r", self.name).split("|", 1)
+        return version
 
     @property
     def release(self):

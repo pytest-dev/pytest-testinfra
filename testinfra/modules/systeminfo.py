@@ -30,13 +30,11 @@ class SystemInfo(InstanceModule):
             "codename": None,
             "release": None,
         }
-
-        try:
-            sysinfo["type"] = self.check_output("uname -s").lower()
-        except AssertionError:
+        uname = self.run_expect([0, 127], 'uname -s')
+        if uname.rc == 127:
             sysinfo.update(**self._get_windows_sysinfo())
             return sysinfo
-
+        sysinfo["type"] = uname.stdout.rstrip("\r\n")
         if sysinfo["type"] == "linux":
             sysinfo.update(**self._get_linux_sysinfo())
         elif sysinfo["type"] == "darwin":
@@ -122,19 +120,16 @@ class SystemInfo(InstanceModule):
 
     def _get_windows_sysinfo(self):
         sysinfo = {}
-
-        sw_vers = self.run("systeminfo | findstr /B /C:\"OS\"")
-        if sw_vers.rc == 0:
-            for line in sw_vers.stdout.splitlines():
-                key, value = line.split(":", 1)
-                key = key.strip().replace(' ', '_').lower()
-                value = value.strip()
-                if key == "os_name":
-                    sysinfo["distribution"] = value
-                    sysinfo["type"] = value.split(" ")[1].lower()
-                elif key == "os_version":
-                    sysinfo["release"] = value
-
+        for line in self.check_output(
+                "systeminfo | findstr /B /C:\"OS\"").splitlines():
+            key, value = line.split(":", 1)
+            key = key.strip().replace(' ', '_').lower()
+            value = value.strip()
+            if key == "os_name":
+                sysinfo["distribution"] = value
+                sysinfo["type"] = value.split(" ")[1].lower()
+            elif key == "os_version":
+                sysinfo["release"] = value
         return sysinfo
 
     @property
