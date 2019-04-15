@@ -10,6 +10,7 @@ disable=
     inconsistent-return-statements,
     keyword-arg-before-vararg,
     useless-object-inheritance,  # to be removed for py3
+    duplicate-code,  # too many false positives between file and user modules :/
     wrong-import-order
 max-branches=20
 max-bool-expr=6
