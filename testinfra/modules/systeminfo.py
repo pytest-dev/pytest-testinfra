@@ -34,7 +34,7 @@ class SystemInfo(InstanceModule):
         if uname.rc == 127:
             sysinfo.update(**self._get_windows_sysinfo())
             return sysinfo
-        sysinfo["type"] = uname.stdout.rstrip("\r\n")
+        sysinfo["type"] = uname.stdout.rstrip("\r\n").lower()
         if sysinfo["type"] == "linux":
             sysinfo.update(**self._get_linux_sysinfo())
         elif sysinfo["type"] == "darwin":
