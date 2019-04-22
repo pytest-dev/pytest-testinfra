@@ -45,7 +45,7 @@ def test_package(host, docker_image):
     ssh = host.package(name)
     version = {
         "alpine": "7.",
-        "archlinux": "7.",
+        "archlinux": "8.",
         "centos_6": "5.",
         "centos_7": "7.",
         "debian_stretch": "1:7.4",
