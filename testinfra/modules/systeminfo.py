@@ -30,8 +30,9 @@ class SystemInfo(InstanceModule):
             "codename": None,
             "release": None,
         }
-        uname = self.run_expect([0, 127], 'uname -s')
-        if uname.rc == 127:
+        uname = self.run_expect([0, 1], 'uname -s')
+        if uname.rc == 1:
+            # FIXME: find a better way to detect windows here
             sysinfo.update(**self._get_windows_sysinfo())
             return sysinfo
         sysinfo["type"] = uname.stdout.rstrip("\r\n").lower()
