@@ -30,7 +30,12 @@ class SystemInfo(InstanceModule):
             "codename": None,
             "release": None,
         }
-        sysinfo["type"] = self.check_output("uname -s").lower()
+        uname = self.run_expect([0, 1], 'uname -s')
+        if uname.rc == 1:
+            # FIXME: find a better way to detect windows here
+            sysinfo.update(**self._get_windows_sysinfo())
+            return sysinfo
+        sysinfo["type"] = uname.stdout.rstrip("\r\n").lower()
         if sysinfo["type"] == "linux":
             sysinfo.update(**self._get_linux_sysinfo())
         elif sysinfo["type"] == "darwin":
@@ -112,6 +117,20 @@ class SystemInfo(InstanceModule):
                 elif key == "productversion":
                     sysinfo["release"] = value
 
+        return sysinfo
+
+    def _get_windows_sysinfo(self):
+        sysinfo = {}
+        for line in self.check_output(
+                "systeminfo | findstr /B /C:\"OS\"").splitlines():
+            key, value = line.split(":", 1)
+            key = key.strip().replace(' ', '_').lower()
+            value = value.strip()
+            if key == "os_name":
+                sysinfo["distribution"] = value
+                sysinfo["type"] = value.split(" ")[1].lower()
+            elif key == "os_version":
+                sysinfo["release"] = value
         return sysinfo
 
     @property

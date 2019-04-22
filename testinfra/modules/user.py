@@ -109,6 +109,8 @@ class User(Module):
     def get_module_class(cls, host):
         if host.system_info.type.endswith("bsd"):
             return BSDUser
+        if host.system_info.type == 'windows':
+            return WindowsUser
         return super(User, cls).get_module_class(host)
 
     def __repr__(self):
@@ -133,3 +135,68 @@ class BSDUser(User):
         if seconds > 0:
             epoch = datetime.datetime.utcfromtimestamp(0)
             return epoch + datetime.timedelta(seconds=int(seconds))
+
+
+class WindowsUser(User):
+
+    @property
+    def name(self):
+        """Return user name"""
+        if self._name is None:
+            self._name = self.check_output("echo %username%")
+        return self._name
+
+    @property
+    def exists(self):
+        return self.run_test("net user %s", self.name).rc == 0
+
+    @property
+    def uid(self):
+        raise NotImplementedError
+
+    @property
+    def gid(self):
+        raise NotImplementedError
+
+    @property
+    def group(self):
+        raise NotImplementedError
+
+    @property
+    def gids(self):
+        raise NotImplementedError
+
+    @property
+    def groups(self):
+        """Return the list of user local group names"""
+        local_groups = self.check_output("net user %s | findstr /B /C:\"Local "
+                                         "Group Memberships\"", self.name)
+        local_groups = local_groups.split()[3:]
+        return [g.replace('*', '') for g in local_groups]
+
+    @property
+    def home(self):
+        raise NotImplementedError
+
+    @property
+    def shell(self):
+        raise NotImplementedError
+
+    @property
+    def gecos(self):
+        comment = self.check_output("net user %s | find /B /C:\"Comment\"",
+                                    self.name)
+        return comment.split().strip()[1]
+
+    @property
+    def password(self):
+        raise NotImplementedError
+
+    @property
+    def expiration_date(self):
+        expiration = self.check_output("net user %s | findstr /B /C:\"Password \
+                                       expires\"", self.name)
+        expiration = expiration.split().strip()[1]
+        if expiration == 'Never':
+            return None
+        return datetime.datetime.strptime(expiration, '%m/%d/%Y %H:%M%S %p')
