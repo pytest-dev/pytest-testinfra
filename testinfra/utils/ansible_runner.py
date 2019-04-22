@@ -18,150 +18,177 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-import pprint
+import datetime
+import json
+import os
+import re
+import shutil
+import subprocess
+import tempfile
+import yaml
 
 
-try:
-    import ansible
-except ImportError:
-    raise RuntimeError(
-        "You must install ansible package to use the ansible backend")
-
-import ansible.cli.playbook
-import ansible.constants
-import ansible.executor.task_queue_manager
-import ansible.inventory
-import ansible.parsing.dataloader
-import ansible.playbook.play
-import ansible.plugins.callback
-import ansible.utils.vars
-import ansible.vars
-
-try:
-    from ansible.module_utils._text import to_bytes
-except ImportError:
-    from ansible.utils.unicode import to_bytes
+# the real ansible-runner
+import ansible_runner
 
 
 __all__ = ['AnsibleRunner', 'to_bytes']
 
 
-class AnsibleRunnerBase(object):
+def to_bytes(data):
+    '''Why!?!?'''
+    return b'%s' % data
+
+
+class AnsibleInventoryException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
+class AnsibleRunnerV2(object):
+
+    # testinfra api
     _runners = {}
 
+    # testinfra api
+    host_list = None
+
+    # variable cache
+    variables = {}
+
     def __init__(self, host_list=None):
+        # host_list is the list of inventory files, aka -i
         self.host_list = host_list
-        super(AnsibleRunnerBase, self).__init__()
-
-    def get_hosts(self, pattern=None):
-        raise NotImplementedError
-
-    def get_variables(self, host):
-        raise NotImplementedError
-
-    def run(self, host, module_name, module_args, **kwargs):
-        raise NotImplementedError
 
     @classmethod
     def get_runner(cls, inventory):
-        try:
-            return cls._runners[inventory]
-        except KeyError:
+        # stores a copy of the runner in a dict keyed by inv
+        if inventory not in cls._runners:
             cls._runners[inventory] = cls(inventory)
-            return cls._runners[inventory]
+        return cls._runners[inventory]
 
+    def fetch_inventory(self, host=None):
+        '''Helper function for ansible-inventory'''
 
-class Callback(ansible.plugins.callback.CallbackBase):
+        cmd = 'ansible-inventory -i %s' % self.host_list
+        if host is not None:
+            cmd += ' --host=%s' % host
+        else:
+            cmd += ' --list'
 
-    def __init__(self, *args, **kwargs):
-        self.result = {}
-        super(Callback, self).__init__(*args, **kwargs)
-
-    def runner_on_ok(self, host, result):
-        self.result = result
-
-    def runner_on_failed(self, host, result, ignore_errors=False):
-        self.result = result
-
-    # pylint: disable=no-self-use
-    def runner_on_unreachable(self, host, result):
-        raise RuntimeError(
-            'Host {} is unreachable: {}'.format(
-                host, pprint.pformat(result)),
+        env = os.environ.copy()
+        env['ANSIBLE_NOCOLOR'] = "1"
+        p = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env
         )
+        (so, se) = p.communicate()
 
-    def runner_on_skipped(self, host, item=None):
-        self.result = {
-            'failed': True,
-            'msg': 'Skipped. You might want to try check=False',
-            'item': item,
-        }
+        if p.returncode != 0:
+            msg = 'ansible-inventory failed: %s' % se
+            raise AnsibleInventoryException(msg)
 
+        inv = json.loads(so)
 
-class AnsibleRunner(AnsibleRunnerBase):
-
-    def __init__(self, host_list=None):
-        super(AnsibleRunner, self).__init__(host_list)
-        self.cli = ansible.cli.playbook.PlaybookCLI(None)
-        self.cli.options = self.cli.base_parser(
-            connect_opts=True,
-            meta_opts=True,
-            runas_opts=True,
-            subset_opts=True,
-            check_opts=True,
-            inventory_opts=True,
-            runtask_opts=True,
-            vault_opts=True,
-            fork_opts=True,
-            module_opts=True,
-        ).parse_args([])[0]
-        self.cli.normalize_become_options()
-        self.cli.options.connection = "smart"
-        self.cli.options.inventory = host_list
-        # pylint: disable=protected-access
-        self.loader, self.inventory, self.variable_manager = (
-            self.cli._play_prereqs(self.cli.options))
+        return inv
 
     def get_hosts(self, pattern=None):
-        return [
-            e.name for e in
-            self.inventory.get_hosts(pattern=pattern or "all")
-        ]
+        '''Return a list of host names from inventory via the pattern'''
+        inv = self.fetch_inventory()
+        return list(inv['_meta']['hostvars'].keys())
 
-    def get_variables(self, host):
-        host = self.inventory.get_host(host)
-        return self.variable_manager.get_vars(host=host)
+    def get_variables(self, host, refresh=True):
+        '''Get a mixture of inventory vars and magic vars'''
+
+        if host not in self.variables or refresh:
+
+            _vars = self.variables.get(host, {})
+
+            # inventory vars
+            _vars.update(self.fetch_inventory(host=host))
+
+            # this is a hack to get the magic vars
+            res = self.run(host, 'debug', 'var=hostvars')
+            _vars.update(res.get('hostvars', {}).get(host, {}))
+
+            # one of the unit tests insist this should be returned
+            _vars['inventory_hostname'] = host
+            self.variables[host] = _vars
+
+        return self.variables[host]
 
     def run(self, host, module_name, module_args=None, **kwargs):
-        self.cli.options.check = kwargs.get("check", False)
-        self.cli.options.become = kwargs.get("become", False)
-        action = {"module": module_name}
-        if module_args is not None:
-            if module_name in ("command", "shell"):
-                # Workaround https://github.com/ansible/ansible/issues/13862
-                module_args = module_args.replace("=", "\\=")
-            action["args"] = module_args
-        play = ansible.playbook.play.Play().load({
-            "hosts": host,
-            "gather_facts": "no",
-            "tasks": [{
-                "action": action,
-            }],
-        }, variable_manager=self.variable_manager, loader=self.loader)
-        tqm = None
-        callback = Callback()
-        try:
-            tqm = ansible.executor.task_queue_manager.TaskQueueManager(
-                inventory=self.inventory,
-                variable_manager=self.variable_manager,
-                loader=self.loader,
-                options=self.cli.options,
-                passwords=None,
-                stdout_callback=callback,
-            )
-            tqm.run(play)
-        finally:
-            if tqm is not None:
-                tqm.cleanup()
+        '''Invokes a single module on a single host and returns dict results'''
 
-        return callback.result
+        # runner must have a directory based payload
+        data_dir = tempfile.mkdtemp(prefix='runner.data.%s.' \
+            % datetime.datetime.now().isoformat().replace(':', '-'))
+        if os.path.exists(data_dir):
+            shutil.rmtree(data_dir)
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+
+        # runner must have an inventory file
+        inv_dir = os.path.join(data_dir, 'inventory')
+        if not os.path.exists(inv_dir):
+            os.makedirs(inv_dir)
+        inv_file = os.path.join(inv_dir, os.path.basename(self.host_list))
+        shutil.copy(self.host_list, inv_file)
+
+        # molecule inventories use lookups
+        this_env = os.environ.copy()
+        this_env['ANSIBLE_NOCOLOR'] = "1"
+        env_keys = list(this_env.keys())
+        for ekey in env_keys:
+            if not ekey.startswith('MOLECULE'):
+                this_env.pop(ekey)
+        env_dir = os.path.join(data_dir, 'env')
+        if not os.path.exists(env_dir):
+            os.makedirs(env_dir)
+        env_file = os.path.join(env_dir, 'envvars')
+        with open(env_file, 'w') as f:
+            f.write('---\n')
+            f.write(yaml.dump(this_env))
+
+        # build the kwarg payload ansible-runner requires
+        runner_kwargs = {
+            'private_data_dir': data_dir,
+            'host_pattern': host,
+            'module': module_name,
+            'module_args': module_args,
+            'json_mode' : True,
+        }
+
+        # ansible-runner does not have kwargs for these
+        for opt in ['become', 'check']:
+            if kwargs.get(opt, False):
+                if 'cmdline' not in runner_kwargs:
+                    runner_kwargs['cmdline'] = '--%s' % opt
+                else:
+                    runner_kwargs['cmdline'] += ' --%s' % opt
+
+        # invoke ansible-runer -> ansible adhoc
+        r = ansible_runner.run(**runner_kwargs)
+        events = r.host_events(host)
+
+        # a "significant" event is the event that has the task result
+        significant_event = None
+        if events:
+            for event in events:
+                # looking for a runnner_on_ok or runner_on_!start
+                if event['event'] == 'runner_on_start':
+                    continue
+                if event['event'].startswith('runner_on'):
+                    significant_event = event.get('event_data', {}).get('res')
+                    break
+
+        if significant_event:
+            return significant_event
+
+        return {}
+
+
+AnsibleRunner = AnsibleRunnerV2
