@@ -41,6 +41,7 @@ def to_bytes(data):
 
 class AnsibleInventoryException(Exception):
     def __init__(self, message):
+        super(AnsibleInventoryException, self).__init__(message)
         self.message = message
 
 
@@ -134,8 +135,10 @@ class AnsibleRunnerV2(object):
         inv_dir = os.path.join(data_dir, 'inventory')
         if not os.path.exists(inv_dir):
             os.makedirs(inv_dir)
-        inv_file = os.path.join(inv_dir, os.path.basename(self.host_list))
-        shutil.copy(self.host_list, inv_file)
+        shutil.copy(
+            self.host_list,
+            os.path.join(inv_dir, os.path.basename(self.host_list))
+        )
 
         # molecule inventories use lookups
         this_env = os.environ.copy()
@@ -147,10 +150,10 @@ class AnsibleRunnerV2(object):
         env_dir = os.path.join(data_dir, 'env')
         if not os.path.exists(env_dir):
             os.makedirs(env_dir)
-        env_file = os.path.join(env_dir, 'envvars')
-        with open(env_file, 'w') as f:
+        with open(os.path.join(env_dir, 'envvars'), 'w') as f:
             f.write('---\n')
             f.write(yaml.dump(this_env))
+
 
         # build the kwarg payload ansible-runner requires
         runner_kwargs = {
@@ -169,6 +172,10 @@ class AnsibleRunnerV2(object):
                 else:
                     runner_kwargs['cmdline'] += ' --%s' % opt
 
+        return AnsibleRunnerV2.call_runner(runner_kwargs, host)
+
+    @staticmethod
+    def call_runner(runner_kwargs, host):
         # invoke ansible-runer -> ansible adhoc
         r = ansible_runner.run(**runner_kwargs)
         events = r.host_events(host)
