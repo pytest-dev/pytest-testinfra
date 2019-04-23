@@ -69,28 +69,25 @@ class AnsibleRunnerV2(object):
     def fetch_inventory(self, host=None):
         '''Helper function for ansible-inventory'''
 
-        cmd = 'ansible-inventory -i %s' % self.host_list
+        cmd = [
+            'ansible-inventory',
+            '-i',
+            self.host_list
+        ]
         if host is not None:
-            cmd += ' --host=%s' % host
+            cmd.append('--host=%s' % host)
         else:
-            cmd += ' --list'
+            cmd.append('--list')
 
-        env = os.environ.copy()
-        env['ANSIBLE_NOCOLOR'] = "1"
-        p = subprocess.Popen(
-            cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=env
-        )
-        (so, se) = p.communicate()
+        try:
+            so = subprocess.check_output(cmd)
+        except subprocess.CalledProcessError as e:
+            raise AnsibleInventoryException(e)
 
-        if p.returncode != 0:
-            msg = 'ansible-inventory failed: %s' % se
-            raise AnsibleInventoryException(msg)
-
-        inv = json.loads(so)
+        try:
+            inv = json.loads(so)
+        except json.JSONDecodeError as e:
+            raise AnsibleInventoryException(e)
 
         return inv
 
