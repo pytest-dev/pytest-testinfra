@@ -171,14 +171,13 @@ class AnsibleRunnerV2(object):
 
         # a "significant" event is the event that has the task result
         significant_event = None
-        if events:
-            for event in events:
-                # looking for a runnner_on_ok or runner_on_!start
-                if event['event'] == 'runner_on_start':
-                    continue
-                if event['event'].startswith('runner_on'):
-                    significant_event = event.get('event_data', {}).get('res')
-                    break
+        for event in events:
+            # looking for a runnner_on_ok or runner_on_!start
+            if event['event'] == 'runner_on_start':
+                continue
+            if event['event'].startswith('runner_on'):
+                significant_event = event.get('event_data', {}).get('res')
+                break
 
         if significant_event:
             return significant_event
