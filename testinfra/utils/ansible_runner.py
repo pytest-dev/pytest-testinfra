@@ -30,12 +30,7 @@ import yaml
 import ansible_runner
 
 
-__all__ = ['AnsibleRunner', 'to_bytes']
-
-
-def to_bytes(data):
-    '''Why!?!?'''
-    return b'%s' % data
+__all__ = ['AnsibleRunner']
 
 
 class AnsibleInventoryException(Exception):
