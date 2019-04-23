@@ -124,56 +124,48 @@ class AnsibleRunnerV2(object):
         '''Invokes a single module on a single host and returns dict results'''
 
         # runner must have a directory based payload
-        data_dir = tempfile.mkdtemp(
-            prefix='runner.data.%s.' %
-            datetime.datetime.now().isoformat().replace(':', '-')
-        )
-        if os.path.exists(data_dir):
-            shutil.rmtree(data_dir)
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
+        with tempfile.TemporaryDirectory(prefix='ansible-runner.data.') as data_dir:
 
-        # runner must have an inventory file
-        inv_dir = os.path.join(data_dir, 'inventory')
-        if not os.path.exists(inv_dir):
+            # runner must have an inventory file
+            inv_dir = os.path.join(data_dir, 'inventory')
             os.makedirs(inv_dir)
-        shutil.copy(
-            self.host_list,
-            os.path.join(inv_dir, os.path.basename(self.host_list))
-        )
+            shutil.copy(
+                self.host_list,
+                os.path.join(inv_dir, os.path.basename(self.host_list))
+            )
 
-        # molecule inventories use lookups
-        this_env = os.environ.copy()
-        this_env['ANSIBLE_NOCOLOR'] = "1"
-        env_keys = list(this_env.keys())
-        for ekey in env_keys:
-            if not ekey.startswith('MOLECULE'):
-                this_env.pop(ekey)
-        env_dir = os.path.join(data_dir, 'env')
-        if not os.path.exists(env_dir):
-            os.makedirs(env_dir)
-        with open(os.path.join(env_dir, 'envvars'), 'w') as f:
-            f.write('---\n')
-            f.write(yaml.dump(this_env))
+            # molecule inventories use lookups
+            this_env = os.environ.copy()
+            this_env['ANSIBLE_NOCOLOR'] = "1"
+            env_keys = list(this_env.keys())
+            for ekey in env_keys:
+                if not ekey.startswith('MOLECULE'):
+                    this_env.pop(ekey)
+            env_dir = os.path.join(data_dir, 'env')
+            if not os.path.exists(env_dir):
+                os.makedirs(env_dir)
+            with open(os.path.join(env_dir, 'envvars'), 'w') as f:
+                f.write('---\n')
+                f.write(yaml.dump(this_env))
 
-        # build the kwarg payload ansible-runner requires
-        runner_kwargs = {
-            'private_data_dir': data_dir,
-            'host_pattern': host,
-            'module': module_name,
-            'module_args': module_args,
-            'json_mode': True,
-        }
+            # build the kwarg payload ansible-runner requires
+            runner_kwargs = {
+                'private_data_dir': data_dir,
+                'host_pattern': host,
+                'module': module_name,
+                'module_args': module_args,
+                'json_mode': True,
+            }
 
-        # ansible-runner does not have kwargs for these
-        for opt in ['become', 'check']:
-            if kwargs.get(opt, False):
-                if 'cmdline' not in runner_kwargs:
-                    runner_kwargs['cmdline'] = '--%s' % opt
-                else:
-                    runner_kwargs['cmdline'] += ' --%s' % opt
+            # ansible-runner does not have kwargs for these
+            for opt in ['become', 'check']:
+                if kwargs.get(opt, False):
+                    if 'cmdline' not in runner_kwargs:
+                        runner_kwargs['cmdline'] = '--%s' % opt
+                    else:
+                        runner_kwargs['cmdline'] += ' --%s' % opt
 
-        return AnsibleRunnerV2.call_runner(runner_kwargs, host)
+            return AnsibleRunnerV2.call_runner(runner_kwargs, host)
 
     @staticmethod
     def call_runner(runner_kwargs, host):
