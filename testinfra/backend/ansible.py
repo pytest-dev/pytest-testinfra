@@ -19,7 +19,6 @@ import pprint
 
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
-from testinfra.utils.ansible_runner import to_bytes
 
 logger = logging.getLogger("testinfra")
 
@@ -47,9 +46,6 @@ class AnsibleBackend(base.BaseBackend):
             stderr_bytes=None,
             stdout=out["stdout"], stderr=out["stderr"],
         )
-
-    def encode(self, data):
-        return to_bytes(data)
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
         result = self.ansible_runner.run(
