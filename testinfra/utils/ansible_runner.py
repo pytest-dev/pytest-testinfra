@@ -124,8 +124,10 @@ class AnsibleRunnerV2(object):
         '''Invokes a single module on a single host and returns dict results'''
 
         # runner must have a directory based payload
-        data_dir = tempfile.mkdtemp(prefix='runner.data.%s.' \
-            % datetime.datetime.now().isoformat().replace(':', '-'))
+        data_dir = tempfile.mkdtemp(
+            prefix='runner.data.%s.' %
+            datetime.datetime.now().isoformat().replace(':', '-')
+        )
         if os.path.exists(data_dir):
             shutil.rmtree(data_dir)
         if not os.path.exists(data_dir):
@@ -154,14 +156,13 @@ class AnsibleRunnerV2(object):
             f.write('---\n')
             f.write(yaml.dump(this_env))
 
-
         # build the kwarg payload ansible-runner requires
         runner_kwargs = {
             'private_data_dir': data_dir,
             'host_pattern': host,
             'module': module_name,
             'module_args': module_args,
-            'json_mode' : True,
+            'json_mode': True,
         }
 
         # ansible-runner does not have kwargs for these
