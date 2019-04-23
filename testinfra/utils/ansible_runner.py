@@ -18,7 +18,6 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-import datetime
 import json
 import os
 import shutil
@@ -124,7 +123,7 @@ class AnsibleRunnerV2(object):
         '''Invokes a single module on a single host and returns dict results'''
 
         # runner must have a directory based payload
-        with tempfile.TemporaryDirectory(prefix='ansible-runner.data.') as data_dir:
+        with tempfile.TemporaryDirectory(prefix='runner.data.') as data_dir:
 
             # runner must have an inventory file
             inv_dir = os.path.join(data_dir, 'inventory')
