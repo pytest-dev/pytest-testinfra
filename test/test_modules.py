@@ -54,7 +54,7 @@ def test_package(host, docker_image):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "alpine": "r4",
+        "alpine": "r5",
         "archlinux": None,
         "centos_6": ".el6",
         "centos_7": ".el7",
