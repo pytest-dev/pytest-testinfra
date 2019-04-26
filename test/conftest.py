@@ -23,11 +23,6 @@ import time
 import pytest
 from six.moves import urllib
 
-try:
-    import ansible
-except ImportError:
-    ansible = None
-
 import testinfra
 from testinfra.backend.base import BaseBackend
 from testinfra.backend import parse_hostspec
@@ -73,24 +68,14 @@ DOCKER_IMAGES = [
 
 
 def setup_ansible_config(tmpdir, name, host, user, port, key):
-    ansible_major_version = int(ansible.__version__.split(".", 1)[0])
     items = [
         name,
         "ansible_ssh_private_key_file={}".format(key),
         "myvar=foo",
+        "ansible_host={}".format(host),
+        "ansible_user={}".format(user),
+        "ansible_port={}".format(port),
     ]
-    if ansible_major_version == 1:
-        items.extend([
-            "ansible_ssh_host={}".format(host),
-            "ansible_ssh_user={}".format(user),
-            "ansible_ssh_port={}".format(port),
-        ])
-    elif ansible_major_version == 2:
-        items.extend([
-            "ansible_host={}".format(host),
-            "ansible_user={}".format(user),
-            "ansible_port={}".format(port),
-        ])
     tmpdir.join("inventory").write(
         "[testgroup]\n" + " ".join(items) + "\n")
     tmpdir.mkdir("host_vars").join(name).write(ANSIBLE_HOSTVARS)
@@ -177,9 +162,6 @@ def host(request, tmpdir_factory):
         key.write(open(os.path.join(BASETESTDIR, "ssh_key")).read())
         key.chmod(384)  # octal 600
         if kw["connection"] == "ansible":
-            if ansible is None:
-                pytest.skip()
-                return
             setup_ansible_config(
                 tmpdir, hostname, docker_host, spec.user or "root",
                 port, str(key))
