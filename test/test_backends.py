@@ -93,6 +93,37 @@ def test_ansible_get_hosts():
         assert get_hosts("*ia*") == ["debian"]
 
 
+def test_ansible_get_variables():
+    with tempfile.NamedTemporaryFile() as f:
+        f.write((
+            b'debian a=b c=d\n'
+            b'centos e=f\n'
+            b'[all:vars]\n'
+            b'a=a\n'
+            b'[g]\n'
+            b'debian\n'
+            b'[g:vars]\n'
+            b'x=z\n'
+        ))
+        f.flush()
+
+        def get_vars(host):
+            return AnsibleRunner(f.name).get_variables(host)
+        assert get_vars("debian") == {
+            'a': 'b',
+            'c': 'd',
+            'x': 'z',
+            'inventory_hostname': 'debian',
+            'group_names': ['g'],
+        }
+        assert get_vars("centos") == {
+            'a': 'a',
+            'e': 'f',
+            'inventory_hostname': 'centos',
+            'group_names': ['ungrouped'],
+        }
+
+
 def test_backend_importables():
     # just check that all declared backend are importable and NAME is set
     # correctly
