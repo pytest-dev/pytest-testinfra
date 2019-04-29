@@ -29,7 +29,7 @@ class AnsibleException(Exception):
     ...     host.ansible("command", "echo foo")
     ... except host.ansible.AnsibleException as exc:
     ...     assert exc.result['failed'] is True
-    ...     assert exc.result['msg'] == 'check mode not supported for command'
+    ...     assert exc.result['msg'] == 'Skipped. You might want to try check=False'  # noqa
     """
 
     def __init__(self, result):
