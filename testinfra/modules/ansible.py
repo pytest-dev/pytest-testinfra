@@ -83,7 +83,7 @@ class Ansible(InstanceModule):
                  become=False, **kwargs):
         result = self._host.backend.run_ansible(
             module_name, module_args, check=check, become=become, **kwargs)
-        if result.get("failed", False) is True:
+        if result.get("failed", False):
             raise AnsibleException(result)
         return result
 
