@@ -293,11 +293,11 @@ def test_file(host):
         "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
     )
     host.check_output("ln -fsn /d/f /d/l")
-    l = host.file("/d/l")
-    assert l.is_symlink
-    assert l.is_file
-    assert l.linked_to == "/d/f"
-    assert l.linked_to == f
+    link = host.file("/d/l")
+    assert link.is_symlink
+    assert link.is_file
+    assert link.linked_to == "/d/f"
+    assert link.linked_to == f
     assert f == host.file('/d/f')
     assert not d == f
 
