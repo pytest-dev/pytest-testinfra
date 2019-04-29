@@ -11,14 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import unicode_literals
-import tempfile
+
+import operator
+import os
 import pytest
+import tempfile
 
 import testinfra.backend
 from testinfra.backend.base import BaseBackend
 from testinfra.backend.base import HostSpec
 from testinfra.backend.winrm import _quote
-from testinfra.backend.ansible import AnsibleBackend
 from testinfra.utils.ansible_runner import AnsibleRunner
 BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
 HOSTS = [backend + "://debian_stretch" for backend in BACKENDS]
@@ -43,9 +45,6 @@ def test_command(host):
 
 @pytest.mark.testinfra_hosts(*HOSTS)
 def test_encoding(host):
-    if host.backend.get_connection_type() == "ansible":
-        pytest.skip("ansible handle encoding himself")
-
     # stretch image is fr_FR@ISO-8859-15
     cmd = host.run("ls -l %s", "/é")
     if host.backend.get_connection_type() == "docker":
@@ -122,6 +121,77 @@ def test_ansible_get_variables():
             'inventory_hostname': 'centos',
             'group_names': ['ungrouped'],
         }
+
+
+@pytest.mark.parametrize('inventory,expected', [
+    (b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
+        'NAME': 'local',
+        'sudo': True,
+        'sudo_user': 'u',
+    }),
+    (b'host', {
+        'NAME': 'paramiko',
+        'host.name': 'host',
+    }),
+    (b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
+        'NAME': 'paramiko',
+        'sudo': True,
+        'sudo_user': 'u',
+        'host.name': '127.0.1.1',
+        'host.port': '2222',
+        'ssh_identity_file': 'key',
+    }),
+    (b'host ansible_connection=docker', {
+        'NAME': 'docker',
+        'name': 'host',
+        'user': None,
+    }),
+    (b'host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container', {  # noqa
+        'NAME': 'docker',
+        'name': 'container',
+        'user': 'z',
+        'sudo': True,
+        'sudo_user': 'u',
+    }),
+])
+def test_ansible_get_host(inventory, expected):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(inventory + b'\n')
+        f.flush()
+        backend = AnsibleRunner(f.name).get_host('host').backend
+        for attr, value in expected.items():
+            assert operator.attrgetter(attr)(backend) == value
+
+
+def test_ansible_unhandled_connection():
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(b'host ansible_connection=winrm\n')
+        f.flush()
+        with pytest.raises(RuntimeError) as excinfo:
+            AnsibleRunner(f.name).get_host('host')
+        assert str(excinfo.value) == 'unhandled ansible_connection winrm'
+
+
+def test_ansible_config():
+    # test testinfra use ANSIBLE_CONFIG
+    tmp = tempfile.NamedTemporaryFile
+    with tmp(suffix='.cfg') as cfg, tmp() as inventory:
+        cfg.write((
+            b'[defaults]\n'
+            b'inventory=' + inventory.name.encode() + b'\n'
+        ))
+        cfg.flush()
+        inventory.write(b'h\n')
+        inventory.flush()
+        old = os.environ.get('ANSIBLE_CONFIG')
+        os.environ['ANSIBLE_CONFIG'] = cfg.name
+        try:
+            assert AnsibleRunner(None).get_hosts('all') == ['h']
+        finally:
+            if old is not None:
+                os.environ['ANSIBLE_CONFIG'] = old
+            else:
+                del os.environ['ANSIBLE_CONFIG']
 
 
 def test_backend_importables():
