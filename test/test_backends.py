@@ -11,12 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import unicode_literals
+import tempfile
 import pytest
 
 import testinfra.backend
 from testinfra.backend.base import BaseBackend
 from testinfra.backend.base import HostSpec
 from testinfra.backend.winrm import _quote
+from testinfra.backend.ansible import AnsibleBackend
+from testinfra.utils.ansible_runner import AnsibleRunner
 BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
 HOSTS = [backend + "://debian_stretch" for backend in BACKENDS]
 USER_HOSTS = [backend + "://user@debian_stretch" for backend in BACKENDS]
@@ -72,16 +75,22 @@ def test_sudo(host):
     assert host.user().name == "root"
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_stretch")
-def test_ansible_hosts_expand(host):
-    from testinfra.backend.ansible import AnsibleBackend
+def test_ansible_get_hosts():
+    with tempfile.NamedTemporaryFile() as f:
+        f.write((
+            b'[g1]\n'
+            b'debian\n'
+            b'[g2]\n'
+            b'centos\n'
+        ))
+        f.flush()
 
-    def get_hosts(spec):
-        return AnsibleBackend.get_hosts(
-            spec, ansible_inventory=host.backend.ansible_inventory)
-    assert get_hosts(["all"]) == ["debian_stretch"]
-    assert get_hosts(["testgroup"]) == ["debian_stretch"]
-    assert get_hosts(["*ia*stre*"]) == ["debian_stretch"]
+        def get_hosts(spec):
+            return AnsibleRunner(f.name).get_hosts(spec)
+        assert get_hosts("all") == ["centos", "debian"]
+        assert get_hosts("g1") == ["debian"]
+        assert get_hosts("*2") == ["centos"]
+        assert get_hosts("*ia*") == ["debian"]
 
 
 def test_backend_importables():
