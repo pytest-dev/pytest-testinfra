@@ -13,8 +13,11 @@
 
 from __future__ import unicode_literals
 
+import contextlib
 import locale
 import re
+import shutil
+import tempfile
 
 import six
 from six.moves import urllib
@@ -46,5 +49,14 @@ if six.PY2:
     def urlunquote(s):
         encoding = locale.getpreferredencoding()
         return urllib.parse.unquote(s.encode(encoding)).decode(encoding)
+
+    @contextlib.contextmanager
+    def TemporaryDirectory():
+        d = tempfile.mkdtemp()
+        try:
+            yield d
+        finally:
+            shutil.rmtree(d)
 else:
     urlunquote = urllib.parse.unquote
+    TemporaryDirectory = tempfile.TemporaryDirectory
