@@ -79,7 +79,7 @@ class AnsibleRunnerV2(object):
             cmd.append('--list')
 
         try:
-            so = subprocess.check_output(cmd)
+            so = subprocess.check_output(cmd, universal_newlines=True)
         except subprocess.CalledProcessError as e:
             raise AnsibleInventoryException(e)
 
