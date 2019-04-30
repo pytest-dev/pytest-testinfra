@@ -5,4 +5,5 @@ paramiko
 tornado<5
 salt
 pywinrm
+ansible>=2.4,<3
 ansible-runner
