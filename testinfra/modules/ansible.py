@@ -83,6 +83,13 @@ class Ansible(InstanceModule):
                  become=False, **kwargs):
         result = self._host.backend.run_ansible(
             module_name, module_args, check=check, become=become, **kwargs)
+        if result == {}:
+            # A blank dictionary means everything was skipped; it
+            # didn't fail but nothing was done
+            result = {
+                'failed': True,
+                'msg': 'Skipped. You might want to try check=False'
+            }
         if result.get("failed", False) is True:
             raise AnsibleException(result)
         return result

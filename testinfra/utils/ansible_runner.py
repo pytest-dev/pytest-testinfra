@@ -182,4 +182,3 @@ class AnsibleRunner(object):
             return significant_event
 
         return {}
-
