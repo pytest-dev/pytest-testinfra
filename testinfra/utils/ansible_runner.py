@@ -22,14 +22,18 @@ import datetime
 import json
 import os
 import shutil
+import six
 import subprocess
-import tempfile
 import yaml
 
 
 # the real ansible-runner
 import ansible_runner
 
+if six.PY2:
+    import backports.tempfile as tempfile
+else:
+    import tempfile
 
 __all__ = ['AnsibleRunner', 'to_bytes']
 

@@ -54,5 +54,6 @@ setuptools.setup(
     install_requires=[
         'pytest!=3.0.2',
         'six>=1.4',
+        'backports.tempfile;python_version<"3"'
     ],
 )
