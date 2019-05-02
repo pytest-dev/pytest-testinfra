@@ -1,5 +1,7 @@
 FROM debian:stretch
 
+ENV container docker
+
 # ntpd is linked to /bin/false, so the service is not running but is enabled
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
