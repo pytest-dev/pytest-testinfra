@@ -318,8 +318,6 @@ def test_ansible_unavailable(host):
 
 @pytest.mark.testinfra_hosts("ansible://debian_stretch")
 def test_ansible_module(host):
-    import ansible
-    version = int(ansible.__version__.split(".", 1)[0])
     setup = host.ansible("setup")["ansible_facts"]
     assert setup["ansible_lsb"]["codename"] == "stretch"
     passwd = host.ansible("file", "path=/etc/passwd state=file")
@@ -343,21 +341,16 @@ def test_ansible_module(host):
 
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
         host.ansible("command", "zzz")
-    if version == 1:
-        msg = "check mode not supported for command"
-    else:
-        msg = "Skipped. You might want to try check=False"
-    assert excinfo.value.result['msg'] == msg
+    assert excinfo.value.result['msg'] == \
+        "Skipped. You might want to try check=False"
 
     try:
         host.ansible("command", "zzz", check=False)
     except host.ansible.AnsibleException as exc:
         assert exc.result['rc'] == 2
-        if version == 1:
-            assert exc.result['msg'] == '[Errno 2] No such file or directory'
-        else:
-            assert exc.result['msg'] == ('[Errno 2] Aucun fichier ou dossier '
-                                         'de ce type')
+        # notez que the debian stretch container is set to LANG=fr_FR
+        assert exc.result['msg'] == ('[Errno 2] Aucun fichier ou dossier '
+                                     'de ce type')
 
     result = host.ansible("command", "echo foo", check=False)
     assert result['stdout'] == 'foo'
