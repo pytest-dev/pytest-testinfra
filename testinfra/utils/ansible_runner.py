@@ -18,6 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import fnmatch
 import json
 import os
 import shutil
@@ -92,8 +93,45 @@ class AnsibleRunner(object):
 
     def get_hosts(self, pattern=None):
         '''Return a list of host names from inventory via the pattern'''
+        # XXX: why is this sometimes a list and sometimes not?
+        pattern = [pattern] if isinstance(pattern, str) else pattern
+
         inv = self.fetch_inventory()
-        return list(inv['_meta']['hostvars'].keys())
+        # all hosts are defined in the inventory here
+        hosts = list(inv['_meta']['hostvars'].keys())
+
+        found_hosts = []
+
+        # does this pattern match on an individual hostname(s)?  if
+        # so, presumably you mean to just run against this host(s) so
+        # only return that.
+        for p in pattern:
+            for host in hosts:
+                if fnmatch.fnmatch(host, p):
+                    found_hosts.append(host)
+        if found_hosts:
+            return list(set(found_hosts))
+
+        # otherwise we could have been passed a group name.  Because
+        # groups have children, we need to recurse :/
+        def find_child_hosts(group):
+            if 'hosts' in inv[group]:
+                found_hosts.extend(inv[group]['hosts'])
+                return
+            if 'children' in inv[group]:
+                children = inv[group]['children']
+                for child in children:
+                    find_child_hosts(child)
+
+        for p in pattern:
+            # if this pattern looks like a group...
+            if p in inv:
+                # go through all it's potential children
+                # and add them to found_hosts
+                find_child_hosts(p)
+
+        # prune any duplicates...
+        return list(set(found_hosts))
 
     def get_variables(self, host, refresh=True):
         '''Get a mixture of inventory vars and magic vars'''
