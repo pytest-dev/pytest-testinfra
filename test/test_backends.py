@@ -77,19 +77,31 @@ def test_sudo(host):
 def test_ansible_get_hosts():
     with tempfile.NamedTemporaryFile() as f:
         f.write((
+            b'ungrp\n'
             b'[g1]\n'
             b'debian\n'
             b'[g2]\n'
             b'centos\n'
+            b'[g3:children]\n'
+            b'g1\n'
+            b'g2\n'
+            b'[g4:children]\n'
+            b'g3'
         ))
         f.flush()
 
         def get_hosts(spec):
             return AnsibleRunner(f.name).get_hosts(spec)
-        assert get_hosts("all") == ["centos", "debian"]
+        assert get_hosts("all") == ["centos", "debian", "ungrp"]
+        assert get_hosts("*") == ["centos", "debian", "ungrp"]
         assert get_hosts("g1") == ["debian"]
         assert get_hosts("*2") == ["centos"]
         assert get_hosts("*ia*") == ["debian"]
+        assert get_hosts('*3') == ["centos", "debian"]
+        assert get_hosts('*4') == ["centos", "debian"]
+        assert get_hosts('ungrouped') == ["ungrp"]
+        assert get_hosts('un*') == ["ungrp"]
+        assert get_hosts('nope') == []
 
 
 def test_ansible_get_variables():
