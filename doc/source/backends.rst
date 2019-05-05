@@ -73,19 +73,13 @@ Hosts can be seleted by using the `glob` and `compound matchers
 ansible
 ~~~~~~~
 
-
-The ansible backend uses the `ansible Python API
-<https://docs.ansible.com/ansible/developing_api.html>`_::
+The ansible backend is able to parse ansible inventories to get host connection
+details, including ``ansible_become`` and ``ansible_become_user``. It only
+works with local, ssh or docker hosts::
 
     $ py.test --hosts=all # tests all inventory hosts
     $ py.test --hosts='ansible://host1,ansible://host2'
     $ py.test --hosts='ansible://web*'
-
-You can use an alternative `inventory` with the ``--ansible-inventory`` option.
-
-Note: Ansible settings such as ``remote_user``, etc., may be configured by using Ansible's
-`environment variables <http://docs.ansible.com/ansible/intro_configuration.html#environmental-configuration>`_.
-
 
 kubectl
 ~~~~~~~
