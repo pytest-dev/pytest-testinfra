@@ -108,15 +108,24 @@ class AnsibleRunner(object):
     def get_hosts(self, pattern=None):
         inventory = self.inventory
         result = set()
+
+        def itergroup(group):
+            for host in inventory[group].get('hosts', []):
+                yield host
+            for g in inventory[group].get('children', []):
+                for host in itergroup(g):
+                    yield host
+
         if inventory == EMPTY_INVENTORY:
             # use localhost as fallback
             result.add('localhost')
         else:
             for group in inventory:
                 groupmatch = fnmatch.fnmatch(group, pattern)
+                if groupmatch:
+                    result |= set(itergroup(group))
                 for host in inventory[group].get('hosts', []):
-                    if (groupmatch or pattern == 'all'
-                            or fnmatch.fnmatch(host, pattern)):
+                    if fnmatch.fnmatch(host, pattern):
                         result.add(host)
         return sorted(result)
 
