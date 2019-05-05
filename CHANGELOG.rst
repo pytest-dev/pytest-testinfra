@@ -2,6 +2,18 @@
 Changelog
 =========
 
+3.0.0
+======
+
+* New ansible backend fixing support for ansible 2.8 and license issue. See
+  https://github.com/philpep/testinfra/issues/431 for details. This make
+  ansible using testinfra native backends and only works for local, ssh or
+  docker connections. I you have others connection types or issues, please open
+  a bug on https://github.com/philpep/testinfra/issues/new
+* Windows support is improved. "package" module is handled with Chocolatey and
+  there's support for the "user" module.
+
+
 2.1.0
 ======
 
