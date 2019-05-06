@@ -214,8 +214,21 @@ class BaseBackend(object):
             user, name = name.split('@', 1)
             if ':' in user:
                 user, password = user.split(':', 1)
-        if ':' in name:
-            name, port = name.split(':', 1)
+        # A literal IPv6 address might be like
+        #  [fe80:0::a:b:c]:80
+        # thus, below in words; if this starts with a '[' assume it
+        # encloses an ipv6 address with a closing ']', with a possible
+        # trailing port after a colon
+        if name.startswith('['):
+            name, port = name.split(']')
+            name = name[1:]
+            if port.startswith(':'):
+                port = port[1:]
+            else:
+                port = None
+        else:
+            if ':' in name:
+                name, port = name.split(':', 1)
         name = testinfra.utils.urlunquote(name)
         if user is not None:
             user = testinfra.utils.urlunquote(user)

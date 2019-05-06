@@ -22,6 +22,7 @@ from six.moves import configparser
 
 import testinfra
 from testinfra.utils import cached_property
+from testinfra.utils import check_ip_address
 from testinfra.utils import TemporaryDirectory
 
 
@@ -91,7 +92,10 @@ def get_ansible_host(config, inventory, host):
     spec = '{}://'.format(connection)
     if user:
         spec += '{}@'.format(user)
-    spec += testinfra_host
+    if check_ip_address(testinfra_host) == 6:
+        spec += '[' + testinfra_host + ']'
+    else:
+        spec += testinfra_host
     if port:
         spec += ':{}'.format(port)
     return testinfra.get_host(spec, **kwargs)

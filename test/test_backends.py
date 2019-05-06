@@ -233,6 +233,14 @@ def test_docker_encoding(host):
     ('pr%C3%A9nom@h', HostSpec('h', None, 'prénom', None)),
     ('pr%C3%A9nom:p%40ss%3Aw0rd@h', HostSpec('h', None, 'prénom',
                                              'p@ss:w0rd')),
+    # ipv6 matching
+    ('[2001:db8:a0b:12f0::1]',
+     HostSpec('2001:db8:a0b:12f0::1', None, None, None)),
+    ('user:password@[2001:db8:a0b:12f0::1]',
+     HostSpec('2001:db8:a0b:12f0::1', None, 'user', 'password')),
+    ('user:password@[2001:4800:7819:103:be76:4eff:fe04:9229]:22',
+     HostSpec('2001:4800:7819:103:be76:4eff:fe04:9229', '22',
+              'user', 'password')),
 ])
 def test_parse_hostspec(hostspec, expected):
     assert BaseBackend.parse_hostspec(hostspec) == expected
