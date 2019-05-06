@@ -105,7 +105,7 @@ class AnsibleRunner(object):
         self._host_cache = {}
         super(AnsibleRunner, self).__init__()
 
-    def get_hosts(self, pattern=None):
+    def get_hosts(self, pattern="all"):
         inventory = self.inventory
         result = set()
 

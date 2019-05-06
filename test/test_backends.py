@@ -17,6 +17,7 @@ import os
 import pytest
 import tempfile
 
+import testinfra
 import testinfra.backend
 from testinfra.backend.base import BaseBackend
 from testinfra.backend.base import HostSpec
@@ -173,6 +174,16 @@ def test_ansible_get_host(inventory, expected):
         backend = AnsibleRunner(f.name).get_host('host').backend
         for attr, value in expected.items():
             assert operator.attrgetter(attr)(backend) == value
+
+
+def test_ansible_no_host():
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(b'host\n')
+        f.flush()
+        assert AnsibleRunner(f.name).get_hosts() == ['host']
+        hosts = testinfra.get_hosts(
+            [None], connection='ansible', ansible_inventory=f.name)
+        assert [h.backend.get_pytest_id() for h in hosts] == ['ansible://host']
 
 
 def test_ansible_unhandled_connection():
