@@ -2,8 +2,14 @@
 Changelog
 =========
 
+3.0.1
+=====
+
+* Fix parsing of ipv6 adresses for paramiko, ssh and ansible backends.
+* Fix --connection=ansible invocation when no hosts are provided
+
 3.0.0
-======
+=====
 
 * New ansible backend fixing support for ansible 2.8 and license issue. See
   https://github.com/philpep/testinfra/issues/431 for details. This make
