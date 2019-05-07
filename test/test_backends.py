@@ -184,6 +184,12 @@ def test_ansible_no_host():
         hosts = testinfra.get_hosts(
             [None], connection='ansible', ansible_inventory=f.name)
         assert [h.backend.get_pytest_id() for h in hosts] == ['ansible://host']
+    with tempfile.NamedTemporaryFile() as f:
+        # empty or no inventory should not return any hosts except for
+        # localhost
+        assert AnsibleRunner(f.name).get_hosts() == []
+        assert AnsibleRunner(f.name).get_hosts('local*') == []
+        assert AnsibleRunner(f.name).get_hosts('localhost') == ['localhost']
 
 
 def test_ansible_unhandled_connection():

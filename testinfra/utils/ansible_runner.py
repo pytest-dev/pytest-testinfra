@@ -121,8 +121,9 @@ class AnsibleRunner(object):
                     yield host
 
         if inventory == EMPTY_INVENTORY:
-            # use localhost as fallback
-            result.add('localhost')
+            # empty inventory should not return any hosts except for localhost
+            if pattern == 'localhost':
+                result.add('localhost')
         else:
             for group in inventory:
                 groupmatch = fnmatch.fnmatch(group, pattern)
