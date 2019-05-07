@@ -58,7 +58,8 @@ def get_ansible_inventory(config, inventory_file):
     return json.loads(local.check_output(cmd, *args))
 
 
-def get_ansible_host(config, inventory, host):
+def get_ansible_host(config, inventory, host, ssh_config=None,
+                     ssh_identity_file=None):
     if is_empty_inventory(inventory):
         return testinfra.get_host('local://')
     hostvars = inventory['_meta'].get('hostvars', {}).get(host, {})
@@ -75,6 +76,10 @@ def get_ansible_host(config, inventory, host):
     if hostvars.get('ansible_become', False):
         kwargs['sudo'] = True
     kwargs['sudo_user'] = hostvars.get('ansible_become_user')
+    if ssh_config is not None:
+        kwargs['ssh_config'] = ssh_config
+    if ssh_identity_file is not None:
+        kwargs['ssh_identity_file'] = ssh_identity_file
     if 'ansible_ssh_private_key_file' in hostvars:
         kwargs['ssh_identity_file'] = hostvars[
             'ansible_ssh_private_key_file']
@@ -149,16 +154,16 @@ class AnsibleRunner(object):
         hostvars.setdefault('group_names', groups)
         return hostvars
 
-    def get_host(self, host):
+    def get_host(self, host, **kwargs):
         try:
             return self._host_cache[host]
         except KeyError:
             self._host_cache[host] = get_ansible_host(
-                self.ansible_config, self.inventory, host)
+                self.ansible_config, self.inventory, host, **kwargs)
             return self._host_cache[host]
 
-    def run(self, host, command):
-        return self.get_host(host).run(command)
+    def run(self, host, command, **kwargs):
+        return self.get_host(host, **kwargs).run(command)
 
     def run_module(self, host, module_name, module_args, become=False,
                    check=True, **kwargs):

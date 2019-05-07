@@ -27,9 +27,12 @@ class AnsibleBackend(base.BaseBackend):
     NAME = "ansible"
     HAS_RUN_ANSIBLE = True
 
-    def __init__(self, host, ansible_inventory=None, *args, **kwargs):
+    def __init__(self, host, ansible_inventory=None, ssh_config=None,
+                 ssh_identity_file=None, *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
+        self.ssh_config = ssh_config
+        self.ssh_identity_file = ssh_identity_file
         super(AnsibleBackend, self).__init__(host, *args, **kwargs)
 
     @property
@@ -38,7 +41,9 @@ class AnsibleBackend(base.BaseBackend):
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
-        return self.ansible_runner.run(self.host, command)
+        return self.ansible_runner.run(
+            self.host, command, ssh_config=self.ssh_config,
+            ssh_identity_file=self.ssh_identity_file)
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
         result = self.ansible_runner.run_module(
