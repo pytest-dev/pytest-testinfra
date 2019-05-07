@@ -136,17 +136,17 @@ def test_ansible_get_variables():
         }
 
 
-@pytest.mark.parametrize('inventory,expected', [
-    (b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
+@pytest.mark.parametrize('hostname,kwargs,inventory,expected', [
+    ('host', {}, b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
         'NAME': 'local',
         'sudo': True,
         'sudo_user': 'u',
     }),
-    (b'host', {
+    ('host', {}, b'host', {
         'NAME': 'paramiko',
         'host.name': 'host',
     }),
-    (b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
+    ('host', {}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
         'NAME': 'paramiko',
         'sudo': True,
         'sudo_user': 'u',
@@ -154,24 +154,31 @@ def test_ansible_get_variables():
         'host.port': '2222',
         'ssh_identity_file': 'key',
     }),
-    (b'host ansible_connection=docker', {
+    ('host', {}, b'host ansible_connection=docker', {
         'NAME': 'docker',
         'name': 'host',
         'user': None,
     }),
-    (b'host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container', {  # noqa
+    ('host', {}, b'host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container', {  # noqa
         'NAME': 'docker',
         'name': 'container',
         'user': 'z',
         'sudo': True,
         'sudo_user': 'u',
     }),
+    ('host', {'ssh_config': '/ssh_config', 'ssh_identity_file': '/id_ed25519'},
+        b'host', {
+        'NAME': 'paramiko',
+        'host.name': 'host',
+        'ssh_config': '/ssh_config',
+        'ssh_identity_file': '/id_ed25519',
+    }),
 ])
-def test_ansible_get_host(inventory, expected):
+def test_ansible_get_host(hostname, kwargs, inventory, expected):
     with tempfile.NamedTemporaryFile() as f:
         f.write(inventory + b'\n')
         f.flush()
-        backend = AnsibleRunner(f.name).get_host('host').backend
+        backend = AnsibleRunner(f.name).get_host(hostname, **kwargs).backend
         for attr, value in expected.items():
             assert operator.attrgetter(attr)(backend) == value
 
