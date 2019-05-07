@@ -47,6 +47,26 @@ class ParamikoBackend(base.BaseBackend):
         self.get_pty = False
         super(ParamikoBackend, self).__init__(self.host.name, *args, **kwargs)
 
+    def _load_ssh_config(self, client, cfg, ssh_config):
+        for key, value in ssh_config.lookup(self.host.name).items():
+            if key == "hostname":
+                cfg[key] = value
+            elif key == "user":
+                cfg["username"] = value
+            elif key == "port":
+                cfg[key] = int(value)
+            elif key == "identityfile":
+                cfg["key_filename"] = os.path.expanduser(value[0])
+            elif key == "stricthostkeychecking" and value == "no":
+                client.set_missing_host_key_policy(IgnorePolicy())
+            elif key == "requesttty":
+                if cfg[key] in ('yes', 'force'):
+                    self.get_pty = True
+            elif key == "gssapikeyexchange":
+                cfg['gss_auth'] = (value == 'yes')
+            elif key == "gssapiauthentication":
+                cfg['gss_kex'] = (value == 'yes')
+
     @cached_property
     def client(self):
         client = paramiko.SSHClient()
@@ -57,28 +77,23 @@ class ParamikoBackend(base.BaseBackend):
             "username": self.host.user,
         }
         if self.ssh_config:
-            ssh_config = paramiko.SSHConfig()
             with open(self.ssh_config) as f:
+                ssh_config = paramiko.SSHConfig()
                 ssh_config.parse(f)
+                self._load_ssh_config(client, cfg, ssh_config)
+        else:
+            # fallback reading ~/.ssh/config
+            default_ssh_config = os.path.join(
+                os.path.expanduser('~'), '.ssh', 'config')
+            try:
+                with open(default_ssh_config) as f:
+                    ssh_config = paramiko.SSHConfig()
+                    ssh_config.parse(f)
+            except IOError:
+                pass
+            else:
+                self._load_ssh_config(client, cfg, ssh_config)
 
-            for key, value in ssh_config.lookup(self.host.name).items():
-                if key == "hostname":
-                    cfg[key] = value
-                elif key == "user":
-                    cfg["username"] = value
-                elif key == "port":
-                    cfg[key] = int(value)
-                elif key == "identityfile":
-                    cfg["key_filename"] = os.path.expanduser(value[0])
-                elif key == "stricthostkeychecking" and value == "no":
-                    client.set_missing_host_key_policy(IgnorePolicy())
-                elif key == "requesttty":
-                    if cfg[key] in ('yes', 'force'):
-                        self.get_pty = True
-                elif key == "gssapikeyexchange":
-                    cfg['gss_auth'] = (value == 'yes')
-                elif key == "gssapiauthentication":
-                    cfg['gss_kex'] = (value == 'yes')
         if self.ssh_identity_file:
             cfg["key_filename"] = self.ssh_identity_file
         client.connect(**cfg)
