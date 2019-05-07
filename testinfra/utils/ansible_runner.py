@@ -28,17 +28,6 @@ from testinfra.utils import TemporaryDirectory
 
 __all__ = ['AnsibleRunner']
 
-EMPTY_INVENTORY = {
-    "_meta": {
-        "hostvars": {}
-    },
-    "all": {
-        "children": [
-            "ungrouped"
-        ]
-    },
-    "ungrouped": {}
-}
 local = testinfra.get_host('local://')
 
 
@@ -70,7 +59,7 @@ def get_ansible_inventory(config, inventory_file):
 
 
 def get_ansible_host(config, inventory, host):
-    if inventory == EMPTY_INVENTORY:
+    if is_empty_inventory(inventory):
         return testinfra.get_host('local://')
     hostvars = inventory['_meta'].get('hostvars', {}).get(host, {})
     connection = hostvars.get('ansible_connection', 'ssh')
@@ -101,6 +90,18 @@ def get_ansible_host(config, inventory, host):
     return testinfra.get_host(spec, **kwargs)
 
 
+def itergroup(inventory, group):
+    for host in inventory.get(group, {}).get('hosts', []):
+        yield host
+    for g in inventory.get(group, {}).get('children', []):
+        for host in itergroup(inventory, g):
+            yield host
+
+
+def is_empty_inventory(inventory):
+    return not any(True for _ in itergroup(inventory, 'all'))
+
+
 class AnsibleRunner(object):
     _runners = {}
 
@@ -112,15 +113,7 @@ class AnsibleRunner(object):
     def get_hosts(self, pattern="all"):
         inventory = self.inventory
         result = set()
-
-        def itergroup(group):
-            for host in inventory[group].get('hosts', []):
-                yield host
-            for g in inventory[group].get('children', []):
-                for host in itergroup(g):
-                    yield host
-
-        if inventory == EMPTY_INVENTORY:
+        if is_empty_inventory(inventory):
             # empty inventory should not return any hosts except for localhost
             if pattern == 'localhost':
                 result.add('localhost')
@@ -128,7 +121,7 @@ class AnsibleRunner(object):
             for group in inventory:
                 groupmatch = fnmatch.fnmatch(group, pattern)
                 if groupmatch:
-                    result |= set(itergroup(group))
+                    result |= set(itergroup(inventory, group))
                 for host in inventory[group].get('hosts', []):
                     if fnmatch.fnmatch(host, pattern):
                         result.add(host)
