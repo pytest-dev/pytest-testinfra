@@ -2,6 +2,14 @@
 Changelog
 =========
 
+3.0.2
+=====
+
+* Fix ansible with no inventory resolving to "localhost"
+* Fix support for ansible 2.8 with no inventory
+* Fix ansible/paramiko which wasn't reading hosts config from ~/.ssh/config
+* Allow to pass --ssh-config and --ssh-identity-file to ansible connection
+
 3.0.1
 =====
 
