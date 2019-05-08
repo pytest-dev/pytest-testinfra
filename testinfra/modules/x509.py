@@ -62,7 +62,7 @@ class X509(Module):
 
     @property
     def serial(self):
-        """Return enddate as datetime of certificate
+        """Return serial of certificate
 
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').serial
         """

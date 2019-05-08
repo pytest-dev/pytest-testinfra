@@ -484,6 +484,7 @@ def test_pip_package(host):
 
 
 def test_x509(host):
+    host.check_output('apt-get -y update')
     host.check_output('apt-get -y install curl')
     host.check_output(
         'curl -so /tmp/crt https://letsencrypt.org/certs/isrgrootx1.pem.txt'
