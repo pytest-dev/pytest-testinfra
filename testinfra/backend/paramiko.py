@@ -60,8 +60,7 @@ class ParamikoBackend(base.BaseBackend):
             elif key == "stricthostkeychecking" and value == "no":
                 client.set_missing_host_key_policy(IgnorePolicy())
             elif key == "requesttty":
-                if cfg[key] in ('yes', 'force'):
-                    self.get_pty = True
+                self.get_pty = value in ('yes', 'force')
             elif key == "gssapikeyexchange":
                 cfg['gss_auth'] = (value == 'yes')
             elif key == "gssapiauthentication":
