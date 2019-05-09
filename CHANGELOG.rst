@@ -2,6 +2,13 @@
 Changelog
 =========
 
+3.0.3
+=====
+
+* Fix paramiko parsing RequestTTY from ssh configs
+* Re-add "groups" key from ansible.get_variables() to be backward compatible
+  with testinfra 2.X
+
 3.0.2
 =====
 
