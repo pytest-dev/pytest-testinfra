@@ -121,18 +121,25 @@ def test_ansible_get_variables():
 
         def get_vars(host):
             return AnsibleRunner(f.name).get_variables(host)
+        groups = {
+            'all': ['centos', 'debian'],
+            'g': ['debian'],
+            'ungrouped': ['centos'],
+        }
         assert get_vars("debian") == {
             'a': 'b',
             'c': 'd',
             'x': 'z',
             'inventory_hostname': 'debian',
             'group_names': ['g'],
+            'groups': groups,
         }
         assert get_vars("centos") == {
             'a': 'a',
             'e': 'f',
             'inventory_hostname': 'centos',
             'group_names': ['ungrouped'],
+            'groups': groups,
         }
 
 

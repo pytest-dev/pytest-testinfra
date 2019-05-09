@@ -142,16 +142,21 @@ class AnsibleRunner(object):
 
     def get_variables(self, host):
         inventory = self.inventory
+        # inventory_hostname, group_names and groups are for backward
+        # compatibility with testinfra 2.X
         hostvars = inventory['_meta'].get(
             'hostvars', {}).get(host, {})
         hostvars.setdefault('inventory_hostname', host)
-        groups = []
+        group_names = []
+        groups = {}
         for group in sorted(inventory):
-            if group in ('_meta', 'all'):
+            if group == "_meta":
                 continue
-            if host in inventory[group].get('hosts', []):
-                groups.append(group)
-        hostvars.setdefault('group_names', groups)
+            groups[group] = sorted(list(itergroup(inventory, group)))
+            if group != "all" and host in inventory[group].get('hosts', []):
+                group_names.append(group)
+        hostvars.setdefault('group_names', group_names)
+        hostvars.setdefault('groups', groups)
         return hostvars
 
     def get_host(self, host, **kwargs):
