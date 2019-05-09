@@ -338,6 +338,11 @@ def test_ansible_module(host):
     assert variables["mygroupvar"] == "qux"
     assert variables["inventory_hostname"] == "debian_stretch"
     assert variables["group_names"] == ["testgroup"]
+    assert variables["groups"] == {
+        "all": ["debian_stretch"],
+        "testgroup": ["debian_stretch"],
+        "ungrouped": [],
+    }
 
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
         host.ansible("command", "zzz")
