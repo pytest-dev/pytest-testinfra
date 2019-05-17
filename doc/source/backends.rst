@@ -108,10 +108,10 @@ arguments ``read_timeout_sec`` and ``operation_timeout_sec``::
 
     $ py.test --hosts='winrm://vagrant@127.0.0.1:2200?read_timeout_sec=120&operation_timeout_sec=100'
 
-LXC
-~~~
+LXC/LXD
+~~~~~~~
 
-The LXC backend can be used to test *running* LXC containers. It uses the
+The LXC backend can be used to test *running* LXC or LXD containers. It uses the
 `lxc exec <https://linuxcontainers.org/lxd/getting-started-cli/>`_ command::
 
     $ py.test --hosts='lxc://container_name'
