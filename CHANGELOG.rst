@@ -2,6 +2,11 @@
 Changelog
 =========
 
+3.0.4
+=====
+
+* Add support for ansible lxc and lxd connections
+
 3.0.3
 =====
 
