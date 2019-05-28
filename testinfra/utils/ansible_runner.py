@@ -82,9 +82,15 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
         kwargs['ssh_config'] = ssh_config
     if ssh_identity_file is not None:
         kwargs['ssh_identity_file'] = ssh_identity_file
+
+    # Support both keys as advertised by Ansible
     if 'ansible_ssh_private_key_file' in hostvars:
         kwargs['ssh_identity_file'] = hostvars[
             'ansible_ssh_private_key_file']
+    elif 'ansible_private_key_file' in hostvars:
+        kwargs['ssh_identity_file'] = hostvars[
+            'ansible_private_key_file']
+
     spec = '{}://'.format(connection)
     if user:
         spec += '{}@'.format(user)

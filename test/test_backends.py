@@ -161,6 +161,14 @@ def test_ansible_get_variables():
         'host.port': '2222',
         'ssh_identity_file': 'key',
     }),
+    ('host', {}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
+        'NAME': 'paramiko',
+        'sudo': True,
+        'sudo_user': 'u',
+        'host.name': '127.0.1.1',
+        'host.port': '2222',
+        'ssh_identity_file': 'key',
+    }),
     ('host', {}, b'host ansible_connection=docker', {
         'NAME': 'docker',
         'name': 'host',
