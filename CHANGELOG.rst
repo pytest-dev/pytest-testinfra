@@ -2,6 +2,12 @@
 Changelog
 =========
 
+3.0.5
+=====
+
+* Set default timeout to 10s on ssh/paramiko connections
+* Add support for ansible inventory parameter ansible_private_key_file
+
 3.0.4
 =====
 
