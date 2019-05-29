@@ -54,6 +54,10 @@ class SshBackend(base.BaseBackend):
         out = self.run_local(
             " ".join(cmd), *cmd_args)
         out.command = self.encode(command)
+        if out.rc == 255:
+            # ssh exits with the exit status of the remote command or with 255
+            # if an error occurred.
+            raise RuntimeError(out)
         return out
 
 
