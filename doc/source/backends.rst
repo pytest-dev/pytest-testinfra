@@ -1,7 +1,14 @@
 Connection backends
 ===================
 
-Testinfra comes with several connections backends for remote command execution.
+Testinfra comes with several connections backends for remote command
+execution.
+
+When installing, you should select the backends you require as
+``extras`` to ensure Python dependencies are satisifed (note various
+system packaged tools may still be required).  For example ::
+
+    $ pip install testinfra[ansible,salt]
 
 For all backends, commands can be run as superuser with the ``--sudo``
 option or as specific user with the ``--sudo-user`` option.
