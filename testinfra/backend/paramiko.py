@@ -66,6 +66,8 @@ class ParamikoBackend(base.BaseBackend):
                 cfg['gss_auth'] = (value == 'yes')
             elif key == "gssapiauthentication":
                 cfg['gss_kex'] = (value == 'yes')
+            elif key == "proxycommand":
+                cfg['sock'] = paramiko.ProxyCommand(value)
 
     @cached_property
     def client(self):
