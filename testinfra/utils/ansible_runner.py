@@ -24,7 +24,7 @@ import testinfra
 from testinfra.utils import cached_property
 from testinfra.utils import check_ip_address
 from testinfra.utils import TemporaryDirectory
-
+import yaml
 
 __all__ = ['AnsibleRunner']
 
@@ -118,8 +118,9 @@ def is_empty_inventory(inventory):
 class AnsibleRunner(object):
     _runners = {}
 
-    def __init__(self, inventory_file=None):
+    def __init__(self, inventory_file=None, ansible_playbook=None):
         self.inventory_file = inventory_file
+        self.ansible_playbook = ansible_playbook
         self._host_cache = {}
         super(AnsibleRunner, self).__init__()
 
@@ -165,6 +166,12 @@ class AnsibleRunner(object):
                 group_names.append(group)
         hostvars.setdefault('group_names', group_names)
         hostvars.setdefault('groups', groups)
+        if self.ansible_playbook:
+            with open(self.ansible_playbook) as f:
+                vars_items_from_pb = { x['hosts']: x.get('vars',
+                                        {}) for x in yaml.load(f) if x['hosts'] in ["all", host]}
+                hostvars.update(vars_items_from_pb.get('all', {}))
+                hostvars.update(vars_items_from_pb.get(host, {}))
         return hostvars
 
     def get_host(self, host, **kwargs):
@@ -209,9 +216,9 @@ class AnsibleRunner(object):
                 return json.load(f)
 
     @classmethod
-    def get_runner(cls, inventory):
+    def get_runner(cls, inventory, playbook):
         try:
             return cls._runners[inventory]
         except KeyError:
-            cls._runners[inventory] = cls(inventory)
+            cls._runners[inventory] = cls(inventory, playbook)
             return cls._runners[inventory]

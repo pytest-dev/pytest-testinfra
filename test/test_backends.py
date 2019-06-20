@@ -142,6 +142,51 @@ def test_ansible_get_variables():
             'groups': groups,
         }
 
+def test_ansible_get_variables_with_playbook():
+    with tempfile.NamedTemporaryFile() as pb:
+        pb.write((
+            b'- hosts: all\n'
+            b'  vars:\n'
+            b'   h: l'
+        ))
+        pb.flush()
+        with tempfile.NamedTemporaryFile() as f:
+            f.write((
+                b'debian a=b c=d\n'
+                b'centos e=f\n'
+                b'[all:vars]\n'
+                b'a=a\n'
+                b'[g]\n'
+                b'debian\n'
+                b'[g:vars]\n'
+                b'x=z\n'
+            ))
+            f.flush()
+
+            def get_vars(host):
+                return AnsibleRunner(f.name, pb.name).get_variables(host)
+            groups = {
+                'all': ['centos', 'debian'],
+                'g': ['debian'],
+                'ungrouped': ['centos'],
+            }
+            assert get_vars("debian") == {
+                'a': 'b',
+                'c': 'd',
+                'x': 'z',
+                'h': 'l',
+                'inventory_hostname': 'debian',
+                'group_names': ['g'],
+                'groups': groups,
+            }
+            assert get_vars("centos") == {
+                'a': 'a',
+                'e': 'f',
+                'h': 'l',
+                'inventory_hostname': 'centos',
+                'group_names': ['ungrouped'],
+                'groups': groups,
+            }
 
 @pytest.mark.parametrize('hostname,kwargs,inventory,expected', [
     ('host', {}, b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
