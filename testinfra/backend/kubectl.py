@@ -34,8 +34,8 @@ class KubectlBackend(base.BaseBackend):
         kcmd = 'kubectl '
         kcmd_args = []
         if self.kubeconfig is not None:
-            kcmd += '--kubeconfig=%s '
-            kcmd_args.append(self.container)
+            kcmd += '--kubeconfig="%s" '
+            kcmd_args.append(self.kubeconfig)
         if self.namespace is not None:
             kcmd += '-n %s '
             kcmd_args.append(self.namespace)
