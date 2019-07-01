@@ -93,7 +93,8 @@ namespace::
     $ py.test --hosts='kubectl://mypod-a1b2c3'
     # specify container name and namespace
     $ py.test --hosts='kubectl://somepod-2536ab?container=nginx&namespace=web'
-
+    # specify kubeconfig
+    $ py.test --hosts='kubectl://somepod-2536ab?kubeconfig=path/to/kubeconfig'
 
 winrm
 ~~~~~
