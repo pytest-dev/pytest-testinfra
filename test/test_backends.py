@@ -286,9 +286,9 @@ def test_parse_hostspec(hostspec, expected):
 
 
 @pytest.mark.parametrize('hostspec,pod,container,namespace,kubeconfig', [
-    ('kubectl://pod', 'pod', None, None),
-    ('kubectl://pod?namespace=n', 'pod', None, 'n'),
-    ('kubectl://pod?container=c&namespace=n', 'pod', 'c', 'n'),
+    ('kubectl://pod', 'pod', None, None, None),
+    ('kubectl://pod?namespace=n', 'pod', None, 'n', None),
+    ('kubectl://pod?container=c&namespace=n', 'pod', 'c', 'n', None),
     ('kubectl://pod?namespace=n&kubeconfig=k', 'pod', None, 'n', 'k')
 ])
 def test_kubectl_hostspec(hostspec, pod, container, namespace, kubeconfig):
