@@ -289,12 +289,14 @@ def test_parse_hostspec(hostspec, expected):
     ('kubectl://pod', 'pod', None, None),
     ('kubectl://pod?namespace=n', 'pod', None, 'n'),
     ('kubectl://pod?container=c&namespace=n', 'pod', 'c', 'n'),
+    ('kubectl://pod?container=c&namespace=n&kubeconfig=k', 'pod', 'c', 'n', 'k')
 ])
 def test_kubectl_hostspec(hostspec, pod, container, namespace):
     backend = testinfra.get_host(hostspec).backend
     assert backend.name == pod
     assert backend.container == container
     assert backend.namespace == namespace
+    assert backend.kubeconfig == kubeconfig
 
 
 @pytest.mark.parametrize('arg_string,expected', [
