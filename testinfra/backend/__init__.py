@@ -52,7 +52,7 @@ def parse_hostspec(hostspec):
             if query.get(key, ['false'])[0].lower() == 'true':
                 kw[key] = True
         for key in ("sudo_user", 'namespace', 'container', 'read_timeout_sec',
-                    'operation_timeout_sec', 'timeout'):
+                    'operation_timeout_sec', 'timeout', 'kubeconfig'):
             if key in query:
                 kw[key] = query.get(key)[0]
         for key in (

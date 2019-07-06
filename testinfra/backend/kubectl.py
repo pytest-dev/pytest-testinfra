@@ -24,6 +24,7 @@ class KubectlBackend(base.BaseBackend):
         self.name = name
         self.container = kwargs.get('container')
         self.namespace = kwargs.get('namespace')
+        self.kubeconfig = kwargs.get('kubeconfig')
         super(KubectlBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
@@ -32,6 +33,9 @@ class KubectlBackend(base.BaseBackend):
         # See https://github.com/kubernetes/kubernetes/issues/30656
         kcmd = 'kubectl '
         kcmd_args = []
+        if self.kubeconfig is not None:
+            kcmd += '--kubeconfig="%s" '
+            kcmd_args.append(self.kubeconfig)
         if self.namespace is not None:
             kcmd += '-n %s '
             kcmd_args.append(self.namespace)
