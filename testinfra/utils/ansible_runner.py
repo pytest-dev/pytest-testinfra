@@ -193,6 +193,9 @@ class AnsibleRunner(object):
             cmd += ' --become'
         if check:
             cmd += ' --check'
+        if kwargs:
+            for kwarg in kwargs.values():
+                cmd += ' ' + kwarg
         cmd += ' %s'
         args += [host]
         with TemporaryDirectory() as d:
