@@ -12,6 +12,7 @@
 # limitations under the License.
 
 from __future__ import unicode_literals
+from re import search
 
 from testinfra.modules.base import Module
 
@@ -31,8 +32,14 @@ class _AddrPort(object):
                 "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
                 self._addr.name, self._port).rc == 0
 
-        return self._addr.run(
-            "nc -w 1 -z %s %s", self._addr.name, self._port).rc == 0
+        nc_version_output = self._addr.run("nc --version").stderr
+        nc_version_match = search(r"\d+\.\d+", nc_version_output)
+        nc_version_num = float(nc_version_match.group(0))
+        if nc_version_num >= 7.25:
+            return self._addr.run(
+                "nc -w 1 -z %s %s", self._addr.name, self._port).rc == 0
+        else:
+            return "nc version older than 7.25 installed. Cannot test if reachable."
 
 
 class Addr(Module):
