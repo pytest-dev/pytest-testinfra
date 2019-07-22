@@ -33,7 +33,7 @@ class SshBackend(base.BaseBackend):
     def run(self, command, *args, **kwargs):
         return self.run_ssh(self.get_command(command, *args))
 
-    def run_ssh(self, command):
+    def _build_ssh_command(self, command):
         cmd = ["ssh"]
         cmd_args = []
         if self.ssh_config:
@@ -51,6 +51,10 @@ class SshBackend(base.BaseBackend):
         cmd.append("-o ConnectTimeout={}".format(self.timeout))
         cmd.append("%s %s")
         cmd_args.extend([self.host.name, command])
+        return cmd, cmd_args
+
+    def run_ssh(self, command):
+        cmd, cmd_args = self._build_ssh_command(command)
         out = self.run_local(
             " ".join(cmd), *cmd_args)
         out.command = self.encode(command)

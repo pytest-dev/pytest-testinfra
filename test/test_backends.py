@@ -311,3 +311,22 @@ def test_kubectl_hostspec(hostspec, pod, container, namespace, kubeconfig):
 ])
 def test_winrm_quote(arg_string, expected):
     assert _quote(arg_string) == expected
+
+
+@pytest.mark.parametrize('hostspec,expected', [
+    ('ssh://h',
+        'ssh -o ConnectTimeout=10 h true'),
+    ('ssh://h?timeout=1',
+        'ssh -o ConnectTimeout=1 h true'),
+    ('ssh://u@h:2222',
+        'ssh -o User=u -o Port=2222 -o ConnectTimeout=10 h true'),
+    ('ssh://h:2222?ssh_config=/f',
+        'ssh -F /f -o Port=2222 -o ConnectTimeout=10 h true'),
+    ('ssh://u@h?ssh_identity_file=/id',
+        'ssh -o User=u -i /id -o ConnectTimeout=10 h true'),
+])
+def test_ssh_hostspec(hostspec, expected):
+    backend = testinfra.get_host(hostspec).backend
+    cmd, cmd_args = backend._build_ssh_command('true')
+    command = backend.quote(' '.join(cmd), *cmd_args)
+    assert command == expected
