@@ -168,10 +168,12 @@ class AnsibleRunner(object):
         hostvars.setdefault('groups', groups)
         if self.ansible_playbook:
             with open(self.ansible_playbook) as f:
-                vars_items_from_pb = { x['hosts']: x.get('vars',
-                                        {}) for x in yaml.load(f) if x['hosts'] in ["all", host]}
-                hostvars.update(vars_items_from_pb.get('all', {}))
-                hostvars.update(vars_items_from_pb.get(host, {}))
+                plays = yaml.load(f)
+                vars_from_pb = {x['hosts']: x.get('vars',
+                                {}) for x in plays if x['hosts'] in ["all",
+                                                                     host]}
+                hostvars.update(vars_from_pb.get('all', {}))
+                hostvars.update(vars_from_pb.get(host, {}))
         return hostvars
 
     def get_host(self, host, **kwargs):

@@ -28,7 +28,8 @@ class AnsibleBackend(base.BaseBackend):
     HAS_RUN_ANSIBLE = True
 
     def __init__(self, host, ansible_inventory=None, ssh_config=None,
-                 ssh_identity_file=None, ansible_playbook=None, *args, **kwargs):
+                 ssh_identity_file=None, ansible_playbook=None,
+                 *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
         self.ssh_config = ssh_config
@@ -38,7 +39,8 @@ class AnsibleBackend(base.BaseBackend):
 
     @property
     def ansible_runner(self):
-        return AnsibleRunner.get_runner(self.ansible_inventory, self.ansible_playbook)
+        return AnsibleRunner.get_runner(self.ansible_inventory,
+                                        self.ansible_playbook)
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
@@ -62,5 +64,6 @@ class AnsibleBackend(base.BaseBackend):
     @classmethod
     def get_hosts(cls, host, **kwargs):
         inventory = kwargs.get('ansible_inventory')
-        playbook = kwargs.get('ansible_playbook') 
-        return AnsibleRunner.get_runner(inventory, playbook).get_hosts(host or "all")
+        playbook = kwargs.get('ansible_playbook')
+        return AnsibleRunner.get_runner(inventory,
+                                        playbook).get_hosts(host or "all")

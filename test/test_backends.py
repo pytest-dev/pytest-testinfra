@@ -142,6 +142,7 @@ def test_ansible_get_variables():
             'groups': groups,
         }
 
+
 def test_ansible_get_variables_with_playbook():
     with tempfile.NamedTemporaryFile() as pb:
         pb.write((
@@ -187,6 +188,7 @@ def test_ansible_get_variables_with_playbook():
                 'group_names': ['ungrouped'],
                 'groups': groups,
             }
+
 
 @pytest.mark.parametrize('hostname,kwargs,inventory,expected', [
     ('host', {}, b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
