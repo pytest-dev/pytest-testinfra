@@ -77,6 +77,7 @@ class ParamikoBackend(base.BaseBackend):
             "hostname": self.host.name,
             "port": int(self.host.port) if self.host.port else 22,
             "username": self.host.user,
+            "password": self.host.password,
             "timeout": self.timeout,
         }
         if self.ssh_config:

@@ -36,6 +36,9 @@ class SshBackend(base.BaseBackend):
     def run_ssh(self, command):
         cmd = ["ssh"]
         cmd_args = []
+        if self.host.password:
+            cmd = ["sshpass"]
+            cmd_args = ["-p", self.host.password, "ssh"]
         if self.ssh_config:
             cmd.append("-F %s")
             cmd_args.append(self.ssh_config)

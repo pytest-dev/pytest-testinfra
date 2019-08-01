@@ -74,6 +74,7 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
     testinfra_host = hostvars.get('ansible_host', host)
     user = hostvars.get('ansible_user')
     port = hostvars.get('ansible_port')
+    password = hostvars.get('ansible_ssh_pass')
     kwargs = {}
     if hostvars.get('ansible_become', False):
         kwargs['sudo'] = True
@@ -92,7 +93,9 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
             'ansible_private_key_file']
 
     spec = '{}://'.format(connection)
-    if user:
+    if user and password:
+        spec += '{}:{}@'.format(user, password)
+    elif user:
         spec += '{}@'.format(user)
     if check_ip_address(testinfra_host) == 6:
         spec += '[' + testinfra_host + ']'
