@@ -17,6 +17,7 @@ from __future__ import absolute_import
 import fnmatch
 import json
 import os
+import tempfile
 
 from six.moves import configparser
 
@@ -50,12 +51,16 @@ def get_ansible_config():
 
 
 def get_ansible_inventory(config, inventory_file):
-    cmd = 'ansible-inventory --list'
-    args = []
-    if inventory_file:
-        cmd += ' -i %s'
-        args += [inventory_file]
-    return json.loads(local.check_output(cmd, *args))
+    # Avoid using stdout because ansible verbosity can make JSON invalid
+    # https://github.com/ansible/ansible/issues/59973
+    with tempfile.NamedTemporaryFile(mode='r') as f:
+        cmd = 'ansible-inventory --list --output=%s' % f.name
+        args = []
+        if inventory_file:
+            cmd += ' -i %s'
+            args += [inventory_file]
+        local.check_output(cmd, *args)
+        return json.load(f)
 
 
 def get_ansible_host(config, inventory, host, ssh_config=None,
