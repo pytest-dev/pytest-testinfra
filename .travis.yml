@@ -19,3 +19,13 @@ jobs:
     - stage: test
       script: tox -e py27,py3
       name: python tests
+    - stage: deploy
+      name: deploy to pypi
+      script: skip
+      if: repo == "philpep/testinfra" AND tag IS present
+      deploy:
+        provider: pypi
+        user: "@token"
+        on:
+          tags: true
+        distributions: "sdist bdist_wheel"
