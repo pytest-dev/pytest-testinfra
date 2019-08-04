@@ -1,16 +1,21 @@
 sudo: required
 services:
   - docker
-env:
-  matrix:
-    - TOXENV=py27,py3
-    - TOXENV=flake8
-    - TOXENV=pylint
-    - TOXENV=sphinxdoc
-    - TOXENV=check-manifest
 language: python
 python: 3.5
 install:
   - pip install tox
-script:
-  - tox -e $TOXENV
+jobs:
+  include:
+    - stage: lint
+      script: tox -e pylint
+      name: pylint
+    - script: tox -e flake8
+      name: flake8
+    - script: tox -e check-manifest
+      name: check-manifest
+    - script: tox -e sphinxdoc
+      name: sphinxdoc
+    - stage: test
+      script: tox -e py27,py3
+      name: python tests
