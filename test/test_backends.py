@@ -150,11 +150,11 @@ def test_ansible_get_variables():
         'sudo_user': 'u',
     }),
     ('host', {}, b'host', {
-        'NAME': 'paramiko',
+        'NAME': 'ssh',
         'host.name': 'host',
     }),
     ('host', {}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
-        'NAME': 'paramiko',
+        'NAME': 'ssh',
         'sudo': True,
         'sudo_user': 'u',
         'host.name': '127.0.1.1',
@@ -162,7 +162,7 @@ def test_ansible_get_variables():
         'ssh_identity_file': 'key',
     }),
     ('host', {}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
-        'NAME': 'paramiko',
+        'NAME': 'ssh',
         'sudo': True,
         'sudo_user': 'u',
         'host.name': '127.0.1.1',
@@ -183,7 +183,7 @@ def test_ansible_get_variables():
     }),
     ('host', {'ssh_config': '/ssh_config', 'ssh_identity_file': '/id_ed25519'},
         b'host', {
-        'NAME': 'paramiko',
+        'NAME': 'ssh',
         'host.name': 'host',
         'ssh_config': '/ssh_config',
         'ssh_identity_file': '/id_ed25519',
