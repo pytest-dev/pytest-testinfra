@@ -169,6 +169,21 @@ def test_ansible_get_variables():
         'host.port': '2222',
         'ssh_identity_file': 'key',
     }),
+    ('host', {}, b'host ansible_ssh_common_args="-o LogLevel=FATAL"', {
+        'NAME': 'ssh',
+        'host.name': 'host',
+        'ssh_extra_args': '-o LogLevel=FATAL',
+    }),
+    ('host', {}, b'host ansible_ssh_extra_args="-o LogLevel=FATAL"', {
+        'NAME': 'ssh',
+        'host.name': 'host',
+        'ssh_extra_args': '-o LogLevel=FATAL',
+    }),
+    ('host', {}, b'host ansible_ssh_common_args="-o StrictHostKeyChecking=no" ansible_ssh_extra_args="-o LogLevel=FATAL"', {  # noqa
+        'NAME': 'ssh',
+        'host.name': 'host',
+        'ssh_extra_args': '-o StrictHostKeyChecking=no -o LogLevel=FATAL',
+    }),
     ('host', {}, b'host ansible_connection=docker', {
         'NAME': 'docker',
         'name': 'host',
