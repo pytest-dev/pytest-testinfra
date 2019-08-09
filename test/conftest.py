@@ -71,6 +71,7 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
     items = [
         name,
         "ansible_ssh_private_key_file={}".format(key),
+        'ansible_ssh_common_args="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=FATAL"',  # noqa
         "myvar=foo",
         "ansible_host={}".format(host),
         "ansible_user={}".format(user),

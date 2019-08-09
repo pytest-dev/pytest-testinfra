@@ -66,12 +66,14 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
         return testinfra.get_host('local://')
     hostvars = inventory['_meta'].get('hostvars', {}).get(host, {})
     connection = hostvars.get('ansible_connection', 'ssh')
-    if connection not in ('ssh', 'local', 'docker', 'lxc', 'lxd'):
+    if connection not in (
+        'ssh', 'paramiko_ssh', 'local', 'docker', 'lxc', 'lxd',
+    ):
         raise NotImplementedError(
             'unhandled ansible_connection {}'.format(connection))
     if connection == 'lxd':
         connection = 'lxc'
-    if connection == 'ssh':
+    if connection == 'paramiko_ssh':
         connection = 'paramiko'
     testinfra_host = hostvars.get('ansible_host', host)
     user = hostvars.get('ansible_user')
