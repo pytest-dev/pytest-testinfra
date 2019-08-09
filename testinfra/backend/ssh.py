@@ -23,12 +23,14 @@ class SshBackend(base.BaseBackend):
     NAME = "ssh"
 
     def __init__(self, hostspec, ssh_config=None, ssh_identity_file=None,
-                 timeout=10, controlpersist=60, *args, **kwargs):
+                 timeout=10, controlpersist=60, ssh_extra_args=None,
+                 *args, **kwargs):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
         self.timeout = int(timeout)
         self.controlpersist = int(controlpersist)
+        self.ssh_extra_args = ssh_extra_args
         super(SshBackend, self).__init__(self.host.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
@@ -37,6 +39,8 @@ class SshBackend(base.BaseBackend):
     def _build_ssh_command(self, command):
         cmd = ["ssh"]
         cmd_args = []
+        if self.ssh_extra_args:
+            cmd += [self.ssh_extra_args]
         if self.ssh_config:
             cmd.append("-F %s")
             cmd_args.append(self.ssh_config)

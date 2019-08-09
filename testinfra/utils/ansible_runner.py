@@ -92,6 +92,10 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
     elif 'ansible_private_key_file' in hostvars:
         kwargs['ssh_identity_file'] = hostvars[
             'ansible_private_key_file']
+    kwargs['ssh_extra_args'] = '{} {}'.format(
+        hostvars.get('ansible_ssh_common_args', ''),
+        hostvars.get('ansible_ssh_extra_args', '')
+    ).strip()
 
     spec = '{}://'.format(connection)
     if user:
