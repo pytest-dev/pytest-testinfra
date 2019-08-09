@@ -153,6 +153,10 @@ def test_ansible_get_variables():
         'NAME': 'ssh',
         'host.name': 'host',
     }),
+    ('host', {}, b'host ansible_connection=smart', {
+        'NAME': 'ssh',
+        'host.name': 'host',
+    }),
     ('host', {}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
         'NAME': 'ssh',
         'sudo': True,
