@@ -23,16 +23,37 @@ from testinfra.backend.base import BaseBackend
 from testinfra.backend.base import HostSpec
 from testinfra.backend.winrm import _quote
 from testinfra.utils.ansible_runner import AnsibleRunner
-BACKENDS = ("ssh", "safe-ssh", "docker", "paramiko", "ansible")
-HOSTS = [backend + "://debian_stretch" for backend in BACKENDS]
-USER_HOSTS = [backend + "://user@debian_stretch" for backend in BACKENDS]
+HOSTS = [
+    "ssh://debian_stretch",
+    "safe-ssh://debian_stretch",
+    "docker://debian_stretch",
+    "paramiko://debian_stretch",
+    "ansible://debian_stretch",
+    "ansible://debian_stretch?force_ansible=True",
+]
+USER_HOSTS = [
+    "ssh://user@debian_stretch",
+    "safe-ssh://user@debian_stretch",
+    "docker://user@debian_stretch",
+    "paramiko://user@debian_stretch",
+    "ansible://user@debian_stretch",
+    "ansible://user@debian_stretch?force_ansible=True",
+]
 SUDO_HOSTS = [
-    backend + "://user@debian_stretch?sudo=True"
-    for backend in BACKENDS
+    "ssh://user@debian_stretch?sudo=True",
+    "safe-ssh://user@debian_stretch?sudo=True",
+    "docker://user@debian_stretch?sudo=True",
+    "paramiko://user@debian_stretch?sudo=True",
+    "ansible://user@debian_stretch?sudo=True",
+    "ansible://user@debian_stretch?force_ansible=True&sudo=True",
 ]
 SUDO_USER_HOSTS = [
-    backend + "://debian_stretch?sudo=True&sudo_user=user"
-    for backend in BACKENDS
+    "ssh://debian_stretch?sudo=True&sudo_user=user",
+    "safe-ssh://debian_stretch?sudo=True&sudo_user=user",
+    "docker://debian_stretch?sudo=True&sudo_user=user",
+    "paramiko://debian_stretch?sudo=True&sudo_user=user",
+    "ansible://debian_stretch?sudo=True&sudo_user=user",
+    "ansible://debian_stretch?force_ansible=True&sudo=True&sudo_user=user",
 ]
 
 
@@ -54,6 +75,15 @@ def test_encoding(host):
             b"ls: impossible d'acc\xe9der \xe0 '/\xef\xbf\xbd': "
             b"Aucun fichier ou dossier de ce type\n"
         )
+    elif (
+        host.backend.get_connection_type() == "ansible"
+        and host.backend.force_ansible
+    ):
+        # XXX: this encoding issue comes directly from ansible
+        # not sure how to handle this...
+        assert cmd.stderr == (
+            "ls: impossible d'accéder à '/Ã©': "
+            "Aucun fichier ou dossier de ce type")
     else:
         assert cmd.stderr_bytes == (
             b"ls: impossible d'acc\xe9der \xe0 '/\xe9': "
@@ -231,15 +261,6 @@ def test_ansible_no_host():
         assert AnsibleRunner(f.name).get_hosts() == []
         assert AnsibleRunner(f.name).get_hosts('local*') == []
         assert AnsibleRunner(f.name).get_hosts('localhost') == ['localhost']
-
-
-def test_ansible_unhandled_connection():
-    with tempfile.NamedTemporaryFile() as f:
-        f.write(b'host ansible_connection=winrm\n')
-        f.flush()
-        with pytest.raises(RuntimeError) as excinfo:
-            AnsibleRunner(f.name).get_host('host')
-        assert str(excinfo.value) == 'unhandled ansible_connection winrm'
 
 
 def test_ansible_config():
