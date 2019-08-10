@@ -78,13 +78,20 @@ Hosts can be seleted by using the `glob` and `compound matchers
 ansible
 ~~~~~~~
 
-The ansible backend is able to parse ansible inventories to get host connection
-details, including ``ansible_become`` and ``ansible_become_user``. It only
-works with local, ssh or docker hosts::
+The ansible backend is able to parse ansible inventories to get host connection details.
+For local, ssh, paramiko or docker connections it will use the equivalent
+testinfra connection backend, unless `force_ansible=True`.
+
+For other connections types or when `force_ansible=True`, testinfra will run
+all commands through ansible, which is substantially slower than using native
+connections backends.
+
+Examples::
 
     $ py.test --hosts=all # tests all inventory hosts
     $ py.test --hosts='ansible://host1,ansible://host2'
     $ py.test --hosts='ansible://web*'
+    $ py.test --hosts='ansible://host?force_ansible=True'
 
 kubectl
 ~~~~~~~

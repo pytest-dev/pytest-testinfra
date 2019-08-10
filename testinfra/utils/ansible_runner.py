@@ -69,8 +69,8 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
     if connection not in (
         'smart', 'ssh', 'paramiko_ssh', 'local', 'docker', 'lxc', 'lxd',
     ):
-        raise NotImplementedError(
-            'unhandled ansible_connection {}'.format(connection))
+        # unhandled connection type, must use force_ansible=True
+        return None
     connection = {
         'lxd': 'lxc',
         'paramiko_ssh': 'paramiko',
@@ -183,9 +183,6 @@ class AnsibleRunner(object):
             self._host_cache[host] = get_ansible_host(
                 self.ansible_config, self.inventory, host, **kwargs)
             return self._host_cache[host]
-
-    def run(self, host, command, **kwargs):
-        return self.get_host(host, **kwargs).run(command)
 
     def run_module(self, host, module_name, module_args, become=False,
                    check=True, **kwargs):

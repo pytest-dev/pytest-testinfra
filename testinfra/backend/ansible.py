@@ -28,11 +28,13 @@ class AnsibleBackend(base.BaseBackend):
     HAS_RUN_ANSIBLE = True
 
     def __init__(self, host, ansible_inventory=None, ssh_config=None,
-                 ssh_identity_file=None, *args, **kwargs):
+                 ssh_identity_file=None, force_ansible=False,
+                 *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
+        self.force_ansible = force_ansible
         super(AnsibleBackend, self).__init__(host, *args, **kwargs)
 
     @property
@@ -41,9 +43,16 @@ class AnsibleBackend(base.BaseBackend):
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
-        return self.ansible_runner.run(
-            self.host, command, ssh_config=self.ssh_config,
-            ssh_identity_file=self.ssh_identity_file)
+        if not self.force_ansible:
+            host = self.ansible_runner.get_host(
+                self.host, ssh_config=self.ssh_config,
+                ssh_identity_file=self.ssh_identity_file)
+            if host is not None:
+                return host.run(command)
+        out = self.run_ansible('shell', module_args=command, check=False)
+        return self.result(
+            out['rc'], command, stdout_bytes=None,
+            stderr_bytes=None, stdout=out['stdout'], stderr=out['stderr'])
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
         result = self.ansible_runner.run_module(
