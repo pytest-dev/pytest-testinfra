@@ -16,6 +16,7 @@ from __future__ import unicode_literals
 import collections
 import locale
 import logging
+import os
 import pipes
 import subprocess
 
@@ -193,7 +194,11 @@ class BaseBackend(object):
 
     def run_local(self, command, *args):
         command = self.quote(command, *args)
-        command = self.encode(command)
+
+        # Subprocess doesn't like working on Bytes in Windows.
+        # See "list2cmdline" within subprocess for details
+        if os.name != 'nt':
+            command = self.encode(command)
         p = subprocess.Popen(
             command, shell=True,
             stdin=subprocess.PIPE,
