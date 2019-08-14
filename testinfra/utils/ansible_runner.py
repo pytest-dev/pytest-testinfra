@@ -50,7 +50,9 @@ def get_ansible_config():
 
 
 def get_ansible_inventory(config, inventory_file):
-    cmd = 'ansible-inventory --list'
+    # Disable ansible verbosity to avoid
+    # https://github.com/ansible/ansible/issues/59973
+    cmd = 'ANSIBLE_VERBOSITY=0 ansible-inventory --list'
     args = []
     if inventory_file:
         cmd += ' -i %s'
@@ -64,13 +66,16 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
         return testinfra.get_host('local://')
     hostvars = inventory['_meta'].get('hostvars', {}).get(host, {})
     connection = hostvars.get('ansible_connection', 'ssh')
-    if connection not in ('ssh', 'local', 'docker', 'lxc', 'lxd'):
-        raise NotImplementedError(
-            'unhandled ansible_connection {}'.format(connection))
-    if connection == 'lxd':
-        connection = 'lxc'
-    if connection == 'ssh':
-        connection = 'paramiko'
+    if connection not in (
+        'smart', 'ssh', 'paramiko_ssh', 'local', 'docker', 'lxc', 'lxd',
+    ):
+        # unhandled connection type, must use force_ansible=True
+        return None
+    connection = {
+        'lxd': 'lxc',
+        'paramiko_ssh': 'paramiko',
+        'smart': 'ssh',
+    }.get(connection, connection)
     testinfra_host = hostvars.get('ansible_host', host)
     user = hostvars.get('ansible_user')
     port = hostvars.get('ansible_port')
@@ -90,6 +95,10 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
     elif 'ansible_private_key_file' in hostvars:
         kwargs['ssh_identity_file'] = hostvars[
             'ansible_private_key_file']
+    kwargs['ssh_extra_args'] = '{} {}'.format(
+        hostvars.get('ansible_ssh_common_args', ''),
+        hostvars.get('ansible_ssh_extra_args', '')
+    ).strip()
 
     spec = '{}://'.format(connection)
     if user:
@@ -149,7 +158,7 @@ class AnsibleRunner(object):
     def ansible_config(self):
         return get_ansible_config()
 
-    def get_variables(self, host):
+    def get_variables(self, host, playbook_arg=None):
         inventory = self.inventory
         # inventory_hostname, group_names and groups are for backward
         # compatibility with testinfra 2.X
@@ -166,14 +175,16 @@ class AnsibleRunner(object):
                 group_names.append(group)
         hostvars.setdefault('group_names', group_names)
         hostvars.setdefault('groups', groups)
-        if self.ansible_playbook:
-            with open(self.ansible_playbook) as f:
-                plays = yaml.load(f)
-                vars_from_pb = {x['hosts']: x.get('vars',
-                                {}) for x in plays if x['hosts'] in ["all",
-                                                                     host]}
-                hostvars.update(vars_from_pb.get('all', {}))
-                hostvars.update(vars_from_pb.get(host, {}))
+        for pb in [ self.ansible_playbook,
+                    playbook_arg]:
+            if pb:
+                with open(pb) as f:
+                    plays = yaml.load(f)
+                    vars_from_pb = {x['hosts']: x.get('vars',
+                                    {}) for x in plays if x['hosts'] in ["all",
+                                                                        host]}
+                    hostvars.update(vars_from_pb.get('all', {}))
+                    hostvars.update(vars_from_pb.get(host, {}))
         return hostvars
 
     def get_host(self, host, **kwargs):
@@ -183,9 +194,6 @@ class AnsibleRunner(object):
             self._host_cache[host] = get_ansible_host(
                 self.ansible_config, self.inventory, host, **kwargs)
             return self._host_cache[host]
-
-    def run(self, host, command, **kwargs):
-        return self.get_host(host, **kwargs).run(command)
 
     def run_module(self, host, module_name, module_args, become=False,
                    check=True, **kwargs):

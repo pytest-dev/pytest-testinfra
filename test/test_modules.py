@@ -117,9 +117,14 @@ def test_ssh_service(host, docker_image):
     ssh = host.service(name)
     if docker_image == "ubuntu_xenial":
         assert not ssh.is_running
-    # FIXME: is_running test is broken for archlinux for unknown reason
-    elif docker_image != "archlinux":
-        assert ssh.is_running
+    else:
+        # wait at max 10 seconds for ssh is running
+        for _ in range(10):
+            if ssh.is_running:
+                break
+            time.sleep(1)
+        else:
+            raise AssertionError('ssh is not running')
 
     if docker_image == "ubuntu_xenial":
         assert not ssh.is_enabled

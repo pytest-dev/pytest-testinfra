@@ -2,6 +2,14 @@
 Changelog
 =========
 
+3.0.6
+=====
+
+* Issue full command logging using DEBUG log level to avoid logging sensible data when log level is INFO.
+* Fix possible crash when parsing ansible inventories #470
+* Support using alternative kubeconfig file in kubectl connections #460
+* Support parsing ProxyCommand from ssh_config for paramiko connections
+
 3.0.5
 =====
 

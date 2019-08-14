@@ -278,5 +278,5 @@ class BaseBackend(object):
 
     def result(self, *args, **kwargs):
         result = CommandResult(self, *args, **kwargs)
-        logger.info("RUN %s", result)
+        logger.debug("RUN %s", result)
         return result
