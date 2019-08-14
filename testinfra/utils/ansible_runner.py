@@ -175,14 +175,14 @@ class AnsibleRunner(object):
                 group_names.append(group)
         hostvars.setdefault('group_names', group_names)
         hostvars.setdefault('groups', groups)
-        for pb in [ self.ansible_playbook,
-                    playbook_arg]:
+        for pb in [self.ansible_playbook,
+                   playbook_arg]:
             if pb:
                 with open(pb) as f:
                     plays = yaml.load(f)
                     vars_from_pb = {x['hosts']: x.get('vars',
                                     {}) for x in plays if x['hosts'] in ["all",
-                                                                        host]}
+                                                                         host]}
                     hostvars.update(vars_from_pb.get('all', {}))
                     hostvars.update(vars_from_pb.get(host, {}))
         return hostvars

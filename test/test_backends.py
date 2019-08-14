@@ -219,6 +219,7 @@ def test_ansible_get_variables_with_playbook():
                 'groups': groups,
             }
 
+
 def test_ansible_get_variables_with_playbook_arg():
     with tempfile.NamedTemporaryFile() as pb:
         pb.write((
@@ -241,7 +242,9 @@ def test_ansible_get_variables_with_playbook_arg():
             f.flush()
 
             def get_vars(host):
-                return AnsibleRunner(f.name).get_variables(host, pb.name)
+                return AnsibleRunner(f.name).get_variables(
+                                                        host,
+                                                        playbook_arg=pb.name)
             groups = {
                 'all': ['centos', 'debian'],
                 'g': ['debian'],
