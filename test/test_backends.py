@@ -63,6 +63,19 @@ def test_command(host):
     assert host.check_output("true") == ""
     # test that quotting is correct
     assert host.run("echo a b | grep -q %s", "a c").rc == 1
+    out = host.run("echo out && echo err >&2 && exit 42")
+    assert out.rc == 42
+    if (
+        host.backend.get_connection_type() == "ansible"
+        and host.backend.force_ansible
+    ):
+        assert out.stdout_bytes == b'out'
+        assert out.stderr_bytes == b'err'
+    else:
+        assert out.stdout_bytes == b'out\n'
+        assert out.stderr_bytes == b'err\n'
+    out = host.run("commandthatdoesnotexists")
+    assert out.rc == 127
 
 
 @pytest.mark.testinfra_hosts(*HOSTS)
