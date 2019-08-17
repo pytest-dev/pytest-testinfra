@@ -91,6 +91,7 @@ class SafeSshBackend(SshBackend):
 
     def run(self, command, *args, **kwargs):
         orig_command = self.get_command(command, *args)
+        orig_command = self.get_command('sh -c %s', orig_command)
 
         out = self.run_ssh((
             '''of=$(mktemp)&&ef=$(mktemp)&&%s >$of 2>$ef; r=$?;'''
