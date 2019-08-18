@@ -203,7 +203,7 @@ class AnsibleRunner(object):
         args += [host]
         with TemporaryDirectory() as d:
             args[0] = d
-            out = local.run_expect([0, 2], cmd, *args)
+            out = local.run_expect([0, 2, 8], cmd, *args)
             files = os.listdir(d)
             if not files and 'skipped' in out.stdout.lower():
                 return {'failed': True, 'skipped': True,

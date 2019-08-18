@@ -108,6 +108,19 @@ def test_encoding(host):
         )
 
 
+@pytest.mark.testinfra_hosts(
+    "ansible://debian_stretch?force_ansible=True")
+def test_ansible_any_error_fatal(host):
+    os.environ['ANSIBLE_ANY_ERRORS_FATAL'] = 'True'
+    try:
+        out = host.run("echo out && echo err >&2 && exit 42")
+        assert out.rc == 42
+        assert out.stdout == 'out'
+        assert out.stderr == 'err'
+    finally:
+        del os.environ['ANSIBLE_ANY_ERRORS_FATAL']
+
+
 @pytest.mark.testinfra_hosts(*(USER_HOSTS + SUDO_USER_HOSTS))
 def test_user_connection(host):
     assert host.user().name == "user"
