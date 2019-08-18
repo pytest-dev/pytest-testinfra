@@ -2,6 +2,19 @@
 Changelog
 =========
 
+3.1.0
+=====
+
+* ssh connections uses persistent connections by default. You can disable this
+  by passing controlpersist=0 to the connections options.
+* ansible ssh connections now use ssh backend instead of paramiko.
+  ansible_ssh_common_args and ansible_ssh_extra_args are now taking in account.
+* Add a new ansible connection options "force_ansible", when set to True,
+  testinfra will always call ansible for all commands he need to run.
+* Handle all ansible connections types by setting force_ansible=True for
+  connections which doesn't have a testinfra equivalent connection (for example
+  "network_cli").
+
 3.0.6
 =====
 
