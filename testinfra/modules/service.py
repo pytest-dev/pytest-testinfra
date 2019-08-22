@@ -65,6 +65,8 @@ class Service(Module):
             return OpenBSDService
         if host.system_info.type == "netbsd":
             return NetBSDService
+        if host.system_info.type == "windows":
+            return WindowsService
         raise NotImplementedError
 
     def __repr__(self):
@@ -215,3 +217,16 @@ class NetBSDService(Service):
     @property
     def is_enabled(self):
         raise NotImplementedError
+
+
+class WindowsService(Service):
+
+    @property
+    def is_running(self):
+        return self.check_output(
+            'powershell -command "Get-Service \"%s\" | Select -ExpandProperty Status"', self.name) == "Running"
+
+    @property
+    def is_enabled(self):
+        return self.check_output(
+            'powershell -command "Get-Service \"%s\" | Select -ExpandProperty StartType"', self.name) == "Automatic"
