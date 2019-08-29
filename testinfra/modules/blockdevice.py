@@ -82,8 +82,7 @@ class BlockDevice(Module):
 
     @property
     def sector_size(self):
-        """Return sector size for the device in bytes or None if device
-           is not a block device.
+        """Return sector size for the device in bytes or None.
 
         >>> host.block_device("/dev/sda1").sector_szie
         512
@@ -98,8 +97,7 @@ class BlockDevice(Module):
 
     @property
     def block_size(self):
-        """Return block size for the device in bytes or None if device
-           is not a block device.
+        """Return block size for the device in bytes or None.
 
         >>> host.block_device("/dev/sda").block_szie
         4096
@@ -115,6 +113,7 @@ class BlockDevice(Module):
     @property
     def start_sector(self):
         """Return start sector of the device on the underlaying device.
+
            Usually the value is zero for full devices and is non-zero
            for partitions.
            Return None if device is not a block device.
@@ -135,8 +134,7 @@ class BlockDevice(Module):
 
     @property
     def is_writable(self):
-        """Return True if device is writable (have no RO status), or None
-           if device is not a proper block device.
+        """Return True if device is writable (have no RO status), or None.
 
         >>> host.block_device("/dev/sda").is_writable
         True
@@ -155,13 +153,11 @@ class BlockDevice(Module):
             return True
         elif mode == 'ro':
             return False
-        else:
-            raise ValueError('Unexpected value for rw: %s' % mode)
+        raise ValueError('Unexpected value for rw: %s' % mode)
 
     @property
     def ra(self):
-        """Return Read Ahead parameter for the device in 512-bytes sectors
-           or None if device is not a proper block device.
+        """Return Read Ahead for the device in 512-bytes sectors or None.
 
         >>> host.block_device("/dev/sda").ra
         256
