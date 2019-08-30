@@ -32,7 +32,7 @@ class _AddrPort(object):
                 self._addr.name, self._port).rc == 0
 
         return self._addr.run(
-            "nc -w 1 -z %s %s", self._addr.name, self._port).rc == 0
+            "echo /dev/zero | nc -w 1 %s %s", self._addr.name, self._port).rc == 0
 
 
 class Addr(Module):
