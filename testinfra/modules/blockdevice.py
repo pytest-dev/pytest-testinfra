@@ -151,7 +151,7 @@ class BlockDevice(Module):
         mode = self._data['rw_mode']
         if mode == 'rw':
             return True
-        elif mode == 'ro':
+        if mode == 'ro':
             return False
         raise ValueError('Unexpected value for rw: %s' % mode)
 
