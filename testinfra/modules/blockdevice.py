@@ -66,8 +66,9 @@ class BlockDevice(Module):
 
     @property
     def size(self):
-        """Return size if the device in bytes or None
-           if device is not a block device.
+        """Return size if the device in bytes.
+
+           Return None if device is not a block device.
 
         >>> host.block_device("/dev/sda1").size
         512110190592
