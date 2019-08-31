@@ -38,6 +38,7 @@ modules = {
     'sysctl': 'sysctl:Sysctl',
     'system_info': 'systeminfo:SystemInfo',
     'user': 'user:User',
+    'x509': 'x509:X509',
 }
 
 

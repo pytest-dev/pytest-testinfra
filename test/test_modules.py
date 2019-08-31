@@ -485,6 +485,17 @@ def test_pip_package(host):
     assert int(outdated['latest'].split('.')[0]) > 2
 
 
+def test_x509(host):
+    host.run('openssl req -new -newkey rsa:1024 -days 365 -nodes -x509 \
+    -subj "/C=FR/ST=IDF/L=Paris/O=TestInfra/CN=testinfra.readthedocs.io" \
+    -keyout /tmp/key -out /tmp/crt')
+    assert host.file('/tmp/key').is_file
+    assert host.file('/tmp/crt').is_file
+    assert 'testinfra.readthedocs.io' in str(host.x509('/tmp/crt').subject)
+    in_360_days = datetime.datetime.now() + datetime.timedelta(days=360)
+    assert host.x509('/tmp/crt').enddate > in_360_days
+
+
 def test_iptables(host):
     ssh_rule_str = \
         '-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT'

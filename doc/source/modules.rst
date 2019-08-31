@@ -103,6 +103,10 @@ host
 
        :class:`testinfra.modules.user.User` class
 
+    .. attribute:: x509
+
+       :class:`testinfra.modules.x509.X509` class
+
 
 
 
