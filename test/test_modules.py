@@ -14,9 +14,9 @@ from __future__ import unicode_literals
 
 import crypt
 import datetime
+from dateutil import parser
 import re
 import time
-from dateutil import parser
 
 import pytest
 
