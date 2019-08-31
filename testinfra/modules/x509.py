@@ -73,23 +73,23 @@ class OpenSSL(X509):
     @property
     def issuer(self):
         return crypto.load_certificate(
-            crypto.FILETYPE_PEM, open(self.name, 'r').read()
+            crypto.FILETYPE_PEM, self.file(self.name).content_string
         ).get_issuer()
 
     @property
     def subject(self):
         return crypto.load_certificate(
-            crypto.FILETYPE_PEM, open(self.name, 'r').read()
+            crypto.FILETYPE_PEM, self.file(self.name).content_string
         ).get_subject()
 
     @property
     def enddate(self):
         return parser.parse(crypto.load_certificate(
-            crypto.FILETYPE_PEM, open(self.name, 'r').read()
+            crypto.FILETYPE_PEM, self.file(self.name).content_string
         ).get_notAfter())
 
     @property
     def serial(self):
         return crypto.load_certificate(
-            crypto.FILETYPE_PEM, open(self.name, 'r').read()
+            crypto.FILETYPE_PEM, self.file(self.name).content_string
         ).get_serial_number()
