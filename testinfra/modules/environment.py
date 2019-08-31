@@ -18,6 +18,9 @@ from testinfra.modules.base import InstanceModule
 
 class Environment(InstanceModule):
     """Get Environment variables
+
+    Example:
+
      >>> host.environment()
     {
         "EDITOR": "vim",
