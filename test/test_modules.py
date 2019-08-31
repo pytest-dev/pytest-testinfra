@@ -495,7 +495,8 @@ def test_x509(host):
     assert cmd.rc == 0
     assert host.file('/tmp/crt').is_file
     assert 'testinfra.readthedocs.io' == host.x509('/tmp/crt').subject.CN
-    in_360_days = datetime.datetime.now() + datetime.timedelta(days=360)
+    in_360_days = datetime.datetime.now(
+        datetime.timezone.utc) + datetime.timedelta(days=360)
     assert parser.parse(host.x509('/tmp/crt').enddate) > in_360_days
 
 

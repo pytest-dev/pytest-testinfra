@@ -55,6 +55,5 @@ setuptools.setup(
         'pytest!=3.0.2',
         'six>=1.4',
         'pyOpenSSL>=19.0.0',
-        'python-dateutil>=2.7.3',
     ],
 )
