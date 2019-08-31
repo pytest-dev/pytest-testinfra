@@ -486,6 +486,8 @@ def test_pip_package(host):
 
 
 def test_x509(host):
+    host.check_output('apt-get -y update')
+    host.check_output('apt-get -y install openssl')
     host.run('openssl req -new -newkey rsa:1024 -days 365 -nodes -x509 \
     -subj "/C=FR/ST=IDF/L=Paris/O=TestInfra/CN=testinfra.readthedocs.io" \
     -keyout /tmp/key -out /tmp/crt')
