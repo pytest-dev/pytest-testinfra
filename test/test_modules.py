@@ -486,14 +486,14 @@ def test_pip_package(host):
 
 
 def test_x509(host):
-    host.check_output('apt-get -y update')
     host.check_output('apt-get -y install openssl')
-    host.run('openssl req -new -newkey rsa:1024 -days 365 -nodes -x509 \
+    assert host.package('openssl').is_installed
+    cmd = host.run('openssl req -new -newkey rsa:1024 -days 365 -nodes -x509 \
     -subj "/C=FR/ST=IDF/L=Paris/O=TestInfra/CN=testinfra.readthedocs.io" \
     -keyout /tmp/key -out /tmp/crt')
-    assert host.file('/tmp/key').is_file
+    assert cmd.rc == 0
     assert host.file('/tmp/crt').is_file
-    assert 'testinfra.readthedocs.io' in str(host.x509('/tmp/crt').subject)
+    assert 'testinfra.readthedocs.io' == host.x509('/tmp/crt').subject.CN
     in_360_days = datetime.datetime.now() + datetime.timedelta(days=360)
     assert host.x509('/tmp/crt').enddate > in_360_days
 
