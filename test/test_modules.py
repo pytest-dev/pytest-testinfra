@@ -16,6 +16,7 @@ import crypt
 import datetime
 import re
 import time
+from dateutil import parser
 
 import pytest
 
@@ -495,7 +496,7 @@ def test_x509(host):
     assert host.file('/tmp/crt').is_file
     assert 'testinfra.readthedocs.io' == host.x509('/tmp/crt').subject.CN
     in_360_days = datetime.datetime.now() + datetime.timedelta(days=360)
-    assert host.x509('/tmp/crt').enddate > in_360_days
+    assert parser.parse(host.x509('/tmp/crt').enddate) > in_360_days
 
 
 def test_iptables(host):

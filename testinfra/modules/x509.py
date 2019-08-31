@@ -13,7 +13,6 @@
 
 from __future__ import unicode_literals
 
-from dateutil import parser
 from OpenSSL import crypto
 from testinfra.modules.base import Module
 
@@ -22,6 +21,9 @@ class X509(Module):
 
     def __init__(self, name):
         self.name = name
+        self._cert = crypto.load_certificate(
+            crypto.FILETYPE_PEM, self._host.file(self.name).content_string
+        )
         super(X509, self).__init__()
 
     @property
@@ -31,7 +33,7 @@ class X509(Module):
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').issuer
         """
 
-        raise NotImplementedError
+        return self._cert.get_issuer()
 
     @property
     def subject(self):
@@ -40,7 +42,7 @@ class X509(Module):
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').subject
         """
 
-        raise NotImplementedError
+        return self._cert.get_subject()
 
     @property
     def enddate(self):
@@ -49,7 +51,7 @@ class X509(Module):
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').enddate
         """
 
-        raise NotImplementedError
+        return self._cert.get_notAfter()
 
     @property
     def serial(self):
@@ -58,42 +60,7 @@ class X509(Module):
         >>> host.x509('/etc/pki/tls/certs/dummy.crt').serial
         """
 
-        raise NotImplementedError
+        return self._cert.get_serial_number()
 
     def __repr__(self):
         return "<x509 %s>" % (self.name,)
-
-    @classmethod
-    def get_module_class(cls, host):
-        return OpenSSL
-
-
-class OpenSSL(X509):
-
-    @property
-    def issuer(self):
-        cert = self.file(self.name).content_string
-        return crypto.load_certificate(
-            crypto.FILETYPE_PEM, cert
-        ).get_issuer()
-
-    @property
-    def subject(self):
-        cert = self.file(self.name).content_string
-        return crypto.load_certificate(
-            crypto.FILETYPE_PEM, cert
-        ).get_subject()
-
-    @property
-    def enddate(self):
-        cert = self.file(self.name).content_string
-        return parser.parse(crypto.load_certificate(
-            crypto.FILETYPE_PEM, cert
-        ).get_notAfter())
-
-    @property
-    def serial(self):
-        cert = self.file(self.name).content_string
-        return crypto.load_certificate(
-            crypto.FILETYPE_PEM, cert
-        ).get_serial_number()
