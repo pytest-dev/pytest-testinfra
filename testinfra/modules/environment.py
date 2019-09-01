@@ -31,7 +31,7 @@ class Environment(InstanceModule):
 
     def __call__(self):
         ret_val = dict(
-            i.split('=', 1) for i in self.check_output('env -0').splitlines()
+            i.split('=', 1) for i in self.check_output('env -0').split('\x00')
         )
         return ret_val
 
