@@ -140,7 +140,7 @@ class LinuxBlockDevice(BlockDevice):
         if len(output) < 2:
             raise RuntimeError("No data from %s" % self.device)
         if output[0].split() != HEADER:
-            raise RuntimeError('Unknown output of blkid: %s' % output[0])
+            raise RuntimeError('Unknown output of blockdev: %s' % output[0])
         fields = output[1].split()
         return {
             'rw_mode': str(fields[0]),
