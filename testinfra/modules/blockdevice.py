@@ -14,42 +14,23 @@
 from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
+from testinfra.utils import cached_property
 
 
 class BlockDevice(Module):
     """Information for block device.
 
        Should be used with sudo or under root.
+
+       If device is not a block device, RuntimeError is raised.
     """
+
+    def _data(self):
+        raise NotImplementedError
 
     def __init__(self, device):
         self.device = device
-        self._data_cache = None
         super(BlockDevice, self).__init__()
-
-    @classmethod
-    def _probe_device(cls, device):
-        raise NotImplementedError
-
-    @property
-    def is_block_device(self):
-        """Return True if the device is a proper block device.
-
-        Proper block device:
-        * is a device which can report block device size (GETSIZE64)
-        * size is greater than zero
-
-        >>> host.block_device("/dev/sda5").is_block_device
-        True
-
-        >>> host.block_device("/dev/console").is_block_device
-        False
-
-        """
-        is_proper = self._data['is_block_device'] and \
-            self._data['size'] > 0
-
-        return is_proper
 
     @property
     def is_partition(self):
@@ -61,54 +42,36 @@ class BlockDevice(Module):
         >>> host.block_device("/dev/sda").is_partition
         False
 
+
         """
-        return self.is_block_device and self._data['start_sector'] > 0
+        return self._data['start_sector'] > 0
 
     @property
     def size(self):
         """Return size if the device in bytes.
 
-           Return None if device is not a block device.
-
         >>> host.block_device("/dev/sda1").size
         512110190592
 
-        >>> print(host.block_device("/dev/console").size)
-        None
-
         """
-        if not self.is_block_device:
-            return None
         return self._data['size']
 
     @property
     def sector_size(self):
-        """Return sector size for the device in bytes or None.
+        """Return sector size for the device in bytes.
 
         >>> host.block_device("/dev/sda1").sector_size
         512
-
-        >>> print(host.block_device("/dev/console").sector_size)
-        None
-
         """
-        if not self.is_block_device:
-            return None
         return self._data['sector_size']
 
     @property
     def block_size(self):
-        """Return block size for the device in bytes or None.
+        """Return block size for the device in bytes.
 
         >>> host.block_device("/dev/sda").block_size
         4096
-
-        >>> print(host.block_device("/dev/console").block_size)
-        None
-
         """
-        if not self.is_block_device:
-            return None
         return self._data['block_size']
 
     @property
@@ -117,38 +80,25 @@ class BlockDevice(Module):
 
            Usually the value is zero for full devices and is non-zero
            for partitions.
-           Return None if device is not a block device.
 
         >>> host.block_device("/dev/sda1").start_sector
         2048
 
         >>> host.block_device("/dev/md0").start_sector
         0
-
-        >>> print(host.block_device("/dev/console").start_sector)
-        None
-
         """
-        if not self.is_block_device:
-            return None
         return self._data['sector_size']
 
     @property
     def is_writable(self):
-        """Return True if device is writable (have no RO status), or None.
+        """Return True if device is writable (have no RO status)
 
         >>> host.block_device("/dev/sda").is_writable
         True
 
         >>> host.block_device("/dev/loop1").is_writable
         False
-
-        >>> host.block_device("/dev/console").is_writable
-        None
-
         """
-        if not self.is_block_device:
-            return None
         mode = self._data['rw_mode']
         if mode == 'rw':
             return True
@@ -158,30 +108,19 @@ class BlockDevice(Module):
 
     @property
     def ra(self):
-        """Return Read Ahead for the device in 512-bytes sectors or None.
+        """Return Read Ahead for the device in 512-bytes sectors.
 
         >>> host.block_device("/dev/sda").ra
         256
-
-        >>> print(host.block_device("/dev/console").ra)
-        None
         """
-        if not self.is_block_device:
-            return None
         return self._data['read_ahead']
-
-    @property
-    def _data(self):
-        if self._data_cache is None:
-            self._data_cache = self._probe_device(self.device)
-        return self._data_cache
 
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == 'linux':
             return LinuxBlockDevice
         # if host.system_info.type.endswith("bsd"):
-        #     return BSDlockDevice
+        #     return BSDlockDevice  # please, implement this
         raise NotImplementedError
 
     def __repr__(self):
@@ -190,27 +129,20 @@ class BlockDevice(Module):
 
 class LinuxBlockDevice(BlockDevice):
 
-    @classmethod
-    def _probe_device(cls, device):
+    @cached_property
+    def _data(self):
         HEADER = ['RO', 'RA', 'SSZ', 'BSZ', 'StartSec', 'Size', 'Device']
         COMMAND = 'blockdev  --report %s'
-        run = cls(None).run
-        blockdev = run(COMMAND % device)
-        if blockdev.rc != 0:
-            return {
-                'is_block_device': False,
-                'rw_mode': None,
-                'read_ahead': None,
-                'sector_size': None,
-                'block_size': None,
-                'start_sector': None,
-                'size': None
-            }
+        blockdev = self.run(COMMAND % self.device)
+        if blockdev.rc != 0 or len(blockdev.stderr) > 0:
+            raise RuntimeError("Failed to gather data: %s" % blockdev.stderr)
         output = blockdev.stdout.splitlines()
-        assert output[0].split() == HEADER, 'Unknown output of blkid'
+        if len(output) < 2:
+            raise RuntimeError("No data from %s" % self.device)
+        if output[0].split() != HEADER:
+            raise RuntimeError('Unknown output of blkid: %s' % output[0])
         fields = output[1].split()
         return {
-            'is_block_device': True,
             'rw_mode': str(fields[0]),
             'read_ahead': int(fields[1]),
             'sector_size': int(fields[2]),
