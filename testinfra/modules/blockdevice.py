@@ -131,15 +131,15 @@ class LinuxBlockDevice(BlockDevice):
 
     @cached_property
     def _data(self):
-        HEADER = ['RO', 'RA', 'SSZ', 'BSZ', 'StartSec', 'Size', 'Device']
-        COMMAND = 'blockdev  --report %s'
-        blockdev = self.run(COMMAND % self.device)
+        header = ['RO', 'RA', 'SSZ', 'BSZ', 'StartSec', 'Size', 'Device']
+        command = 'blockdev  --report %s'
+        blockdev = self.run(command % self.device)
         if blockdev.rc != 0 or len(blockdev.stderr) > 0:
             raise RuntimeError("Failed to gather data: %s" % blockdev.stderr)
         output = blockdev.stdout.splitlines()
         if len(output) < 2:
             raise RuntimeError("No data from %s" % self.device)
-        if output[0].split() != HEADER:
+        if output[0].split() != header:
             raise RuntimeError('Unknown output of blockdev: %s' % output[0])
         fields = output[1].split()
         return {
