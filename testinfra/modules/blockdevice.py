@@ -85,10 +85,10 @@ class BlockDevice(Module):
     def sector_size(self):
         """Return sector size for the device in bytes or None.
 
-        >>> host.block_device("/dev/sda1").sector_szie
+        >>> host.block_device("/dev/sda1").sector_size
         512
 
-        >>> print(host.block_device("/dev/console").sector_szie)
+        >>> print(host.block_device("/dev/console").sector_size)
         None
 
         """
@@ -100,7 +100,7 @@ class BlockDevice(Module):
     def block_size(self):
         """Return block size for the device in bytes or None.
 
-        >>> host.block_device("/dev/sda").block_szie
+        >>> host.block_device("/dev/sda").block_size
         4096
 
         >>> print(host.block_device("/dev/console").block_size)
