@@ -119,8 +119,6 @@ class BlockDevice(Module):
     def get_module_class(cls, host):
         if host.system_info.type == 'linux':
             return LinuxBlockDevice
-        # if host.system_info.type.endswith("bsd"):
-        #     return BSDlockDevice  # please, implement this
         raise NotImplementedError
 
     def __repr__(self):
