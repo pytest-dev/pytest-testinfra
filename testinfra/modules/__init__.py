@@ -39,6 +39,7 @@ modules = {
     'sysctl': 'sysctl:Sysctl',
     'system_info': 'systeminfo:SystemInfo',
     'user': 'user:User',
+    'block_device': 'blockdevice:BlockDevice',
 }
 
 
