@@ -88,6 +88,14 @@ def pytest_addoption(parser):
         help="Ansible inventory file",
     )
     group.addoption(
+        "--force-ansible",
+        action="store_true",
+        dest="force_ansible",
+        help=(
+            'Force use of ansible connection backend only (slower but all '
+            'ansible connection options are handled)')
+    )
+    group.addoption(
         "--nagios",
         action="store_true",
         dest="nagios",
@@ -111,6 +119,7 @@ def pytest_generate_tests(metafunc):
             sudo=metafunc.config.option.sudo,
             sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
+            force_ansible=metafunc.config.option.force_ansible,
         )
         params = sorted(params, key=lambda x: x.backend.get_pytest_id())
         ids = [e.backend.get_pytest_id() for e in params]
