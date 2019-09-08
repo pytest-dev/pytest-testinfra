@@ -284,8 +284,15 @@ def test_ansible_no_host():
     with tempfile.NamedTemporaryFile() as f:
         # empty or no inventory should not return any hosts except for
         # localhost
-        assert AnsibleRunner(f.name).get_hosts() == []
-        assert AnsibleRunner(f.name).get_hosts('local*') == []
+        nohost = (
+            'No inventory was parsed (missing file ?), '
+            'only implicit localhost is available')
+        with pytest.raises(RuntimeError) as exc:
+            assert AnsibleRunner(f.name).get_hosts() == []
+        assert str(exc.value) == nohost
+        with pytest.raises(RuntimeError) as exc:
+            assert AnsibleRunner(f.name).get_hosts('local*') == []
+        assert str(exc.value) == nohost
         assert AnsibleRunner(f.name).get_hosts('localhost') == ['localhost']
 
 

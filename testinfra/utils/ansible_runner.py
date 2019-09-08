@@ -63,7 +63,9 @@ def get_ansible_inventory(config, inventory_file):
 def get_ansible_host(config, inventory, host, ssh_config=None,
                      ssh_identity_file=None):
     if is_empty_inventory(inventory):
-        return testinfra.get_host('local://')
+        if host == 'localhost':
+            return testinfra.get_host('local://')
+        return None
     hostvars = inventory['_meta'].get('hostvars', {}).get(host, {})
     connection = hostvars.get('ansible_connection', 'ssh')
     if connection not in (
@@ -139,6 +141,10 @@ class AnsibleRunner(object):
             # empty inventory should not return any hosts except for localhost
             if pattern == 'localhost':
                 result.add('localhost')
+            else:
+                raise RuntimeError(
+                    'No inventory was parsed (missing file ?), '
+                    'only implicit localhost is available')
         else:
             for group in inventory:
                 groupmatch = fnmatch.fnmatch(group, pattern)
