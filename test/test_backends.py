@@ -273,6 +273,30 @@ def test_ansible_get_host(hostname, kwargs, inventory, expected):
             assert operator.attrgetter(attr)(backend) == value
 
 
+@pytest.mark.parametrize('inventory,expected', [
+    (b'host', (
+        'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
+    # avoid interference between our ssh backend and ansible_ssh_extra_args
+    (b'host ansible_ssh_extra_args="-o ConnectTimeout=5 -o ControlMaster=auto '
+     b'-o ControlPersist=10s"', (
+        'ssh -o ConnectTimeout=5 -o ControlMaster=auto -o '
+        'ControlPersist=10s host true')),
+    # escape %
+    (b'host ansible_ssh_extra_args="-o ControlPath ~/.ssh/ansible/cp/%r@%h-%p"', (  # noqa
+        'ssh -o ControlPath ~/.ssh/ansible/cp/%r@%h-%p -o ConnectTimeout=10 '
+        '-o ControlMaster=auto -o ControlPersist=60s host true')),
+])
+def test_ansible_ssh_command(inventory, expected):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(inventory + b'\n')
+        f.flush()
+        backend = AnsibleRunner(f.name).get_host('host').backend
+        cmd, cmd_args = backend._build_ssh_command('true')
+        command = backend.quote(' '.join(cmd), *cmd_args)
+        assert command == expected
+
+
 def test_ansible_no_host():
     with tempfile.NamedTemporaryFile() as f:
         f.write(b'host\n')
