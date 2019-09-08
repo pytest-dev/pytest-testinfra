@@ -2,6 +2,15 @@
 Changelog
 =========
 
+3.2.0
+=====
+
+* New module "environment" for getting remote environment variables
+* New module "block_device" exposing block device informations
+* Add a global flag --force-ansible to the command line
+* Raise an error in case of missing ansible inventory file
+* Fix an escape issue with ansible ssh args set inventory or configuration file
+
 3.1.0
 =====
 
