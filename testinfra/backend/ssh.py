@@ -40,7 +40,7 @@ class SshBackend(base.BaseBackend):
         cmd = ["ssh"]
         cmd_args = []
         if self.ssh_extra_args:
-            cmd += [self.ssh_extra_args]
+            cmd.append(self.ssh_extra_args.replace('%', '%%'))
         if self.ssh_config:
             cmd.append("-F %s")
             cmd_args.append(self.ssh_config)
@@ -53,8 +53,11 @@ class SshBackend(base.BaseBackend):
         if self.ssh_identity_file:
             cmd.append("-i %s")
             cmd_args.append(self.ssh_identity_file)
-        cmd.append("-o ConnectTimeout={}".format(self.timeout))
-        if self.controlpersist:
+        if 'connecttimeout' not in (self.ssh_extra_args or '').lower():
+            cmd.append("-o ConnectTimeout={}".format(self.timeout))
+        if self.controlpersist and (
+            'controlmaster' not in (self.ssh_extra_args or '').lower()
+        ):
             cmd.append("-o ControlMaster=auto -o ControlPersist=%ds" % (
                 self.controlpersist))
         cmd.append("%s %s")
