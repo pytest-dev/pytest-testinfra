@@ -80,7 +80,7 @@ ansible
 
 The ansible backend is able to parse ansible inventories to get host connection details.
 For local, ssh, paramiko or docker connections it will use the equivalent
-testinfra connection backend, unless `force_ansible=True`.
+testinfra connection backend, unless `force_ansible=True` (or ``--force-ansible``) is set.
 
 For other connections types or when `force_ansible=True`, testinfra will run
 all commands through ansible, which is substantially slower than using native
@@ -88,9 +88,10 @@ connections backends.
 
 Examples::
 
-    $ py.test --hosts=all # tests all inventory hosts
+    $ py.test --hosts='ansible://all' # tests all inventory hosts
     $ py.test --hosts='ansible://host1,ansible://host2'
     $ py.test --hosts='ansible://web*'
+    $ py.test --force-ansible --hosts='ansible://all'
     $ py.test --hosts='ansible://host?force_ansible=True'
 
 kubectl
