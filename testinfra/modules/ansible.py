@@ -76,6 +76,7 @@ class Ansible(InstanceModule):
     '0640'
 
     """
+    # pylint: disable=self-assigning-variable
     AnsibleException = AnsibleException
 
     @need_ansible
