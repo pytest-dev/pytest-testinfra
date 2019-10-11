@@ -55,6 +55,10 @@ class Host(object):
         '-rw-r--r-- 1 root root 1790 Feb 11 00:28 /etc/passwd\\n'
         >>> cmd.stderr
         ''
+        >>> cmd.succeeded
+        True
+        >>> cmd.failed
+        False
 
 
         Good practice: always use shell arguments quoting to avoid shell

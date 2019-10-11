@@ -31,6 +31,10 @@ host
 
        :class:`testinfra.modules.docker.Docker` class
 
+    .. attribute:: environment
+
+       :class:`testinfra.modules.environment.Environment` class
+
     .. attribute:: file
 
        :class:`testinfra.modules.file.File` class

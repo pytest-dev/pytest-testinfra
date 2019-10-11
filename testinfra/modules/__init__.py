@@ -20,6 +20,7 @@ modules = {
     'ansible': 'ansible:Ansible',
     'command': 'command:Command',
     'docker': 'docker:Docker',
+    'environment': 'environment:Environment',
     'file': 'file:File',
     'group': 'group:Group',
     'interface': 'interface:Interface',
@@ -38,6 +39,7 @@ modules = {
     'sysctl': 'sysctl:Sysctl',
     'system_info': 'systeminfo:SystemInfo',
     'user': 'user:User',
+    'block_device': 'blockdevice:BlockDevice',
 }
 
 

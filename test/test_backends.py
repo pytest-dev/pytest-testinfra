@@ -63,6 +63,19 @@ def test_command(host):
     assert host.check_output("true") == ""
     # test that quotting is correct
     assert host.run("echo a b | grep -q %s", "a c").rc == 1
+    out = host.run("echo out && echo err >&2 && exit 42")
+    assert out.rc == 42
+    if (
+        host.backend.get_connection_type() == "ansible"
+        and host.backend.force_ansible
+    ):
+        assert out.stdout_bytes == b'out'
+        assert out.stderr_bytes == b'err'
+    else:
+        assert out.stdout_bytes == b'out\n'
+        assert out.stderr_bytes == b'err\n'
+    out = host.run("commandthatdoesnotexists")
+    assert out.rc == 127
 
 
 @pytest.mark.testinfra_hosts(*HOSTS)
@@ -93,6 +106,19 @@ def test_encoding(host):
             "ls: impossible d'accéder à '/é': "
             "Aucun fichier ou dossier de ce type\n"
         )
+
+
+@pytest.mark.testinfra_hosts(
+    "ansible://debian_stretch?force_ansible=True")
+def test_ansible_any_error_fatal(host):
+    os.environ['ANSIBLE_ANY_ERRORS_FATAL'] = 'True'
+    try:
+        out = host.run("echo out && echo err >&2 && exit 42")
+        assert out.rc == 42
+        assert out.stdout == 'out'
+        assert out.stderr == 'err'
+    finally:
+        del os.environ['ANSIBLE_ANY_ERRORS_FATAL']
 
 
 @pytest.mark.testinfra_hosts(*(USER_HOSTS + SUDO_USER_HOSTS))
@@ -171,6 +197,7 @@ def test_ansible_get_variables():
             'group_names': ['ungrouped'],
             'groups': groups,
         }
+
 
 
 def test_ansible_get_variables_with_playbook():
@@ -269,21 +296,23 @@ def test_ansible_get_variables_with_playbook_arg():
             }
 
 
-@pytest.mark.parametrize('hostname,kwargs,inventory,expected', [
-    ('host', {}, b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
+
+
+@pytest.mark.parametrize('kwargs,inventory,expected', [
+    ({}, b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
         'NAME': 'local',
         'sudo': True,
         'sudo_user': 'u',
     }),
-    ('host', {}, b'host', {
+    ({}, b'host', {
         'NAME': 'ssh',
         'host.name': 'host',
     }),
-    ('host', {}, b'host ansible_connection=smart', {
+    ({}, b'host ansible_connection=smart', {
         'NAME': 'ssh',
         'host.name': 'host',
     }),
-    ('host', {}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
+    ({}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
         'NAME': 'ssh',
         'sudo': True,
         'sudo_user': 'u',
@@ -291,7 +320,7 @@ def test_ansible_get_variables_with_playbook_arg():
         'host.port': '2222',
         'ssh_identity_file': 'key',
     }),
-    ('host', {}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
+    ({}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
         'NAME': 'ssh',
         'sudo': True,
         'sudo_user': 'u',
@@ -299,34 +328,34 @@ def test_ansible_get_variables_with_playbook_arg():
         'host.port': '2222',
         'ssh_identity_file': 'key',
     }),
-    ('host', {}, b'host ansible_ssh_common_args="-o LogLevel=FATAL"', {
+    ({}, b'host ansible_ssh_common_args="-o LogLevel=FATAL"', {
         'NAME': 'ssh',
         'host.name': 'host',
         'ssh_extra_args': '-o LogLevel=FATAL',
     }),
-    ('host', {}, b'host ansible_ssh_extra_args="-o LogLevel=FATAL"', {
+    ({}, b'host ansible_ssh_extra_args="-o LogLevel=FATAL"', {
         'NAME': 'ssh',
         'host.name': 'host',
         'ssh_extra_args': '-o LogLevel=FATAL',
     }),
-    ('host', {}, b'host ansible_ssh_common_args="-o StrictHostKeyChecking=no" ansible_ssh_extra_args="-o LogLevel=FATAL"', {  # noqa
+    ({}, b'host ansible_ssh_common_args="-o StrictHostKeyChecking=no" ansible_ssh_extra_args="-o LogLevel=FATAL"', {  # noqa
         'NAME': 'ssh',
         'host.name': 'host',
         'ssh_extra_args': '-o StrictHostKeyChecking=no -o LogLevel=FATAL',
     }),
-    ('host', {}, b'host ansible_connection=docker', {
+    ({}, b'host ansible_connection=docker', {
         'NAME': 'docker',
         'name': 'host',
         'user': None,
     }),
-    ('host', {}, b'host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container', {  # noqa
+    ({}, b'host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container', {  # noqa
         'NAME': 'docker',
         'name': 'container',
         'user': 'z',
         'sudo': True,
         'sudo_user': 'u',
     }),
-    ('host', {'ssh_config': '/ssh_config', 'ssh_identity_file': '/id_ed25519'},
+    ({'ssh_config': '/ssh_config', 'ssh_identity_file': '/id_ed25519'},
         b'host', {
         'NAME': 'ssh',
         'host.name': 'host',
@@ -334,13 +363,37 @@ def test_ansible_get_variables_with_playbook_arg():
         'ssh_identity_file': '/id_ed25519',
     }),
 ])
-def test_ansible_get_host(hostname, kwargs, inventory, expected):
+def test_ansible_get_host(kwargs, inventory, expected):
     with tempfile.NamedTemporaryFile() as f:
         f.write(inventory + b'\n')
         f.flush()
-        backend = AnsibleRunner(f.name).get_host(hostname, **kwargs).backend
+        backend = AnsibleRunner(f.name).get_host('host', **kwargs).backend
         for attr, value in expected.items():
             assert operator.attrgetter(attr)(backend) == value
+
+
+@pytest.mark.parametrize('inventory,expected', [
+    (b'host', (
+        'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
+    # avoid interference between our ssh backend and ansible_ssh_extra_args
+    (b'host ansible_ssh_extra_args="-o ConnectTimeout=5 -o ControlMaster=auto '
+     b'-o ControlPersist=10s"', (
+        'ssh -o ConnectTimeout=5 -o ControlMaster=auto -o '
+        'ControlPersist=10s host true')),
+    # escape %
+    (b'host ansible_ssh_extra_args="-o ControlPath ~/.ssh/ansible/cp/%r@%h-%p"', (  # noqa
+        'ssh -o ControlPath ~/.ssh/ansible/cp/%r@%h-%p -o ConnectTimeout=10 '
+        '-o ControlMaster=auto -o ControlPersist=60s host true')),
+])
+def test_ansible_ssh_command(inventory, expected):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(inventory + b'\n')
+        f.flush()
+        backend = AnsibleRunner(f.name).get_host('host').backend
+        cmd, cmd_args = backend._build_ssh_command('true')
+        command = backend.quote(' '.join(cmd), *cmd_args)
+        assert command == expected
 
 
 def test_ansible_no_host():
@@ -354,8 +407,15 @@ def test_ansible_no_host():
     with tempfile.NamedTemporaryFile() as f:
         # empty or no inventory should not return any hosts except for
         # localhost
-        assert AnsibleRunner(f.name).get_hosts() == []
-        assert AnsibleRunner(f.name).get_hosts('local*') == []
+        nohost = (
+            'No inventory was parsed (missing file ?), '
+            'only implicit localhost is available')
+        with pytest.raises(RuntimeError) as exc:
+            assert AnsibleRunner(f.name).get_hosts() == []
+        assert str(exc.value) == nohost
+        with pytest.raises(RuntimeError) as exc:
+            assert AnsibleRunner(f.name).get_hosts('local*') == []
+        assert str(exc.value) == nohost
         assert AnsibleRunner(f.name).get_hosts('localhost') == ['localhost']
 
 

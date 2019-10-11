@@ -124,6 +124,8 @@ def test_ssh_service(host, docker_image):
                 break
             time.sleep(1)
         else:
+            if docker_image == "archlinux":
+                raise pytest.skip('FIXME: flapping test')
             raise AssertionError('ssh is not running')
 
     if docker_image == "ubuntu_xenial":
@@ -483,6 +485,10 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+
+
+def test_environment_home(host):
+    assert host.environment().get('HOME') == '/root'
 
 
 def test_iptables(host):
