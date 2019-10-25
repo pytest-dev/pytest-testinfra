@@ -71,8 +71,21 @@ class Host(object):
             stderr=(
               'ls: cannot access /;echo inject: No such file or directory\\n'),
             command="ls -l '/;echo inject'")
+
+
+        You can use the 'check' parameter to fail with an AssertionError
+        when a command fails
+
+
+        >>> host.run("false", check=True)
+        AssertionError("Command 'false' returned non-zero exit status 1.")
         """
-        return self.backend.run(command, *args, **kwargs)
+        result = self.backend.run(command, *args, **kwargs)
+        if "check" in kwargs:
+            assert result.succeeded, (
+                "Command '%s' returned non-zero exit status %d." %
+                (command, result.rc))
+        return result
 
     def run_expect(self, expected, command, *args, **kwargs):
         """Run command and check it return an expected exit status

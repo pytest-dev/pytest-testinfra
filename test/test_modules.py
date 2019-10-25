@@ -477,6 +477,13 @@ def test_command_execution(host):
     assert host.run("true").succeeded
 
 
+def test_run_check(host):
+    with pytest.raises(AssertionError) as err:
+        host.run("false", check=True)
+        expected_err = "Command 'false' returned non-zero exit status 1"
+        assert expected_err in str(err.value)
+
+
 def test_pip_package(host):
     assert host.pip_package.get_packages()['pip']['version'] == '9.0.1'
     pytest = host.pip_package.get_packages(pip_path='/v/bin/pip')['pytest']
