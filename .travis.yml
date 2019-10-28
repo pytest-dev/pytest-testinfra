@@ -4,6 +4,7 @@ services:
 language: python
 python: 3.5
 install:
+  - sudo modprobe ip6table_filter iptable_filter
   - pip install tox
 jobs:
   include:
