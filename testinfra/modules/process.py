@@ -132,7 +132,7 @@ class PosixProcess(Process):
         attributes -= set(["lstart", "args"])
         attributes = sorted(attributes)
         attributes.extend(["lstart", "args"])
-        arg = ",".join(attributes)
+        arg = ":50,".join(attributes)
 
         procs = []
         # skip first line (header)
