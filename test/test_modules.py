@@ -161,6 +161,14 @@ def test_facter(host):
     }
 
 
+def test_limits(host):
+    assert host.limits("stack") == 8192
+    assert host.limits("stack", "soft") == 8192
+    assert host.limits("stack", "hard") == "unlimited"
+    assert host.limits("stack", "heavy") == 8192
+    assert host.limits("not_existing_limit") == "unlimited"
+
+
 def test_sysctl(host):
     assert host.sysctl("kernel.hostname") == host.check_output("hostname")
     assert isinstance(host.sysctl("kernel.panic"), int)

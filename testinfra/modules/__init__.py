@@ -36,6 +36,7 @@ modules = {
     'socket': 'socket:Socket',
     'sudo': 'sudo:Sudo',
     'supervisor': 'supervisor:Supervisor',
+    'limits': 'limits:Limits',
     'sysctl': 'sysctl:Sysctl',
     'system_info': 'systeminfo:SystemInfo',
     'user': 'user:User',

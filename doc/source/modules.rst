@@ -51,6 +51,10 @@ host
 
        :class:`testinfra.modules.iptables.Iptables` class
 
+    .. attribute:: limits
+
+       :class:`testinfra.modules.limits.Limits` class
+
     .. attribute:: mount_point
 
        :class:`testinfra.modules.mountpoint.MountPoint` class
@@ -163,6 +167,13 @@ Iptables
 .. autoclass:: testinfra.modules.iptables.Iptables
    :members:
    :undoc-members:
+
+
+Limits
+~~~~~~
+
+.. autoclass:: testinfra.modules.limits.Limits(name, limit_type="soft")
+   :members:
 
 
 MountPoint
