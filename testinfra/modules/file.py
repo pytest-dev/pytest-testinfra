@@ -169,6 +169,18 @@ class File(Module):
         """Return size of file in bytes"""
         raise NotImplementedError
 
+    @property
+    def list_dir(self):
+        """Return list of items under the directory
+
+        >>> host.file("/tmp").list_dir
+        ['foo_file', 'bar_dir']
+        """
+        out = self.run_test("ls -- %s", self.path)
+        if out.rc != 0:
+            raise RuntimeError("Unexpected output %s" % (out,))
+        return out.stdout.splitlines()
+
     def __repr__(self):
         return "<file %s>" % (self.path,)
 
