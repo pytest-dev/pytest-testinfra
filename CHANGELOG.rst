@@ -2,6 +2,11 @@
 Changelog
 =========
 
+3.2.1
+=====
+
+* Fix Process module when working with long strings (username, ...) #505
+
 3.2.0
 =====
 
