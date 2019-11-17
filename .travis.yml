@@ -26,7 +26,7 @@ jobs:
       if: repo == "philpep/testinfra" AND tag IS present
       deploy:
         provider: pypi
-        user: "__token__"
+        username: "__token__"
         on:
           tags: true
         distributions: "sdist bdist_wheel"
