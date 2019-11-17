@@ -79,12 +79,17 @@ ansible
 ~~~~~~~
 
 The ansible backend is able to parse ansible inventories to get host connection details.
-For local, ssh, paramiko or docker connections it will use the equivalent
-testinfra connection backend, unless `force_ansible=True` (or ``--force-ansible``) is set.
+For local, ssh, paramiko or docker connections(based on `ansible_connection` value) 
+it will use the equivalent testinfra connection backend, unless `force_ansible=True` 
+(or ``--force-ansible``) is set.
 
 For other connections types or when `force_ansible=True`, testinfra will run
 all commands through ansible, which is substantially slower than using native
 connections backends.
+
+If ssh identity file is not provided via `--ssh-identity-file` flag, testinfra will try 
+to use `ansible_ssh_private_key_file`, `ansible_private_key_file` and, finally, 
+`ansible_user` with `ansible_ssh_pass` variables, both should be specified.
 
 Examples::
 

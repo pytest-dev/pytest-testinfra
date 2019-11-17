@@ -277,6 +277,20 @@ def test_ansible_get_host(kwargs, inventory, expected):
     (b'host', (
         'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
         '-o ControlPersist=60s host true')),
+    # password passing from inventory: user is required
+    (b'host ansible_user=user ansible_ssh_pass=password', (
+        'sshpass -p password ssh -o User=user '
+        '-o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
+    # identity_file has highest priority
+    (b'host ansible_user=user ansible_ssh_pass=password ansible_ssh_private_key_file=some_file', (  # noqa
+        'ssh -o User=user -i some_file '
+        '-o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
+    # password without usr won't work
+    (b'host ansible_ssh_pass=password', (
+        'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
     # avoid interference between our ssh backend and ansible_ssh_extra_args
     (b'host ansible_ssh_extra_args="-o ConnectTimeout=5 -o ControlMaster=auto '
      b'-o ControlPersist=10s"', (

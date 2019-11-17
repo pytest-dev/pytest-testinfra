@@ -80,6 +80,7 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
     }.get(connection, connection)
     testinfra_host = hostvars.get('ansible_host', host)
     user = hostvars.get('ansible_user')
+    password = hostvars.get('ansible_ssh_pass')
     port = hostvars.get('ansible_port')
     kwargs = {}
     if hostvars.get('ansible_become', False):
@@ -103,8 +104,13 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
     ).strip()
 
     spec = '{}://'.format(connection)
-    if user:
+
+    # Fallback to user:pasword auth when identity file is not used
+    if user and password and not kwargs.get('ssh_identity_file'):
+        spec += '{}:{}@'.format(user, password)
+    elif user:
         spec += '{}@'.format(user)
+
     if check_ip_address(testinfra_host) == 6:
         spec += '[' + testinfra_host + ']'
     else:
