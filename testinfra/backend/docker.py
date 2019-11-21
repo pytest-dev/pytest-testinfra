@@ -22,16 +22,18 @@ class DockerBackend(base.BaseBackend):
 
     def __init__(self, name, *args, **kwargs):
         self.name, self.user = self.parse_containerspec(name)
+        self.shell = kwargs.get('shell', '/bin/sh -c')
         super(DockerBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)
         if self.user is not None:
             out = self.run_local(
-                "docker exec -u %s %s /bin/sh -c %s",
+                "docker exec -u %s %s {shell} %s".format(shell=self.shell),
                 self.user, self.name, cmd)
         else:
             out = self.run_local(
-                "docker exec %s /bin/sh -c %s", self.name, cmd)
+                "docker exec %s {shell} %s".format(shell=self.shell),
+                self.name, cmd)
         out.command = self.encode(cmd)
         return out

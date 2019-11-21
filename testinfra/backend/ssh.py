@@ -97,9 +97,14 @@ class SafeSshBackend(SshBackend):
     """
     NAME = "safe-ssh"
 
+    def __init__(self, hostspec, *args, **kwargs):
+        self.shell = kwargs.get('shell', 'sh -c')
+        super(SafeSshBackend, self).__init__(hostspec, *args, **kwargs)
+
     def run(self, command, *args, **kwargs):
         orig_command = self.get_command(command, *args)
-        orig_command = self.get_command('sh -c %s', orig_command)
+        shell_command = '{shell} %s'.format(shell=self.shell)
+        orig_command = self.get_command(shell_command, orig_command)
 
         out = self.run_ssh((
             '''of=$(mktemp)&&ef=$(mktemp)&&%s >$of 2>$ef; r=$?;'''

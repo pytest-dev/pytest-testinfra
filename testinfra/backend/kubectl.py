@@ -25,6 +25,7 @@ class KubectlBackend(base.BaseBackend):
         self.container = kwargs.get('container')
         self.namespace = kwargs.get('namespace')
         self.kubeconfig = kwargs.get('kubeconfig')
+        self.shell = kwargs.get('shell', '/bin/sh -c')
         super(KubectlBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
@@ -42,7 +43,7 @@ class KubectlBackend(base.BaseBackend):
         if self.container is not None:
             kcmd += '-c %s '
             kcmd_args.append(self.container)
-        kcmd += 'exec %s -- /bin/sh -c %s'
+        kcmd += 'exec %s -- {shell} %s'.format(shell=self.shell)
         kcmd_args.extend([self.name, cmd])
         out = self.run_local(kcmd, *kcmd_args)
         return out
