@@ -115,6 +115,29 @@ namespace::
     # or when working with multiple configuration with the "kubeconfig" option
     $ py.test --hosts='kubectl://somepod-123?kubeconfig=/path/kubeconfig,kubectl://otherpod-123?kubeconfig=/other/kubeconfig'
 
+openshift
+~~~~~~~~~
+
+The openshift backend can be used to test containers running in OpenShift.  It
+uses the `oc exec <https://docs.openshift.com/container-platform/4.2/nodes/containers/nodes-containers-remote-commands.html>`_ command and
+support connecting to a given container name within a pod and using a given
+namespace::
+
+    # will use the default namespace and default container
+    $ py.test --hosts='openshift://mypod-a1b2c3'
+    # specify container name and namespace
+    $ py.test --hosts='openshift://somepod-2536ab?container=nginx&namespace=web'
+    # you can specify kubeconfig either from KUBECONFIG environment variable
+    # or when working with multiple configuration with the "kubeconfig" option
+    $ py.test --hosts='openshift://somepod-123?kubeconfig=/path/kubeconfig,openshift://otherpod-123?kubeconfig=/other/kubeconfig'
+
+Commands are executed in a shell via ``/bin/sh -c`` by default. This can be
+customized by passing a parameter:
+
+.. code-block:: python
+
+    host = testinfra.get_host("openshift://pod", shell="/bin/bash -l -c")
+
 winrm
 ~~~~~
 

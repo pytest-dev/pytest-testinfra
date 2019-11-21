@@ -410,6 +410,29 @@ def test_kubectl_hostspec(hostspec, pod, container, namespace, kubeconfig):
     assert backend.kubeconfig == kubeconfig
 
 
+@pytest.mark.parametrize('hostspec,pod,container,namespace,kubeconfig', [
+    ('openshift://pod', 'pod', None, None, None),
+    ('openshift://pod?namespace=n', 'pod', None, 'n', None),
+    ('openshift://pod?container=c&namespace=n', 'pod', 'c', 'n', None),
+    ('openshift://pod?namespace=n&kubeconfig=k', 'pod', None, 'n', 'k')
+])
+def test_openshift_hostspec(hostspec, pod, container, namespace, kubeconfig):
+    backend = testinfra.get_host(hostspec).backend
+    assert backend.name == pod
+    assert backend.container == container
+    assert backend.namespace == namespace
+    assert backend.kubeconfig == kubeconfig
+
+
+@pytest.mark.parametrize('kwargs,expected_shell', [
+    ({}, '/bin/sh -c'),
+    ({'shell': '/bin/bash -l -c'}, '/bin/bash -l -c')
+])
+def test_openshift_shell(kwargs, expected_shell):
+    backend = testinfra.get_host('openshift://pod', **kwargs).backend
+    assert backend.shell == expected_shell
+
+
 @pytest.mark.parametrize('arg_string,expected', [
     (
         'C:\\Users\\vagrant\\This Dir\\salt',
