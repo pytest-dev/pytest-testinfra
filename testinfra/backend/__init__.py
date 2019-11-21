@@ -29,6 +29,7 @@ BACKENDS = {
     'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
     'winrm': 'testinfra.backend.winrm.WinRMBackend',
     'lxc': 'testinfra.backend.lxc.LxcBackend',
+    'openshift': 'testinfra.backend.openshift.OpenShiftBackend',
 }
 
 
