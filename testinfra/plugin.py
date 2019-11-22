@@ -211,7 +211,7 @@ def pytest_configure(config):
 
 
 @pytest.mark.trylast
-def pytest_unconfigure(config):
-    reporter = config.pluginmanager.getplugin('nagiosreporter')
+def pytest_sessionfinish(session, exitstatus):
+    reporter = session.config.pluginmanager.getplugin('nagiosreporter')
     if reporter:
-        sys.exit(reporter.report())
+        session.exitstatus = reporter.report()
