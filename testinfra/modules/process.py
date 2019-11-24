@@ -126,10 +126,10 @@ class PosixProcess(Process):
 
     def _get_processes(self, **filters):
         cmd = "ps -Aww -o %s"
-        attributes = set(["pid", "comm", "pcpu", "pmem"]) | set(filters.keys())
+        attributes = {"pid", "comm", "pcpu", "pmem"} | set(filters.keys())
 
         # Theses attributes contains spaces. Put them at the end of the list
-        attributes -= set(["lstart", "args"])
+        attributes -= {"lstart", "args"}
         attributes = sorted(attributes)
         attributes.extend(["lstart", "args"])
         arg = ":50,".join(attributes)
@@ -161,10 +161,10 @@ class BusyboxProcess(Process):
 
     def _get_processes(self, **filters):
         cmd = "ps -A -o %s"
-        attributes = set(["pid", "comm", "time"]) | set(filters.keys())
+        attributes = {"pid", "comm", "time"} | set(filters.keys())
 
         # Theses attributes contains spaces. Put them at the end of the list
-        attributes -= set(["args"])
+        attributes -= {"args"}
         attributes = sorted(attributes)
         attributes.extend(["args"])
         arg = ",".join(attributes)
