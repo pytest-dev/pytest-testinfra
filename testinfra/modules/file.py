@@ -170,10 +170,10 @@ class File(Module):
         raise NotImplementedError
 
     @property
-    def list_dir(self):
+    def listdir(self):
         """Return list of items under the directory
 
-        >>> host.file("/tmp").list_dir
+        >>> host.file("/tmp").listdir
         ['foo_file', 'bar_dir']
         """
         out = self.run_test("ls -- %s", self.path)
