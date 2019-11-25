@@ -176,7 +176,7 @@ class File(Module):
         >>> host.file("/tmp").listdir
         ['foo_file', 'bar_dir']
         """
-        out = self.run_test("ls -- %s", self.path)
+        out = self.run_test("ls -1 -q -- %s", self.path)
         if out.rc != 0:
             raise RuntimeError("Unexpected output %s" % (out,))
         return out.stdout.splitlines()

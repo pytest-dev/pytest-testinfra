@@ -276,10 +276,12 @@ def test_local_command(host):
 
 def test_file(host):
     host.check_output("mkdir -p /d && printf foo > /d/f && chmod 600 /d/f")
+    host.check_output('touch "/d/f\nl"')
+    host.check_output('touch "/d/f s"')
     d = host.file("/d")
     assert d.is_directory
     assert not d.is_file
-    assert d.listdir == ["f"]
+    assert d.listdir == ["f", "f?l", "f s"]
     f = host.file("/d/f")
     assert f.exists
     assert f.is_file
