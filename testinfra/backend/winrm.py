@@ -11,12 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 import re
-import six
-import string
 from testinfra.backend import base
 
 try:
@@ -28,12 +23,9 @@ except ImportError:
 
 import winrm.protocol
 
-if six.PY3:
-    # pylint: disable=no-member
-    _find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII)
-    # pylint: enable=no-member
-else:
-    _safechars = frozenset(string.ascii_letters + string.digits + '@%_-+=:,./')
+# pylint: disable=no-member
+_find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII)
+# pylint: enable=no-member
 
 
 # (gtmanfred) This is copied from pipes.quote, but changed to use double quotes
@@ -42,17 +34,8 @@ def _quote(s):
     """Return a shell-escaped version of the string *s*."""
     if not s:
         return "''"
-    if six.PY3:
-        if _find_unsafe.search(s) is None:
-            return s
-    else:
-        for c in s:
-            if c not in _safechars:
-                break
-        else:
-            if not s:
-                return "''"
-            return s
+    if _find_unsafe.search(s) is None:
+        return s
 
     # use single quotes, and put single quotes into double quotes
     # the string $'b is then quoted as '$'"'"'b'

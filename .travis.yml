@@ -18,7 +18,7 @@ jobs:
     - script: tox -e sphinxdoc
       name: sphinxdoc
     - stage: test
-      script: tox -e py27,py3
+      script: tox -e py3
       name: python tests
     - stage: deploy
       name: deploy to pypi

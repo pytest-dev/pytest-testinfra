@@ -11,10 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
 import datetime
-import six
 
 from testinfra.modules.base import Module
 
@@ -175,7 +172,7 @@ class File(Module):
     def __eq__(self, other):
         if isinstance(other, File):
             return self.path == other.path
-        if isinstance(other, six.string_types):
+        if isinstance(other, str):
             return self.path == other
         return False
 

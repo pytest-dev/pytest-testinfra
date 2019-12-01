@@ -11,16 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
 import collections
 import locale
 import logging
 import pipes
 import subprocess
-
-import testinfra.modules
-import testinfra.utils
+import urllib.parse
 
 logger = logging.getLogger("testinfra")
 
@@ -229,11 +225,11 @@ class BaseBackend(object):
         else:
             if ':' in name:
                 name, port = name.split(':', 1)
-        name = testinfra.utils.urlunquote(name)
+        name = urllib.parse.unquote(name)
         if user is not None:
-            user = testinfra.utils.urlunquote(user)
+            user = urllib.parse.unquote(user)
         if password is not None:
-            password = testinfra.utils.urlunquote(password)
+            password = urllib.parse.unquote(password)
         return HostSpec(name, port, user, password)
 
     @staticmethod

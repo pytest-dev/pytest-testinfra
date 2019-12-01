@@ -12,8 +12,6 @@
 # limitations under the License.
 # pylint: disable=redefined-outer-name
 
-from __future__ import unicode_literals
-
 import logging
 import shutil
 import sys
@@ -21,7 +19,6 @@ import tempfile
 import time
 
 import pytest
-import six
 import testinfra
 import testinfra.host
 import testinfra.modules
@@ -169,26 +166,18 @@ class NagiosReporter(object):
         return ret
 
 
-if six.PY2:
-    class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
+class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
 
-        def __init__(self, encoding=None, *args, **kwargs):
-            # tempfile.SpooledTemporaryFile is not new style class
-            tempfile.SpooledTemporaryFile.__init__(self, *args, **kwargs)
-            self.encoding = encoding
-else:
-    class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
+    def __init__(self, *args, **kwargs):
+        self._out_encoding = kwargs['encoding']
+        super().__init__(*args, **kwargs)
 
-        def __init__(self, *args, **kwargs):
-            self._out_encoding = kwargs['encoding']
-            super().__init__(*args, **kwargs)
-
-        def write(self, s):
-            # avoid traceback in py.io.terminalwriter.write_out
-            # TypeError: a bytes-like object is required, not 'str'
-            if isinstance(s, str):
-                s = s.encode(self._out_encoding)
-            return super().write(s)
+    def write(self, s):
+        # avoid traceback in py.io.terminalwriter.write_out
+        # TypeError: a bytes-like object is required, not 'str'
+        if isinstance(s, str):
+            s = s.encode(self._out_encoding)
+        return super().write(s)
 
 
 @pytest.mark.trylast
