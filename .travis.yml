@@ -2,7 +2,7 @@ sudo: required
 services:
   - docker
 language: python
-python: 3.5
+python: 3.7
 install:
   - sudo modprobe ip6table_filter iptable_filter
   - pip install tox
