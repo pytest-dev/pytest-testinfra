@@ -11,20 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
-import contextlib
-import locale
-import re
-import shutil
-import tempfile
-
-import six
-from six.moves import urllib
-
-first_cap_re = re.compile('(.)([A-Z][a-z]+)')
-all_cap_re = re.compile('([a-z0-9])([A-Z])')
-
 
 class cached_property(object):
     """A cached property computed only once per instance
@@ -43,56 +29,3 @@ class cached_property(object):
             return self
         value = obj.__dict__[self.func.__name__] = self.func(obj)
         return value
-
-
-if six.PY2:
-    import socket
-
-    # An approximation of ipaddress function
-    def check_ip_address(value):
-        '''check_ip_address
-
-        Look at value and see if it looks like a plain ip address
-
-        Returns:
-
-          4 : ipv4 address
-          6 : ipv6 address
-          None: not an ip address
-        '''
-        try:
-            socket.inet_aton(value)
-            return 4
-        except socket.error:
-            pass
-        try:
-            socket.inet_pton(socket.AF_INET6, value)
-            return 6
-        except socket.error:
-            pass
-        return None
-
-else:
-    import ipaddress
-
-    def check_ip_address(value):
-        try:
-            return ipaddress.ip_address(value).version
-        except ValueError:
-            return None
-
-if six.PY2:
-    def urlunquote(s):
-        encoding = locale.getpreferredencoding()
-        return urllib.parse.unquote(s.encode(encoding)).decode(encoding)
-
-    @contextlib.contextmanager
-    def TemporaryDirectory():
-        d = tempfile.mkdtemp()
-        try:
-            yield d
-        finally:
-            shutil.rmtree(d)
-else:
-    urlunquote = urllib.parse.unquote
-    TemporaryDirectory = tempfile.TemporaryDirectory

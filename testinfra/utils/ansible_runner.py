@@ -11,19 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
+import configparser
 import fnmatch
+import ipaddress
 import json
 import os
+import tempfile
 
-from six.moves import configparser
 
 import testinfra
 from testinfra.utils import cached_property
-from testinfra.utils import check_ip_address
-from testinfra.utils import TemporaryDirectory
 
 
 __all__ = ['AnsibleRunner']
@@ -111,7 +108,11 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
     elif user:
         spec += '{}@'.format(user)
 
-    if check_ip_address(testinfra_host) == 6:
+    try:
+        version = ipaddress.ip_address(testinfra_host).version
+    except ValueError:
+        version = None
+    if version == 6:
         spec += '[' + testinfra_host + ']'
     else:
         spec += testinfra_host
@@ -213,7 +214,7 @@ class AnsibleRunner(object):
             cmd += ' --check'
         cmd += ' %s'
         args += [host]
-        with TemporaryDirectory() as d:
+        with tempfile.TemporaryDirectory() as d:
             args[0] = d
             out = local.run_expect([0, 2, 8], cmd, *args)
             files = os.listdir(d)
