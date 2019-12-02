@@ -25,6 +25,7 @@ class OpenShiftBackend(base.BaseBackend):
         self.container = kwargs.get('container')
         self.namespace = kwargs.get('namespace')
         self.kubeconfig = kwargs.get('kubeconfig')
+        self.shell = kwargs.get('shell', '/bin/sh -c')
         super(OpenShiftBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
@@ -42,7 +43,7 @@ class OpenShiftBackend(base.BaseBackend):
         if self.container is not None:
             oscmd += '-c %s '
             oscmd_args.append(self.container)
-        oscmd += 'exec %s -- /bin/sh -c %s'
+        oscmd += 'exec %s -- {shell} %s'.format(shell=self.shell)
         oscmd_args.extend([self.name, cmd])
         out = self.run_local(oscmd, *oscmd_args)
         return out

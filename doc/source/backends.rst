@@ -138,6 +138,13 @@ namespace::
     # or when working with multiple configuration with the "kubeconfig" option
     $ py.test --hosts='openshift://somepod-123?kubeconfig=/path/kubeconfig,openshift://otherpod-123?kubeconfig=/other/kubeconfig'
 
+Commands are executed in a shell via ``/bin/sh -c`` by default. This can be
+customized by passing a parameter:
+
+.. code-block:: python
+
+    host = testinfra.get_host("openshift://pod", shell="/bin/bash -l -c")
+
 winrm
 ~~~~~
 

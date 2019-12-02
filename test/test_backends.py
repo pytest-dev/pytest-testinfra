@@ -424,6 +424,15 @@ def test_openshift_hostspec(hostspec, pod, container, namespace, kubeconfig):
     assert backend.kubeconfig == kubeconfig
 
 
+@pytest.mark.parametrize('kwargs,expected_shell', [
+    ({}, '/bin/sh -c'),
+    ({'shell': '/bin/bash -l -c'}, '/bin/bash -l -c')
+])
+def test_openshift_shell(kwargs, expected_shell):
+    backend = testinfra.get_host('openshift://pod', **kwargs).backend
+    assert backend.shell == expected_shell
+
+
 @pytest.mark.parametrize('arg_string,expected', [
     (
         'C:\\Users\\vagrant\\This Dir\\salt',
