@@ -137,11 +137,12 @@ Integration with KitchenCI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 KitchenCI (aka Test Kitchen) can use testinfra via its :code:`shell` verifier.
-Add the following to your :code:`.kitchen.yml`::
+Add the following to your :code:`.kitchen.yml`, this requires installing `paramiko` 
+additionaly (on your host machine, not in the VM handled by kitchen) ::
 
     verifier:
       name: shell
-      command: py.test --host="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
+      command: py.test --hosts="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
 
 
 .. _test docker images:

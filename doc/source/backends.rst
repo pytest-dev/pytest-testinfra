@@ -1,7 +1,14 @@
 Connection backends
 ===================
 
-Testinfra comes with several connections backends for remote command execution.
+Testinfra comes with several connections backends for remote command
+execution.
+
+When installing, you should select the backends you require as
+``extras`` to ensure Python dependencies are satisifed (note various
+system packaged tools may still be required).  For example ::
+
+    $ pip install testinfra[ansible,salt]
 
 For all backends, commands can be run as superuser with the ``--sudo``
 option or as specific user with the ``--sudo-user`` option.
@@ -130,13 +137,6 @@ namespace::
     # you can specify kubeconfig either from KUBECONFIG environment variable
     # or when working with multiple configuration with the "kubeconfig" option
     $ py.test --hosts='openshift://somepod-123?kubeconfig=/path/kubeconfig,openshift://otherpod-123?kubeconfig=/other/kubeconfig'
-
-Commands are executed in a shell via ``/bin/sh -c`` by default. This can be
-customized by passing a parameter:
-
-.. code-block:: python
-
-    host = testinfra.get_host("openshift://pod", shell="/bin/bash -l -c")
 
 winrm
 ~~~~~
