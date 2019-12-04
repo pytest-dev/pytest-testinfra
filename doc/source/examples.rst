@@ -86,7 +86,7 @@ When your Vagrant machine is up and running, you can easily run your testinfra
 test suite on it::
 
     vagrant ssh-config > .vagrant/ssh-config
-    testinfra --hosts=default --ssh-config=.vagrant/ssh-config tests.py
+    py.test --hosts=default --ssh-config=.vagrant/ssh-config tests.py
 
 
 Integration with Jenkins
