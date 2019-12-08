@@ -135,6 +135,43 @@ def is_empty_inventory(inventory):
 
 class AnsibleRunner(object):
     _runners = {}
+    _known_options = {
+        # Boolean arguments.
+        "become": {
+            "cli": "--become",
+            "type": "boolean",
+        },
+        "check": {
+            "cli": "--check",
+            "type": "boolean",
+        },
+        "diff": {
+            "cli": "--diff",
+            "type": "boolean",
+        },
+        "one_line": {
+            "cli": "--one-line",
+            "type": "boolean",
+        },
+        # String arguments.
+        "become_method": {
+            "cli": "--become-method",
+            "type": "string",
+        },
+        "become_user": {
+            "cli": "--become-user",
+            "type": "string",
+        },
+        "user": {
+            "cli": "--user",
+            "type": "string",
+        },
+        # Arguments serialized as JSON.
+        "extra_vars": {
+            "cli": "--extra-vars",
+            "type": "json",
+        },
+    }
 
     def __init__(self, inventory_file=None):
         self.inventory_file = inventory_file
@@ -197,8 +234,35 @@ class AnsibleRunner(object):
                 self.ansible_config, self.inventory, host, **kwargs)
             return self._host_cache[host]
 
-    def run_module(self, host, module_name, module_args, become=False,
-                   check=True, **kwargs):
+    def options_to_cli(self, options):
+        verbose = options.pop("verbose", 0)
+
+        args = {"become": False, "check": True}
+        args.update(options)
+
+        cli = []
+        cli_args = []
+        if verbose:
+            cli.append('-' + "v" * verbose)
+        for arg_name, value in args.items():
+            option = self._known_options[arg_name]
+            opt_cli = option["cli"]
+            opt_type = option["type"]
+            if opt_type == "boolean":
+                if value:
+                    cli.append(opt_cli)
+            elif opt_type == "string":
+                cli.append(opt_cli + " %s")
+                cli_args.append(value)
+            elif opt_type == "json":
+                cli.append(opt_cli + " %s")
+                value_json = json.dumps(value)
+                cli_args.append(value_json)
+            else:
+                raise TypeError("Unsupported argument type '%s'." % opt_type)
+        return " ".join(cli), cli_args
+
+    def run_module(self, host, module_name, module_args, **options):
         cmd, args = 'ansible --tree %s', [None]
         if self.inventory_file:
             cmd += ' -i %s'
@@ -208,10 +272,10 @@ class AnsibleRunner(object):
         if module_args:
             cmd += ' --args %s'
             args += [module_args]
-        if become:
-            cmd += ' --become'
-        if check:
-            cmd += ' --check'
+        options_cli, options_args = self.options_to_cli(options)
+        if options_cli:
+            cmd += ' ' + options_cli
+            args.extend(options_args)
         cmd += ' %s'
         args += [host]
         with tempfile.TemporaryDirectory() as d:

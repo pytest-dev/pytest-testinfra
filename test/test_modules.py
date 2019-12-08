@@ -383,6 +383,17 @@ def test_ansible_module_become(host):
                             check=False, become=True)['stdout'] == 'root'
 
 
+@pytest.mark.testinfra_hosts("ansible://debian_stretch")
+def test_ansible_module_options(host):
+    host.ansible(
+        'command',
+        'id --user --name',
+        check=False,
+        become=True,
+        become_user='nobody',
+    )['stdout'] == 'nobody'
+
+
 @pytest.mark.destructive
 def test_supervisor(host):
     # Wait supervisord is running

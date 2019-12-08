@@ -355,6 +355,53 @@ def test_ansible_config():
                 del os.environ['ANSIBLE_CONFIG']
 
 
+@pytest.mark.parametrize(
+    'options,expected_cli,expected_args',
+    [
+        ({}, "--check", []),
+        ({"become": True}, "--become --check", []),
+        ({"check": False}, "", []),
+        ({"diff": True, "check": False}, "--diff", []),
+        ({"one_line": True, "check": False}, "--one-line", []),
+        (
+            {"become_method": "sudo", "check": False},
+            "--become-method %s",
+            ["sudo"],
+        ),
+        (
+            {"become_user": "root", "check": False},
+            "--become-user %s",
+            ["root"],
+        ),
+        ({"user": "root", "check": False}, "--user %s", ["root"]),
+        (
+            {
+                "extra_vars": {"target": "production", "foo": 42},
+                "check": False
+            },
+            "--extra-vars %s",
+            ['{"target": "production", "foo": 42}'],
+         ),
+        ({"verbose": 0, "check": False}, "", []),
+        ({"verbose": 1, "check": False}, "-v", []),
+        ({"verbose": 2, "check": False}, "-vv", []),
+        ({"verbose": 3, "check": False}, "-vvv", []),
+        ({"verbose": 4, "check": False}, "-vvvv", []),
+    ],
+)
+def test_ansible_options(options, expected_cli, expected_args):
+    runner = AnsibleRunner()
+    cli, args = runner.options_to_cli(options)
+    assert cli == expected_cli
+    assert args == expected_args
+
+
+def test_ansible_unknown_option():
+    runner = AnsibleRunner()
+    with pytest.raises(KeyError, match="^'unknown'$"):
+        runner.options_to_cli({"unknown": True})
+
+
 def test_backend_importables():
     # just check that all declared backend are importable and NAME is set
     # correctly
