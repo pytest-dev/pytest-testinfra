@@ -198,7 +198,7 @@ class AnsibleRunner(object):
 
     def run_module(self, host, module_name, module_args, become=False,
                    check=True, **kwargs):
-        cmd, args = 'ansible --tree %s', [None]
+        cmd, args = 'ansible', []
         if self.inventory_file:
             cmd += ' -i %s'
             args += [self.inventory_file]
