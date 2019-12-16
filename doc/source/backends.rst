@@ -40,12 +40,21 @@ You can provide an alternate ssh-config::
 docker
 ~~~~~~
 
-The Docker backend can be used to test *running* containers. It uses the `docker
-exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
+The Docker backend can be used to test *running* Docker containers. It uses the
+`docker exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
 
-    $ py.test --hosts='docker://[user@]docker_id_or_name'
+    $ py.test --hosts='docker://[user@]container_id_or_name'
 
 See also the :ref:`Test docker images` example.
+
+
+podman
+~~~~~~
+
+The Podman backend can be used to test *running* Podman containers. It uses the
+`podman exec <https://github.com/containers/libpod/blob/master/docs/source/markdown/podman.1.md>`_ command::
+
+    $ py.test --hosts='podman://[user@]container_id_or_name'
 
 
 ssh

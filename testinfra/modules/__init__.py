@@ -20,6 +20,7 @@ modules = {
     'ansible': 'ansible:Ansible',
     'command': 'command:Command',
     'docker': 'docker:Docker',
+    'podman': 'podman:Podman',
     'environment': 'environment:Environment',
     'file': 'file:File',
     'group': 'group:Group',

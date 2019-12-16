@@ -63,6 +63,10 @@ host
 
        :class:`testinfra.modules.pip.PipPackage` class
 
+    .. attribute:: podman
+
+       :class:`testinfra.modules.podman.Podman` class
+
     .. attribute:: process
 
        :class:`testinfra.modules.process.Process` class
@@ -183,6 +187,13 @@ PipPackage
 ~~~~~~~~~~
 
 .. autoclass:: testinfra.modules.pip.PipPackage
+   :members:
+
+
+Podman
+~~~~~~
+
+.. autoclass:: testinfra.modules.podman.Podman(name)
    :members:
 
 

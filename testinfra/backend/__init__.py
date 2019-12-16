@@ -25,6 +25,7 @@ BACKENDS = {
     'paramiko': 'testinfra.backend.paramiko.ParamikoBackend',
     'salt': 'testinfra.backend.salt.SaltBackend',
     'docker': 'testinfra.backend.docker.DockerBackend',
+    'podman': 'testinfra.backend.podman.PodmanBackend',
     'ansible': 'testinfra.backend.ansible.AnsibleBackend',
     'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
     'winrm': 'testinfra.backend.winrm.WinRMBackend',
