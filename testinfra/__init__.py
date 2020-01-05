@@ -13,7 +13,20 @@
 
 from __future__ import unicode_literals
 
+import sys
 from testinfra.host import get_host
 from testinfra.host import get_hosts
 
 __all__ = ['get_host', 'get_hosts']
+
+if sys.version_info[0] == 2:
+    import warnings
+
+    class TestinfraDeprecationWarning(Warning):
+        pass
+
+    warnings.simplefilter("default", TestinfraDeprecationWarning)
+    warnings.warn(
+        'DEPRECATION: testinfra python2 support is unmaintained, please '
+        'upgrade to python3', category=TestinfraDeprecationWarning,
+        stacklevel=1)
