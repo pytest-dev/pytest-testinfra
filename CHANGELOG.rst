@@ -2,6 +2,13 @@
 Changelog
 =========
 
+3.4.0
+=====
+
+* Add podman backend and module
+* WARNING: this will be the latest testinfra version supporting python2, please
+  upgrade to python3.
+
 3.3.0
 =====
 
