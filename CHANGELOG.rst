@@ -2,6 +2,11 @@
 Changelog
 =========
 
+4.0.0
+=====
+
+* Drop python2 support
+
 3.4.0
 =====
 
