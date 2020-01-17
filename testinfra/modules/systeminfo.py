@@ -154,7 +154,7 @@ class SystemInfo(InstanceModule):
         """Distribution release number
 
         >>> host.system_info.release
-        '7.8'
+        '10.2'
         """
         return self.sysinfo["release"]
 
@@ -163,6 +163,6 @@ class SystemInfo(InstanceModule):
         """Release code name
 
         >>> host.system_info.codename
-        'wheezy'
+        'buster'
         """
         return self.sysinfo["codename"]
