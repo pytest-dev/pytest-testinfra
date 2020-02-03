@@ -16,6 +16,7 @@ disable=
 max-branches=20
 max-bool-expr=6
 max-args=8
+max-public-methods=30
 # we have flake8 for that
 max-line-length=1000
 generated-members=check_output,run_test,run_expect,run,find_command
