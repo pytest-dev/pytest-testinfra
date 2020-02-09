@@ -75,14 +75,36 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
         'paramiko_ssh': 'paramiko',
         'smart': 'ssh',
     }.get(connection, connection)
+
     testinfra_host = hostvars.get('ansible_host', host)
-    user = hostvars.get('ansible_user')
-    password = hostvars.get('ansible_ssh_pass')
+
+    user = os.environ.get(
+        'ansible_user',
+        hostvars.get('ansible_user')
+    )
+
+    ansible_become_user = os.environ.get(
+        'ansible_become_user',
+        hostvars.get('ansible_become_user')
+    )
+
+    password = os.environ.get(
+        'ansible_ssh_pass',
+        hostvars.get('ansible_ssh_pass')
+    )
+
+    sudo = os.environ.get(
+        'ansible_become',
+        hostvars.get('ansible_become', False)
+    )
+
     port = hostvars.get('ansible_port')
+
     kwargs = {}
-    if hostvars.get('ansible_become', False):
-        kwargs['sudo'] = True
-    kwargs['sudo_user'] = hostvars.get('ansible_become_user')
+    kwargs['sudo'] = sudo
+
+    kwargs['sudo_user'] = ansible_become_user
+
     if ssh_config is not None:
         kwargs['ssh_config'] = ssh_config
     if ssh_identity_file is not None:
