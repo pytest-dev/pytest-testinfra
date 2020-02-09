@@ -76,13 +76,30 @@ class AnsibleKeys(object):
     ansible_ssh_extra_args = 'ansible_ssh_extra_args'
 
 
+def get_ansible_config_provider(inventory, host):
+    """
+    Gets the data source for ansible
+    :param inventory:
+    :param host:
+    :return:
+    """
+    provider = inventory['_meta'].get('hostvars', {}).get(host, {})
+
+    if os.environ.get("ANSBILE_FROM_ENV"):
+        provider = os.environ
+
+    return provider
+
+
 def get_ansible_host(config, inventory, host, ssh_config=None,
                      ssh_identity_file=None):
     if is_empty_inventory(inventory):
         if host == 'localhost':
             return testinfra.get_host('local://')
         return None
-    hostvars = inventory['_meta'].get('hostvars', {}).get(host, {})
+
+    hostvars = get_ansible_config_provider(inventory=inventory, host=host)
+
     connection = hostvars.get('ansible_connection', 'ssh')
     if connection not in (
         'smart', 'ssh', 'paramiko_ssh', 'local', 'docker', 'lxc', 'lxd',
