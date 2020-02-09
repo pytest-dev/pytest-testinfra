@@ -77,12 +77,6 @@ class AnsibleKeys(object):
 
 
 def get_ansible_config_provider(inventory, host):
-    """
-    Gets the data source for ansible
-    :param inventory:
-    :param host:
-    :return:
-    """
     provider = inventory['_meta'].get('hostvars', {}).get(host, {})
 
     if os.environ.get("ANSBILE_FROM_ENV"):
