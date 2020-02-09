@@ -18,10 +18,8 @@ import json
 import os
 import tempfile
 
-
 import testinfra
 from testinfra.utils import cached_property
-
 
 __all__ = ['AnsibleRunner']
 
@@ -57,6 +55,27 @@ def get_ansible_inventory(config, inventory_file):
     return json.loads(local.check_output(cmd, *args))
 
 
+class AnsibleKeys:
+    ansible_host = 'ansible_host'
+    ansible_user = 'ansible_user'
+    ansible_ssh_pass = 'ansible_ssh_pass'
+    ansible_port = 'ansible_port'
+    ansible_become = 'ansible_become'
+    ansible_become_user = 'ansible_become_user'
+
+    sudo = 'sudo'
+    sudo_user = 'sudo_user'
+
+    # SSH
+    ssh_config = 'ssh_config'
+    ssh_identity_file = 'ssh_identity_file'
+    ansible_ssh_private_key_file = 'ansible_ssh_private_key_file'
+    ansible_private_key_file = 'ansible_private_key_file'
+    ssh_extra_args = 'ssh_extra_args'
+    ansible_ssh_common_args = 'ansible_ssh_common_args'
+    ansible_ssh_extra_args = 'ansible_ssh_extra_args'
+
+
 def get_ansible_host(config, inventory, host, ssh_config=None,
                      ssh_identity_file=None):
     if is_empty_inventory(inventory):
@@ -76,56 +95,44 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
         'smart': 'ssh',
     }.get(connection, connection)
 
-    testinfra_host = hostvars.get('ansible_host', host)
+    testinfra_host = hostvars.get(AnsibleKeys.ansible_host, host)
 
-    user = os.environ.get(
-        'ansible_user',
-        hostvars.get('ansible_user')
-    )
-
-    ansible_become_user = os.environ.get(
-        'ansible_become_user',
-        hostvars.get('ansible_become_user')
-    )
-
-    password = os.environ.get(
-        'ansible_ssh_pass',
-        hostvars.get('ansible_ssh_pass')
-    )
-
-    sudo = os.environ.get(
-        'ansible_become',
-        hostvars.get('ansible_become', False)
-    )
-
-    port = hostvars.get('ansible_port')
+    user = hostvars.get(AnsibleKeys.ansible_user)
+    password = hostvars.get(AnsibleKeys.ansible_ssh_pass)
+    port = hostvars.get(AnsibleKeys.ansible_port)
 
     kwargs = {}
-    kwargs['sudo'] = sudo
 
-    kwargs['sudo_user'] = ansible_become_user
+    if hostvars.get(AnsibleKeys.ansible_become, False):
+        kwargs[AnsibleKeys.sudo] = True
+
+    kwargs[AnsibleKeys.sudo_user] = hostvars.get(
+        AnsibleKeys.ansible_become_user
+    )
 
     if ssh_config is not None:
-        kwargs['ssh_config'] = ssh_config
+        kwargs[AnsibleKeys.ssh_config] = ssh_config
     if ssh_identity_file is not None:
-        kwargs['ssh_identity_file'] = ssh_identity_file
+        kwargs[AnsibleKeys.ssh_identity_file] = ssh_identity_file
 
     # Support both keys as advertised by Ansible
-    if 'ansible_ssh_private_key_file' in hostvars:
-        kwargs['ssh_identity_file'] = hostvars[
-            'ansible_ssh_private_key_file']
-    elif 'ansible_private_key_file' in hostvars:
-        kwargs['ssh_identity_file'] = hostvars[
-            'ansible_private_key_file']
-    kwargs['ssh_extra_args'] = '{} {}'.format(
-        hostvars.get('ansible_ssh_common_args', ''),
-        hostvars.get('ansible_ssh_extra_args', '')
+    if AnsibleKeys.ansible_ssh_private_key_file in hostvars:
+        kwargs[AnsibleKeys.ssh_identity_file] = hostvars[
+            AnsibleKeys.ansible_ssh_private_key_file]
+
+    elif AnsibleKeys.ansible_private_key_file in hostvars:
+        kwargs[AnsibleKeys.ssh_identity_file] = hostvars[
+            AnsibleKeys.ssh_identity_file]
+
+    kwargs[AnsibleKeys.ssh_extra_args] = '{} {}'.format(
+        hostvars.get(AnsibleKeys.ansible_ssh_common_args, ''),
+        hostvars.get(AnsibleKeys.ansible_ssh_extra_args, '')
     ).strip()
 
     spec = '{}://'.format(connection)
 
     # Fallback to user:pasword auth when identity file is not used
-    if user and password and not kwargs.get('ssh_identity_file'):
+    if user and password and not kwargs.get(AnsibleKeys.ssh_identity_file):
         spec += '{}:{}@'.format(user, password)
     elif user:
         spec += '{}@'.format(user)
