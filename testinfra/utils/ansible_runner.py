@@ -55,7 +55,7 @@ def get_ansible_inventory(config, inventory_file):
     return json.loads(local.check_output(cmd, *args))
 
 
-class AnsibleKeys:
+class AnsibleKeys(object):
     ansible_host = 'ansible_host'
     ansible_user = 'ansible_user'
     ansible_ssh_pass = 'ansible_ssh_pass'
@@ -122,7 +122,7 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
 
     elif AnsibleKeys.ansible_private_key_file in hostvars:
         kwargs[AnsibleKeys.ssh_identity_file] = hostvars[
-            AnsibleKeys.ssh_identity_file]
+            AnsibleKeys.ansible_private_key_file]
 
     kwargs[AnsibleKeys.ssh_extra_args] = '{} {}'.format(
         hostvars.get(AnsibleKeys.ansible_ssh_common_args, ''),
