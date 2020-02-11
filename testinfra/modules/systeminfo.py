@@ -11,8 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
 import re
 
 from testinfra.modules.base import InstanceModule
@@ -156,7 +154,7 @@ class SystemInfo(InstanceModule):
         """Distribution release number
 
         >>> host.system_info.release
-        '7.8'
+        '10.2'
         """
         return self.sysinfo["release"]
 
@@ -165,6 +163,6 @@ class SystemInfo(InstanceModule):
         """Release code name
 
         >>> host.system_info.codename
-        'wheezy'
+        'buster'
         """
         return self.sysinfo["codename"]

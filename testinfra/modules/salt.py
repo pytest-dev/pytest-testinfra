@@ -11,12 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
-
 import json
-
-import six
 
 from testinfra.modules.base import InstanceModule
 
@@ -37,7 +32,7 @@ class Salt(InstanceModule):
 
     def __call__(self, function, args=None, local=False, config=None):
         args = args or []
-        if isinstance(args, six.string_types):
+        if isinstance(args, str):
             args = [args]
         if self._host.backend.HAS_RUN_SALT:
             return self._host.backend.run_salt(function, args)

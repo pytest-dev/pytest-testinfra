@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
-import six
-
 from testinfra.modules.base import InstanceModule
 
 
@@ -81,7 +77,7 @@ class Process(InstanceModule):
         match = []
         for attrs in self._get_processes(**filters):
             for key, value in filters.items():
-                if six.text_type(attrs[key]) != six.text_type(value):
+                if str(attrs[key]) != str(value):
                     break
             else:
                 attrs["_get_process_attribute_by_pid"] = (
@@ -126,13 +122,13 @@ class PosixProcess(Process):
 
     def _get_processes(self, **filters):
         cmd = "ps -Aww -o %s"
-        attributes = set(["pid", "comm", "pcpu", "pmem"]) | set(filters.keys())
+        attributes = {"pid", "comm", "pcpu", "pmem"} | set(filters.keys())
 
         # Theses attributes contains spaces. Put them at the end of the list
-        attributes -= set(["lstart", "args"])
+        attributes -= {"lstart", "args"}
         attributes = sorted(attributes)
         attributes.extend(["lstart", "args"])
-        arg = ",".join(attributes)
+        arg = ":50,".join(attributes)
 
         procs = []
         # skip first line (header)
@@ -149,7 +145,7 @@ class PosixProcess(Process):
 
     def _get_process_attribute_by_pid(self, pid, name):
         out = self.check_output(
-            "ps -ww -p %s -o lstart,%s", six.text_type(pid), name)
+            "ps -ww -p %s -o lstart,%s", str(pid), name)
         splitted = out.splitlines()[1].split()
         return {
             "lstart": " ".join(splitted[:5]),
@@ -161,10 +157,10 @@ class BusyboxProcess(Process):
 
     def _get_processes(self, **filters):
         cmd = "ps -A -o %s"
-        attributes = set(["pid", "comm", "time"]) | set(filters.keys())
+        attributes = {"pid", "comm", "time"} | set(filters.keys())
 
         # Theses attributes contains spaces. Put them at the end of the list
-        attributes -= set(["args"])
+        attributes -= {"args"}
         attributes = sorted(attributes)
         attributes.extend(["args"])
         arg = ",".join(attributes)

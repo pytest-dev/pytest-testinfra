@@ -11,10 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
 import datetime
-import six
 
 from testinfra.modules.base import Module
 
@@ -169,13 +166,25 @@ class File(Module):
         """Return size of file in bytes"""
         raise NotImplementedError
 
+    @property
+    def listdir(self):
+        """Return list of items under the directory
+
+        >>> host.file("/tmp").listdir
+        ['foo_file', 'bar_dir']
+        """
+        out = self.run_test("ls -1 -q -- %s", self.path)
+        if out.rc != 0:
+            raise RuntimeError("Unexpected output %s" % (out,))
+        return out.stdout.splitlines()
+
     def __repr__(self):
         return "<file %s>" % (self.path,)
 
     def __eq__(self, other):
         if isinstance(other, File):
             return self.path == other.path
-        if isinstance(other, six.string_types):
+        if isinstance(other, str):
             return self.path == other
         return False
 

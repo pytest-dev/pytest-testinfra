@@ -14,21 +14,21 @@
 from testinfra.backend import base
 
 
-class DockerBackend(base.BaseBackend):
-    NAME = "docker"
+class PodmanBackend(base.BaseBackend):
+    NAME = "podman"
 
     def __init__(self, name, *args, **kwargs):
         self.name, self.user = self.parse_containerspec(name)
-        super(DockerBackend, self).__init__(self.name, *args, **kwargs)
+        super(PodmanBackend, self).__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)
         if self.user is not None:
             out = self.run_local(
-                "docker exec -u %s %s /bin/sh -c %s",
+                "podman exec -u %s %s /bin/sh -c %s",
                 self.user, self.name, cmd)
         else:
             out = self.run_local(
-                "docker exec %s /bin/sh -c %s", self.name, cmd)
+                "podman exec %s /bin/sh -c %s", self.name, cmd)
         out.command = self.encode(cmd)
         return out

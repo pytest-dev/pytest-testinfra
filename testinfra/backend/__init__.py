@@ -11,12 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
 import importlib
 import os
+import urllib.parse
 
-from six.moves import urllib
 
 BACKENDS = {
     'local': 'testinfra.backend.local.LocalBackend',
@@ -25,10 +23,12 @@ BACKENDS = {
     'paramiko': 'testinfra.backend.paramiko.ParamikoBackend',
     'salt': 'testinfra.backend.salt.SaltBackend',
     'docker': 'testinfra.backend.docker.DockerBackend',
+    'podman': 'testinfra.backend.podman.PodmanBackend',
     'ansible': 'testinfra.backend.ansible.AnsibleBackend',
     'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
     'winrm': 'testinfra.backend.winrm.WinRMBackend',
     'lxc': 'testinfra.backend.lxc.LxcBackend',
+    'openshift': 'testinfra.backend.openshift.OpenShiftBackend',
 }
 
 

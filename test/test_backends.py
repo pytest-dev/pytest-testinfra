@@ -10,7 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import unicode_literals
 
 import operator
 import os
@@ -376,6 +375,20 @@ def test_ansible_get_host(kwargs, inventory, expected):
     (b'host', (
         'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
         '-o ControlPersist=60s host true')),
+    # password passing from inventory: user is required
+    (b'host ansible_user=user ansible_ssh_pass=password', (
+        'sshpass -p password ssh -o User=user '
+        '-o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
+    # identity_file has highest priority
+    (b'host ansible_user=user ansible_ssh_pass=password ansible_ssh_private_key_file=some_file', (  # noqa
+        'ssh -o User=user -i some_file '
+        '-o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
+    # password without usr won't work
+    (b'host ansible_ssh_pass=password', (
+        'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
+        '-o ControlPersist=60s host true')),
     # avoid interference between our ssh backend and ansible_ssh_extra_args
     (b'host ansible_ssh_extra_args="-o ConnectTimeout=5 -o ControlMaster=auto '
      b'-o ControlPersist=10s"', (
@@ -441,6 +454,53 @@ def test_ansible_config():
                 del os.environ['ANSIBLE_CONFIG']
 
 
+@pytest.mark.parametrize(
+    'options,expected_cli,expected_args',
+    [
+        ({}, "--check", []),
+        ({"become": True}, "--become --check", []),
+        ({"check": False}, "", []),
+        ({"diff": True, "check": False}, "--diff", []),
+        ({"one_line": True, "check": False}, "--one-line", []),
+        (
+            {"become_method": "sudo", "check": False},
+            "--become-method %s",
+            ["sudo"],
+        ),
+        (
+            {"become_user": "root", "check": False},
+            "--become-user %s",
+            ["root"],
+        ),
+        ({"user": "root", "check": False}, "--user %s", ["root"]),
+        (
+            {
+                "extra_vars": {"target": "production", "foo": 42},
+                "check": False
+            },
+            "--extra-vars %s",
+            ['{"target": "production", "foo": 42}'],
+         ),
+        ({"verbose": 0, "check": False}, "", []),
+        ({"verbose": 1, "check": False}, "-v", []),
+        ({"verbose": 2, "check": False}, "-vv", []),
+        ({"verbose": 3, "check": False}, "-vvv", []),
+        ({"verbose": 4, "check": False}, "-vvvv", []),
+    ],
+)
+def test_ansible_options(options, expected_cli, expected_args):
+    runner = AnsibleRunner()
+    cli, args = runner.options_to_cli(options)
+    assert cli == expected_cli
+    assert args == expected_args
+
+
+def test_ansible_unknown_option():
+    runner = AnsibleRunner()
+    with pytest.raises(KeyError, match="^'unknown'$"):
+        runner.options_to_cli({"unknown": True})
+
+
 def test_backend_importables():
     # just check that all declared backend are importable and NAME is set
     # correctly
@@ -488,6 +548,20 @@ def test_parse_hostspec(hostspec, expected):
     ('kubectl://pod?namespace=n&kubeconfig=k', 'pod', None, 'n', 'k')
 ])
 def test_kubectl_hostspec(hostspec, pod, container, namespace, kubeconfig):
+    backend = testinfra.get_host(hostspec).backend
+    assert backend.name == pod
+    assert backend.container == container
+    assert backend.namespace == namespace
+    assert backend.kubeconfig == kubeconfig
+
+
+@pytest.mark.parametrize('hostspec,pod,container,namespace,kubeconfig', [
+    ('openshift://pod', 'pod', None, None, None),
+    ('openshift://pod?namespace=n', 'pod', None, 'n', None),
+    ('openshift://pod?container=c&namespace=n', 'pod', 'c', 'n', None),
+    ('openshift://pod?namespace=n&kubeconfig=k', 'pod', None, 'n', 'k')
+])
+def test_openshift_hostspec(hostspec, pod, container, namespace, kubeconfig):
     backend = testinfra.get_host(hostspec).backend
     assert backend.name == pod
     assert backend.container == container

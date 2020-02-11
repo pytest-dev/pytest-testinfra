@@ -11,8 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
 import base64
 
 from testinfra.backend import base
@@ -37,8 +35,13 @@ class SshBackend(base.BaseBackend):
         return self.run_ssh(self.get_command(command, *args))
 
     def _build_ssh_command(self, command):
-        cmd = ["ssh"]
-        cmd_args = []
+        if not self.host.password:
+            cmd = ['ssh']
+            cmd_args = []
+        else:
+            cmd = ['sshpass', '-p', '%s', 'ssh']
+            cmd_args = [self.host.password]
+
         if self.ssh_extra_args:
             cmd.append(self.ssh_extra_args.replace('%', '%%'))
         if self.ssh_config:

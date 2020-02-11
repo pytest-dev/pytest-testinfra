@@ -2,8 +2,9 @@ sudo: required
 services:
   - docker
 language: python
-python: 3.5
+python: 3.7
 install:
+  - sudo modprobe ip6table_filter iptable_filter
   - pip install tox
 jobs:
   include:
@@ -17,7 +18,7 @@ jobs:
     - script: tox -e sphinxdoc
       name: sphinxdoc
     - stage: test
-      script: tox -e py27,py3
+      script: tox -e py3
       name: python tests
     - stage: deploy
       name: deploy to pypi
@@ -25,7 +26,7 @@ jobs:
       if: repo == "philpep/testinfra" AND tag IS present
       deploy:
         provider: pypi
-        user: "__token__"
+        username: "__token__"
         on:
           tags: true
         distributions: "sdist bdist_wheel"

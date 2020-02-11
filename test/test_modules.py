@@ -10,7 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import unicode_literals
 
 import crypt
 import datetime
@@ -54,7 +53,7 @@ def test_package(host, docker_image):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "alpine": "r5",
+        "alpine": "r6",
         "archlinux": None,
         "centos_6": ".el6",
         "centos_7": ".el7",
@@ -276,9 +275,12 @@ def test_local_command(host):
 
 def test_file(host):
     host.check_output("mkdir -p /d && printf foo > /d/f && chmod 600 /d/f")
+    host.check_output('touch "/d/f\nl"')
+    host.check_output('touch "/d/f s"')
     d = host.file("/d")
     assert d.is_directory
     assert not d.is_file
+    assert d.listdir == ["f", "f?l", "f s"]
     f = host.file("/d/f")
     assert f.exists
     assert f.is_file
@@ -382,6 +384,17 @@ def test_ansible_module_become(host):
                             check=False)['stdout'] == user_name
         assert host.ansible('shell', 'echo $USER',
                             check=False, become=True)['stdout'] == 'root'
+
+
+@pytest.mark.testinfra_hosts("ansible://debian_stretch")
+def test_ansible_module_options(host):
+    host.ansible(
+        'command',
+        'id --user --name',
+        check=False,
+        become=True,
+        become_user='nobody',
+    )['stdout'] == 'nobody'
 
 
 @pytest.mark.destructive

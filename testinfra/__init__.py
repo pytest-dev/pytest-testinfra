@@ -11,8 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
 from testinfra.host import get_host
 from testinfra.host import get_hosts
 

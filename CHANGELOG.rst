@@ -2,6 +2,31 @@
 Changelog
 =========
 
+4.0.0
+=====
+
+* Drop python2 support
+
+3.4.0
+=====
+
+* Add podman backend and module
+* WARNING: this will be the latest testinfra version supporting python2, please
+  upgrade to python3.
+
+3.3.0
+=====
+
+* Add extras for backend dependencies (#454)
+* Various enhencements of kitchen integration documentation
+* ansible backend now support "password" field from ansible inventory
+* New backend "openshift"
+
+3.2.1
+=====
+
+* Fix Process module when working with long strings (username, ...) #505
+
 3.2.0
 =====
 
