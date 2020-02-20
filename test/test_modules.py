@@ -505,6 +505,8 @@ def test_environment_home(host):
 
 
 def test_iptables(host):
+    cmd = host.run("systemctl start netfilter-persistent")
+    assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
     ssh_rule_str = \
         '-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT'
     vip_redirect_rule_str = \
@@ -517,14 +519,26 @@ def test_iptables(host):
     assert ssh_rule_str in input_rules
     assert vip_redirect_rule_str in nat_rules
     assert vip_redirect_rule_str in nat_prerouting_rules
+
+
+def test_ip6tables(host):
     # test ip6tables call works; ipv6 setup is a whole huge thing, but
     # ensure we at least see the headings
-    v6_rules = host.iptables.rules(version=6)
-    assert '-P INPUT ACCEPT' in v6_rules
-    assert '-P FORWARD ACCEPT' in v6_rules
-    assert '-P OUTPUT ACCEPT' in v6_rules
-    v6_filter_rules = host.iptables.rules('filter', 'INPUT', version=6)
-    assert '-P INPUT ACCEPT' in v6_filter_rules
+    try:
+        v6_rules = host.iptables.rules(version=6)
+    except AssertionError as exc_info:
+        if "Perhaps ip6tables or your kernel needs to " \
+           "be upgraded" in exc_info.args[0]:
+            pytest.skip(f"IPV6 does not seem to be enabled on the docker host"
+                        f"\n{exc_info}")
+        else:
+            raise
+    else:
+        assert '-P INPUT ACCEPT' in v6_rules
+        assert '-P FORWARD ACCEPT' in v6_rules
+        assert '-P OUTPUT ACCEPT' in v6_rules
+        v6_filter_rules = host.iptables.rules('filter', 'INPUT', version=6)
+        assert '-P INPUT ACCEPT' in v6_filter_rules
 
 
 @all_images
