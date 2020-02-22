@@ -2,6 +2,12 @@
 Changelog
 =========
 
+4.1.0
+=====
+
+* Pass extra arguments to ansible CLI via host.ansible()
+* New method host.file.listdir() to list items in a directory.
+
 4.0.0
 =====
 
