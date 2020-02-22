@@ -28,7 +28,7 @@ all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
         "alpine", "archlinux", "centos_6", "centos_7",
-        "debian_stretch", "ubuntu_xenial"
+        "debian_buster", "ubuntu_xenial"
     )
 ])
 
@@ -47,7 +47,7 @@ def test_package(host, docker_image):
         "archlinux": "8.",
         "centos_6": "5.",
         "centos_7": "7.",
-        "debian_stretch": "1:7.4",
+        "debian_buster": "1:7.9",
         "ubuntu_xenial": "1:7.2"
     }[docker_image]
     assert ssh.is_installed
@@ -57,7 +57,7 @@ def test_package(host, docker_image):
         "archlinux": None,
         "centos_6": ".el6",
         "centos_7": ".el7",
-        "debian_stretch": None,
+        "debian_buster": None,
         "ubuntu_xenial": None
     }[docker_image]
     if release is None:
@@ -96,7 +96,7 @@ def test_systeminfo(host, docker_image):
         "archlinux": ("rolling", "arch", None),
         "centos_6": (r"^6", "CentOS", None),
         "centos_7": (r"^7$", "centos", None),
-        "debian_stretch": (r"^9\.", "debian", "stretch"),
+        "debian_buster": (r"^10", "debian", "buster"),
         "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial")
     }[docker_image]
 
@@ -145,19 +145,17 @@ def test_service(host, name, running, enabled):
 
 def test_salt(host):
     ssh_version = host.salt("pkg.version", "openssh-server", local=True)
-    assert ssh_version.startswith("1:7.4")
+    assert ssh_version.startswith("1:7.9")
 
 
 def test_puppet_resource(host):
     resource = host.puppet_resource("package", "openssh-server")
-    assert resource["openssh-server"]["ensure"].startswith("1:7.4")
+    assert resource["openssh-server"]["ensure"].startswith("1:7.9")
 
 
 def test_facter(host):
-    assert host.facter()["lsbdistcodename"] == "stretch"
-    assert host.facter("lsbdistcodename") == {
-        "lsbdistcodename": "stretch",
-    }
+    assert host.facter()["os"]["distro"]["codename"] == "buster"
+    assert host.facter("virtual") == {"virtual": "docker"}
 
 
 def test_sysctl(host):
@@ -217,7 +215,7 @@ def test_process(host, docker_image):
         "archlinux": ("/usr/sbin/init", "systemd"),
         "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
-        "debian_stretch": ("/sbin/init", "systemd"),
+        "debian_buster": ("/sbin/init", "systemd"),
         "ubuntu_xenial": ("/sbin/init", "systemd")
     }[docker_image]
     assert init.args == args
@@ -228,7 +226,7 @@ def test_user(host):
     user = host.user("sshd")
     assert user.exists
     assert user.name == "sshd"
-    assert user.uid == 106
+    assert user.uid == 105
     assert user.gid == 65534
     assert user.group == "nogroup"
     assert user.gids == [65534]
@@ -325,10 +323,10 @@ def test_ansible_unavailable(host):
     assert expected in str(excinfo.value)
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_stretch")
+@pytest.mark.testinfra_hosts("ansible://debian_buster")
 def test_ansible_module(host):
     setup = host.ansible("setup")["ansible_facts"]
-    assert setup["ansible_lsb"]["codename"] == "stretch"
+    assert setup["ansible_lsb"]["codename"] == "buster"
     passwd = host.ansible("file", "path=/etc/passwd state=file")
     assert passwd["changed"] is False
     assert passwd["gid"] == 0
@@ -345,11 +343,11 @@ def test_ansible_module(host):
     assert variables["myvar"] == "foo"
     assert variables["myhostvar"] == "bar"
     assert variables["mygroupvar"] == "qux"
-    assert variables["inventory_hostname"] == "debian_stretch"
+    assert variables["inventory_hostname"] == "debian_buster"
     assert variables["group_names"] == ["testgroup"]
     assert variables["groups"] == {
-        "all": ["debian_stretch"],
-        "testgroup": ["debian_stretch"],
+        "all": ["debian_buster"],
+        "testgroup": ["debian_buster"],
     }
 
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
@@ -361,7 +359,7 @@ def test_ansible_module(host):
         host.ansible("command", "zzz", check=False)
     except host.ansible.AnsibleException as exc:
         assert exc.result['rc'] == 2
-        # notez que the debian stretch container is set to LANG=fr_FR
+        # notez que the debian buster container is set to LANG=fr_FR
         assert exc.result['msg'] == ('[Errno 2] Aucun fichier ou dossier '
                                      'de ce type')
 
@@ -369,8 +367,8 @@ def test_ansible_module(host):
     assert result['stdout'] == 'foo'
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_stretch",
-                             "ansible://user@debian_stretch")
+@pytest.mark.testinfra_hosts("ansible://debian_buster",
+                             "ansible://user@debian_buster")
 def test_ansible_module_become(host):
     user_name = host.user().name
     assert host.ansible('shell', 'echo $USER',
@@ -386,7 +384,7 @@ def test_ansible_module_become(host):
                             check=False, become=True)['stdout'] == 'root'
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_stretch")
+@pytest.mark.testinfra_hosts("ansible://debian_buster")
 def test_ansible_module_options(host):
     assert host.ansible(
         'command',
@@ -474,7 +472,7 @@ def test_sudo_fail_from_root(host):
         assert host.user().name == "root"
 
 
-@pytest.mark.testinfra_hosts("docker://user@debian_stretch")
+@pytest.mark.testinfra_hosts("docker://user@debian_buster")
 def test_sudo_to_root(host):
     assert host.user().name == "user"
     with host.sudo():
@@ -491,7 +489,7 @@ def test_command_execution(host):
 
 
 def test_pip_package(host):
-    assert host.pip_package.get_packages()['pip']['version'] == '9.0.1'
+    assert host.pip_package.get_packages()['pip']['version'] == '18.1'
     pytest = host.pip_package.get_packages(pip_path='/v/bin/pip')['pytest']
     assert pytest['version'].startswith('2.')
     outdated = host.pip_package.get_outdated_packages(
