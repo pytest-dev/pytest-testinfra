@@ -43,7 +43,7 @@ def test_package(host, docker_image):
 
     ssh = host.package(name)
     version = {
-        "alpine": "7.",
+        "alpine": "8.",
         "archlinux": "8.",
         "centos_6": "5.",
         "centos_7": "7.",
@@ -53,7 +53,7 @@ def test_package(host, docker_image):
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "alpine": "r6",
+        "alpine": "r0",
         "archlinux": None,
         "centos_6": ".el6",
         "centos_7": ".el7",
@@ -92,7 +92,7 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename = {
-        "alpine": (r"^3\.9\.", "alpine", None),
+        "alpine": (r"^3\.11\.", "alpine", None),
         "archlinux": ("rolling", "arch", None),
         "centos_6": (r"^6", "CentOS", None),
         "centos_7": (r"^7$", "centos", None),
