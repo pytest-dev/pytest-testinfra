@@ -388,7 +388,7 @@ def test_ansible_module_become(host):
 
 @pytest.mark.testinfra_hosts("ansible://debian_stretch")
 def test_ansible_module_options(host):
-    host.ansible(
+    assert host.ansible(
         'command',
         'id --user --name',
         check=False,
