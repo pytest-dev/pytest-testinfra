@@ -23,36 +23,36 @@ from testinfra.backend.base import HostSpec
 from testinfra.backend.winrm import _quote
 from testinfra.utils.ansible_runner import AnsibleRunner
 HOSTS = [
-    "ssh://debian_stretch",
-    "safe-ssh://debian_stretch",
-    "docker://debian_stretch",
-    "paramiko://debian_stretch",
-    "ansible://debian_stretch",
-    "ansible://debian_stretch?force_ansible=True",
+    "ssh://debian_buster",
+    "safe-ssh://debian_buster",
+    "docker://debian_buster",
+    "paramiko://debian_buster",
+    "ansible://debian_buster",
+    "ansible://debian_buster?force_ansible=True",
 ]
 USER_HOSTS = [
-    "ssh://user@debian_stretch",
-    "safe-ssh://user@debian_stretch",
-    "docker://user@debian_stretch",
-    "paramiko://user@debian_stretch",
-    "ansible://user@debian_stretch",
-    "ansible://user@debian_stretch?force_ansible=True",
+    "ssh://user@debian_buster",
+    "safe-ssh://user@debian_buster",
+    "docker://user@debian_buster",
+    "paramiko://user@debian_buster",
+    "ansible://user@debian_buster",
+    "ansible://user@debian_buster?force_ansible=True",
 ]
 SUDO_HOSTS = [
-    "ssh://user@debian_stretch?sudo=True",
-    "safe-ssh://user@debian_stretch?sudo=True",
-    "docker://user@debian_stretch?sudo=True",
-    "paramiko://user@debian_stretch?sudo=True",
-    "ansible://user@debian_stretch?sudo=True",
-    "ansible://user@debian_stretch?force_ansible=True&sudo=True",
+    "ssh://user@debian_buster?sudo=True",
+    "safe-ssh://user@debian_buster?sudo=True",
+    "docker://user@debian_buster?sudo=True",
+    "paramiko://user@debian_buster?sudo=True",
+    "ansible://user@debian_buster?sudo=True",
+    "ansible://user@debian_buster?force_ansible=True&sudo=True",
 ]
 SUDO_USER_HOSTS = [
-    "ssh://debian_stretch?sudo=True&sudo_user=user",
-    "safe-ssh://debian_stretch?sudo=True&sudo_user=user",
-    "docker://debian_stretch?sudo=True&sudo_user=user",
-    "paramiko://debian_stretch?sudo=True&sudo_user=user",
-    "ansible://debian_stretch?sudo=True&sudo_user=user",
-    "ansible://debian_stretch?force_ansible=True&sudo=True&sudo_user=user",
+    "ssh://debian_buster?sudo=True&sudo_user=user",
+    "safe-ssh://debian_buster?sudo=True&sudo_user=user",
+    "docker://debian_buster?sudo=True&sudo_user=user",
+    "paramiko://debian_buster?sudo=True&sudo_user=user",
+    "ansible://debian_buster?sudo=True&sudo_user=user",
+    "ansible://debian_buster?force_ansible=True&sudo=True&sudo_user=user",
 ]
 
 
@@ -79,7 +79,7 @@ def test_command(host):
 
 @pytest.mark.testinfra_hosts(*HOSTS)
 def test_encoding(host):
-    # stretch image is fr_FR@ISO-8859-15
+    # buster image is fr_FR@ISO-8859-15
     cmd = host.run("ls -l %s", "/é")
     if host.backend.get_connection_type() == "docker":
         # docker bug ?
@@ -108,7 +108,7 @@ def test_encoding(host):
 
 
 @pytest.mark.testinfra_hosts(
-    "ansible://debian_stretch?force_ansible=True")
+    "ansible://debian_buster?force_ansible=True")
 def test_ansible_any_error_fatal(host):
     os.environ['ANSIBLE_ANY_ERRORS_FATAL'] = 'True'
     try:
