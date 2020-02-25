@@ -21,8 +21,6 @@ import tempfile
 
 import testinfra
 from testinfra.utils import cached_property
-from testinfra.utils import check_ip_address
-from testinfra.utils import TemporaryDirectory
 import yaml
 
 

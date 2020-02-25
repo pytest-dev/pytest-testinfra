@@ -198,7 +198,6 @@ def test_ansible_get_variables():
         }
 
 
-
 def test_ansible_get_variables_with_playbook():
     with tempfile.NamedTemporaryFile() as pb:
         pb.write((
@@ -293,8 +292,6 @@ def test_ansible_get_variables_with_playbook_arg():
                 'group_names': ['ungrouped'],
                 'groups': groups,
             }
-
-
 
 
 @pytest.mark.parametrize('kwargs,inventory,expected', [
