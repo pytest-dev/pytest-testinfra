@@ -278,7 +278,7 @@ def test_file(host):
     d = host.file("/d")
     assert d.is_directory
     assert not d.is_file
-    assert d.listdir == ["f", "f?l", "f s"]
+    assert d.listdir() == ["f", "f?l", "f s"]
     f = host.file("/d/f")
     assert f.exists
     assert f.is_file
