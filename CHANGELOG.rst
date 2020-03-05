@@ -2,6 +2,11 @@
 Changelog
 =========
 
+5.0.0
+=====
+
+* Breaking change:  host.file().listdir() is now a method
+
 4.1.0
 =====
 
