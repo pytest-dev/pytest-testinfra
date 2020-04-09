@@ -76,9 +76,13 @@ def get_ansible_host(config, inventory, host, ssh_config=None,
         'smart': 'ssh',
     }.get(connection, connection)
     testinfra_host = hostvars.get('ansible_host', host)
-    user = hostvars.get('ansible_user')
+    user = config.get('defaults', 'remote_user', fallback=None)
+    if 'ansible_user' in hostvars:
+        user = hostvars.get('ansible_user')
     password = hostvars.get('ansible_ssh_pass')
-    port = hostvars.get('ansible_port')
+    port = config.get('defaults', 'remote_port', fallback=None)
+    if 'ansible_port' in hostvars:
+        port = hostvars.get('ansible_port')
     kwargs = {}
     if hostvars.get('ansible_become', False):
         kwargs['sudo'] = True
