@@ -25,6 +25,9 @@ class Host(object):
         self.backend = backend
         super(Host, self).__init__()
 
+    def __repr__(self):
+        return "<testinfra.host.Host {}>".format(self.backend.get_pytest_id())
+
     def exists(self, command):
         """Return True if given command exist in $PATH"""
         return self.run_expect([0, 1, 127], "command -v %s", command).rc == 0
