@@ -13,4 +13,7 @@ include ansible.cfg
 include dev-requirements.txt
 include test-requirements.txt
 include LICENSE
-prune .editorconfig
+exclude .editorconfig
+exclude .travis.yml
+exclude .gitignore
+prune .github
