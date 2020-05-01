@@ -12,47 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import setuptools
 
-setuptools.setup(
-    name='testinfra',
-    author='Philippe Pepiot',
-    author_email='phil@philpep.org',
-    description='Test infrastructures',
-    long_description=open(os.path.join(
-        os.path.dirname(__file__), 'README.rst')).read(),
-    url='https://github.com/philpep/testinfra',
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Information Technology',
-        'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: POSIX',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Topic :: Software Development :: Testing',
-        'Topic :: System :: Systems Administration',
-        'Framework :: Pytest',
-    ],
-    packages=setuptools.find_packages(),
-    entry_points={
-        'pytest11': {
-            'pytest11.testinfra=testinfra.plugin',
-        },
-    },
-    python_requires='>=3.4',
-    setup_requires=['setuptools_scm'],
-    use_scm_version=True,
-    install_requires=[
-        'pytest!=3.0.2',
-    ],
-)
+if __name__ == '__main__':
+    setuptools.setup(use_scm_version=True, setup_requires=["setuptools_scm"])
