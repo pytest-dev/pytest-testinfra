@@ -80,7 +80,7 @@ class Host(object):
         :param expected: A list of expected exit status
         :raises: AssertionError
         """
-        __tracebackhide__ = True  # pylint: disable=unused-variable
+        __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
         assert out.rc in expected, (
             'Unexpected exit code %s for %s' % (out.rc, out))
@@ -99,7 +99,7 @@ class Host(object):
         :returns: stdout without trailing newline
         :raises: AssertionError
         """
-        __tracebackhide__ = True  # pylint: disable=unused-variable
+        __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
         assert out.rc == 0, (
             'Unexpected exit code %s for %s' % (out.rc, out))

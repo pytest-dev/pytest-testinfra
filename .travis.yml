@@ -8,9 +8,6 @@ install:
   - pip install tox
 jobs:
   include:
-    - stage: lint
-      script: tox -e pylint
-      name: pylint
     - script: tox -e flake8
       name: flake8
     - script: tox -e check-manifest

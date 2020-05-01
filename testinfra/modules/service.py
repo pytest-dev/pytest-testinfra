@@ -42,7 +42,6 @@ class Service(Module):
         """Test if service is enabled"""
         raise NotImplementedError
 
-    # pylint: disable=too-many-return-statements
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":

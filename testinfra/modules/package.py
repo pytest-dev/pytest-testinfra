@@ -61,7 +61,6 @@ class Package(Module):
         return "<package %s>" % (self.name,)
 
     @classmethod
-    # pylint: disable=too-many-return-statements
     def get_module_class(cls, host):
         if host.system_info.type == 'windows':
             return ChocolateyPackage

@@ -22,9 +22,7 @@ except ImportError:
 
 import winrm.protocol
 
-# pylint: disable=no-member
 _find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII)
-# pylint: enable=no-member
 
 
 # (gtmanfred) This is copied from pipes.quote, but changed to use double quotes

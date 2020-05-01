@@ -165,7 +165,6 @@ class Socket(Module):
         ['tcp://0.0.0.0:22', 'tcp://:::22', 'unix:///run/systemd/private', ...]
         """
         sockets = []
-        # pylint: disable=protected-access
         for sock in cls(None)._iter_sockets(True):
             if sock[0] == "unix":
                 sockets.append("unix://" + sock[1])

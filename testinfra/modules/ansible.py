@@ -37,7 +37,6 @@ class AnsibleException(Exception):
 def need_ansible(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        # pylint: disable=protected-access
         if not self._host.backend.HAS_RUN_ANSIBLE:
             raise RuntimeError((
                 "Ansible module is only available with ansible "
@@ -101,7 +100,6 @@ class Ansible(InstanceModule):
     # Installs neovim and vim.
 
     """
-    # pylint: disable=self-assigning-variable
     AnsibleException = AnsibleException
 
     @need_ansible
