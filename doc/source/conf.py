@@ -59,9 +59,10 @@ copyright = u'%s, Philippe Pepiot' % datetime.date.today().year
 # built documents.
 #
 # The short X.Y version.
-version = subprocess.Popen(['sh', '-c', 'cd ../..; python setup.py --version'],
-                           stdout=subprocess.PIPE).stdout.read().decode()
-version = version.strip()
+version = subprocess.check_output(
+    ['python3', 'setup.py', '--version'],
+    cwd=os.path.join(os.path.dirname(__file__), os.pardir, os.pardir),
+).decode().strip()
 # The full version, including alpha/beta/rc tags.
 release = version
 
