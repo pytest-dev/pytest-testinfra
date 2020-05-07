@@ -90,13 +90,13 @@ def test_uninstalled_package_version(host):
 def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
-    release, distribution, codename = {
-        "alpine": (r"^3\.11\.", "alpine", None),
-        "archlinux": ("rolling", "arch", None),
-        "centos_6": (r"^6", "CentOS", None),
-        "centos_7": (r"^7$", "centos", None),
-        "debian_buster": (r"^10", "debian", "buster"),
-        "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial")
+    release, distribution, codename, arch = {
+        "alpine": (r"^3\.11\.", "alpine", None, 'x86_64'),
+        "archlinux": ("rolling", "arch", None, 'x86_64'),
+        "centos_6": (r"^6", "CentOS", None, 'x86_64'),
+        "centos_7": (r"^7$", "centos", None, 'x86_64'),
+        "debian_buster": (r"^10", "debian", "buster", 'x86_64'),
+        "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial", 'x86_64')
     }[docker_image]
 
     assert host.system_info.distribution == distribution
