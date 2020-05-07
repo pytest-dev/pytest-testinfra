@@ -26,6 +26,7 @@ class SystemInfo(InstanceModule):
             "distribution": None,
             "codename": None,
             "release": None,
+            "arch": None,
         }
         uname = self.run_expect([0, 1], 'uname -s')
         if uname.rc == 1:
@@ -42,6 +43,8 @@ class SystemInfo(InstanceModule):
             sysinfo["release"] = self.check_output("uname -r")
             sysinfo["distribution"] = sysinfo["type"]
             sysinfo["codename"] = None
+
+        sysinfo["arch"] = self.check_output("uname -m")
         return sysinfo
 
     def _get_linux_sysinfo(self):
@@ -128,6 +131,7 @@ class SystemInfo(InstanceModule):
                 sysinfo["type"] = value.split(" ")[1].lower()
             elif key == "os_version":
                 sysinfo["release"] = value
+        sysinfo["arch"] = self.check_output('echo %PROCESSOR_ARCHITECTURE%')
         return sysinfo
 
     @property
@@ -165,3 +169,12 @@ class SystemInfo(InstanceModule):
         'buster'
         """
         return self.sysinfo["codename"]
+
+    @property
+    def arch(self):
+        """Host architecture
+
+        >>> host.system_info.arch
+        'x86_64'
+        """
+        return self.sysinfo["arch"]
