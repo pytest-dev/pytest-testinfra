@@ -6,7 +6,7 @@ Test multiples hosts
 ~~~~~~~~~~~~~~~~~~~~
 
 By default Testinfra launch tests on local machine, but you can also
-test remotes systems using `paramiko <http://www.paramiko.org>`_ (a
+test remotes systems using `paramiko <https://www.paramiko.org>`_ (a
 ssh implementation in python)::
 
     $ pip install paramiko
@@ -15,7 +15,7 @@ ssh implementation in python)::
     ====================== test session starts ======================
     platform linux -- Python 2.7.3 -- py-1.4.26 -- pytest-2.6.4
     plugins: testinfra
-    collected 3 items 
+    collected 3 items
 
     test_myinfra.py::test_passwd_file[localhost] PASSED
     test_myinfra.py::test_nginx_is_installed[localhost] PASSED
@@ -63,5 +63,5 @@ Advanced invocation
 For more usages and features, see the Pytest_ documentation.
 
 
-.. _Pytest: http://pytest.org
-.. _pytest-xdist: http://pytest.org/latest/xdist.html
+.. _Pytest: https://docs.pytest.org/en/latest/
+.. _pytest-xdist: https://pypi.org/project/pytest-xdist/

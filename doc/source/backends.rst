@@ -27,7 +27,7 @@ paramiko
 ~~~~~~~~
 
 This is the default backend when a hosts list is provided. `Paramiko
-<http://www.paramiko.org>`_ is a Python implementation of the SSHv2
+<https://www.paramiko.org/>`_ is a Python implementation of the SSHv2
 protocol. Testinfra will not ask you for a password, so you must be
 able to connect without password (using passwordless keys or using
 ``ssh-agent``).
@@ -76,7 +76,7 @@ salt
 ~~~~
 
 The salt backend uses the `salt Python client API
-<http://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
+<https://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
 
     $ py.test --hosts='salt://*'
     $ py.test --hosts='salt://minion1,salt://minion2'
@@ -119,7 +119,7 @@ kubectl
 ~~~~~~~
 
 The kubectl backend can be used to test containers running in Kubernetes.  It
-uses the `kubectl exec <http://kubernetes.io/docs/user-guide/kubectl/kubectl_exec/>`_ command and
+uses the `kubectl exec <https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#exec/>`_ command and
 support connecting to a given container name within a pod and using a given
 namespace::
 
