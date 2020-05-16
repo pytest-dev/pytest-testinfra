@@ -16,13 +16,13 @@ import testinfra.backend
 import testinfra.modules
 
 
-class Host(object):
+class Host:
     _host_cache = {}
     _hosts_cache = {}
 
     def __init__(self, backend):
         self.backend = backend
-        super(Host, self).__init__()
+        super().__init__()
 
     def __repr__(self):
         return "<testinfra.host.Host {}>".format(self.backend.get_pytest_id())

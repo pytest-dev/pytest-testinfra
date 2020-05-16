@@ -30,7 +30,7 @@ class Service(Module):
 
     def __init__(self, name):
         self.name = name
-        super(Service, self).__init__()
+        super().__init__()
 
     @property
     def is_running(self):
@@ -103,7 +103,7 @@ class SystemdService(SysvService):
             [0, 1, 3], "systemctl is-active %s", self.name)
         if out.rc == 1:
             # Failed to connect to bus: No such file or directory
-            return super(SystemdService, self).is_running
+            return super().is_running
         return out.rc == 0
 
     @property
@@ -115,7 +115,7 @@ class SystemdService(SysvService):
             return False
         # Fallback on SysV
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
-        return super(SystemdService, self).is_enabled
+        return super().is_enabled
 
     @property
     def is_valid(self):
@@ -146,14 +146,14 @@ class UpstartService(SysvService):
         ).rc != 0:
             return True
         # Fallback on SysV
-        return super(UpstartService, self).is_enabled
+        return super().is_enabled
 
     @property
     def is_running(self):
         cmd = self.run_test('status %s', self.name)
         if cmd.rc == 0 and len(cmd.stdout.split()) > 1:
             return 'running' in cmd.stdout.split()[1]
-        return super(UpstartService, self).is_running
+        return super().is_running
 
 
 class OpenRCService(SysvService):

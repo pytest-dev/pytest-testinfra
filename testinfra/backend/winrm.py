@@ -62,7 +62,7 @@ class WinRMBackend(base.BaseBackend):
             self.conn_args['read_timeout_sec'] = read_timeout_sec
         if operation_timeout_sec is not None:
             self.conn_args['operation_timeout_sec'] = operation_timeout_sec
-        super(WinRMBackend, self).__init__(self.host.name, *args, **kwargs)
+        super().__init__(self.host.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         return self.run_winrm(self.get_command(command, *args))

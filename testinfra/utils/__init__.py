@@ -11,7 +11,7 @@
 # limitations under the License.
 
 
-class cached_property(object):
+class cached_property:
     """A cached property computed only once per instance
 
     A property that is only computed once per instance and then replaces itself

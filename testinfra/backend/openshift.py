@@ -21,7 +21,7 @@ class OpenShiftBackend(base.BaseBackend):
         self.container = kwargs.get('container')
         self.namespace = kwargs.get('namespace')
         self.kubeconfig = kwargs.get('kubeconfig')
-        super(OpenShiftBackend, self).__init__(self.name, *args, **kwargs)
+        super().__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)

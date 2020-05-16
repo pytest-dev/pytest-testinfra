@@ -136,7 +136,7 @@ def is_empty_inventory(inventory):
     return not any(True for _ in itergroup(inventory, 'all'))
 
 
-class AnsibleRunner(object):
+class AnsibleRunner:
     _runners = {}
     _known_options = {
         # Boolean arguments.
@@ -179,7 +179,7 @@ class AnsibleRunner(object):
     def __init__(self, inventory_file=None):
         self.inventory_file = inventory_file
         self._host_cache = {}
-        super(AnsibleRunner, self).__init__()
+        super().__init__()
 
     def get_hosts(self, pattern="all"):
         inventory = self.inventory

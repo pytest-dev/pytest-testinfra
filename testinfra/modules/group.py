@@ -18,7 +18,7 @@ class Group(Module):
 
     def __init__(self, name=None):
         self.name = name
-        super(Group, self).__init__()
+        super().__init__()
 
     @property
     def exists(self):

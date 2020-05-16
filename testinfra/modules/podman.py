@@ -31,7 +31,7 @@ class Podman(Module):
 
     def __init__(self, name):
         self._name = name
-        super(Podman, self).__init__()
+        super().__init__()
 
     def inspect(self):
         output = self.check_output("podman inspect %s", self._name)

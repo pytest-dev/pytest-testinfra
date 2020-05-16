@@ -18,7 +18,7 @@ class LxcBackend(base.BaseBackend):
 
     def __init__(self, name, *args, **kwargs):
         self.name = name
-        super(LxcBackend, self).__init__(self.name, *args, **kwargs)
+        super().__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)

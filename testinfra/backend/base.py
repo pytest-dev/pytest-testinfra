@@ -23,7 +23,7 @@ HostSpec = collections.namedtuple(
     'HostSpec', ['name', 'port', 'user', 'password'])
 
 
-class CommandResult(object):
+class CommandResult:
 
     def __init__(
         self, backend, exit_status, command, stdout_bytes,
@@ -36,7 +36,7 @@ class CommandResult(object):
         self._stderr = stderr
         self.command = command
         self._backend = backend
-        super(CommandResult, self).__init__()
+        super().__init__()
 
     @property
     def succeeded(self):
@@ -101,7 +101,7 @@ class CommandResult(object):
         )
 
 
-class BaseBackend(object):
+class BaseBackend:
     """Represent the connection to the remote or local system"""
     NAME = None
     HAS_RUN_SALT = False
@@ -113,7 +113,7 @@ class BaseBackend(object):
         self.hostname = hostname
         self.sudo = sudo
         self.sudo_user = sudo_user
-        super(BaseBackend, self).__init__()
+        super().__init__()
 
     def set_host(self, host):
         self._host = host

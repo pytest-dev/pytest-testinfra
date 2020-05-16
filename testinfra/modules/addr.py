@@ -13,7 +13,7 @@
 from testinfra.modules.base import Module
 
 
-class _AddrPort(object):
+class _AddrPort:
     def __init__(self, addr, port):
         self._addr = addr
         self._port = str(port)
@@ -51,7 +51,7 @@ class Addr(Module):
 
     def __init__(self, name):
         self._name = name
-        super(Addr, self).__init__()
+        super().__init__()
 
     @property
     def name(self):

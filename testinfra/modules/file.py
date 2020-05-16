@@ -20,7 +20,7 @@ class File(Module):
 
     def __init__(self, path):
         self.path = path
-        super(File, self).__init__()
+        super().__init__()
 
     @property
     def exists(self):

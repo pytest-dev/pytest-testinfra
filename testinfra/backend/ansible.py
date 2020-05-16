@@ -31,7 +31,7 @@ class AnsibleBackend(base.BaseBackend):
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
         self.force_ansible = force_ansible
-        super(AnsibleBackend, self).__init__(host, *args, **kwargs)
+        super().__init__(host, *args, **kwargs)
 
     @property
     def ansible_runner(self):

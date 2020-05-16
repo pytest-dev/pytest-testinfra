@@ -18,7 +18,7 @@ class PodmanBackend(base.BaseBackend):
 
     def __init__(self, name, *args, **kwargs):
         self.name, self.user = self.parse_containerspec(name)
-        super(PodmanBackend, self).__init__(self.name, *args, **kwargs)
+        super().__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)

@@ -33,7 +33,7 @@ class Supervisor(Module):
     def __init__(self, name, _attrs_cache=None):
         self.name = name
         self._attrs_cache = _attrs_cache
-        super(Supervisor, self).__init__()
+        super().__init__()
 
     @staticmethod
     def _parse_status(line):

@@ -42,7 +42,7 @@ class ParamikoBackend(base.BaseBackend):
         self.ssh_identity_file = ssh_identity_file
         self.get_pty = False
         self.timeout = int(timeout)
-        super(ParamikoBackend, self).__init__(self.host.name, *args, **kwargs)
+        super().__init__(self.host.name, *args, **kwargs)
 
     def _load_ssh_config(self, client, cfg, ssh_config):
         for key, value in ssh_config.lookup(self.host.name).items():

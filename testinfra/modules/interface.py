@@ -19,7 +19,7 @@ class Interface(Module):
 
     def __init__(self, name):
         self.name = name
-        super(Interface, self).__init__()
+        super().__init__()
 
     @property
     def exists(self):

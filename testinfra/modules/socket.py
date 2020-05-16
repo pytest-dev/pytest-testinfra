@@ -84,7 +84,7 @@ class Socket(Module):
             self.protocol, self.host, self.port = parse_socketspec(socketspec)
         else:
             self.protocol = self.host = self.port = None
-        super(Socket, self).__init__()
+        super().__init__()
 
     @property
     def is_listening(self):
