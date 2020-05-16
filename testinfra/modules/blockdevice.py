@@ -27,7 +27,7 @@ class BlockDevice(Module):
 
     def __init__(self, device):
         self.device = device
-        super(BlockDevice, self).__init__()
+        super().__init__()
 
     @property
     def is_partition(self):

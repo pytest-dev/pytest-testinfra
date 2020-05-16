@@ -19,7 +19,7 @@ class MountPoint(Module):
     def __init__(self, path, _attrs_cache=None):
         self.path = path
         self._attrs_cache = _attrs_cache
-        super(MountPoint, self).__init__()
+        super().__init__()
 
     @classmethod
     def _iter_mountpoints(cls):

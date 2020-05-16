@@ -26,7 +26,7 @@ class SaltBackend(base.BaseBackend):
     def __init__(self, host, *args, **kwargs):
         self.host = host
         self._client = None
-        super(SaltBackend, self).__init__(self.host, *args, **kwargs)
+        super().__init__(self.host, *args, **kwargs)
 
     @property
     def client(self):
@@ -62,4 +62,4 @@ class SaltBackend(base.BaseBackend):
             if not hosts:
                 raise RuntimeError("No host matching '%s'" % (host,))
             return sorted(hosts)
-        return super(SaltBackend, cls).get_hosts(host, **kwargs)
+        return super().get_hosts(host, **kwargs)

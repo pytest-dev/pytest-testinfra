@@ -17,7 +17,7 @@ class LocalBackend(base.BaseBackend):
     NAME = "local"
 
     def __init__(self, *args, **kwargs):
-        super(LocalBackend, self).__init__("local", **kwargs)
+        super().__init__("local", **kwargs)
 
     def get_pytest_id(self):
         return "local"

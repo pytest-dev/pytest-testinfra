@@ -18,7 +18,7 @@ class Package(Module):
 
     def __init__(self, name):
         self.name = name
-        super(Package, self).__init__()
+        super().__init__()
 
     @property
     def is_installed(self):

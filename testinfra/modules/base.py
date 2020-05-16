@@ -11,7 +11,7 @@
 # limitations under the License.
 
 
-class Module(object):
+class Module:
     _host = None
 
     @classmethod
@@ -35,5 +35,5 @@ class InstanceModule(Module):
 
     @classmethod
     def get_module(cls, _host):
-        klass = super(InstanceModule, cls).get_module(_host)
+        klass = super().get_module(_host)
         return klass()

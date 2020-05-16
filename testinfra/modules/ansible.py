@@ -30,8 +30,7 @@ class AnsibleException(Exception):
 
     def __init__(self, result):
         self.result = result
-        super(AnsibleException, self).__init__(
-            "Unexpected error: {}".format(pprint.pformat(result)))
+        super().__init__("Unexpected error: {}".format(pprint.pformat(result)))
 
 
 def need_ansible(func):

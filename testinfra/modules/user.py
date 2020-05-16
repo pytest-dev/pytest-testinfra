@@ -23,7 +23,7 @@ class User(Module):
 
     def __init__(self, name=None):
         self._name = name
-        super(User, self).__init__()
+        super().__init__()
 
     @property
     def name(self):
@@ -108,7 +108,7 @@ class User(Module):
             return BSDUser
         if host.system_info.type == 'windows':
             return WindowsUser
-        return super(User, cls).get_module_class(host)
+        return super().get_module_class(host)
 
     def __repr__(self):
         return "<user %s>" % (self.name,)

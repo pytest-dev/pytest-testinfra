@@ -122,7 +122,7 @@ def pytest_generate_tests(metafunc):
             "_testinfra_host", params, ids=ids, scope="module", indirect=True)
 
 
-class NagiosReporter(object):
+class NagiosReporter:
 
     def __init__(self, out):
         self.passed = 0

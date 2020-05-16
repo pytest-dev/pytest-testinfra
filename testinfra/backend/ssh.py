@@ -28,7 +28,7 @@ class SshBackend(base.BaseBackend):
         self.timeout = int(timeout)
         self.controlpersist = int(controlpersist)
         self.ssh_extra_args = ssh_extra_args
-        super(SshBackend, self).__init__(self.host.name, *args, **kwargs)
+        super().__init__(self.host.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         return self.run_ssh(self.get_command(command, *args))
