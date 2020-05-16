@@ -65,7 +65,7 @@ And run it::
     ====================== test session starts ======================
     platform linux -- Python 2.7.3 -- py-1.4.26 -- pytest-2.6.4
     plugins: testinfra
-    collected 3 items 
+    collected 3 items
 
     test_myinfra.py::test_passwd_file[local] PASSED
     test_myinfra.py::test_nginx_is_installed[local] PASSED
@@ -78,5 +78,5 @@ And run it::
 .. _Ansible: https://www.ansible.com/
 .. _Puppet: https://puppetlabs.com/
 .. _Chef: https://www.chef.io/
-.. _Serverspec: http://serverspec.org/
+.. _Serverspec: https://serverspec.org/
 .. _Pytest: https://pytest.org/
