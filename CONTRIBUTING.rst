@@ -26,8 +26,8 @@ To run only some selected tests::
     # Only tests matching 'ansible' on 4 processes with pytest-xdist
     tox -- -v -n 4 -k ansible test
 
-    # Only modules tests on python 2.7 and spawn a pdb on error
-    tox -e py27 -- -v --pdb test/test_modules.py
+    # Only modules tests on Python 3 and spawn a pdb on error
+    tox -e py3 -- -v --pdb test/test_modules.py
 
 
 Code style
