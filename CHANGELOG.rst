@@ -2,6 +2,12 @@
 Changelog
 =========
 
+5.1.0
+=====
+
+* Use remote_user and remote_port in ansible.cfg
+* Add `arch` (architecture) attribute to system_info module
+
 5.0.0
 =====
 
