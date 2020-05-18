@@ -186,9 +186,6 @@ class File(Module):
             return self.path == other
         return False
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
