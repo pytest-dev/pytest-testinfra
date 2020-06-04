@@ -450,8 +450,9 @@ def test_parse_hostspec(hostspec, expected):
         ('kubectl://pod?context=ctx&container=c', 'pod', 'c', None, None, 'ctx')
     ]
 )
-def test_kubectl_hostspec(hostspec, pod, container, namespace, kubeconfig, 
-    context):
+def test_kubectl_hostspec(
+    hostspec, pod, container, namespace, kubeconfig, context,
+):
         backend = testinfra.get_host(hostspec).backend
         assert backend.name == pod
         assert backend.container == container
