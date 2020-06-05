@@ -127,6 +127,8 @@ namespace::
     $ py.test --hosts='kubectl://mypod-a1b2c3'
     # specify container name and namespace
     $ py.test --hosts='kubectl://somepod-2536ab?container=nginx&namespace=web'
+    # specify the kubeconfig context to use
+    $ py.test --hosts='kubectl://somepod-2536ab?context=k8s-cluster-a&container=nginx'
     # you can specify kubeconfig either from KUBECONFIG environment variable
     # or when working with multiple configuration with the "kubeconfig" option
     $ py.test --hosts='kubectl://somepod-123?kubeconfig=/path/kubeconfig,kubectl://otherpod-123?kubeconfig=/other/kubeconfig'

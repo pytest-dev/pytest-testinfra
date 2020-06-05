@@ -21,6 +21,7 @@ class KubectlBackend(base.BaseBackend):
         self.container = kwargs.get('container')
         self.namespace = kwargs.get('namespace')
         self.kubeconfig = kwargs.get('kubeconfig')
+        self.context = kwargs.get('context')
         super().__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
@@ -32,6 +33,9 @@ class KubectlBackend(base.BaseBackend):
         if self.kubeconfig is not None:
             kcmd += '--kubeconfig="%s" '
             kcmd_args.append(self.kubeconfig)
+        if self.context is not None:
+            kcmd += '--context="%s" '
+            kcmd_args.append(self.context)
         if self.namespace is not None:
             kcmd += '-n %s '
             kcmd_args.append(self.namespace)
