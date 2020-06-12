@@ -2,6 +2,12 @@
 Changelog
 =========
 
+5.2.0
+=====
+
+* Allow kubeconfig context to be supplied in kubernetes backend
+* Drop file.__ne__ implementation and require python >= 3.5
+
 5.1.0
 =====
 
