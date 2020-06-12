@@ -17,7 +17,6 @@ host
 
 .. autoclass:: testinfra.host.Host
    :members:
-   :member-order: run
 
     .. attribute:: ansible
 
