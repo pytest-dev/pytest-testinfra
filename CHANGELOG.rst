@@ -2,6 +2,11 @@
 Changelog
 =========
 
+5.2.1
+=====
+
+* Fix documentation build
+
 5.2.0
 =====
 
