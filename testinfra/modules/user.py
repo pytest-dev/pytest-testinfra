@@ -34,6 +34,15 @@ class User(Module):
 
     @property
     def exists(self):
+        """Test if user exists
+
+        >>> host.user("root").exists
+        True
+        >>> host.user("nosuchuser").exists
+        False
+
+        """
+
         return self.run_test("id %s", self.name).rc == 0
 
     @property
@@ -145,6 +154,15 @@ class WindowsUser(User):
 
     @property
     def exists(self):
+        """Test if user exists
+
+        >>> host.user("Administrator").exists
+        True
+        >>> host.user("nosuchuser").exists
+        False
+
+        """
+
         return self.run_test("net user %s", self.name).rc == 0
 
     @property
