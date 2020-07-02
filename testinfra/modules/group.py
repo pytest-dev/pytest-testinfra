@@ -22,6 +22,15 @@ class Group(Module):
 
     @property
     def exists(self):
+        """Test if group exists
+
+        >>> host.group("wheel").exists
+        True
+        >>> host.group("nosuchgroup").exists
+        False
+
+        """
+
         return self.run_expect([0, 2], "getent group %s", self.name).rc == 0
 
     @property
