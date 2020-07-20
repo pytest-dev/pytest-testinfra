@@ -2,7 +2,7 @@ FROM centos:6
 
 RUN yum clean all && \
     yum -y install \
-      openssh-server && \
+      openssh-server iptables && \
     rm -f /etc/ssh/ssh_host_ecdsa_key /etc/ssh/ssh_host_rsa_key && \
     ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_ecdsa_key && \
     ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key && \
