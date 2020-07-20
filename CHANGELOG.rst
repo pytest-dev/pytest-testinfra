@@ -2,6 +2,12 @@
 Changelog
 =========
 
+5.2.2
+=====
+
+* iptables: use -w option to wait for iptables lock when running in parallel
+  with pytest-xdist.
+
 5.2.1
 =====
 
