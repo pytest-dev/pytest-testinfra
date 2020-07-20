@@ -516,6 +516,13 @@ def test_iptables(host):
     assert ssh_rule_str in input_rules
     assert vip_redirect_rule_str in nat_rules
     assert vip_redirect_rule_str in nat_prerouting_rules
+    assert host.iptables._has_w_argument is True
+
+
+@pytest.mark.testinfra_hosts('docker://centos_6')
+def test_iptables_centos6(host):
+    host.iptables.rules()
+    assert host.iptables._has_w_argument is False
 
 
 def test_ip6tables(host):
