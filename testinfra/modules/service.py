@@ -45,7 +45,7 @@ class Service(Module):
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
-            if (
+            if host.file("/run/systemd/system/").is_directory or (
                 host.exists("systemctl")
                 and "systemd" in host.file("/sbin/init").linked_to
             ):
