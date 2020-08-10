@@ -15,4 +15,5 @@ include LICENSE
 exclude .editorconfig
 exclude .travis.yml
 exclude .gitignore
+prune doc/build
 prune .github
