@@ -257,3 +257,12 @@ def pytest_configure(config):
         thread.join()
     if build_failed.is_set():
         raise RuntimeError("One or more docker build failed")
+
+    config.addinivalue_line(
+        "markers",
+        "testinfra_hosts(host_selector): mark test to run on selected hosts"
+    )
+    config.addinivalue_line(
+        "markers",
+        "destructive: mark test as destructive"
+    )
