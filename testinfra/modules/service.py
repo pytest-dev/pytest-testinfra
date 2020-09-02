@@ -152,7 +152,7 @@ class SystemdService(SysvService):
 
     @property
     def is_masked(self):
-        cmd = self.run("systemctl is-enabled %s", self.name)
+        cmd = self.run_test("systemctl is-enabled %s", self.name)
         return cmd.rc == 0 and cmd.stdout.strip() == "masked"
 
 
