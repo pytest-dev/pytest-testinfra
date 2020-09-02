@@ -132,6 +132,11 @@ class SystemdService(SysvService):
         assert (cmd.stdout, cmd.stderr) == ("", "")
         return True
 
+    @property
+    def is_masked(self):
+        cmd = self.run("systemctl is-enabled %s", self.name)
+        return cmd.rc == 0 and cmd.stdout.strip() == "masked"
+
 
 class UpstartService(SysvService):
 
