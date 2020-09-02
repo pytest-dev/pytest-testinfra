@@ -42,6 +42,24 @@ class Service(Module):
         """Test if service is enabled"""
         raise NotImplementedError
 
+    @property
+    def is_valid(self):
+        """Test if service is valid
+
+        This method is only available in the systemd implementation,
+        it will raise NotImplementedError in others implementation
+        """
+        raise NotImplementedError
+
+    @property
+    def is_masked(self):
+        """Test if service is masked
+
+        This method is only available in the systemd implementation,
+        it will raise NotImplementedError in others implementations
+        """
+        raise NotImplementedError
+
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
