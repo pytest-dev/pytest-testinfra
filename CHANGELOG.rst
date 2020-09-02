@@ -2,6 +2,11 @@
 Changelog
 =========
 
+5.3.0
+=====
+
+* Add is_masked() method on systemd service
+
 5.2.2
 =====
 
