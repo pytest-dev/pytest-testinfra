@@ -133,20 +133,13 @@ def test_ssh_service(host, docker_image):
         assert ssh.is_enabled
 
 
-@all_images
-def test_service_mask(host, docker_image):
-    if docker_image in ("centos_6", "centos_7",
-                        "alpine", "archlinux"):
-        name = "sshd"
-    else:
-        name = "ssh"
-
-    ssh = host.service(name)
-    if isinstance(ssh, SystemdService):
-        host.run("systemctl mask %s", name)
-        assert ssh.is_masked
-        host.run("systemctl unmask %s", name)
-        assert not ssh.is_masked
+def test_service_systemd_mask(host):
+    ssh = host.service("ssh")
+    assert not ssh.is_masked
+    host.run("systemctl mask ssh")
+    assert ssh.is_masked
+    host.run("systemctl unmask ssh")
+    assert not ssh.is_masked
 
 
 @pytest.mark.parametrize("name,running,enabled", [
