@@ -2,10 +2,15 @@
 Changelog
 =========
 
+5.3.1
+=====
+
+* Fix newly introduced is_masked property on systemd service https://github.com/philpep/testinfra/pull/569
+
 5.3.0
 =====
 
-* Add is_masked() method on systemd service
+* Add is_masked property on systemd service
 
 5.2.2
 =====
