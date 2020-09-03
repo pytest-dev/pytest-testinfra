@@ -132,6 +132,15 @@ def test_ssh_service(host, docker_image):
         assert ssh.is_enabled
 
 
+def test_service_systemd_mask(host):
+    ssh = host.service("ssh")
+    assert not ssh.is_masked
+    host.run("systemctl mask ssh")
+    assert ssh.is_masked
+    host.run("systemctl unmask ssh")
+    assert not ssh.is_masked
+
+
 @pytest.mark.parametrize("name,running,enabled", [
     ("ntp", False, True),
     ("salt-minion", False, False),
