@@ -68,14 +68,22 @@ class Package(Module):
             return FreeBSDPackage
         if host.system_info.type in ("openbsd", "netbsd"):
             return OpenBSDPackage
+        if host.system_info.distribution in ("debian", "ubuntu"):
+            return DebianPackage
+        if (
+            host.system_info.distribution
+            and host.system_info.distribution.lower() == "centos"
+        ):
+            return RpmPackage
+        if host.system_info.distribution == "arch":
+            return ArchPackage
+        if host.exists("apk"):
+            return AlpinePackage
+        # Fallback conditions
         if host.exists("dpkg-query"):
             return DebianPackage
         if host.exists("rpm"):
             return RpmPackage
-        if host.exists("apk"):
-            return AlpinePackage
-        if host.system_info.distribution == "arch":
-            return ArchPackage
         raise NotImplementedError
 
 

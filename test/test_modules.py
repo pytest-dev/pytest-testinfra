@@ -31,6 +31,13 @@ all_images = pytest.mark.testinfra_hosts(*[
     )
 ])
 
+centos_images = pytest.mark.testinfra_hosts(*[
+    "docker://{}".format(image)
+    for image in (
+        "centos_6", "centos_7",
+    )
+])
+
 
 @all_images
 def test_package(host, docker_image):
@@ -73,6 +80,16 @@ def test_held_package(host):
 
 
 @pytest.mark.destructive
+@centos_images
+def test_non_default_package_tool(host):
+    # Make non default pkg tool binary present
+    host.run("install -m a+rx /bin/true /usr/bin/dpkg-query")
+    # drop the cache
+    del host.package
+    assert host.package("openssh").is_installed
+
+
+@pytest.mark.destructive
 def test_uninstalled_package_version(host):
     with pytest.raises(AssertionError) as excinfo:
         host.package('zsh').version
@@ -93,7 +110,7 @@ def test_systeminfo(host, docker_image):
     release, distribution, codename, arch = {
         "alpine": (r"^3\.11\.", "alpine", None, 'x86_64'),
         "archlinux": ("rolling", "arch", None, 'x86_64'),
-        "centos_6": (r"^6", "CentOS", None, 'x86_64'),
+        "centos_6": (r"^6", "centos", None, 'x86_64'),
         "centos_7": (r"^7$", "centos", None, 'x86_64'),
         "debian_buster": (r"^10", "debian", "buster", 'x86_64'),
         "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial", 'x86_64')
