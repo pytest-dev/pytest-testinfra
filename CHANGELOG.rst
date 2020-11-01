@@ -2,6 +2,12 @@
 Changelog
 =========
 
+6.0.0
+=====
+
+* Breaking change: testinfra is moving to the https://github.com/pytest-dev/
+  organization. Project on PyPi is renamed as pytest-testinfra.
+
 5.3.1
 =====
 
