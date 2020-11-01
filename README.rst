@@ -27,10 +27,10 @@ Quick start
 
 Install testinfra using pip::
 
-    $ pip install testinfra
+    $ pip install pytest-testinfra
 
     # or install the devel version
-    $ pip install 'git+https://github.com/philpep/testinfra@master#egg=testinfra'
+    $ pip install 'git+https://github.com/philpep/testinfra@master#egg=pytest-testinfra'
 
 
 Write your first tests file to `test_myinfra.py`:

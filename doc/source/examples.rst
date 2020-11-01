@@ -98,7 +98,7 @@ integration server.
 If your Jenkins slave can run Vagrant, your build scripts can be like::
 
 
-    pip install testinfra paramiko
+    pip install pytest-testinfra paramiko
     vagrant up
     vagrant ssh-config > .vagrant/ssh-config
     py.test --hosts=default --ssh-config=.vagrant/ssh-config --junit-xml junit.xml tests.py
