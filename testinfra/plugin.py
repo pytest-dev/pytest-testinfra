@@ -167,7 +167,10 @@ class NagiosReporter:
 class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
 
     def __init__(self, *args, **kwargs):
-        self._out_encoding = kwargs['encoding']
+        if 'b' in kwargs.get('mode', 'b'):
+            self._out_encoding = kwargs.pop('encoding')
+        else:
+            self._out_encoding = kwargs.get('encoding')
         super().__init__(*args, **kwargs)
 
     def write(self, s):
