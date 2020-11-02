@@ -13,25 +13,34 @@
 pytest_plugins = ['pytester']
 
 
-def test_nagios_notest(testdir):
-    result = testdir.runpytest('--nagios', '-q', '--tb=no')
+def test_nagios_notest(testdir, request):
+    params = ['--nagios', '-q', '--tb=no']
+    if not request.config.pluginmanager.hasplugin('pytest11.testinfra'):
+        params.extend(['-p', 'testinfra.plugin'])
+    result = testdir.runpytest(*params)
     assert result.ret == 0
     lines = result.stdout.str().splitlines()
     assert lines[0].startswith('TESTINFRA OK - 0 passed, 0 failed, 0 skipped')
 
 
-def test_nagios_ok(testdir):
+def test_nagios_ok(testdir, request):
     testdir.makepyfile('def test_ok(): pass')
-    result = testdir.runpytest('--nagios', '-q', '--tb=no')
+    params = ['--nagios', '-q', '--tb=no']
+    if not request.config.pluginmanager.hasplugin('pytest11.testinfra'):
+        params.extend(['-p', 'testinfra.plugin'])
+    result = testdir.runpytest(*params)
     assert result.ret == 0
     lines = result.stdout.str().splitlines()
     assert lines[0].startswith('TESTINFRA OK - 1 passed, 0 failed, 0 skipped')
     assert lines[1][0] == '.'
 
 
-def test_nagios_fail(testdir):
+def test_nagios_fail(testdir, request):
     testdir.makepyfile('def test_ok(): pass\ndef test_fail(): assert False')
-    result = testdir.runpytest('--nagios', '-q', '--tb=no')
+    params = ['--nagios', '-q', '--tb=no']
+    if not request.config.pluginmanager.hasplugin('pytest11.testinfra'):
+        params.extend(['-p', 'testinfra.plugin'])
+    result = testdir.runpytest(*params)
     assert result.ret == 2
     lines = result.stdout.str().splitlines()
     assert lines[0].startswith(
