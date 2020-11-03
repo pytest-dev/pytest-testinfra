@@ -126,12 +126,12 @@ html_theme = 'alabaster'
 # documentation.
 html_theme_options = {
     'logo': 'logo.svg',
-    'github_user': 'philpep',
-    'github_repo': 'testinfra',
+    'github_user': 'pytest-dev',
+    'github_repo': 'pytest-testinfra',
     'github_button': True,
     'travis_button': True,
     'extra_nav_links': {
-        'View on github': 'https://github.com/philpep/testinfra',
+        'View on github': 'https://github.com/pytest-dev/pytest-testinfra',
     },
 }
 

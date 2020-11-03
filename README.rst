@@ -17,7 +17,7 @@ a plugin to the powerful Pytest_ test engine
 License
 =======
 
-`Apache License 2.0 <https://github.com/philpep/testinfra/blob/master/LICENSE>`_
+`Apache License 2.0 <https://github.com/pytest-dev/pytest-testinfra/blob/master/LICENSE>`_
 
 The logo is licensed under the `Creative Commons NoDerivatives 4.0 License <https://creativecommons.org/licenses/by-nd/4.0/>`_
 If you have some other use in mind, contact us.
@@ -30,7 +30,7 @@ Install testinfra using pip::
     $ pip install pytest-testinfra
 
     # or install the devel version
-    $ pip install 'git+https://github.com/philpep/testinfra@master#egg=pytest-testinfra'
+    $ pip install 'git+https://github.com/pytest-dev/pytest-testinfra@master#egg=pytest-testinfra'
 
 
 Write your first tests file to `test_myinfra.py`:

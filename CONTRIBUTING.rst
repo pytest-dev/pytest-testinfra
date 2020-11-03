@@ -8,7 +8,7 @@ Pull requests
 =============
 
 Regardless the review by a developer, a pull request will trigger automatic
-tests on https://travis-ci.org/philpep/testinfra/
+tests on https://travis-ci.org/pytest-dev/pytest-testinfra/
 
 You're encouraged to setup a full test environment, to add tests and check if
 all the tests pass *before* submitting your pull request. To run the complete

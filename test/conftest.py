@@ -108,7 +108,7 @@ def build_docker_container_fixture(image, scope):
         if image in DOCKER_IMAGES:
             cmd.append("--privileged")
 
-        cmd.append("philpep/testinfra:" + image)
+        cmd.append("testinfra:" + image)
         docker_id = check_output(" ".join(cmd))
 
         def teardown():
@@ -235,7 +235,7 @@ def pytest_configure(config):
         try:
             subprocess.check_call([
                 "docker", "build", "-f", dockerfile,
-                "-t", "philpep/testinfra:{0}".format(image),
+                "-t", "testinfra:{0}".format(image),
                 image_path])
         except Exception:
             build_failed.set()
