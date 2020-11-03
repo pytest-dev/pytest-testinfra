@@ -7,7 +7,7 @@ following
 Issue Tracker
 ~~~~~~~~~~~~~
 
-Checkout existing issues on `project issue tracker <https://github.com/philpep/testinfra/issues>`_
+Checkout existing issues on `project issue tracker <https://github.com/pytest-dev/pytest-testinfra/issues>`_
 
 IRC
 ~~~
