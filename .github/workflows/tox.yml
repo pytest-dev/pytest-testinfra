@@ -33,11 +33,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update \
-          && sudo apt-get install -y  ansible \
-          && ansible-doc -l | grep docker_container
       # Login needed to increase rate-limits
       - name: Login to DockerHub
         uses: docker/login-action@v1
