@@ -2,11 +2,23 @@
 Changelog
 =========
 
+6.1.0
+=====
+
+* Fix wrong package module on CentOS having dpkg tools installed #570 (#575)
+* Deduplicate hosts returned by get_backends() (#572)
+* Use /run/systemd/system/ to detect systemd (fixes #546)
+* Use ssh_args from ansible.cfg
+* Require python >= 3.6
+* Fix ValueError with python 3.8+ when using --nagios option.
+
 6.0.0
 =====
 
-* Breaking change: testinfra is moving to the https://github.com/pytest-dev/
-  organization. Project on PyPi is renamed as pytest-testinfra.
+* Breaking change: testinfra has moved to the https://github.com/pytest-dev/
+  organization. Project on PyPi is renamed as pytest-testinfra. A dummy
+  testinfra will make the transition, but you should rename to pytest-testinfra
+  in your requirements files.
 
 5.3.1
 =====
