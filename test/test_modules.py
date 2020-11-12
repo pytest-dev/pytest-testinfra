@@ -84,7 +84,6 @@ def test_held_package(host):
 def test_non_default_package_tool(host):
     # Make non default pkg tool binary present
     host.run("install -m a+rx /bin/true /usr/bin/dpkg-query")
-    # drop the cache
     assert host.package("openssh").is_installed
 
 
