@@ -519,3 +519,16 @@ def test_ssh_hostspec(hostspec, expected):
     cmd, cmd_args = backend._build_ssh_command('true')
     command = backend.quote(' '.join(cmd), *cmd_args)
     assert command == expected
+
+
+def test_get_hosts():
+    # Hosts returned by get_host must be deduplicated (by name & kwargs) and in
+    # same order as asked
+    hosts = testinfra.backend.get_backends([
+        'ssh://foo', 'ssh://a', 'ssh://a', 'ssh://a?timeout=1',
+    ])
+    assert [(h.host.name, h.timeout) for h in hosts] == [
+        ('foo', 10),
+        ('a', 10),
+        ('a', 1),
+    ]
