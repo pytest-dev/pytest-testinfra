@@ -77,7 +77,7 @@ def get_backend(hostspec, **kwargs):
 
 
 def get_backends(hosts, **kwargs):
-    backends = []
+    backends = {}
     for hostspec in hosts:
         host, kw = parse_hostspec(hostspec)
         for k, v in kwargs.items():
@@ -89,8 +89,12 @@ def get_backends(hosts, **kwargs):
             connection = "paramiko"
         klass = get_backend_class(connection)
         for name in klass.get_hosts(host, **kw):
+            key = (name, frozenset(kw.items()))
+            if key in backends:
+                continue
             if connection == "local":
-                backends.append(klass(**kw))
+                backend = klass(**kw)
             else:
-                backends.append(klass(name, **kw))
-    return backends
+                backend = klass(name, **kw)
+            backends[key] = backend
+    return list(backends.values())
