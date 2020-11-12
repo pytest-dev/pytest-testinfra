@@ -57,7 +57,6 @@ ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
 DOCKER_IMAGES = [
     "alpine",
     "archlinux",
-    "centos_6",
     "centos_7",
     "debian_buster",
     "ubuntu_xenial",
@@ -185,7 +184,6 @@ def host(request, tmpdir_factory):
             docker_id, connection='docker').service
 
         images_with_sshd = (
-            "centos_6",
             "centos_7",
             "alpine",
             "archlinux"

@@ -26,15 +26,8 @@ from testinfra.modules.socket import parse_socketspec
 all_images = pytest.mark.testinfra_hosts(*[
     "docker://{}".format(image)
     for image in (
-        "alpine", "archlinux", "centos_6", "centos_7",
+        "alpine", "archlinux", "centos_7",
         "debian_buster", "ubuntu_xenial"
-    )
-])
-
-centos_images = pytest.mark.testinfra_hosts(*[
-    "docker://{}".format(image)
-    for image in (
-        "centos_6", "centos_7",
     )
 ])
 
@@ -51,7 +44,6 @@ def test_package(host, docker_image):
     version = {
         "alpine": "8.",
         "archlinux": "8.",
-        "centos_6": "5.",
         "centos_7": "7.",
         "debian_buster": "1:7.9",
         "ubuntu_xenial": "1:7.2"
@@ -61,7 +53,6 @@ def test_package(host, docker_image):
     release = {
         "alpine": "r0",
         "archlinux": None,
-        "centos_6": ".el6",
         "centos_7": ".el7",
         "debian_buster": None,
         "ubuntu_xenial": None
@@ -79,8 +70,7 @@ def test_held_package(host):
     assert python.version.startswith("2.7.")
 
 
-@pytest.mark.destructive
-@centos_images
+@pytest.mark.testinfra_hosts("docker://centos_7")
 def test_non_default_package_tool(host):
     # Make non default pkg tool binary present
     host.run("install -m a+rx /bin/true /usr/bin/dpkg-query")
@@ -108,7 +98,6 @@ def test_systeminfo(host, docker_image):
     release, distribution, codename, arch = {
         "alpine": (r"^3\.11\.", "alpine", None, 'x86_64'),
         "archlinux": ("rolling", "arch", None, 'x86_64'),
-        "centos_6": (r"^6", "CentOS", None, 'x86_64'),
         "centos_7": (r"^7$", "centos", None, 'x86_64'),
         "debian_buster": (r"^10", "debian", "buster", 'x86_64'),
         "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial", 'x86_64')
@@ -121,7 +110,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_6", "centos_7",
+    if docker_image in ("centos_7",
                         "alpine", "archlinux"):
         name = "sshd"
     else:
@@ -239,7 +228,6 @@ def test_process(host, docker_image):
     args, comm = {
         "alpine": ("/sbin/init", "init"),
         "archlinux": ("/usr/sbin/init", "systemd"),
-        "centos_6": ("/usr/sbin/sshd -D", "sshd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
         "debian_buster": ("/sbin/init", "systemd"),
         "ubuntu_xenial": ("/sbin/init", "systemd")
@@ -544,12 +532,6 @@ def test_iptables(host):
     assert vip_redirect_rule_str in nat_rules
     assert vip_redirect_rule_str in nat_prerouting_rules
     assert host.iptables._has_w_argument is True
-
-
-@pytest.mark.testinfra_hosts('docker://centos_6')
-def test_iptables_centos6(host):
-    host.iptables.rules()
-    assert host.iptables._has_w_argument is False
 
 
 def test_ip6tables(host):
