@@ -31,6 +31,13 @@ all_images = pytest.mark.testinfra_hosts(*[
     )
 ])
 
+centos_images = pytest.mark.testinfra_hosts(*[
+    "docker://{}".format(image)
+    for image in (
+        "centos_6", "centos_7",
+    )
+])
+
 
 @all_images
 def test_package(host, docker_image):
@@ -70,6 +77,14 @@ def test_held_package(host):
     python = host.package("python")
     assert python.is_installed
     assert python.version.startswith("2.7.")
+
+
+@pytest.mark.destructive
+@centos_images
+def test_non_default_package_tool(host):
+    # Make non default pkg tool binary present
+    host.run("install -m a+rx /bin/true /usr/bin/dpkg-query")
+    assert host.package("openssh").is_installed
 
 
 @pytest.mark.destructive
