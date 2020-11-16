@@ -13,7 +13,7 @@
 import collections
 import locale
 import logging
-import pipes
+import shlex
 import subprocess
 import urllib.parse
 
@@ -168,7 +168,7 @@ class BaseBackend:
     @staticmethod
     def quote(command, *args):
         if args:
-            return command % tuple(pipes.quote(a) for a in args)
+            return command % tuple(shlex.quote(a) for a in args)
         return command
 
     def get_sudo_command(self, command, sudo_user):
