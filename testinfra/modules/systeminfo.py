@@ -15,8 +15,6 @@ import re
 from testinfra.modules.base import InstanceModule
 from testinfra.utils import cached_property
 
-import platform
-
 
 class SystemInfo(InstanceModule):
     """Return system informations"""
@@ -30,22 +28,23 @@ class SystemInfo(InstanceModule):
             "release": None,
             "arch": None,
         }
-        uname = platform.uname()
-        sysinfo["type"] = uname.system.lower()
-        if sysinfo["type"] == "windows":
-            sysinfo.update(**self._get_windows_sysinfo(uname))
+        uname = self.run_expect([0, 1], 'uname -s')
+        if uname.rc == 1 or uname.stdout.lower().startswith("msys"):
+            # FIXME: find a better way to detect windows here
+            sysinfo.update(**self._get_windows_sysinfo())
             return sysinfo
-        elif sysinfo["type"] == "linux":
+        sysinfo["type"] = uname.stdout.rstrip("\r\n").lower()
+        if sysinfo["type"] == "linux":
             sysinfo.update(**self._get_linux_sysinfo())
         elif sysinfo["type"] == "darwin":
             sysinfo.update(**self._get_darwin_sysinfo())
         else:
             # BSD
-            sysinfo["release"] = uname.release
+            sysinfo["release"] = self.check_output("uname -r")
             sysinfo["distribution"] = sysinfo["type"]
             sysinfo["codename"] = None
 
-        sysinfo["arch"] = uname.machine
+        sysinfo["arch"] = self.check_output("uname -m")
         return sysinfo
 
     def _get_linux_sysinfo(self):
@@ -120,11 +119,19 @@ class SystemInfo(InstanceModule):
 
         return sysinfo
 
-    def _get_windows_sysinfo(self, uname):
+    def _get_windows_sysinfo(self):
         sysinfo = {}
-        sysinfo["distribution"] = platform.win32_edition()
-        sysinfo["release"] = uname.version
-        sysinfo["arch"] = uname.machine
+        for line in self.check_output(
+                "systeminfo | findstr /B /C:\"OS\"").splitlines():
+            key, value = line.split(":", 1)
+            key = key.strip().replace(' ', '_').lower()
+            value = value.strip()
+            if key == "os_name":
+                sysinfo["distribution"] = value
+                sysinfo["type"] = value.split(" ")[1].lower()
+            elif key == "os_version":
+                sysinfo["release"] = value
+        sysinfo["arch"] = self.check_output('echo %PROCESSOR_ARCHITECTURE%')
         return sysinfo
 
     @property
