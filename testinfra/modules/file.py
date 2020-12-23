@@ -97,7 +97,7 @@ class File(Module):
         384  # 0o600 (octal)
         >>> host.file("/etc/password").mode == 0o600
         True
-        >>> oct(host.file("/etc/password").mode) == '0600'
+        >>> oct(host.file("/etc/password").mode) == '0o600'
         True
 
         Note: Python 3 oct(x)_ function will produce ``'0o600'``
