@@ -93,25 +93,23 @@ class File(Module):
     def mode(self):
         """Return file mode as octal integer
 
-        >>> host.file("/etc/passwd").mode
-        384  # 0o600 (octal)
-        >>> host.file("/etc/password").mode == 0o600
+        >>> host.file("/etc/shadow").mode
+        416  # Oo640 octal
+        >>> host.file("/etc/shadow").mode == 0o640
         True
-        >>> oct(host.file("/etc/password").mode) == '0600'
+        >>> oct(host.file("/etc/shadow").mode) == '0o640'
         True
-
-        Note: Python 3 oct(x)_ function will produce ``'0o600'``
 
         You can also utilize the file mode constants from
         the stat_ library for testing file mode.
 
         >>> import stat
-        >>> host.file("/etc/password").mode == stat.S_IRUSR | stat.S_IWUSR
+        >>> host.file("/etc/shadow").mode == stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
         True
 
-        .. _oct(x): https://docs.python.org/3.5/library/functions.html#oct
-        .. _stat: https://docs.python.org/2/library/stat.html
-        """
+        .. _oct(x): https://docs.python.org/3/library/functions.html#oct
+        .. _stat: https://docs.python.org/3/library/stat.html
+        """  # noqa
         raise NotImplementedError
 
     def contains(self, pattern):
