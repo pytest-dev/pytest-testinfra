@@ -32,8 +32,8 @@ class _AddrPort:
                 "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
                 self._addr.name, self._port).rc == 0
 
-        return self._addr.run("%snc -w 1 -z %s %s", self._addr._prefix,
-                              self._addr.name, self._port).rc == 0
+        return self._addr.run("{}nc -w 1 -z {} {}".format(self._addr._prefix,
+                              self._addr.name, self._port)).rc == 0
 
 
 class Addr(Module):
