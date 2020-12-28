@@ -73,7 +73,7 @@ class BlockDevice(Module):
 
     @property
     def start_sector(self):
-        """Return start sector of the device on the underlaying device.
+        """Return start sector of the device on the underlying device.
 
            Usually the value is zero for full devices and is non-zero
            for partitions.
