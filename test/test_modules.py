@@ -516,6 +516,7 @@ def test_environment_home(host):
     assert host.environment().get('HOME') == '/root'
 
 
+@pytest.mark.skip_wsl()
 def test_iptables(host):
     cmd = host.run("systemctl start netfilter-persistent")
     assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
