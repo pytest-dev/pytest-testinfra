@@ -29,7 +29,7 @@ class SystemInfo(InstanceModule):
             "arch": None,
         }
         uname = self.run_expect([0, 1], 'uname -s')
-        if uname.rc == 1:
+        if uname.rc == 1 or uname.stdout.lower().startswith("msys"):
             # FIXME: find a better way to detect windows here
             sysinfo.update(**self._get_windows_sysinfo())
             return sysinfo
