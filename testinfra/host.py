@@ -22,7 +22,6 @@ class Host:
 
     def __init__(self, backend):
         self.backend = backend
-        self.wsl_distro_name = os.getenv("WSL_DISTRO_NAME")
         super().__init__()
 
     def __repr__(self):
@@ -114,10 +113,6 @@ class Host:
             return obj
         raise AttributeError("'{}' object has no attribute '{}'".format(
             self.__class__.__name__, name))
-
-    @property
-    def runs_on_wsl(self):
-        return self.wsl_distro_name is not None
 
     @classmethod
     def get_host(cls, hostspec, **kwargs):

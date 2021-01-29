@@ -208,17 +208,6 @@ def host(request, tmpdir_factory):
 
 
 @pytest.fixture
-def wsl(host):
-    return host.runs_on_wsl
-
-
-@pytest.fixture(autouse=True)
-def skip_if_wsl(request, wsl):
-    if request.node.get_closest_marker('skip_wsl'):
-        pytest.skip("Function not supported on WSL")
-
-
-@pytest.fixture
 def docker_image(host):
     return host.backend.get_hostname()
 
