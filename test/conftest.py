@@ -264,3 +264,7 @@ def pytest_configure(config):
         "markers",
         "destructive: mark test as destructive"
     )
+    config.addinivalue_line(
+        "markers",
+        "skip_wsl: skip test on WSL, no systemd support"
+    )
