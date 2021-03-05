@@ -39,7 +39,7 @@ class Interface(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return "<interface %s>" % (self.name,)
+        return "<interface {}>".format(self.name)
 
     @classmethod
     def get_module_class(cls, host):

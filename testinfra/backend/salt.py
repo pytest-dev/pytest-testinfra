@@ -44,7 +44,8 @@ class SaltBackend(base.BaseBackend):
         out = self.client.cmd(self.host, func, args or [])
         if self.host not in out:
             raise RuntimeError(
-                "Error while running %s(%s): %s. Minion not connected ?" % (
+                "Error while running {}({}): {}. "
+                "Minion not connected ?".format(
                     func, args, out))
         return out[self.host]
 
@@ -60,6 +61,6 @@ class SaltBackend(base.BaseBackend):
             else:
                 hosts = client.cmd(host, "test.true").keys()
             if not hosts:
-                raise RuntimeError("No host matching '%s'" % (host,))
+                raise RuntimeError("No host matching '{}'".format(host))
             return sorted(hosts)
         return super().get_hosts(host, **kwargs)

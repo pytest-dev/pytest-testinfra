@@ -118,7 +118,7 @@ def build_docker_container_fixture(image, scope):
         port = check_output("docker port %s 22", docker_id)
         port = int(port.rsplit(":", 1)[-1])
         return docker_id, docker_host, port
-    fname = "_docker_container_%s_%s" % (image, scope)
+    fname = "_docker_container_{}_{}".format(image, scope)
     mod = sys.modules[__name__]
     setattr(mod, fname, func)
 
@@ -147,7 +147,7 @@ def host(request, tmpdir_factory):
     else:
         scope = "session"
 
-    fname = "_docker_container_%s_%s" % (spec.name, scope)
+    fname = "_docker_container_{}_{}".format(spec.name, scope)
     docker_id, docker_host, port = request.getfixturevalue(fname)
 
     if kw["connection"] == "docker":

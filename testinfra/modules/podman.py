@@ -90,4 +90,4 @@ class Podman(Module):
         return result
 
     def __repr__(self):
-        return "<podman %s>" % (self._name)
+        return "<podman {}>".format(self._name)

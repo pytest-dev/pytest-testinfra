@@ -60,7 +60,7 @@ class SshBackend(base.BaseBackend):
         if self.controlpersist and (
             'controlmaster' not in (self.ssh_extra_args or '').lower()
         ):
-            cmd.append("-o ControlMaster=auto -o ControlPersist=%ds" % (
+            cmd.append("-o ControlMaster=auto -o ControlPersist={}s".format(
                 self.controlpersist))
         cmd.append("%s %s")
         cmd_args.extend([self.host.name, command])
@@ -99,9 +99,9 @@ class SafeSshBackend(SshBackend):
         orig_command = self.get_command('sh -c %s', orig_command)
 
         out = self.run_ssh((
-            '''of=$(mktemp)&&ef=$(mktemp)&&%s >$of 2>$ef; r=$?;'''
+            '''of=$(mktemp)&&ef=$(mktemp)&&{} >$of 2>$ef; r=$?;'''
             '''echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);'''
-            '''TESTINFRA_END";rm -f $of $ef''') % (orig_command,))
+            '''TESTINFRA_END";rm -f $of $ef''').format(orig_command))
 
         start = out.stdout.find("TESTINFRA_START;") + len("TESTINFRA_START;")
         end = out.stdout.find("TESTINFRA_END") - 1

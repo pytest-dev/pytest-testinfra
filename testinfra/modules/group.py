@@ -39,4 +39,4 @@ class Group(Module):
             "getent group %s | cut -d':' -f3", self.name))
 
     def __repr__(self):
-        return "<group %s>" % (self.name,)
+        return "<group {}>".format(self.name)

@@ -22,8 +22,8 @@ def parse_socketspec(socketspec):
 
     if protocol not in ("udp", "tcp", "unix"):
         raise RuntimeError(
-            "Cannot validate protocol '%s'. Should be tcp, udp or unix" % (
-                protocol,))
+            "Cannot validate protocol '{}'. Should be tcp, udp or unix".format(
+                protocol))
 
     if protocol == "unix":
         # unix:///foo/bar.sock
@@ -50,13 +50,13 @@ def parse_socketspec(socketspec):
                 break
 
         if family is None:
-            raise RuntimeError("Cannot validate ip address '%s'" % (host,))
+            raise RuntimeError("Cannot validate ip address '{}'".format(host))
 
     if port is not None:
         try:
             port = int(port)
         except ValueError:
-            raise RuntimeError("Cannot validate port '%s'" % (port,))
+            raise RuntimeError("Cannot validate port '{}'".format(port))
 
     return protocol, host, port
 
@@ -169,7 +169,7 @@ class Socket(Module):
             if sock[0] == "unix":
                 sockets.append("unix://" + sock[1])
             else:
-                sockets.append("%s://%s:%s" % (
+                sockets.append("{}://{}:{}".format(
                     sock[0], sock[1], sock[2],
                 ))
         return sockets
@@ -178,7 +178,7 @@ class Socket(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return "<socket %s://%s%s>" % (
+        return "<socket {}://{}{}>".format(
             self.protocol,
             self.host + ":" if self.host else "",
             self.port,

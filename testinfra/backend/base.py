@@ -91,13 +91,13 @@ class CommandResult:
 
     def __repr__(self):
         return (
-            "CommandResult(command=%s, exit_status=%s, stdout=%s, "
-            "stderr=%s)"
-        ) % (
-            repr(self.command),
+            "CommandResult(command={!r}, exit_status={}, stdout={!r}, "
+            "stderr={!r})"
+        ).format(
+            self.command,
             self.exit_status,
-            repr(self._stdout_bytes or self._stdout),
-            repr(self._stderr_bytes or self._stderr),
+            self._stdout_bytes or self._stdout,
+            self._stderr_bytes or self._stderr,
         )
 
 
@@ -160,15 +160,14 @@ class BaseBackend:
     def get_hosts(cls, host, **kwargs):
         if host is None:
             raise RuntimeError(
-                "One or more hosts is required with the %s backend" % (
-                    cls.get_connection_type(),),
-            )
+                "One or more hosts is required with the {} backend".format(
+                    cls.get_connection_type()))
         return [host]
 
     @staticmethod
     def quote(command, *args):
         if args:
-            return command % tuple(shlex.quote(a) for a in args)
+            return command % tuple(shlex.quote(a) for a in args)  # noqa: S001
         return command
 
     def get_sudo_command(self, command, sudo_user):

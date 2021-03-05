@@ -79,5 +79,5 @@ class WinRMBackend(base.BaseBackend):
     @staticmethod
     def quote(command, *args):
         if args:
-            return command % tuple(_quote(a) for a in args)
+            return command % tuple(_quote(a) for a in args)  # noqa: S001
         return command

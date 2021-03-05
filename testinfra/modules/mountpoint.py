@@ -102,9 +102,9 @@ class MountPoint(Module):
 
     def __repr__(self):
         return (
-            "<MountPoint(path=%s, device=%s, filesystem=%s, "
-            "options=%s)>"
-        ) % (
+            "<MountPoint(path={}, device={}, filesystem={}, "
+            "options={})>"
+        ).format(
             self.path,
             self.device,
             self.filesystem,

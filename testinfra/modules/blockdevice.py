@@ -101,7 +101,7 @@ class BlockDevice(Module):
             return True
         if mode == 'ro':
             return False
-        raise ValueError('Unexpected value for rw: %s' % mode)
+        raise ValueError('Unexpected value for rw: {}'.format(mode))
 
     @property
     def ra(self):
@@ -119,7 +119,7 @@ class BlockDevice(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return '<BlockDevice(path=%s)>' % self.device
+        return '<BlockDevice(path={})>'.format(self.device)
 
 
 class LinuxBlockDevice(BlockDevice):
@@ -128,14 +128,16 @@ class LinuxBlockDevice(BlockDevice):
     def _data(self):
         header = ['RO', 'RA', 'SSZ', 'BSZ', 'StartSec', 'Size', 'Device']
         command = 'blockdev  --report %s'
-        blockdev = self.run(command % self.device)
+        blockdev = self.run(command, self.device)
         if blockdev.rc != 0 or blockdev.stderr:
-            raise RuntimeError("Failed to gather data: %s" % blockdev.stderr)
+            raise RuntimeError("Failed to gather data: {}".format(
+                blockdev.stderr))
         output = blockdev.stdout.splitlines()
         if len(output) < 2:
-            raise RuntimeError("No data from %s" % self.device)
+            raise RuntimeError("No data from {}".format(self.device))
         if output[0].split() != header:
-            raise RuntimeError('Unknown output of blockdev: %s' % output[0])
+            raise RuntimeError('Unknown output of blockdev: {}'.format(
+                output[0]))
         fields = output[1].split()
         return {
             'rw_mode': str(fields[0]),

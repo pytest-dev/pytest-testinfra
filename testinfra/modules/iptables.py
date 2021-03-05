@@ -30,7 +30,7 @@ class Iptables(InstanceModule):
         elif version == 6:
             iptables = "ip6tables"
         else:
-            raise RuntimeError("Invalid version: %s" % version)
+            raise RuntimeError("Invalid version: {}".format(version))
         if self._has_w_argument is False:
             return iptables
         else:
