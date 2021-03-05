@@ -17,8 +17,8 @@ import testinfra.modules
 
 
 class Host:
-    _host_cache = {}
-    _hosts_cache = {}
+    _host_cache = {}  # type: ignore[var-annotated]
+    _hosts_cache = {}  # type: ignore[var-annotated]
 
     def __init__(self, backend):
         self.backend = backend
