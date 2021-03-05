@@ -150,11 +150,7 @@ class NagiosReporter:
             status = b"OK"
             ret = 0
 
-        if hasattr(sys.stdout, "buffer"):
-            out = sys.stdout.buffer
-        else:
-            out = sys.stdout
-
+        out = sys.stdout.buffer
         out.write(
             (b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f " b"seconds\n")
             % (
