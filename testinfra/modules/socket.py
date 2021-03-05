@@ -11,6 +11,9 @@
 # limitations under the License.
 
 import socket
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 from testinfra.modules.base import Module
 from testinfra.utils import cached_property
@@ -121,7 +124,7 @@ class Socket(Module):
         )
 
     @property
-    def clients(self):
+    def clients(self) -> List[Optional[Tuple[str, int]]]:
         """Return a list of clients connected to a listening socket
 
         For tcp and udp sockets a list of pair (adress, port) is returned.
@@ -134,7 +137,7 @@ class Socket(Module):
         [None, None, None]
 
         """
-        sockets = []
+        sockets: List[Optional[Tuple[str, int]]] = []
         for sock in self._iter_sockets(False):
             if sock[0] != self.protocol:
                 continue
