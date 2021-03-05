@@ -84,7 +84,7 @@ class Service(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return "<service %s>" % (self.name,)
+        return "<service {}>".format(self.name)
 
 
 class SysvService(Service):

@@ -90,4 +90,4 @@ class Docker(Module):
         return result
 
     def __repr__(self):
-        return "<docker %s>" % (self._name)
+        return "<docker {}>".format(self._name)

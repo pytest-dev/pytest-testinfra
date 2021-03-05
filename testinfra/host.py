@@ -43,7 +43,7 @@ class Host:
             path = os.path.join(basedir, command)
             if self.exists(path):
                 return path
-        raise ValueError('cannot find "%s" command' % (command,))
+        raise ValueError('cannot find "{}" command'.format(command))
 
     def run(self, command, *args, **kwargs):
         """Run given command and return rc (exit status), stdout and stderr
@@ -83,7 +83,7 @@ class Host:
         __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
         assert out.rc in expected, (
-            'Unexpected exit code %s for %s' % (out.rc, out))
+            'Unexpected exit code {} for {}'.format(out.rc, out))
         return out
 
     def run_test(self, command, *args, **kwargs):
@@ -102,7 +102,7 @@ class Host:
         __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
         assert out.rc == 0, (
-            'Unexpected exit code %s for %s' % (out.rc, out))
+            'Unexpected exit code {} for {}'.format(out.rc, out))
         return out.stdout.rstrip("\r\n")
 
     def __getattr__(self, name):

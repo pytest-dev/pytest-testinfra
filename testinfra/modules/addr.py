@@ -90,7 +90,7 @@ class Addr(Module):
         """Return the prefix to use for commands"""
         prefix = ""
         if self.namespace:
-            prefix = "ip netns exec %s " % self.namespace
+            prefix = "ip netns exec {} ".format(self.namespace)
         return prefix
 
     @property
@@ -131,7 +131,7 @@ class Addr(Module):
         return _AddrPort(self, port)
 
     def __repr__(self):
-        return "<addr %s>" % (self.name,)
+        return "<addr {}>".format(self.name)
 
     def _resolve(self, method):
         result = self.run_expect([0, 1, 2], "{}getent {} {}".format(

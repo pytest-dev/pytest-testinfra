@@ -35,7 +35,7 @@ def get_backend_class(connection):
     try:
         classpath = BACKENDS[connection]
     except KeyError:
-        raise RuntimeError("Unknown connection type '%s'" % (connection,))
+        raise RuntimeError("Unknown connection type '{}'".format(connection))
     module, name = classpath.rsplit('.', 1)
     return getattr(importlib.import_module(module), name)
 

@@ -32,14 +32,14 @@ class _Process(dict):
             attrs = self["_get_process_attribute_by_pid"](self["pid"], key)
             if attrs["lstart"] != self["lstart"]:
                 raise RuntimeError((
-                    "Process with pid %s start time changed from %s to %s."
+                    "Process with pid {} start time changed from {} to {}."
                     " This mean the process you are working on does not not "
                     "exist anymore"
-                ) % (self["pid"], self["lstart"], attrs["lstart"]))
+                ).format(self["pid"], self["lstart"], attrs["lstart"]))
             return attrs[key]
 
     def __repr__(self):
-        return "<process %s (pid=%s)>" % (self["comm"], self["pid"])
+        return "<process {} (pid={})>".format(self["comm"], self["pid"])
 
 
 class Process(InstanceModule):
@@ -94,7 +94,7 @@ class Process(InstanceModule):
         if not matches:
             raise RuntimeError("No process found")
         if len(matches) > 1:
-            raise RuntimeError("Multiple process found: %s" % (matches,))
+            raise RuntimeError("Multiple process found: {}".format(matches))
         return matches[0]
 
     def _get_processes(self, **filters):

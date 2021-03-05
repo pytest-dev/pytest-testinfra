@@ -263,7 +263,8 @@ class AnsibleRunner:
                 value_json = json.dumps(value)
                 cli_args.append(value_json)
             else:
-                raise TypeError("Unsupported argument type '%s'." % opt_type)
+                raise TypeError("Unsupported argument type '{}'.".format(
+                    opt_type))
         return " ".join(cli), cli_args
 
     def run_module(self, host, module_name, module_args, **options):
