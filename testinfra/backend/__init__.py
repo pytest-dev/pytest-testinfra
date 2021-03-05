@@ -62,14 +62,14 @@ def parse_hostspec(hostspec):
             "context",
         ):
             if key in query:
-                kw[key] = query.get(key)[0]
+                kw[key] = query[key][0]
         for key in (
             "ssh_config",
             "ansible_inventory",
             "ssh_identity_file",
         ):
             if key in query:
-                kw[key] = os.path.expanduser(query.get(key)[0])
+                kw[key] = os.path.expanduser(query[key][0])
     else:
         host = hostspec
     return host, kw
