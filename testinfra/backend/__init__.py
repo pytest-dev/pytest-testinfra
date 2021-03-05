@@ -16,18 +16,18 @@ import urllib.parse
 
 
 BACKENDS = {
-    'local': 'testinfra.backend.local.LocalBackend',
-    'ssh': 'testinfra.backend.ssh.SshBackend',
-    'safe-ssh': 'testinfra.backend.ssh.SafeSshBackend',
-    'paramiko': 'testinfra.backend.paramiko.ParamikoBackend',
-    'salt': 'testinfra.backend.salt.SaltBackend',
-    'docker': 'testinfra.backend.docker.DockerBackend',
-    'podman': 'testinfra.backend.podman.PodmanBackend',
-    'ansible': 'testinfra.backend.ansible.AnsibleBackend',
-    'kubectl': 'testinfra.backend.kubectl.KubectlBackend',
-    'winrm': 'testinfra.backend.winrm.WinRMBackend',
-    'lxc': 'testinfra.backend.lxc.LxcBackend',
-    'openshift': 'testinfra.backend.openshift.OpenShiftBackend',
+    "local": "testinfra.backend.local.LocalBackend",
+    "ssh": "testinfra.backend.ssh.SshBackend",
+    "safe-ssh": "testinfra.backend.ssh.SafeSshBackend",
+    "paramiko": "testinfra.backend.paramiko.ParamikoBackend",
+    "salt": "testinfra.backend.salt.SaltBackend",
+    "docker": "testinfra.backend.docker.DockerBackend",
+    "podman": "testinfra.backend.podman.PodmanBackend",
+    "ansible": "testinfra.backend.ansible.AnsibleBackend",
+    "kubectl": "testinfra.backend.kubectl.KubectlBackend",
+    "winrm": "testinfra.backend.winrm.WinRMBackend",
+    "lxc": "testinfra.backend.lxc.LxcBackend",
+    "openshift": "testinfra.backend.openshift.OpenShiftBackend",
 }
 
 
@@ -36,7 +36,7 @@ def get_backend_class(connection):
         classpath = BACKENDS[connection]
     except KeyError:
         raise RuntimeError("Unknown connection type '{}'".format(connection))
-    module, name = classpath.rsplit('.', 1)
+    module, name = classpath.rsplit(".", 1)
     return getattr(importlib.import_module(module), name)
 
 
@@ -47,16 +47,26 @@ def parse_hostspec(hostspec):
         kw["connection"] = url.scheme
         host = url.netloc
         query = urllib.parse.parse_qs(url.query)
-        for key in ('sudo', 'ssl', 'no_ssl', 'no_verify_ssl', 'force_ansible'):
-            if query.get(key, ['false'])[0].lower() == 'true':
+        for key in ("sudo", "ssl", "no_ssl", "no_verify_ssl", "force_ansible"):
+            if query.get(key, ["false"])[0].lower() == "true":
                 kw[key] = True
-        for key in ("sudo_user", 'namespace', 'container', 'read_timeout_sec',
-                    'operation_timeout_sec', 'timeout', 'controlpersist',
-                    'kubeconfig', 'context'):
+        for key in (
+            "sudo_user",
+            "namespace",
+            "container",
+            "read_timeout_sec",
+            "operation_timeout_sec",
+            "timeout",
+            "controlpersist",
+            "kubeconfig",
+            "context",
+        ):
             if key in query:
                 kw[key] = query.get(key)[0]
         for key in (
-            "ssh_config", "ansible_inventory", "ssh_identity_file",
+            "ssh_config",
+            "ansible_inventory",
+            "ssh_identity_file",
         ):
             if key in query:
                 kw[key] = os.path.expanduser(query.get(key)[0])

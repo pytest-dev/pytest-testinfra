@@ -17,9 +17,9 @@ from testinfra.utils import cached_property
 class BlockDevice(Module):
     """Information for block device.
 
-       Should be used with sudo or under root.
+    Should be used with sudo or under root.
 
-       If device is not a block device, RuntimeError is raised.
+    If device is not a block device, RuntimeError is raised.
     """
 
     def _data(self):
@@ -41,7 +41,7 @@ class BlockDevice(Module):
 
 
         """
-        return self._data['start_sector'] > 0
+        return self._data["start_sector"] > 0
 
     @property
     def size(self):
@@ -51,7 +51,7 @@ class BlockDevice(Module):
         512110190592
 
         """
-        return self._data['size']
+        return self._data["size"]
 
     @property
     def sector_size(self):
@@ -60,7 +60,7 @@ class BlockDevice(Module):
         >>> host.block_device("/dev/sda1").sector_size
         512
         """
-        return self._data['sector_size']
+        return self._data["sector_size"]
 
     @property
     def block_size(self):
@@ -69,7 +69,7 @@ class BlockDevice(Module):
         >>> host.block_device("/dev/sda").block_size
         4096
         """
-        return self._data['block_size']
+        return self._data["block_size"]
 
     @property
     def start_sector(self):
@@ -84,7 +84,7 @@ class BlockDevice(Module):
         >>> host.block_device("/dev/md0").start_sector
         0
         """
-        return self._data['sector_size']
+        return self._data["sector_size"]
 
     @property
     def is_writable(self):
@@ -96,12 +96,12 @@ class BlockDevice(Module):
         >>> host.block_device("/dev/loop1").is_writable
         False
         """
-        mode = self._data['rw_mode']
-        if mode == 'rw':
+        mode = self._data["rw_mode"]
+        if mode == "rw":
             return True
-        if mode == 'ro':
+        if mode == "ro":
             return False
-        raise ValueError('Unexpected value for rw: {}'.format(mode))
+        raise ValueError("Unexpected value for rw: {}".format(mode))
 
     @property
     def ra(self):
@@ -110,40 +110,37 @@ class BlockDevice(Module):
         >>> host.block_device("/dev/sda").ra
         256
         """
-        return self._data['read_ahead']
+        return self._data["read_ahead"]
 
     @classmethod
     def get_module_class(cls, host):
-        if host.system_info.type == 'linux':
+        if host.system_info.type == "linux":
             return LinuxBlockDevice
         raise NotImplementedError
 
     def __repr__(self):
-        return '<BlockDevice(path={})>'.format(self.device)
+        return "<BlockDevice(path={})>".format(self.device)
 
 
 class LinuxBlockDevice(BlockDevice):
-
     @cached_property
     def _data(self):
-        header = ['RO', 'RA', 'SSZ', 'BSZ', 'StartSec', 'Size', 'Device']
-        command = 'blockdev  --report %s'
+        header = ["RO", "RA", "SSZ", "BSZ", "StartSec", "Size", "Device"]
+        command = "blockdev  --report %s"
         blockdev = self.run(command, self.device)
         if blockdev.rc != 0 or blockdev.stderr:
-            raise RuntimeError("Failed to gather data: {}".format(
-                blockdev.stderr))
+            raise RuntimeError("Failed to gather data: {}".format(blockdev.stderr))
         output = blockdev.stdout.splitlines()
         if len(output) < 2:
             raise RuntimeError("No data from {}".format(self.device))
         if output[0].split() != header:
-            raise RuntimeError('Unknown output of blockdev: {}'.format(
-                output[0]))
+            raise RuntimeError("Unknown output of blockdev: {}".format(output[0]))
         fields = output[1].split()
         return {
-            'rw_mode': str(fields[0]),
-            'read_ahead': int(fields[1]),
-            'sector_size': int(fields[2]),
-            'block_size': int(fields[3]),
-            'start_sector': int(fields[4]),
-            'size': int(fields[5])
+            "rw_mode": str(fields[0]),
+            "read_ahead": int(fields[1]),
+            "sector_size": int(fields[2]),
+            "block_size": int(fields[3]),
+            "start_sector": int(fields[4]),
+            "size": int(fields[5]),
         }

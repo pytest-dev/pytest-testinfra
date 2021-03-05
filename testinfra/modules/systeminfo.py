@@ -28,7 +28,7 @@ class SystemInfo(InstanceModule):
             "release": None,
             "arch": None,
         }
-        uname = self.run_expect([0, 1], 'uname -s')
+        uname = self.run_expect([0, 1], "uname -s")
         if uname.rc == 1 or uname.stdout.lower().startswith("msys"):
             # FIXME: find a better way to detect windows here
             sysinfo.update(**self._get_windows_sysinfo())
@@ -76,8 +76,8 @@ class SystemInfo(InstanceModule):
                 ):
                     if line.startswith(key):
                         sysinfo[attname] = (
-                            line[len(key):].replace('"', "").
-                            replace("'", "").strip())
+                            line[len(key) :].replace('"', "").replace("'", "").strip()
+                        )
             # Arch doesn't have releases
             if sysinfo["distribution"] == "arch":
                 sysinfo["release"] = "rolling"
@@ -87,11 +87,10 @@ class SystemInfo(InstanceModule):
         redhat_release = self.run("cat /etc/redhat-release")
         if redhat_release.rc == 0:
             match = re.match(
-                r"^(.+) release ([^ ]+) .*$",
-                redhat_release.stdout.strip())
+                r"^(.+) release ([^ ]+) .*$", redhat_release.stdout.strip()
+            )
             if match:
-                sysinfo["distribution"], sysinfo["release"] = (
-                    match.groups())
+                sysinfo["distribution"], sysinfo["release"] = match.groups()
                 return sysinfo
 
         # Alpine doesn't have /etc/os-release
@@ -121,17 +120,16 @@ class SystemInfo(InstanceModule):
 
     def _get_windows_sysinfo(self):
         sysinfo = {}
-        for line in self.check_output(
-                "systeminfo | findstr /B /C:\"OS\"").splitlines():
+        for line in self.check_output('systeminfo | findstr /B /C:"OS"').splitlines():
             key, value = line.split(":", 1)
-            key = key.strip().replace(' ', '_').lower()
+            key = key.strip().replace(" ", "_").lower()
             value = value.strip()
             if key == "os_name":
                 sysinfo["distribution"] = value
                 sysinfo["type"] = value.split(" ")[1].lower()
             elif key == "os_version":
                 sysinfo["release"] = value
-        sysinfo["arch"] = self.check_output('echo %PROCESSOR_ARCHITECTURE%')
+        sysinfo["arch"] = self.check_output("echo %PROCESSOR_ARCHITECTURE%")
         return sysinfo
 
     @property

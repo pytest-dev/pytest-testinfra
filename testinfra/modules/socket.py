@@ -22,8 +22,8 @@ def parse_socketspec(socketspec):
 
     if protocol not in ("udp", "tcp", "unix"):
         raise RuntimeError(
-            "Cannot validate protocol '{}'. Should be tcp, udp or unix".format(
-                protocol))
+            "Cannot validate protocol '{}'. Should be tcp, udp or unix".format(protocol)
+        )
 
     if protocol == "unix":
         # unix:///foo/bar.sock
@@ -77,6 +77,7 @@ class Socket(Module):
       - udp socket on 127.0.0.1 port 69: ``udp://127.0.0.1:69``
 
     """
+
     _command = None
 
     def __init__(self, socketspec):
@@ -110,15 +111,13 @@ class Socket(Module):
             return ("unix", self.host) in sockets
         allipv4 = (self.protocol, "0.0.0.0", self.port) in sockets
         allipv6 = (self.protocol, "::", self.port) in sockets
-        return (
-            any([allipv6, all([allipv4, allipv6])])
-            or (
-                self.host is not None
-                and (
-                    (":" in self.host and allipv6 in sockets)
-                    or (":" not in self.host and allipv4 in sockets)
-                    or (self.protocol, self.host, self.port) in sockets)
-                )
+        return any([allipv6, all([allipv4, allipv6])]) or (
+            self.host is not None
+            and (
+                (":" in self.host and allipv6 in sockets)
+                or (":" not in self.host and allipv4 in sockets)
+                or (self.protocol, self.host, self.port) in sockets
+            )
         )
 
     @property
@@ -169,9 +168,13 @@ class Socket(Module):
             if sock[0] == "unix":
                 sockets.append("unix://" + sock[1])
             else:
-                sockets.append("{}://{}:{}".format(
-                    sock[0], sock[1], sock[2],
-                ))
+                sockets.append(
+                    "{}://{}:{}".format(
+                        sock[0],
+                        sock[1],
+                        sock[2],
+                    )
+                )
         return sockets
 
     def _iter_sockets(self, listening):
@@ -188,81 +191,84 @@ class Socket(Module):
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             for cmd, impl in (
-                ('ss', LinuxSocketSS),
-                ('netstat', LinuxSocketNetstat),
+                ("ss", LinuxSocketSS),
+                ("netstat", LinuxSocketNetstat),
             ):
                 try:
                     command = host.find_command(cmd)
                 except ValueError:
                     pass
                 else:
-                    return type(impl.__name__, (impl,), {'_command': command})
+                    return type(impl.__name__, (impl,), {"_command": command})
             raise RuntimeError(
                 'could not use the Socket module, either "ss" or "netstat"'
-                ' utility is required in $PATH')
+                " utility is required in $PATH"
+            )
         if host.system_info.type.endswith("bsd"):
             return BSDSocket
         raise NotImplementedError
 
 
 class LinuxSocketSS(Socket):
-
     def _iter_sockets(self, listening):
-        cmd = '%s --numeric'
+        cmd = "%s --numeric"
         if listening:
-            cmd += ' --listening'
+            cmd += " --listening"
         else:
-            cmd += ' --all'
-        if self.protocol == 'tcp':
-            cmd += ' --tcp'
-        elif self.protocol == 'udp':
-            cmd += ' --udp'
-        elif self.protocol == 'unix':
-            cmd += ' --unix'
+            cmd += " --all"
+        if self.protocol == "tcp":
+            cmd += " --tcp"
+        elif self.protocol == "udp":
+            cmd += " --udp"
+        elif self.protocol == "unix":
+            cmd += " --unix"
 
         for line in self.run(cmd, self._command).stdout_bytes.splitlines()[1:]:
             # Ignore unix datagram sockets.
-            if line.split(None, 1)[0] == b'u_dgr':
+            if line.split(None, 1)[0] == b"u_dgr":
                 continue
             splitted = line.decode().split()
 
             # If listing only TCP or UDP sockets, output has 5 columns:
             # (State, Recv-Q, Send-Q, Local Address:Port, Peer Address:Port)
-            if self.protocol in ('tcp', 'udp'):
+            if self.protocol in ("tcp", "udp"):
                 protocol = self.protocol
-                status, local, remote = (
-                    splitted[0], splitted[3], splitted[4])
+                status, local, remote = (splitted[0], splitted[3], splitted[4])
             # If listing all or just unix sockets, output has 6 columns:
             # Netid, State, Recv-Q, Send-Q, LocalAddress:Port, PeerAddress:Port
             else:
                 protocol, status, local, remote = (
-                    splitted[0], splitted[1], splitted[4], splitted[5])
+                    splitted[0],
+                    splitted[1],
+                    splitted[4],
+                    splitted[5],
+                )
 
             # ss reports unix socket as u_str.
-            if protocol == 'u_str':
-                protocol = 'unix'
+            if protocol == "u_str":
+                protocol = "unix"
                 host, port = local, None
-            elif protocol in ('tcp', 'udp'):
-                host, port = local.rsplit(':', 1)
+            elif protocol in ("tcp", "udp"):
+                host, port = local.rsplit(":", 1)
                 port = int(port)
                 # new versions of ss output ipv6 adresses enclosed in []
-                if host and host[0] == '[' and host[-1] == ']':
+                if host and host[0] == "[" and host[-1] == "]":
                     host = host[1:-1]
             else:
                 continue
 
             # UDP listening sockets may be in 'UNCONN' status.
-            if listening and status in ('LISTEN', 'UNCONN'):
-                if host == '*' and protocol in ('tcp', 'udp'):
-                    yield protocol, '::', port
-                    yield protocol, '0.0.0.0', port
-                elif protocol in ('tcp', 'udp'):
+            if listening and status in ("LISTEN", "UNCONN"):
+                if host == "*" and protocol in ("tcp", "udp"):
+                    yield protocol, "::", port
+                    yield protocol, "0.0.0.0", port
+                elif protocol in ("tcp", "udp"):
                     yield protocol, host, port
                 else:
                     yield protocol, host
-            elif not listening and status == 'ESTAB':
-                if protocol in ('tcp', 'udp'):
-                    remote_host, remote_port = remote.rsplit(':', 1)
+            elif not listening and status == "ESTAB":
+                if protocol in ("tcp", "udp"):
+                    remote_host, remote_port = remote.rsplit(":", 1)
                     remote_port = int(remote_port)
                     yield protocol, host, port, remote_host, remote_port
                 else:
@@ -270,7 +276,6 @@ class LinuxSocketSS(Socket):
 
 
 class LinuxSocketNetstat(Socket):
-
     def _iter_sockets(self, listening):
         cmd = "%s -n"
 
@@ -308,10 +313,9 @@ class LinuxSocketNetstat(Socket):
 
 
 class BSDSocket(Socket):
-
     @cached_property
     def _command(self):
-        return self.find_command('netstat')
+        return self.find_command("netstat")
 
     def _iter_sockets(self, listening):
         cmd = "%s -n"
@@ -330,7 +334,7 @@ class BSDSocket(Socket):
             if splitted[0] in ("tcp", "udp", "udp4", "tcp4", "tcp6", "udp6"):
 
                 address = splitted[3]
-                if address == '*.*':
+                if address == "*.*":
                     # On OpenBSD 6.3 (issue #338)
                     # udp          0      0  *.*                    *.*
                     # udp6         0      0  *.*                    *.*
@@ -357,8 +361,7 @@ class BSDSocket(Socket):
                     remote_port = int(remote_port)
                     yield protocol, host, port, remote_host, remote_port
             elif len(splitted) == 9 and splitted[1] in ("stream", "dgram"):
-                if (
-                    (splitted[4] != "0" and listening)
-                    or (splitted[4] == "0" and not listening)
+                if (splitted[4] != "0" and listening) or (
+                    splitted[4] == "0" and not listening
                 ):
-                    yield 'unix', splitted[-1]
+                    yield "unix", splitted[-1]

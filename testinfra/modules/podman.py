@@ -39,7 +39,7 @@ class Podman(Module):
 
     @property
     def is_running(self):
-        return self.inspect()['State']['Running']
+        return self.inspect()["State"]["Running"]
 
     @property
     def id(self):

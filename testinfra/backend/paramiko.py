@@ -15,9 +15,12 @@ import os
 try:
     import paramiko
 except ImportError:
-    raise RuntimeError((
-        "You must install paramiko package (pip install paramiko) "
-        "to use the paramiko backend"))
+    raise RuntimeError(
+        (
+            "You must install paramiko package (pip install paramiko) "
+            "to use the paramiko backend"
+        )
+    )
 
 import paramiko.ssh_exception
 
@@ -27,6 +30,7 @@ from testinfra.utils import cached_property
 
 class IgnorePolicy(paramiko.MissingHostKeyPolicy):
     """Policy for ignoring missing host key."""
+
     def missing_host_key(self, client, hostname, key):
         pass
 
@@ -35,8 +39,14 @@ class ParamikoBackend(base.BaseBackend):
     NAME = "paramiko"
 
     def __init__(
-            self, hostspec, ssh_config=None, ssh_identity_file=None,
-            timeout=10, *args, **kwargs):
+        self,
+        hostspec,
+        ssh_config=None,
+        ssh_identity_file=None,
+        timeout=10,
+        *args,
+        **kwargs
+    ):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
@@ -57,13 +67,13 @@ class ParamikoBackend(base.BaseBackend):
             elif key == "stricthostkeychecking" and value == "no":
                 client.set_missing_host_key_policy(IgnorePolicy())
             elif key == "requesttty":
-                self.get_pty = value in ('yes', 'force')
+                self.get_pty = value in ("yes", "force")
             elif key == "gssapikeyexchange":
-                cfg['gss_auth'] = (value == 'yes')
+                cfg["gss_auth"] = value == "yes"
             elif key == "gssapiauthentication":
-                cfg['gss_kex'] = (value == 'yes')
+                cfg["gss_kex"] = value == "yes"
             elif key == "proxycommand":
-                cfg['sock'] = paramiko.ProxyCommand(value)
+                cfg["sock"] = paramiko.ProxyCommand(value)
 
     @cached_property
     def client(self):
@@ -83,8 +93,7 @@ class ParamikoBackend(base.BaseBackend):
                 self._load_ssh_config(client, cfg, ssh_config)
         else:
             # fallback reading ~/.ssh/config
-            default_ssh_config = os.path.join(
-                os.path.expanduser('~'), '.ssh', 'config')
+            default_ssh_config = os.path.join(os.path.expanduser("~"), ".ssh", "config")
             try:
                 with open(default_ssh_config) as f:
                     ssh_config = paramiko.SSHConfig()
@@ -105,8 +114,8 @@ class ParamikoBackend(base.BaseBackend):
             chan.get_pty()
         chan.exec_command(command)
         rc = chan.recv_exit_status()
-        stdout = b''.join(chan.makefile('rb'))
-        stderr = b''.join(chan.makefile_stderr('rb'))
+        stdout = b"".join(chan.makefile("rb"))
+        stderr = b"".join(chan.makefile_stderr("rb"))
         return rc, stdout, stderr
 
     def run(self, command, *args, **kwargs):

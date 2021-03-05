@@ -23,9 +23,16 @@ class AnsibleBackend(base.BaseBackend):
     NAME = "ansible"
     HAS_RUN_ANSIBLE = True
 
-    def __init__(self, host, ansible_inventory=None, ssh_config=None,
-                 ssh_identity_file=None, force_ansible=False,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        host,
+        ansible_inventory=None,
+        ssh_config=None,
+        ssh_identity_file=None,
+        force_ansible=False,
+        *args,
+        **kwargs
+    ):
         self.host = host
         self.ansible_inventory = ansible_inventory
         self.ssh_config = ssh_config
@@ -41,23 +48,33 @@ class AnsibleBackend(base.BaseBackend):
         command = self.get_command(command, *args)
         if not self.force_ansible:
             host = self.ansible_runner.get_host(
-                self.host, ssh_config=self.ssh_config,
-                ssh_identity_file=self.ssh_identity_file)
+                self.host,
+                ssh_config=self.ssh_config,
+                ssh_identity_file=self.ssh_identity_file,
+            )
             if host is not None:
                 return host.run(command)
-        out = self.run_ansible('shell', module_args=command, check=False)
+        out = self.run_ansible("shell", module_args=command, check=False)
         return self.result(
-            out['rc'], command, stdout_bytes=None,
-            stderr_bytes=None, stdout=out['stdout'], stderr=out['stderr'])
+            out["rc"],
+            command,
+            stdout_bytes=None,
+            stderr_bytes=None,
+            stdout=out["stdout"],
+            stderr=out["stderr"],
+        )
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
         result = self.ansible_runner.run_module(
-            self.host, module_name, module_args,
-            **kwargs)
+            self.host, module_name, module_args, **kwargs
+        )
         logger.info(
             "RUN Ansible(%s, %s, %s): %s",
-            repr(module_name), repr(module_args), repr(kwargs),
-            pprint.pformat(result))
+            repr(module_name),
+            repr(module_args),
+            repr(kwargs),
+            pprint.pformat(result),
+        )
         return result
 
     def get_variables(self):
@@ -65,5 +82,5 @@ class AnsibleBackend(base.BaseBackend):
 
     @classmethod
     def get_hosts(cls, host, **kwargs):
-        inventory = kwargs.get('ansible_inventory')
+        inventory = kwargs.get("ansible_inventory")
         return AnsibleRunner.get_runner(inventory).get_hosts(host or "all")

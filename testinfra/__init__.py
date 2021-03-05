@@ -13,4 +13,4 @@
 from testinfra.host import get_host
 from testinfra.host import get_hosts
 
-__all__ = ['get_host', 'get_hosts']
+__all__ = ["get_host", "get_hosts"]

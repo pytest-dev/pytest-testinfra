@@ -17,11 +17,20 @@ from testinfra.backend import base
 
 class SshBackend(base.BaseBackend):
     """Run command through ssh command"""
+
     NAME = "ssh"
 
-    def __init__(self, hostspec, ssh_config=None, ssh_identity_file=None,
-                 timeout=10, controlpersist=60, ssh_extra_args=None,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        hostspec,
+        ssh_config=None,
+        ssh_identity_file=None,
+        timeout=10,
+        controlpersist=60,
+        ssh_extra_args=None,
+        *args,
+        **kwargs
+    ):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
@@ -35,14 +44,14 @@ class SshBackend(base.BaseBackend):
 
     def _build_ssh_command(self, command):
         if not self.host.password:
-            cmd = ['ssh']
+            cmd = ["ssh"]
             cmd_args = []
         else:
-            cmd = ['sshpass', '-p', '%s', 'ssh']
+            cmd = ["sshpass", "-p", "%s", "ssh"]
             cmd_args = [self.host.password]
 
         if self.ssh_extra_args:
-            cmd.append(self.ssh_extra_args.replace('%', '%%'))
+            cmd.append(self.ssh_extra_args.replace("%", "%%"))
         if self.ssh_config:
             cmd.append("-F %s")
             cmd_args.append(self.ssh_config)
@@ -55,21 +64,23 @@ class SshBackend(base.BaseBackend):
         if self.ssh_identity_file:
             cmd.append("-i %s")
             cmd_args.append(self.ssh_identity_file)
-        if 'connecttimeout' not in (self.ssh_extra_args or '').lower():
+        if "connecttimeout" not in (self.ssh_extra_args or "").lower():
             cmd.append("-o ConnectTimeout={}".format(self.timeout))
         if self.controlpersist and (
-            'controlmaster' not in (self.ssh_extra_args or '').lower()
+            "controlmaster" not in (self.ssh_extra_args or "").lower()
         ):
-            cmd.append("-o ControlMaster=auto -o ControlPersist={}s".format(
-                self.controlpersist))
+            cmd.append(
+                "-o ControlMaster=auto -o ControlPersist={}s".format(
+                    self.controlpersist
+                )
+            )
         cmd.append("%s %s")
         cmd_args.extend([self.host.name, command])
         return cmd, cmd_args
 
     def run_ssh(self, command):
         cmd, cmd_args = self._build_ssh_command(command)
-        out = self.run_local(
-            " ".join(cmd), *cmd_args)
+        out = self.run_local(" ".join(cmd), *cmd_args)
         out.command = self.encode(command)
         if out.rc == 255:
             # ssh exits with the exit status of the remote command or with 255
@@ -92,16 +103,20 @@ class SafeSshBackend(SshBackend):
     where STDOUT/STDERR are base64 encoded, then we parse that magic string to
     get sanes variables
     """
+
     NAME = "safe-ssh"
 
     def run(self, command, *args, **kwargs):
         orig_command = self.get_command(command, *args)
-        orig_command = self.get_command('sh -c %s', orig_command)
+        orig_command = self.get_command("sh -c %s", orig_command)
 
-        out = self.run_ssh((
-            '''of=$(mktemp)&&ef=$(mktemp)&&{} >$of 2>$ef; r=$?;'''
-            '''echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);'''
-            '''TESTINFRA_END";rm -f $of $ef''').format(orig_command))
+        out = self.run_ssh(
+            (
+                """of=$(mktemp)&&ef=$(mktemp)&&{} >$of 2>$ef; r=$?;"""
+                """echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);"""
+                """TESTINFRA_END";rm -f $of $ef"""
+            ).format(orig_command)
+        )
 
         start = out.stdout.find("TESTINFRA_START;") + len("TESTINFRA_START;")
         end = out.stdout.find("TESTINFRA_END") - 1

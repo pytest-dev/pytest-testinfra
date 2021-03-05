@@ -22,9 +22,10 @@ class Sysctl(InstanceModule):
     >>> host.sysctl("vm.dirty_ratio")
     20
     """
+
     @cached_property
     def _sysctl_command(self):
-        return self.find_command('sysctl')
+        return self.find_command("sysctl")
 
     def __call__(self, name):
         value = self.check_output("%s -n %s", self._sysctl_command, name)

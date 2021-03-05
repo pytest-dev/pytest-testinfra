@@ -45,11 +45,11 @@ class Iptables(InstanceModule):
                 return self._run_iptables(version, cmd, *args)
             else:
                 self._has_w_argument = True
-                return result.stdout.rstrip('\r\n')
+                return result.stdout.rstrip("\r\n")
         else:
             return self.check_output(ipt_cmd, *args)
 
-    def rules(self, table='filter', chain=None, version=4):
+    def rules(self, table="filter", chain=None, version=4):
         """Returns list of iptables rules
 
            Based on ouput of `iptables -t TABLE -S CHAIN` command
