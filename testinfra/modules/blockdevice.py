@@ -22,6 +22,7 @@ class BlockDevice(Module):
     If device is not a block device, RuntimeError is raised.
     """
 
+    @property
     def _data(self):
         raise NotImplementedError
 
