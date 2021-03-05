@@ -223,7 +223,7 @@ class AnsibleRunner:
         for group in sorted(inventory):
             if group == "_meta":
                 continue
-            groups[group] = sorted(list(itergroup(inventory, group)))
+            groups[group] = sorted(itergroup(inventory, group))
             if group != "all" and host in inventory[group].get('hosts', []):
                 group_names.append(group)
         hostvars.setdefault('group_names', group_names)

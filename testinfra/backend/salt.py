@@ -52,7 +52,7 @@ class SaltBackend(base.BaseBackend):
     def get_hosts(cls, host, **kwargs):
         if host is None:
             host = "*"
-        if any([c in host for c in "@*[?"]):
+        if any(c in host for c in "@*[?"):
             client = salt.client.LocalClient()
             if "@" in host:
                 hosts = client.cmd(
