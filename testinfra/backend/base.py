@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import abc
 import collections
 import locale
 import logging
@@ -104,12 +105,17 @@ class CommandResult:
         )
 
 
-class BaseBackend:
+class BaseBackend(metaclass=abc.ABCMeta):
     """Represent the connection to the remote or local system"""
 
-    NAME = None
     HAS_RUN_SALT = False
     HAS_RUN_ANSIBLE = False
+
+    @property
+    @classmethod
+    @abc.abstractmethod
+    def NAME(cls) -> str:
+        raise NotImplementedError()
 
     def __init__(self, hostname, sudo=False, sudo_user=None, *args, **kwargs):
         self._encoding = None
