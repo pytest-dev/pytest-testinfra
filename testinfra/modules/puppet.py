@@ -11,11 +11,12 @@
 # limitations under the License.
 
 import json
+from typing import Dict
 
 from testinfra.modules.base import InstanceModule
 
 
-def parse_puppet_resource(data):
+def parse_puppet_resource(data: str) -> Dict[str, Dict[str, str]]:
     """Parse data returned by 'puppet resource'
 
     $ puppet resource user
@@ -37,7 +38,7 @@ def parse_puppet_resource(data):
     [...]
     """
 
-    state = {}
+    state: Dict[str, Dict[str, str]] = {}
     current = None
     for line in data.splitlines():
         if not current:
