@@ -16,8 +16,8 @@ from testinfra.modules.base import InstanceModule
 class Iptables(InstanceModule):
     """Test iptables rule exists"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         # support for -w argument (since 1.6.0)
         # https://git.netfilter.org/iptables/commit/?id=aaa4ace72b
         # centos 6 has no support
