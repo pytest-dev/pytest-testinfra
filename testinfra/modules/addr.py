@@ -137,4 +137,4 @@ class Addr(Module):
         result = self.run_expect([0, 1, 2], "{}getent {} {}".format(
             self._prefix, method, self.name))
         lines = result.stdout.splitlines()
-        return list(set(line.split()[0] for line in lines))
+        return list({line.split()[0] for line in lines})
