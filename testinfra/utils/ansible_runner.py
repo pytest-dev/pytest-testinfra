@@ -16,6 +16,10 @@ import ipaddress
 import json
 import os
 import tempfile
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 
 import testinfra
@@ -87,7 +91,7 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
     port = config.get("defaults", "remote_port", fallback=None)
     if "ansible_port" in hostvars:
         port = hostvars.get("ansible_port")
-    kwargs = {}
+    kwargs: Dict[str, Union[str, bool]] = {}
     if hostvars.get("ansible_become", False):
         kwargs["sudo"] = True
     kwargs["sudo_user"] = hostvars.get("ansible_become_user")
@@ -143,7 +147,7 @@ def is_empty_inventory(inventory):
 
 
 class AnsibleRunner:
-    _runners = {}
+    _runners: Dict[Optional[str], "AnsibleRunner"] = {}
     _known_options = {
         # Boolean arguments.
         "become": {
@@ -250,8 +254,8 @@ class AnsibleRunner:
         args = {"become": False, "check": True}
         args.update(options)
 
-        cli = []
-        cli_args = []
+        cli: List[str] = []
+        cli_args: List[str] = []
         if verbose:
             cli.append("-" + "v" * verbose)
         for arg_name, value in args.items():
@@ -262,6 +266,7 @@ class AnsibleRunner:
                 if value:
                     cli.append(opt_cli)
             elif opt_type == "string":
+                assert isinstance(value, str)
                 cli.append(opt_cli + " %s")
                 cli_args.append(value)
             elif opt_type == "json":
@@ -273,7 +278,7 @@ class AnsibleRunner:
         return " ".join(cli), cli_args
 
     def run_module(self, host, module_name, module_args, **options):
-        cmd, args = "ansible --tree %s", [None]
+        cmd, args = "ansible --tree %s", []
         if self.inventory_file:
             cmd += " -i %s"
             args += [self.inventory_file]
@@ -289,7 +294,7 @@ class AnsibleRunner:
         cmd += " %s"
         args += [host]
         with tempfile.TemporaryDirectory() as d:
-            args[0] = d
+            args.insert(0, d)
             out = local.run_expect([0, 2, 8], cmd, *args)
             files = os.listdir(d)
             if not files and "skipped" in out.stdout.lower():
