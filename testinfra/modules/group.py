@@ -35,8 +35,7 @@ class Group(Module):
 
     @property
     def gid(self):
-        return int(self.check_output(
-            "getent group %s | cut -d':' -f3", self.name))
+        return int(self.check_output("getent group %s | cut -d':' -f3", self.name))
 
     def __repr__(self):
         return "<group {}>".format(self.name)

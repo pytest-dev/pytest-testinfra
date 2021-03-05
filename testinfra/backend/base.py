@@ -19,15 +19,19 @@ import urllib.parse
 
 logger = logging.getLogger("testinfra")
 
-HostSpec = collections.namedtuple(
-    'HostSpec', ['name', 'port', 'user', 'password'])
+HostSpec = collections.namedtuple("HostSpec", ["name", "port", "user", "password"])
 
 
 class CommandResult:
-
     def __init__(
-        self, backend, exit_status, command, stdout_bytes,
-        stderr_bytes, stdout=None, stderr=None,
+        self,
+        backend,
+        exit_status,
+        command,
+        stdout_bytes,
+        stderr_bytes,
+        stdout=None,
+        stderr=None,
     ):
         self.exit_status = exit_status
         self._stdout_bytes = stdout_bytes
@@ -91,8 +95,7 @@ class CommandResult:
 
     def __repr__(self):
         return (
-            "CommandResult(command={!r}, exit_status={}, stdout={!r}, "
-            "stderr={!r})"
+            "CommandResult(command={!r}, exit_status={}, stdout={!r}, " "stderr={!r})"
         ).format(
             self.command,
             self.exit_status,
@@ -103,6 +106,7 @@ class CommandResult:
 
 class BaseBackend:
     """Represent the connection to the remote or local system"""
+
     NAME = None
     HAS_RUN_SALT = False
     HAS_RUN_ANSIBLE = False
@@ -161,7 +165,9 @@ class BaseBackend:
         if host is None:
             raise RuntimeError(
                 "One or more hosts is required with the {} backend".format(
-                    cls.get_connection_type()))
+                    cls.get_connection_type()
+                )
+            )
         return [host]
 
     @staticmethod
@@ -173,8 +179,7 @@ class BaseBackend:
     def get_sudo_command(self, command, sudo_user):
         if sudo_user is None:
             return self.quote("sudo /bin/sh -c %s", command)
-        return self.quote(
-            "sudo -u %s /bin/sh -c %s", sudo_user, command)
+        return self.quote("sudo -u %s /bin/sh -c %s", sudo_user, command)
 
     def get_command(self, command, *args):
         command = self.quote(command, *args)
@@ -189,7 +194,8 @@ class BaseBackend:
         command = self.quote(command, *args)
         command = self.encode(command)
         p = subprocess.Popen(
-            command, shell=True,
+            command,
+            shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -204,25 +210,25 @@ class BaseBackend:
         port = None
         user = None
         password = None
-        if '@' in name:
-            user, name = name.split('@', 1)
-            if ':' in user:
-                user, password = user.split(':', 1)
+        if "@" in name:
+            user, name = name.split("@", 1)
+            if ":" in user:
+                user, password = user.split(":", 1)
         # A literal IPv6 address might be like
         #  [fe80:0::a:b:c]:80
         # thus, below in words; if this starts with a '[' assume it
         # encloses an ipv6 address with a closing ']', with a possible
         # trailing port after a colon
-        if name.startswith('['):
-            name, port = name.split(']')
+        if name.startswith("["):
+            name, port = name.split("]")
             name = name[1:]
-            if port.startswith(':'):
+            if port.startswith(":"):
                 port = port[1:]
             else:
                 port = None
         else:
-            if ':' in name:
-                name, port = name.split(':', 1)
+            if ":" in name:
+                name, port = name.split(":", 1)
         name = urllib.parse.unquote(name)
         if user is not None:
             user = urllib.parse.unquote(user)
@@ -239,8 +245,7 @@ class BaseBackend:
         return name, user
 
     def get_encoding(self):
-        cmd = self.run(
-            "python -c 'import locale;print(locale.getpreferredencoding())'")
+        cmd = self.run("python -c 'import locale;print(locale.getpreferredencoding())'")
         if cmd.rc == 0:
             encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
         else:

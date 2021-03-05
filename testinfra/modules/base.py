@@ -17,14 +17,18 @@ class Module:
     @classmethod
     def get_module(cls, _host):
         klass = cls.get_module_class(_host)
-        return type(klass.__name__, (klass,), {
-            "_host": _host,
-            "run": _host.run,
-            "run_expect": _host.run_expect,
-            "run_test": _host.run_test,
-            "check_output": _host.check_output,
-            "find_command": _host.find_command,
-        })
+        return type(
+            klass.__name__,
+            (klass,),
+            {
+                "_host": _host,
+                "run": _host.run,
+                "run_expect": _host.run_expect,
+                "run_test": _host.run_test,
+                "check_output": _host.check_output,
+                "find_command": _host.find_command,
+            },
+        )
 
     @classmethod
     def get_module_class(cls, host):
@@ -32,7 +36,6 @@ class Module:
 
 
 class InstanceModule(Module):
-
     @classmethod
     def get_module(cls, _host):
         klass = super().get_module(_host)

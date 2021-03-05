@@ -37,10 +37,11 @@ def need_ansible(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         if not self._host.backend.HAS_RUN_ANSIBLE:
-            raise RuntimeError((
-                "Ansible module is only available with ansible "
-                "connection backend"))
+            raise RuntimeError(
+                ("Ansible module is only available with ansible " "connection backend")
+            )
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -99,13 +100,16 @@ class Ansible(InstanceModule):
     # Installs neovim and vim.
 
     """
+
     AnsibleException = AnsibleException
 
     @need_ansible
-    def __call__(self, module_name, module_args=None, check=True,
-                 become=False, **kwargs):
+    def __call__(
+        self, module_name, module_args=None, check=True, become=False, **kwargs
+    ):
         result = self._host.backend.run_ansible(
-            module_name, module_args, check=check, become=become, **kwargs)
+            module_name, module_args, check=check, become=become, **kwargs
+        )
         if result.get("failed", False):
             raise AnsibleException(result)
         return result

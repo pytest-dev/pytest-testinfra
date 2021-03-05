@@ -46,7 +46,7 @@ def parse_puppet_resource(data):
         elif current and line == "}":
             current = None
         elif current:
-            key, value = line.split(' => ')
+            key, value = line.split(" => ")
             key = key.strip()
             value = value.split("'")[1]
             state[current][key] = value

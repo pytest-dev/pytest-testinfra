@@ -31,14 +31,14 @@ class Host:
         """Return True if given command exist in $PATH"""
         return self.run_expect([0, 1, 127], "command -v %s", command).rc == 0
 
-    def find_command(self, command, extrapaths=('/sbin', '/usr/sbin')):
+    def find_command(self, command, extrapaths=("/sbin", "/usr/sbin")):
         """Return path of given command
 
         raise ValueError if command cannot be found
         """
         out = self.run_expect([0, 1, 127], "command -v %s", command)
         if out.rc == 0:
-            return out.stdout.rstrip('\r\n')
+            return out.stdout.rstrip("\r\n")
         for basedir in extrapaths:
             path = os.path.join(basedir, command)
             if self.exists(path):
@@ -82,8 +82,7 @@ class Host:
         """
         __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
-        assert out.rc in expected, (
-            'Unexpected exit code {} for {}'.format(out.rc, out))
+        assert out.rc in expected, "Unexpected exit code {} for {}".format(out.rc, out)
         return out
 
     def run_test(self, command, *args, **kwargs):
@@ -101,8 +100,7 @@ class Host:
         """
         __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
-        assert out.rc == 0, (
-            'Unexpected exit code {} for {}'.format(out.rc, out))
+        assert out.rc == 0, "Unexpected exit code {} for {}".format(out.rc, out)
         return out.stdout.rstrip("\r\n")
 
     def __getattr__(self, name):
@@ -111,8 +109,9 @@ class Host:
             obj = module_class.get_module(self)
             setattr(self, name, obj)
             return obj
-        raise AttributeError("'{}' object has no attribute '{}'".format(
-            self.__class__.__name__, name))
+        raise AttributeError(
+            "'{}' object has no attribute '{}'".format(self.__class__.__name__, name)
+        )
 
     @classmethod
     def get_host(cls, hostspec, **kwargs):

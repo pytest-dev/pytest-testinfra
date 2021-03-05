@@ -235,8 +235,7 @@ class GNUFile(File):
 
     @property
     def sha256sum(self):
-        return self.check_output(
-            "sha256sum %s | cut -d ' ' -f 1", self.path)
+        return self.check_output("sha256sum %s | cut -d ' ' -f 1", self.path)
 
 
 class BSDFile(File):
@@ -277,15 +276,13 @@ class BSDFile(File):
 
     @property
     def sha256sum(self):
-        return self.check_output(
-            "sha256 < %s", self.path)
+        return self.check_output("sha256 < %s", self.path)
 
 
 class DarwinFile(BSDFile):
-
     @property
     def linked_to(self):
-        link_script = '''
+        link_script = """
         TARGET_FILE='{0}'
         cd `dirname $TARGET_FILE`
         TARGET_FILE=`basename $TARGET_FILE`
@@ -298,13 +295,13 @@ class DarwinFile(BSDFile):
         PHYS_DIR=`pwd -P`
         RESULT=$PHYS_DIR/$TARGET_FILE
         echo $RESULT
-        '''.format(self.path)
+        """.format(
+            self.path
+        )
         return self.check_output(link_script)
 
 
 class NetBSDFile(BSDFile):
-
     @property
     def sha256sum(self):
-        return self.check_output(
-            "cksum -a sha256 < %s", self.path)
+        return self.check_output("cksum -a sha256 < %s", self.path)

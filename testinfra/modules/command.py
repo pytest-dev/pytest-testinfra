@@ -14,7 +14,6 @@ from testinfra.modules.base import InstanceModule
 
 
 class Command(InstanceModule):
-
     def __call__(self, command, *args, **kwargs):
         return self.run(command, *args, **kwargs)
 

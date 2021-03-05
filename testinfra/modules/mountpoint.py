@@ -102,8 +102,7 @@ class MountPoint(Module):
 
     def __repr__(self):
         return (
-            "<MountPoint(path={}, device={}, filesystem={}, "
-            "options={})>"
+            "<MountPoint(path={}, device={}, filesystem={}, " "options={})>"
         ).format(
             self.path,
             self.device,
@@ -113,7 +112,6 @@ class MountPoint(Module):
 
 
 class LinuxMountPoint(MountPoint):
-
     @classmethod
     def _iter_mountpoints(cls):
         check_output = cls(None).check_output
@@ -135,7 +133,6 @@ class LinuxMountPoint(MountPoint):
 
 
 class BSDMountPoint(MountPoint):
-
     @classmethod
     def _iter_mountpoints(cls):
         check_output = cls(None).check_output

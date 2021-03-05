@@ -13,8 +13,7 @@
 try:
     import salt.client
 except ImportError:
-    raise RuntimeError(
-        "You must install salt package to use the salt backend")
+    raise RuntimeError("You must install salt package to use the salt backend")
 
 from testinfra.backend import base
 
@@ -37,16 +36,15 @@ class SaltBackend(base.BaseBackend):
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
         out = self.run_salt("cmd.run_all", [command])
-        return self.result(out['retcode'], command, out['stdout'],
-                           out['stderr'])
+        return self.result(out["retcode"], command, out["stdout"], out["stderr"])
 
     def run_salt(self, func, args=None):
         out = self.client.cmd(self.host, func, args or [])
         if self.host not in out:
             raise RuntimeError(
                 "Error while running {}({}): {}. "
-                "Minion not connected ?".format(
-                    func, args, out))
+                "Minion not connected ?".format(func, args, out)
+            )
         return out[self.host]
 
     @classmethod
@@ -56,8 +54,7 @@ class SaltBackend(base.BaseBackend):
         if any(c in host for c in "@*[?"):
             client = salt.client.LocalClient()
             if "@" in host:
-                hosts = client.cmd(
-                    host, "test.true", expr_form="compound").keys()
+                hosts = client.cmd(host, "test.true", expr_form="compound").keys()
             else:
                 hosts = client.cmd(host, "test.true").keys()
             if not hosts:
