@@ -590,3 +590,15 @@ def test_addr(host):
 
     for ip in google_addr.ip_addresses:
         assert isinstance(ip_address(ip), (IPv4Address, IPv6Address))
+
+
+@pytest.mark.testinfra_hosts("ansible://debian_buster")
+def test_addr_namespace(host):
+    namespace_lookup = host.addr("localhost", "ns1")
+    # ns1 network namespace does not exist so everything is false
+    assert not namespace_lookup.namespace_exists
+    assert not namespace_lookup.is_reachable
+    assert not namespace_lookup.is_resolvable
+    with pytest.raises(NotImplementedError):
+        # nc is not available so an error is raised
+        assert not namespace_lookup.port("443").is_reachable
