@@ -9,10 +9,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import abc
+import typing
 
 
-class Module:
-    _host = None
+class Module(metaclass=abc.ABCMeta):
+    if typing.TYPE_CHECKING:
+        import testinfra.host
+
+        _host: testinfra.host.Host
 
     @classmethod
     def get_module(cls, _host):
@@ -20,19 +25,32 @@ class Module:
         return type(
             klass.__name__,
             (klass,),
-            {
-                "_host": _host,
-                "run": _host.run,
-                "run_expect": _host.run_expect,
-                "run_test": _host.run_test,
-                "check_output": _host.check_output,
-                "find_command": _host.find_command,
-            },
+            {"_host": _host},
         )
 
     @classmethod
     def get_module_class(cls, host):
         return cls
+
+    @classmethod
+    def run(cls, *args, **kwargs):
+        return cls._host.run(*args, **kwargs)
+
+    @classmethod
+    def run_test(cls, *args, **kwargs):
+        return cls._host.run_test(*args, **kwargs)
+
+    @classmethod
+    def run_expect(cls, *args, **kwargs):
+        return cls._host.run_expect(*args, **kwargs)
+
+    @classmethod
+    def check_output(cls, *args, **kwargs):
+        return cls._host.check_output(*args, **kwargs)
+
+    @classmethod
+    def find_command(cls, *args, **kwargs):
+        return cls._host.find_command(*args, **kwargs)
 
 
 class InstanceModule(Module):
