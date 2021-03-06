@@ -26,6 +26,24 @@ def _re_match(line, regexp):
 class PipPackage(InstanceModule):
     """Test pip packages status and version"""
 
+    def check(self, pip_path="pip"):
+        """Verify installed packages have compatible dependencies.
+
+        >>> cmd = host.pip_package.check()
+        >>> cmd.rc
+        0
+        >>> cmd.stdout
+        No broken requirements found.
+
+        Can only be used if `pip check`_ command is available,
+        for pip versions >= 9.0.0_.
+
+        .. _pip check: https://pip.pypa.io/en/stable/reference/pip_check/
+        .. _9.0.0: https://pip.pypa.io/en/stable/news/#id526
+        """
+        cmd = "{} check".format(pip_path)
+        return self.run_expect([0, 1], cmd)
+
     def get_packages(self, pip_path="pip"):
         """Get all installed packages and versions returned by `pip list`:
 

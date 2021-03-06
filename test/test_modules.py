@@ -510,6 +510,7 @@ def test_pip_package(host):
         pip_path='/v/bin/pip')['pytest']
     assert outdated['current'] == pytest['version']
     assert int(outdated['latest'].split('.')[0]) > 2
+    assert host.pip_package.check().succeeded
 
 
 def test_environment_home(host):
