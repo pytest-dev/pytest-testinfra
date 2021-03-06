@@ -96,6 +96,12 @@ def pytest_addoption(parser):
         dest="nagios",
         help="Nagios plugin",
     )
+    group.addoption(
+        "--ansible-playbook",
+        action="store",
+        dest="ansible_playbook",
+        help="Ansible playbook file",
+    )
 
 
 def pytest_generate_tests(metafunc):
@@ -114,6 +120,7 @@ def pytest_generate_tests(metafunc):
             sudo=metafunc.config.option.sudo,
             sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
+            ansible_playbook=metafunc.config.option.ansible_playbook,
             force_ansible=metafunc.config.option.force_ansible,
         )
         params = sorted(params, key=lambda x: x.backend.get_pytest_id())

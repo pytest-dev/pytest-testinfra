@@ -25,17 +25,20 @@ class AnsibleBackend(base.BaseBackend):
 
     def __init__(self, host, ansible_inventory=None, ssh_config=None,
                  ssh_identity_file=None, force_ansible=False,
+                 ansible_playbook=None,
                  *args, **kwargs):
         self.host = host
         self.ansible_inventory = ansible_inventory
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
+        self.ansible_playbook = ansible_playbook
         self.force_ansible = force_ansible
         super().__init__(host, *args, **kwargs)
 
     @property
     def ansible_runner(self):
-        return AnsibleRunner.get_runner(self.ansible_inventory)
+        return AnsibleRunner.get_runner(self.ansible_inventory,
+                                        self.ansible_playbook)
 
     def run(self, command, *args, **kwargs):
         command = self.get_command(command, *args)
@@ -60,10 +63,12 @@ class AnsibleBackend(base.BaseBackend):
             pprint.pformat(result))
         return result
 
-    def get_variables(self):
-        return self.ansible_runner.get_variables(self.host)
+    def get_variables(self, playbook=None):
+        return self.ansible_runner.get_variables(self.host, playbook)
 
     @classmethod
     def get_hosts(cls, host, **kwargs):
         inventory = kwargs.get('ansible_inventory')
-        return AnsibleRunner.get_runner(inventory).get_hosts(host or "all")
+        playbook = kwargs.get('ansible_playbook')
+        return AnsibleRunner.get_runner(inventory,
+                                        playbook).get_hosts(host or "all")
