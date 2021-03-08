@@ -18,17 +18,17 @@ class KubectlBackend(base.BaseBackend):
 
     def __init__(self, name, *args, **kwargs):
         self.name = name
-        self.container = kwargs.get('container')
-        self.namespace = kwargs.get('namespace')
-        self.kubeconfig = kwargs.get('kubeconfig')
-        self.context = kwargs.get('context')
+        self.container = kwargs.get("container")
+        self.namespace = kwargs.get("namespace")
+        self.kubeconfig = kwargs.get("kubeconfig")
+        self.context = kwargs.get("context")
         super().__init__(self.name, *args, **kwargs)
 
     def run(self, command, *args, **kwargs):
         cmd = self.get_command(command, *args)
         # `kubectl exec` does not support specifying the user to run as.
         # See https://github.com/kubernetes/kubernetes/issues/30656
-        kcmd = 'kubectl '
+        kcmd = "kubectl "
         kcmd_args = []
         if self.kubeconfig is not None:
             kcmd += '--kubeconfig="%s" '
@@ -37,12 +37,12 @@ class KubectlBackend(base.BaseBackend):
             kcmd += '--context="%s" '
             kcmd_args.append(self.context)
         if self.namespace is not None:
-            kcmd += '-n %s '
+            kcmd += "-n %s "
             kcmd_args.append(self.namespace)
         if self.container is not None:
-            kcmd += '-c %s '
+            kcmd += "-c %s "
             kcmd_args.append(self.container)
-        kcmd += 'exec %s -- /bin/sh -c %s'
+        kcmd += "exec %s -- /bin/sh -c %s"
         kcmd_args.extend([self.name, cmd])
         out = self.run_local(kcmd, *kcmd_args)
         return out

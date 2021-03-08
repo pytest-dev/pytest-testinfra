@@ -39,7 +39,7 @@ class Interface(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return "<interface %s>" % (self.name,)
+        return "<interface {}>".format(self.name)
 
     @classmethod
     def get_module_class(cls, host):
@@ -51,10 +51,9 @@ class Interface(Module):
 
 
 class LinuxInterface(Interface):
-
     @cached_property
     def _ip(self):
-        return self.find_command('ip')
+        return self.find_command("ip")
 
     @property
     def exists(self):
@@ -62,8 +61,7 @@ class LinuxInterface(Interface):
 
     @property
     def speed(self):
-        return int(self.check_output(
-            "cat /sys/class/net/%s/speed", self.name))
+        return int(self.check_output("cat /sys/class/net/%s/speed", self.name))
 
     @property
     def addresses(self):
@@ -77,7 +75,6 @@ class LinuxInterface(Interface):
 
 
 class BSDInterface(Interface):
-
     @property
     def exists(self):
         return self.run_test("ifconfig %s", self.name).rc == 0

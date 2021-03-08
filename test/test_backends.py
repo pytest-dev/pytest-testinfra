@@ -21,6 +21,7 @@ from testinfra.backend.base import BaseBackend
 from testinfra.backend.base import HostSpec
 from testinfra.backend.winrm import _quote
 from testinfra.utils.ansible_runner import AnsibleRunner
+
 HOSTS = [
     "ssh://debian_buster",
     "safe-ssh://debian_buster",
@@ -55,23 +56,19 @@ SUDO_USER_HOSTS = [
 ]
 
 
-@pytest.mark.testinfra_hosts(*(
-    HOSTS + USER_HOSTS + SUDO_HOSTS + SUDO_USER_HOSTS))
+@pytest.mark.testinfra_hosts(*(HOSTS + USER_HOSTS + SUDO_HOSTS + SUDO_USER_HOSTS))
 def test_command(host):
     assert host.check_output("true") == ""
     # test that quotting is correct
     assert host.run("echo a b | grep -q %s", "a c").rc == 1
     out = host.run("echo out && echo err >&2 && exit 42")
     assert out.rc == 42
-    if (
-        host.backend.get_connection_type() == "ansible"
-        and host.backend.force_ansible
-    ):
-        assert out.stdout_bytes == b'out'
-        assert out.stderr_bytes == b'err'
+    if host.backend.get_connection_type() == "ansible" and host.backend.force_ansible:
+        assert out.stdout_bytes == b"out"
+        assert out.stderr_bytes == b"err"
     else:
-        assert out.stdout_bytes == b'out\n'
-        assert out.stderr_bytes == b'err\n'
+        assert out.stdout_bytes == b"out\n"
+        assert out.stderr_bytes == b"err\n"
     out = host.run("commandthatdoesnotexists")
     assert out.rc == 127
 
@@ -86,37 +83,32 @@ def test_encoding(host):
             b"ls: impossible d'acc\xe9der \xe0 '/\xef\xbf\xbd': "
             b"Aucun fichier ou dossier de ce type\n"
         )
-    elif (
-        host.backend.get_connection_type() == "ansible"
-        and host.backend.force_ansible
-    ):
+    elif host.backend.get_connection_type() == "ansible" and host.backend.force_ansible:
         # XXX: this encoding issue comes directly from ansible
         # not sure how to handle this...
         assert cmd.stderr == (
-            "ls: impossible d'accéder à '/Ã©': "
-            "Aucun fichier ou dossier de ce type")
+            "ls: impossible d'accéder à '/Ã©': " "Aucun fichier ou dossier de ce type"
+        )
     else:
         assert cmd.stderr_bytes == (
             b"ls: impossible d'acc\xe9der \xe0 '/\xe9': "
             b"Aucun fichier ou dossier de ce type\n"
         )
         assert cmd.stderr == (
-            "ls: impossible d'accéder à '/é': "
-            "Aucun fichier ou dossier de ce type\n"
+            "ls: impossible d'accéder à '/é': " "Aucun fichier ou dossier de ce type\n"
         )
 
 
-@pytest.mark.testinfra_hosts(
-    "ansible://debian_buster?force_ansible=True")
+@pytest.mark.testinfra_hosts("ansible://debian_buster?force_ansible=True")
 def test_ansible_any_error_fatal(host):
-    os.environ['ANSIBLE_ANY_ERRORS_FATAL'] = 'True'
+    os.environ["ANSIBLE_ANY_ERRORS_FATAL"] = "True"
     try:
         out = host.run("echo out && echo err >&2 && exit 42")
         assert out.rc == 42
-        assert out.stdout == 'out'
-        assert out.stderr == 'err'
+        assert out.stdout == "out"
+        assert out.stderr == "err"
     finally:
-        del os.environ['ANSIBLE_ANY_ERRORS_FATAL']
+        del os.environ["ANSIBLE_ANY_ERRORS_FATAL"]
 
 
 @pytest.mark.testinfra_hosts(*(USER_HOSTS + SUDO_USER_HOSTS))
@@ -131,231 +123,309 @@ def test_sudo(host):
 
 def test_ansible_get_hosts():
     with tempfile.NamedTemporaryFile() as f:
-        f.write((
-            b'ungrp\n'
-            b'[g1]\n'
-            b'debian\n'
-            b'[g2]\n'
-            b'centos\n'
-            b'[g3:children]\n'
-            b'g1\n'
-            b'g2\n'
-            b'[g4:children]\n'
-            b'g3'
-        ))
+        f.write(
+            (
+                b"ungrp\n"
+                b"[g1]\n"
+                b"debian\n"
+                b"[g2]\n"
+                b"centos\n"
+                b"[g3:children]\n"
+                b"g1\n"
+                b"g2\n"
+                b"[g4:children]\n"
+                b"g3"
+            )
+        )
         f.flush()
 
         def get_hosts(spec):
             return AnsibleRunner(f.name).get_hosts(spec)
+
         assert get_hosts("all") == ["centos", "debian", "ungrp"]
         assert get_hosts("*") == ["centos", "debian", "ungrp"]
         assert get_hosts("g1") == ["debian"]
         assert get_hosts("*2") == ["centos"]
         assert get_hosts("*ia*") == ["debian"]
-        assert get_hosts('*3') == ["centos", "debian"]
-        assert get_hosts('*4') == ["centos", "debian"]
-        assert get_hosts('ungrouped') == ["ungrp"]
-        assert get_hosts('un*') == ["ungrp"]
-        assert get_hosts('nope') == []
+        assert get_hosts("*3") == ["centos", "debian"]
+        assert get_hosts("*4") == ["centos", "debian"]
+        assert get_hosts("ungrouped") == ["ungrp"]
+        assert get_hosts("un*") == ["ungrp"]
+        assert get_hosts("nope") == []
 
 
 def test_ansible_get_variables():
     with tempfile.NamedTemporaryFile() as f:
-        f.write((
-            b'debian a=b c=d\n'
-            b'centos e=f\n'
-            b'[all:vars]\n'
-            b'a=a\n'
-            b'[g]\n'
-            b'debian\n'
-            b'[g:vars]\n'
-            b'x=z\n'
-        ))
+        f.write(
+            (
+                b"debian a=b c=d\n"
+                b"centos e=f\n"
+                b"[all:vars]\n"
+                b"a=a\n"
+                b"[g]\n"
+                b"debian\n"
+                b"[g:vars]\n"
+                b"x=z\n"
+            )
+        )
         f.flush()
 
         def get_vars(host):
             return AnsibleRunner(f.name).get_variables(host)
+
         groups = {
-            'all': ['centos', 'debian'],
-            'g': ['debian'],
-            'ungrouped': ['centos'],
+            "all": ["centos", "debian"],
+            "g": ["debian"],
+            "ungrouped": ["centos"],
         }
         assert get_vars("debian") == {
-            'a': 'b',
-            'c': 'd',
-            'x': 'z',
-            'inventory_hostname': 'debian',
-            'group_names': ['g'],
-            'groups': groups,
+            "a": "b",
+            "c": "d",
+            "x": "z",
+            "inventory_hostname": "debian",
+            "group_names": ["g"],
+            "groups": groups,
         }
         assert get_vars("centos") == {
-            'a': 'a',
-            'e': 'f',
-            'inventory_hostname': 'centos',
-            'group_names': ['ungrouped'],
-            'groups': groups,
+            "a": "a",
+            "e": "f",
+            "inventory_hostname": "centos",
+            "group_names": ["ungrouped"],
+            "groups": groups,
         }
 
 
-@pytest.mark.parametrize('kwargs,inventory,expected', [
-    ({}, b'host ansible_connection=local ansible_become=yes ansible_become_user=u', {  # noqa
-        'NAME': 'local',
-        'sudo': True,
-        'sudo_user': 'u',
-    }),
-    ({}, b'host', {
-        'NAME': 'ssh',
-        'host.name': 'host',
-    }),
-    ({}, b'host ansible_connection=smart', {
-        'NAME': 'ssh',
-        'host.name': 'host',
-    }),
-    ({}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
-        'NAME': 'ssh',
-        'sudo': True,
-        'sudo_user': 'u',
-        'host.name': '127.0.1.1',
-        'host.port': '2222',
-        'ssh_identity_file': 'key',
-    }),
-    ({}, b'host ansible_host=127.0.1.1 ansible_user=u ansible_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u', {  # noqa
-        'NAME': 'ssh',
-        'sudo': True,
-        'sudo_user': 'u',
-        'host.name': '127.0.1.1',
-        'host.port': '2222',
-        'ssh_identity_file': 'key',
-    }),
-    ({}, b'host ansible_ssh_common_args="-o LogLevel=FATAL"', {
-        'NAME': 'ssh',
-        'host.name': 'host',
-        'ssh_extra_args': '-o LogLevel=FATAL',
-    }),
-    ({}, b'host ansible_ssh_extra_args="-o LogLevel=FATAL"', {
-        'NAME': 'ssh',
-        'host.name': 'host',
-        'ssh_extra_args': '-o LogLevel=FATAL',
-    }),
-    ({}, b'host ansible_ssh_common_args="-o StrictHostKeyChecking=no" ansible_ssh_extra_args="-o LogLevel=FATAL"', {  # noqa
-        'NAME': 'ssh',
-        'host.name': 'host',
-        'ssh_extra_args': '-o StrictHostKeyChecking=no -o LogLevel=FATAL',
-    }),
-    ({}, b'host ansible_connection=docker', {
-        'NAME': 'docker',
-        'name': 'host',
-        'user': None,
-    }),
-    ({}, b'host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container', {  # noqa
-        'NAME': 'docker',
-        'name': 'container',
-        'user': 'z',
-        'sudo': True,
-        'sudo_user': 'u',
-    }),
-    ({'ssh_config': '/ssh_config', 'ssh_identity_file': '/id_ed25519'},
-        b'host', {
-        'NAME': 'ssh',
-        'host.name': 'host',
-        'ssh_config': '/ssh_config',
-        'ssh_identity_file': '/id_ed25519',
-    }),
-])
+@pytest.mark.parametrize(
+    "kwargs,inventory,expected",
+    [
+        (
+            {},
+            b"host ansible_connection=local ansible_become=yes ansible_become_user=u",
+            {  # noqa
+                "NAME": "local",
+                "sudo": True,
+                "sudo_user": "u",
+            },
+        ),
+        (
+            {},
+            b"host",
+            {
+                "NAME": "ssh",
+                "host.name": "host",
+            },
+        ),
+        (
+            {},
+            b"host ansible_connection=smart",
+            {
+                "NAME": "ssh",
+                "host.name": "host",
+            },
+        ),
+        (
+            {},
+            b"host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u",
+            {  # noqa
+                "NAME": "ssh",
+                "sudo": True,
+                "sudo_user": "u",
+                "host.name": "127.0.1.1",
+                "host.port": "2222",
+                "ssh_identity_file": "key",
+            },
+        ),
+        (
+            {},
+            b"host ansible_host=127.0.1.1 ansible_user=u ansible_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u",
+            {  # noqa
+                "NAME": "ssh",
+                "sudo": True,
+                "sudo_user": "u",
+                "host.name": "127.0.1.1",
+                "host.port": "2222",
+                "ssh_identity_file": "key",
+            },
+        ),
+        (
+            {},
+            b'host ansible_ssh_common_args="-o LogLevel=FATAL"',
+            {
+                "NAME": "ssh",
+                "host.name": "host",
+                "ssh_extra_args": "-o LogLevel=FATAL",
+            },
+        ),
+        (
+            {},
+            b'host ansible_ssh_extra_args="-o LogLevel=FATAL"',
+            {
+                "NAME": "ssh",
+                "host.name": "host",
+                "ssh_extra_args": "-o LogLevel=FATAL",
+            },
+        ),
+        (
+            {},
+            b'host ansible_ssh_common_args="-o StrictHostKeyChecking=no" ansible_ssh_extra_args="-o LogLevel=FATAL"',
+            {  # noqa
+                "NAME": "ssh",
+                "host.name": "host",
+                "ssh_extra_args": "-o StrictHostKeyChecking=no -o LogLevel=FATAL",
+            },
+        ),
+        (
+            {},
+            b"host ansible_connection=docker",
+            {
+                "NAME": "docker",
+                "name": "host",
+                "user": None,
+            },
+        ),
+        (
+            {},
+            b"host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container",
+            {  # noqa
+                "NAME": "docker",
+                "name": "container",
+                "user": "z",
+                "sudo": True,
+                "sudo_user": "u",
+            },
+        ),
+        (
+            {"ssh_config": "/ssh_config", "ssh_identity_file": "/id_ed25519"},
+            b"host",
+            {
+                "NAME": "ssh",
+                "host.name": "host",
+                "ssh_config": "/ssh_config",
+                "ssh_identity_file": "/id_ed25519",
+            },
+        ),
+    ],
+)
 def test_ansible_get_host(kwargs, inventory, expected):
     with tempfile.NamedTemporaryFile() as f:
-        f.write(inventory + b'\n')
+        f.write(inventory + b"\n")
         f.flush()
-        backend = AnsibleRunner(f.name).get_host('host', **kwargs).backend
+        backend = AnsibleRunner(f.name).get_host("host", **kwargs).backend
         for attr, value in expected.items():
             assert operator.attrgetter(attr)(backend) == value
 
 
-@pytest.mark.parametrize('inventory,expected', [
-    (b'host', (
-        'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
-        '-o ControlPersist=60s host true')),
-    # password passing from inventory: user is required
-    (b'host ansible_user=user ansible_ssh_pass=password', (
-        'sshpass -p password ssh -o User=user '
-        '-o ConnectTimeout=10 -o ControlMaster=auto '
-        '-o ControlPersist=60s host true')),
-    # identity_file has highest priority
-    (b'host ansible_user=user ansible_ssh_pass=password ansible_ssh_private_key_file=some_file', (  # noqa
-        'ssh -o User=user -i some_file '
-        '-o ConnectTimeout=10 -o ControlMaster=auto '
-        '-o ControlPersist=60s host true')),
-    # password without usr won't work
-    (b'host ansible_ssh_pass=password', (
-        'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
-        '-o ControlPersist=60s host true')),
-    # avoid interference between our ssh backend and ansible_ssh_extra_args
-    (b'host ansible_ssh_extra_args="-o ConnectTimeout=5 -o ControlMaster=auto '
-     b'-o ControlPersist=10s"', (
-        'ssh -o ConnectTimeout=5 -o ControlMaster=auto -o '
-        'ControlPersist=10s host true')),
-    # escape %
-    (b'host ansible_ssh_extra_args="-o ControlPath ~/.ssh/ansible/cp/%r@%h-%p"', (  # noqa
-        'ssh -o ControlPath ~/.ssh/ansible/cp/%r@%h-%p -o ConnectTimeout=10 '
-        '-o ControlMaster=auto -o ControlPersist=60s host true')),
-])
+@pytest.mark.parametrize(
+    "inventory,expected",
+    [
+        (
+            b"host",
+            (
+                "ssh -o ConnectTimeout=10 -o ControlMaster=auto "
+                "-o ControlPersist=60s host true"
+            ),
+        ),
+        # password passing from inventory: user is required
+        (
+            b"host ansible_user=user ansible_ssh_pass=password",
+            (
+                "sshpass -p password ssh -o User=user "
+                "-o ConnectTimeout=10 -o ControlMaster=auto "
+                "-o ControlPersist=60s host true"
+            ),
+        ),
+        # identity_file has highest priority
+        (
+            b"host ansible_user=user ansible_ssh_pass=password ansible_ssh_private_key_file=some_file",
+            (  # noqa
+                "ssh -o User=user -i some_file "
+                "-o ConnectTimeout=10 -o ControlMaster=auto "
+                "-o ControlPersist=60s host true"
+            ),
+        ),
+        # password without usr won't work
+        (
+            b"host ansible_ssh_pass=password",
+            (
+                "ssh -o ConnectTimeout=10 -o ControlMaster=auto "
+                "-o ControlPersist=60s host true"
+            ),
+        ),
+        # avoid interference between our ssh backend and ansible_ssh_extra_args
+        (
+            b'host ansible_ssh_extra_args="-o ConnectTimeout=5 -o ControlMaster=auto '
+            b'-o ControlPersist=10s"',
+            (
+                "ssh -o ConnectTimeout=5 -o ControlMaster=auto -o "
+                "ControlPersist=10s host true"
+            ),
+        ),
+        # escape %
+        (
+            b'host ansible_ssh_extra_args="-o ControlPath ~/.ssh/ansible/cp/%r@%h-%p"',
+            (  # noqa
+                "ssh -o ControlPath ~/.ssh/ansible/cp/%r@%h-%p -o ConnectTimeout=10 "
+                "-o ControlMaster=auto -o ControlPersist=60s host true"
+            ),
+        ),
+    ],
+)
 def test_ansible_ssh_command(inventory, expected):
     with tempfile.NamedTemporaryFile() as f:
-        f.write(inventory + b'\n')
+        f.write(inventory + b"\n")
         f.flush()
-        backend = AnsibleRunner(f.name).get_host('host').backend
-        cmd, cmd_args = backend._build_ssh_command('true')
-        command = backend.quote(' '.join(cmd), *cmd_args)
+        backend = AnsibleRunner(f.name).get_host("host").backend
+        cmd, cmd_args = backend._build_ssh_command("true")
+        command = backend.quote(" ".join(cmd), *cmd_args)
         assert command == expected
 
 
 def test_ansible_no_host():
     with tempfile.NamedTemporaryFile() as f:
-        f.write(b'host\n')
+        f.write(b"host\n")
         f.flush()
-        assert AnsibleRunner(f.name).get_hosts() == ['host']
+        assert AnsibleRunner(f.name).get_hosts() == ["host"]
         hosts = testinfra.get_hosts(
-            [None], connection='ansible', ansible_inventory=f.name)
-        assert [h.backend.get_pytest_id() for h in hosts] == ['ansible://host']
+            [None], connection="ansible", ansible_inventory=f.name
+        )
+        assert [h.backend.get_pytest_id() for h in hosts] == ["ansible://host"]
     with tempfile.NamedTemporaryFile() as f:
         # empty or no inventory should not return any hosts except for
         # localhost
         nohost = (
-            'No inventory was parsed (missing file ?), '
-            'only implicit localhost is available')
+            "No inventory was parsed (missing file ?), "
+            "only implicit localhost is available"
+        )
         with pytest.raises(RuntimeError) as exc:
             assert AnsibleRunner(f.name).get_hosts() == []
         assert str(exc.value) == nohost
         with pytest.raises(RuntimeError) as exc:
-            assert AnsibleRunner(f.name).get_hosts('local*') == []
+            assert AnsibleRunner(f.name).get_hosts("local*") == []
         assert str(exc.value) == nohost
-        assert AnsibleRunner(f.name).get_hosts('localhost') == ['localhost']
+        assert AnsibleRunner(f.name).get_hosts("localhost") == ["localhost"]
 
 
 def test_ansible_config():
     # test testinfra use ANSIBLE_CONFIG
     tmp = tempfile.NamedTemporaryFile
-    with tmp(suffix='.cfg') as cfg, tmp() as inventory:
-        cfg.write((
-            b'[defaults]\n'
-            b'inventory=' + inventory.name.encode() + b'\n'
-        ))
+    with tmp(suffix=".cfg") as cfg, tmp() as inventory:
+        cfg.write((b"[defaults]\n" b"inventory=" + inventory.name.encode() + b"\n"))
         cfg.flush()
-        inventory.write(b'h\n')
+        inventory.write(b"h\n")
         inventory.flush()
-        old = os.environ.get('ANSIBLE_CONFIG')
-        os.environ['ANSIBLE_CONFIG'] = cfg.name
+        old = os.environ.get("ANSIBLE_CONFIG")
+        os.environ["ANSIBLE_CONFIG"] = cfg.name
         try:
-            assert AnsibleRunner(None).get_hosts('all') == ['h']
+            assert AnsibleRunner(None).get_hosts("all") == ["h"]
         finally:
             if old is not None:
-                os.environ['ANSIBLE_CONFIG'] = old
+                os.environ["ANSIBLE_CONFIG"] = old
             else:
-                del os.environ['ANSIBLE_CONFIG']
+                del os.environ["ANSIBLE_CONFIG"]
 
 
 @pytest.mark.parametrize(
-    'options,expected_cli,expected_args',
+    "options,expected_cli,expected_args",
     [
         ({}, "--check", []),
         ({"become": True}, "--become --check", []),
@@ -374,13 +444,10 @@ def test_ansible_config():
         ),
         ({"user": "root", "check": False}, "--user %s", ["root"]),
         (
-            {
-                "extra_vars": {"target": "production", "foo": 42},
-                "check": False
-            },
+            {"extra_vars": {"target": "production", "foo": 42}, "check": False},
             "--extra-vars %s",
             ['{"target": "production", "foo": 42}'],
-         ),
+        ),
         ({"verbose": 0, "check": False}, "", []),
         ({"verbose": 1, "check": False}, "-v", []),
         ({"verbose": 2, "check": False}, "-vv", []),
@@ -412,49 +479,59 @@ def test_backend_importables():
 @pytest.mark.testinfra_hosts("docker://centos_7", "ssh://centos_7")
 def test_docker_encoding(host):
     encoding = host.check_output(
-        "python -c 'import locale;print(locale.getpreferredencoding())'")
+        "python -c 'import locale;print(locale.getpreferredencoding())'"
+    )
     assert encoding == "ANSI_X3.4-1968"
     string = "ťēꞩƫìṇḟřặ ṧꝕèȃǩ ửƫᵮ8"
     assert host.check_output("echo %s | tee /tmp/s.txt", string) == string
     assert host.file("/tmp/s.txt").content_string.strip() == string
 
 
-@pytest.mark.parametrize('hostspec,expected', [
-    ('u:P@h:p', HostSpec('h', 'p', 'u', 'P')),
-    ('u@h:p', HostSpec('h', 'p', 'u', None)),
-    ('u:P@h', HostSpec('h', None, 'u', 'P')),
-    ('u@h', HostSpec('h', None, 'u', None)),
-    ('h', HostSpec('h', None, None, None)),
-    ('pr%C3%A9nom@h', HostSpec('h', None, 'prénom', None)),
-    ('pr%C3%A9nom:p%40ss%3Aw0rd@h', HostSpec('h', None, 'prénom',
-                                             'p@ss:w0rd')),
-    # ipv6 matching
-    ('[2001:db8:a0b:12f0::1]',
-     HostSpec('2001:db8:a0b:12f0::1', None, None, None)),
-    ('user:password@[2001:db8:a0b:12f0::1]',
-     HostSpec('2001:db8:a0b:12f0::1', None, 'user', 'password')),
-    ('user:password@[2001:4800:7819:103:be76:4eff:fe04:9229]:22',
-     HostSpec('2001:4800:7819:103:be76:4eff:fe04:9229', '22',
-              'user', 'password')),
-])
+@pytest.mark.parametrize(
+    "hostspec,expected",
+    [
+        ("u:P@h:p", HostSpec("h", "p", "u", "P")),
+        ("u@h:p", HostSpec("h", "p", "u", None)),
+        ("u:P@h", HostSpec("h", None, "u", "P")),
+        ("u@h", HostSpec("h", None, "u", None)),
+        ("h", HostSpec("h", None, None, None)),
+        ("pr%C3%A9nom@h", HostSpec("h", None, "prénom", None)),
+        ("pr%C3%A9nom:p%40ss%3Aw0rd@h", HostSpec("h", None, "prénom", "p@ss:w0rd")),
+        # ipv6 matching
+        ("[2001:db8:a0b:12f0::1]", HostSpec("2001:db8:a0b:12f0::1", None, None, None)),
+        (
+            "user:password@[2001:db8:a0b:12f0::1]",
+            HostSpec("2001:db8:a0b:12f0::1", None, "user", "password"),
+        ),
+        (
+            "user:password@[2001:4800:7819:103:be76:4eff:fe04:9229]:22",
+            HostSpec(
+                "2001:4800:7819:103:be76:4eff:fe04:9229", "22", "user", "password"
+            ),
+        ),
+    ],
+)
 def test_parse_hostspec(hostspec, expected):
     assert BaseBackend.parse_hostspec(hostspec) == expected
 
 
 @pytest.mark.parametrize(
-    'hostspec,pod,container,namespace,kubeconfig,context', [
-        ('kubectl://pod', 'pod', None, None, None, None),
-        ('kubectl://pod?namespace=n', 'pod', None, 'n', None, None),
-        ('kubectl://pod?container=c&namespace=n',
-         'pod', 'c', 'n', None, None),
-        ('kubectl://pod?namespace=n&kubeconfig=k',
-         'pod', None, 'n', 'k', None),
-        ('kubectl://pod?context=ctx&container=c',
-         'pod', 'c', None, None, 'ctx')
-    ]
+    "hostspec,pod,container,namespace,kubeconfig,context",
+    [
+        ("kubectl://pod", "pod", None, None, None, None),
+        ("kubectl://pod?namespace=n", "pod", None, "n", None, None),
+        ("kubectl://pod?container=c&namespace=n", "pod", "c", "n", None, None),
+        ("kubectl://pod?namespace=n&kubeconfig=k", "pod", None, "n", "k", None),
+        ("kubectl://pod?context=ctx&container=c", "pod", "c", None, None, "ctx"),
+    ],
 )
 def test_kubectl_hostspec(
-    hostspec, pod, container, namespace, kubeconfig, context,
+    hostspec,
+    pod,
+    container,
+    namespace,
+    kubeconfig,
+    context,
 ):
     backend = testinfra.get_host(hostspec).backend
     assert backend.name == pod
@@ -464,12 +541,15 @@ def test_kubectl_hostspec(
     assert backend.context == context
 
 
-@pytest.mark.parametrize('hostspec,pod,container,namespace,kubeconfig', [
-    ('openshift://pod', 'pod', None, None, None),
-    ('openshift://pod?namespace=n', 'pod', None, 'n', None),
-    ('openshift://pod?container=c&namespace=n', 'pod', 'c', 'n', None),
-    ('openshift://pod?namespace=n&kubeconfig=k', 'pod', None, 'n', 'k')
-])
+@pytest.mark.parametrize(
+    "hostspec,pod,container,namespace,kubeconfig",
+    [
+        ("openshift://pod", "pod", None, None, None),
+        ("openshift://pod?namespace=n", "pod", None, "n", None),
+        ("openshift://pod?container=c&namespace=n", "pod", "c", "n", None),
+        ("openshift://pod?namespace=n&kubeconfig=k", "pod", None, "n", "k"),
+    ],
+)
 def test_openshift_hostspec(hostspec, pod, container, namespace, kubeconfig):
     backend = testinfra.get_host(hostspec).backend
     assert backend.name == pod
@@ -478,57 +558,76 @@ def test_openshift_hostspec(hostspec, pod, container, namespace, kubeconfig):
     assert backend.kubeconfig == kubeconfig
 
 
-@pytest.mark.parametrize('arg_string,expected', [
-    (
-        'C:\\Users\\vagrant\\This Dir\\salt',
-        '"C:\\Users\\vagrant\\This Dir\\salt"'
-    ),
-    (
-        'C:\\Users\\vagrant\\AppData\\Local\\Temp\\kitchen\\etc\\salt',
-        '"C:\\Users\\vagrant\\AppData\\Local\\Temp\\kitchen\\etc\\salt"'
-    ),
-])
+@pytest.mark.parametrize(
+    "arg_string,expected",
+    [
+        ("C:\\Users\\vagrant\\This Dir\\salt", '"C:\\Users\\vagrant\\This Dir\\salt"'),
+        (
+            "C:\\Users\\vagrant\\AppData\\Local\\Temp\\kitchen\\etc\\salt",
+            '"C:\\Users\\vagrant\\AppData\\Local\\Temp\\kitchen\\etc\\salt"',
+        ),
+    ],
+)
 def test_winrm_quote(arg_string, expected):
     assert _quote(arg_string) == expected
 
 
-@pytest.mark.parametrize('hostspec,expected', [
-    ('ssh://h',
-        'ssh -o ConnectTimeout=10 -o ControlMaster=auto '
-        '-o ControlPersist=60s h true'),
-    ('ssh://h?timeout=1',
-        'ssh -o ConnectTimeout=1 -o ControlMaster=auto '
-        '-o ControlPersist=60s h true'),
-    ('ssh://u@h:2222',
-        'ssh -o User=u -o Port=2222 -o ConnectTimeout=10 '
-        '-o ControlMaster=auto -o ControlPersist=60s h true'),
-    ('ssh://h:2222?ssh_config=/f',
-        'ssh -F /f -o Port=2222 -o ConnectTimeout=10 '
-        '-o ControlMaster=auto -o ControlPersist=60s h true'),
-    ('ssh://u@h?ssh_identity_file=/id',
-        'ssh -o User=u -i /id -o ConnectTimeout=10 '
-        '-o ControlMaster=auto -o ControlPersist=60s h true'),
-    ('ssh://h?controlpersist=1',
-        'ssh -o ConnectTimeout=10 '
-        '-o ControlMaster=auto -o ControlPersist=1s h true'),
-    ('ssh://h?controlpersist=0',
-        'ssh -o ConnectTimeout=10 h true')
-])
+@pytest.mark.parametrize(
+    "hostspec,expected",
+    [
+        (
+            "ssh://h",
+            "ssh -o ConnectTimeout=10 -o ControlMaster=auto "
+            "-o ControlPersist=60s h true",
+        ),
+        (
+            "ssh://h?timeout=1",
+            "ssh -o ConnectTimeout=1 -o ControlMaster=auto "
+            "-o ControlPersist=60s h true",
+        ),
+        (
+            "ssh://u@h:2222",
+            "ssh -o User=u -o Port=2222 -o ConnectTimeout=10 "
+            "-o ControlMaster=auto -o ControlPersist=60s h true",
+        ),
+        (
+            "ssh://h:2222?ssh_config=/f",
+            "ssh -F /f -o Port=2222 -o ConnectTimeout=10 "
+            "-o ControlMaster=auto -o ControlPersist=60s h true",
+        ),
+        (
+            "ssh://u@h?ssh_identity_file=/id",
+            "ssh -o User=u -i /id -o ConnectTimeout=10 "
+            "-o ControlMaster=auto -o ControlPersist=60s h true",
+        ),
+        (
+            "ssh://h?controlpersist=1",
+            "ssh -o ConnectTimeout=10 "
+            "-o ControlMaster=auto -o ControlPersist=1s h true",
+        ),
+        ("ssh://h?controlpersist=0", "ssh -o ConnectTimeout=10 h true"),
+    ],
+)
 def test_ssh_hostspec(hostspec, expected):
     backend = testinfra.get_host(hostspec).backend
-    cmd, cmd_args = backend._build_ssh_command('true')
-    command = backend.quote(' '.join(cmd), *cmd_args)
+    cmd, cmd_args = backend._build_ssh_command("true")
+    command = backend.quote(" ".join(cmd), *cmd_args)
     assert command == expected
 
 
 def test_get_hosts():
     # Hosts returned by get_host must be deduplicated (by name & kwargs) and in
     # same order as asked
-    hosts = testinfra.backend.get_backends([
-        'ssh://foo', 'ssh://a', 'ssh://a', 'ssh://a?timeout=1',
-    ])
+    hosts = testinfra.backend.get_backends(
+        [
+            "ssh://foo",
+            "ssh://a",
+            "ssh://a",
+            "ssh://a?timeout=1",
+        ]
+    )
     assert [(h.host.name, h.timeout) for h in hosts] == [
-        ('foo', 10),
-        ('a', 10),
-        ('a', 1),
+        ("foo", 10),
+        ("a", 10),
+        ("a", 1),
     ]

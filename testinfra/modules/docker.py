@@ -39,7 +39,7 @@ class Docker(Module):
 
     @property
     def is_running(self):
-        return self.inspect()['State']['Running']
+        return self.inspect()["State"]["Running"]
 
     @property
     def id(self):
@@ -90,4 +90,4 @@ class Docker(Module):
         return result
 
     def __repr__(self):
-        return "<docker %s>" % (self._name)
+        return "<docker {}>".format(self._name)

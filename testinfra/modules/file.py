@@ -126,7 +126,7 @@ class File(Module):
     def _get_content(self, decode):
         out = self.run_test("cat -- %s", self.path)
         if out.rc != 0:
-            raise RuntimeError("Unexpected output %s" % (out,))
+            raise RuntimeError("Unexpected output {}".format(out))
         if decode:
             return out.stdout
         return out.stdout_bytes
@@ -171,11 +171,11 @@ class File(Module):
         """
         out = self.run_test("ls -1 -q -- %s", self.path)
         if out.rc != 0:
-            raise RuntimeError("Unexpected output %s" % (out,))
+            raise RuntimeError("Unexpected output {}".format(out))
         return out.stdout.splitlines()
 
     def __repr__(self):
-        return "<file %s>" % (self.path,)
+        return "<file {}>".format(self.path)
 
     def __eq__(self, other):
         if isinstance(other, File):
@@ -235,8 +235,7 @@ class GNUFile(File):
 
     @property
     def sha256sum(self):
-        return self.check_output(
-            "sha256sum %s | cut -d ' ' -f 1", self.path)
+        return self.check_output("sha256sum %s | cut -d ' ' -f 1", self.path)
 
 
 class BSDFile(File):
@@ -277,15 +276,13 @@ class BSDFile(File):
 
     @property
     def sha256sum(self):
-        return self.check_output(
-            "sha256 < %s", self.path)
+        return self.check_output("sha256 < %s", self.path)
 
 
 class DarwinFile(BSDFile):
-
     @property
     def linked_to(self):
-        link_script = '''
+        link_script = """
         TARGET_FILE='{0}'
         cd `dirname $TARGET_FILE`
         TARGET_FILE=`basename $TARGET_FILE`
@@ -298,13 +295,13 @@ class DarwinFile(BSDFile):
         PHYS_DIR=`pwd -P`
         RESULT=$PHYS_DIR/$TARGET_FILE
         echo $RESULT
-        '''.format(self.path)
+        """.format(
+            self.path
+        )
         return self.check_output(link_script)
 
 
 class NetBSDFile(BSDFile):
-
     @property
     def sha256sum(self):
-        return self.check_output(
-            "cksum -a sha256 < %s", self.path)
+        return self.check_output("cksum -a sha256 < %s", self.path)

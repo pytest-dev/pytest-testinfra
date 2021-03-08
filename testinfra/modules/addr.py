@@ -25,15 +25,27 @@ class _AddrPort:
             if self._addr.namespace:
                 # in this case cannot use namespace
                 raise NotImplementedError(
-                    "nc command not available, namespace cannot be used")
+                    "nc command not available, namespace cannot be used"
+                )
             # Fallback to bash if netcat is not available
-            return self._addr.run_expect(
-                [0, 1, 124],
-                "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
-                self._addr.name, self._port).rc == 0
+            return (
+                self._addr.run_expect(
+                    [0, 1, 124],
+                    "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/%s/%s'",
+                    self._addr.name,
+                    self._port,
+                ).rc
+                == 0
+            )
 
-        return self._addr.run("{}nc -w 1 -z {} {}".format(self._addr._prefix,
-                              self._addr.name, self._port)).rc == 0
+        return (
+            self._addr.run(
+                "{}nc -w 1 -z {} {}".format(
+                    self._addr._prefix, self._addr.name, self._port
+                )
+            ).rc
+            == 0
+        )
 
 
 class Addr(Module):
@@ -67,12 +79,14 @@ class Addr(Module):
     .. _ip: https://man7.org/linux/man-pages/man8/ip.8.html
     .. _ip-netns: https://man7.org/linux/man-pages/man8/ip-netns.8.html
     """
+
     def __init__(self, name, namespace=None):
         self._name = name
         self._namespace = namespace
         if self.namespace and not self._host.exists("ip"):
             raise NotImplementedError(
-                "ip command not available, namespace cannot be used")
+                "ip command not available, namespace cannot be used"
+            )
         super().__init__()
 
     @property
@@ -90,15 +104,17 @@ class Addr(Module):
         """Return the prefix to use for commands"""
         prefix = ""
         if self.namespace:
-            prefix = "ip netns exec %s " % self.namespace
+            prefix = "ip netns exec {} ".format(self.namespace)
         return prefix
 
     @property
     def namespace_exists(self):
         """Test if the network namespace exists"""
         # could use ip netns list instead
-        return self.namespace and self.run_test("test -e /var/run/netns/%s",
-                                                self.namespace).rc == 0
+        return (
+            self.namespace
+            and self.run_test("test -e /var/run/netns/%s", self.namespace).rc == 0
+        )
 
     @property
     def is_resolvable(self):
@@ -108,8 +124,12 @@ class Addr(Module):
     @property
     def is_reachable(self):
         """Return if address is reachable"""
-        return self.run_expect([0, 1, 2], "{}ping -W 1 -c 1 {}".format(
-            self._prefix, self.name)).rc == 0
+        return (
+            self.run_expect(
+                [0, 1, 2], "{}ping -W 1 -c 1 {}".format(self._prefix, self.name)
+            ).rc
+            == 0
+        )
 
     @property
     def ip_addresses(self):
@@ -131,10 +151,11 @@ class Addr(Module):
         return _AddrPort(self, port)
 
     def __repr__(self):
-        return "<addr %s>" % (self.name,)
+        return "<addr {}>".format(self.name)
 
     def _resolve(self, method):
-        result = self.run_expect([0, 1, 2], "{}getent {} {}".format(
-            self._prefix, method, self.name))
+        result = self.run_expect(
+            [0, 1, 2], "{}getent {} {}".format(self._prefix, method, self.name)
+        )
         lines = result.stdout.splitlines()
-        return list(set(line.split()[0] for line in lines))
+        return list({line.split()[0] for line in lines})

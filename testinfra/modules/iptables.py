@@ -16,8 +16,8 @@ from testinfra.modules.base import InstanceModule
 class Iptables(InstanceModule):
     """Test iptables rule exists"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         # support for -w argument (since 1.6.0)
         # https://git.netfilter.org/iptables/commit/?id=aaa4ace72b
         # centos 6 has no support
@@ -30,7 +30,7 @@ class Iptables(InstanceModule):
         elif version == 6:
             iptables = "ip6tables"
         else:
-            raise RuntimeError("Invalid version: %s" % version)
+            raise RuntimeError("Invalid version: {}".format(version))
         if self._has_w_argument is False:
             return iptables
         else:
@@ -45,11 +45,11 @@ class Iptables(InstanceModule):
                 return self._run_iptables(version, cmd, *args)
             else:
                 self._has_w_argument = True
-                return result.stdout.rstrip('\r\n')
+                return result.stdout.rstrip("\r\n")
         else:
             return self.check_output(ipt_cmd, *args)
 
-    def rules(self, table='filter', chain=None, version=4):
+    def rules(self, table="filter", chain=None, version=4):
         """Returns list of iptables rules
 
            Based on ouput of `iptables -t TABLE -S CHAIN` command

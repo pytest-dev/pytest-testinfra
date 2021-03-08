@@ -63,9 +63,13 @@ class User(Module):
     @property
     def gids(self):
         """Return the list of user group IDs"""
-        return [int(gid) for gid in self.check_output(
-            "id -G %s", self.name,
-        ).split(" ")]
+        return [
+            int(gid)
+            for gid in self.check_output(
+                "id -G %s",
+                self.name,
+            ).split(" ")
+        ]
 
     @property
     def groups(self):
@@ -115,24 +119,22 @@ class User(Module):
     def get_module_class(cls, host):
         if host.system_info.type.endswith("bsd"):
             return BSDUser
-        if host.system_info.type == 'windows':
+        if host.system_info.type == "windows":
             return WindowsUser
         return super().get_module_class(host)
 
     def __repr__(self):
-        return "<user %s>" % (self.name,)
+        return "<user {}>".format(self.name)
 
 
 class BSDUser(User):
-
     @property
     def password(self):
         return self.check_output("getent passwd %s", self.name).split(":")[1]
 
     @property
     def expiration_date(self):
-        seconds = self.check_output(
-            "getent passwd %s", self.name).split(":")[6]
+        seconds = self.check_output("getent passwd %s", self.name).split(":")[6]
         try:
             seconds = int(seconds)
         except ValueError:
@@ -144,7 +146,6 @@ class BSDUser(User):
 
 
 class WindowsUser(User):
-
     @property
     def name(self):
         """Return user name"""
@@ -184,10 +185,11 @@ class WindowsUser(User):
     @property
     def groups(self):
         """Return the list of user local group names"""
-        local_groups = self.check_output("net user %s | findstr /B /C:\"Local "
-                                         "Group Memberships\"", self.name)
+        local_groups = self.check_output(
+            'net user %s | findstr /B /C:"Local ' 'Group Memberships"', self.name
+        )
         local_groups = local_groups.split()[3:]
-        return [g.replace('*', '') for g in local_groups]
+        return [g.replace("*", "") for g in local_groups]
 
     @property
     def home(self):
@@ -199,8 +201,7 @@ class WindowsUser(User):
 
     @property
     def gecos(self):
-        comment = self.check_output("net user %s | find /B /C:\"Comment\"",
-                                    self.name)
+        comment = self.check_output('net user %s | find /B /C:"Comment"', self.name)
         return comment.split().strip()[1]
 
     @property
@@ -209,9 +210,12 @@ class WindowsUser(User):
 
     @property
     def expiration_date(self):
-        expiration = self.check_output("net user %s | findstr /B /C:\"Password \
-                                       expires\"", self.name)
+        expiration = self.check_output(
+            'net user %s | findstr /B /C:"Password \
+                                       expires"',
+            self.name,
+        )
         expiration = expiration.split().strip()[1]
-        if expiration == 'Never':
+        if expiration == "Never":
             return None
-        return datetime.datetime.strptime(expiration, '%m/%d/%Y %H:%M%S %p')
+        return datetime.datetime.strptime(expiration, "%m/%d/%Y %H:%M%S %p")

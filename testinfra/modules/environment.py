@@ -28,8 +28,7 @@ class Environment(InstanceModule):
 
     def __call__(self):
         ret_val = dict(
-            i.split('=', 1) for i in self.check_output('env -0').split(
-                '\x00') if i
+            i.split("=", 1) for i in self.check_output("env -0").split("\x00") if i
         )
         return ret_val
 

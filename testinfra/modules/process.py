@@ -24,22 +24,23 @@ def int_or_float(value):
 
 
 class _Process(dict):
-
     def __getattr__(self, key):
         try:
             return self.__getitem__(key)
         except KeyError:
             attrs = self["_get_process_attribute_by_pid"](self["pid"], key)
             if attrs["lstart"] != self["lstart"]:
-                raise RuntimeError((
-                    "Process with pid %s start time changed from %s to %s."
-                    " This mean the process you are working on does not not "
-                    "exist anymore"
-                ) % (self["pid"], self["lstart"], attrs["lstart"]))
+                raise RuntimeError(
+                    (
+                        "Process with pid {} start time changed from {} to {}."
+                        " This mean the process you are working on does not not "
+                        "exist anymore"
+                    ).format(self["pid"], self["lstart"], attrs["lstart"])
+                )
             return attrs[key]
 
     def __repr__(self):
-        return "<process %s (pid=%s)>" % (self["comm"], self["pid"])
+        return "<process {} (pid={})>".format(self["comm"], self["pid"])
 
 
 class Process(InstanceModule):
@@ -79,8 +80,9 @@ class Process(InstanceModule):
                 if str(attrs[key]) != str(value):
                     break
             else:
-                attrs["_get_process_attribute_by_pid"] = (
-                    self._get_process_attribute_by_pid)
+                attrs[
+                    "_get_process_attribute_by_pid"
+                ] = self._get_process_attribute_by_pid
                 match.append(_Process(attrs))
         return match
 
@@ -94,7 +96,7 @@ class Process(InstanceModule):
         if not matches:
             raise RuntimeError("No process found")
         if len(matches) > 1:
-            raise RuntimeError("Multiple process found: %s" % (matches,))
+            raise RuntimeError("Multiple process found: {}".format(matches))
         return matches[0]
 
     def _get_processes(self, **filters):
@@ -107,8 +109,7 @@ class Process(InstanceModule):
     def get_module_class(cls, host):
         if host.file("/bin/ps").linked_to == "/bin/busybox":
             return BusyboxProcess
-        if (host.system_info.type == "linux"
-                or host.system_info.type.endswith("bsd")):
+        if host.system_info.type == "linux" or host.system_info.type.endswith("bsd"):
             return PosixProcess
         raise NotImplementedError
 
@@ -121,12 +122,10 @@ class PosixProcess(Process):
 
     def _get_processes(self, **filters):
         cmd = "ps -Aww -o %s"
-        attributes = {"pid", "comm", "pcpu", "pmem"} | set(filters.keys())
-
-        # Theses attributes contains spaces. Put them at the end of the list
-        attributes -= {"lstart", "args"}
-        attributes = sorted(attributes)
-        attributes.extend(["lstart", "args"])
+        # lstart and args attributes contains spaces. Put them at the end of the list
+        attributes = sorted(
+            ({"pid", "comm", "pcpu", "pmem"} | set(filters)) - {"lstart", "args"}
+        ) + ["lstart", "args"]
         arg = ":50,".join(attributes)
 
         procs = []
@@ -137,14 +136,13 @@ class PosixProcess(Process):
             i = 0
             for i, key in enumerate(attributes[:-2]):
                 attrs[key] = int_or_float(splitted[i])
-            attrs["lstart"] = " ".join(splitted[i+1:i+6])
-            attrs["args"] = " ".join(splitted[i+6:])
+            attrs["lstart"] = " ".join(splitted[i + 1 : i + 6])
+            attrs["args"] = " ".join(splitted[i + 6 :])
             procs.append(attrs)
         return procs
 
     def _get_process_attribute_by_pid(self, pid, name):
-        out = self.check_output(
-            "ps -ww -p %s -o lstart,%s", str(pid), name)
+        out = self.check_output("ps -ww -p %s -o lstart,%s", str(pid), name)
         splitted = out.splitlines()[1].split()
         return {
             "lstart": " ".join(splitted[:5]),
@@ -153,15 +151,12 @@ class PosixProcess(Process):
 
 
 class BusyboxProcess(Process):
-
     def _get_processes(self, **filters):
         cmd = "ps -A -o %s"
-        attributes = {"pid", "comm", "time"} | set(filters.keys())
-
-        # Theses attributes contains spaces. Put them at the end of the list
-        attributes -= {"args"}
-        attributes = sorted(attributes)
-        attributes.extend(["args"])
+        # "args" attribute contains spaces. Put them at the end of the list
+        attributes = sorted(({"pid", "comm", "time"} | set(filters)) - {"args"}) + [
+            "args"
+        ]
         arg = ",".join(attributes)
 
         procs = []
@@ -174,7 +169,7 @@ class BusyboxProcess(Process):
                 attrs[key] = int_or_float(splitted[i])
 
             attrs["lstart"] = attrs["time"]
-            attrs["args"] = " ".join(splitted[i+1:])
+            attrs["args"] = " ".join(splitted[i + 1 :])
             procs.append(attrs)
 
         return procs

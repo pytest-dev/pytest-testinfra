@@ -20,14 +20,14 @@ def local_scheme(version):
     import setuptools_scm.version  # only present during setup time
 
     return (
-        ''
-        if 'PEP440_VERSION' in os.environ
+        ""
+        if "PEP440_VERSION" in os.environ
         else setuptools_scm.version.get_local_node_and_date(version)
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setuptools.setup(
-        use_scm_version={'local_scheme': local_scheme},
+        use_scm_version={"local_scheme": local_scheme},
         setup_requires=["setuptools_scm"],
     )

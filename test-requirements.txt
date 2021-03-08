@@ -5,4 +5,5 @@ paramiko
 tornado<5
 salt
 pywinrm
-ansible>=2.8,<3
+ansible>=3,<4
+mypy

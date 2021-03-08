@@ -13,8 +13,14 @@
 from testinfra.modules.base import Module
 
 STATUS = [
-    "STOPPED", "STARTING", "RUNNING", "BACKOFF", "STOPPING", "EXITED",
-    "FATAL", "UNKNOWN",
+    "STOPPED",
+    "STARTING",
+    "RUNNING",
+    "BACKOFF",
+    "STOPPING",
+    "EXITED",
+    "FATAL",
+    "UNKNOWN",
 ]
 
 
@@ -44,8 +50,7 @@ class Supervisor(Module):
         # supervisord socket and output the error to stdout.
         # So we check that parsed status is a known status.
         if status not in STATUS:
-            raise RuntimeError(
-                "Cannot get supervisor status. Is supervisor running ?")
+            raise RuntimeError("Cannot get supervisor status. Is supervisor running ?")
         if status == "RUNNING":
             pid = splitted[3]
             if pid[-1] == ",":
@@ -95,16 +100,20 @@ class Supervisor(Module):
          <Supervisor(name="celery", status="FATAL", pid=None)>]
         """
         services = []
-        for line in cls(None).check_output(
-            "supervisorctl status",
-        ).splitlines():
+        for line in (
+            cls(None)
+            .check_output(
+                "supervisorctl status",
+            )
+            .splitlines()
+        ):
             attrs = cls._parse_status(line)
             service = cls(attrs["name"], attrs)
             services.append(service)
         return services
 
     def __repr__(self):
-        return "<Supervisor(name=%s, status=%s, pid=%s)>" % (
+        return "<Supervisor(name={}, status={}, pid={})>".format(
             self.name,
             self.status,
             self.pid,
