@@ -523,7 +523,7 @@ def test_pip_package(host):
     assert int(outdated["latest"].split(".")[0]) > 2
     assert host.pip_package.check().succeeded
 
-    
+
 def test_environment_home(host):
     assert host.environment().get("HOME") == "/root"
 
