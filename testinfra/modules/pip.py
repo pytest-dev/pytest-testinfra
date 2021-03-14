@@ -39,7 +39,7 @@ class Pip(Module):
         >>> host.package("pip").is_installed
         True
         """
-        return self.run_test("{} show %s".format(self.pip_path), self.name).rc == 0
+        return self.run_test("%s show %s", self.pip_path, self.name).rc == 0
 
     @property
     def version(self):
@@ -49,7 +49,8 @@ class Pip(Module):
         '18.1'
         """
         return self.check_output(
-            "{} show %s | grep Version: | cut -d' ' -f2".format(self.pip_path),
+            "%s show %s | grep Version: | cut -d' ' -f2",
+            self.pip_path,
             self.name,
         )
 
@@ -69,8 +70,7 @@ class Pip(Module):
         .. _pip check: https://pip.pypa.io/en/stable/reference/pip_check/
         .. _9.0.0: https://pip.pypa.io/en/stable/news/#id526
         """
-        cmd = "{} check".format(pip_path)
-        return cls.run_expect([0, 1], cmd)
+        return cls.run_expect([0, 1], "%s check", pip_path)
 
     @classmethod
     def get_packages(cls, pip_path="pip"):
@@ -81,9 +81,7 @@ class Pip(Module):
          'mywebsite': {'version': '1.0a3', 'path': '/srv/website'},
          'psycopg2': {'version': '2.6.2'}}
         """
-        out = cls.run_expect(
-            [0, 2], "{0} list --no-index --format=json".format(pip_path)
-        )
+        out = cls.run_expect([0, 2], "%s list --no-index --format=json", pip_path)
         pkgs = {}
         if out.rc == 0:
             for pkg in json.loads(out.stdout):
@@ -92,9 +90,7 @@ class Pip(Module):
         else:
             # pip < 9
             output_re = re.compile(r"^(.+) \((.+)\)$")
-            for line in cls.check_output(
-                "{0} list --no-index".format(pip_path)
-            ).splitlines():
+            for line in cls.check_output("%s list --no-index", pip_path).splitlines():
                 if line.startswith("Warning: "):
                     # Warning: cannot find svn location for ...
                     continue
@@ -114,7 +110,7 @@ class Pip(Module):
         ...     pip_path='~/venv/website/bin/pip')
         {'Django': {'current': '1.10.2', 'latest': '1.10.3'}}
         """
-        out = cls.run_expect([0, 2], "{0} list -o --format=json".format(pip_path))
+        out = cls.run_expect([0, 2], "%s list -o --format=json", pip_path)
         pkgs = {}
         if out.rc == 0:
             for pkg in json.loads(out.stdout):
@@ -130,7 +126,7 @@ class Pip(Module):
                 re.compile(r"^(.+?) \((.+)\) - Latest: (.+) .*$"),
                 re.compile(r"^(.+?) \(Current: (.+) Latest: (.+) .*$"),
             ]
-            for line in cls.check_output("{0} list -o".format(pip_path)).splitlines():
+            for line in cls.check_output("%s list -o", pip_path).splitlines():
                 if line.startswith("Warning: "):
                     # Warning: cannot find svn location for ...
                     continue
@@ -148,6 +144,7 @@ class PipPackage(Pip):
 
     @staticmethod
     def _deprecated():
+        """Raise a `DeprecationWarning`"""
         warnings.warn(
             "Calling host.pip_package is deprecated, call host.pip instead",
             DeprecationWarning,
@@ -156,14 +153,14 @@ class PipPackage(Pip):
     @classmethod
     def check(cls, pip_path="pip"):
         PipPackage._deprecated()
-        return super(PipPackage, cls).check(pip_path=pip_path)
+        return super().check(pip_path=pip_path)
 
     @classmethod
     def get_packages(cls, pip_path="pip"):
         PipPackage._deprecated()
-        return super(PipPackage, cls).get_packages(pip_path=pip_path)
+        return super().get_packages(pip_path=pip_path)
 
     @classmethod
     def get_outdated_packages(cls, pip_path="pip"):
         PipPackage._deprecated()
-        return super(PipPackage, cls).get_outdated_packages(pip_path=pip_path)
+        return super().get_outdated_packages(pip_path=pip_path)
