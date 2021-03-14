@@ -12,8 +12,9 @@
 
 import json
 import re
+import warnings
 
-from testinfra.modules.base import InstanceModule
+from testinfra.modules.base import Module
 
 
 def _re_match(line, regexp):
@@ -23,10 +24,37 @@ def _re_match(line, regexp):
     return match.groups()
 
 
-class PipPackage(InstanceModule):
-    """Test pip packages status and version"""
+class Pip(Module):
+    """Test pip package manager and packages"""
 
-    def check(self, pip_path="pip"):
+    def __init__(self, name, pip_path="pip"):
+        self.name = name
+        self.pip_path = pip_path
+        super().__init__()
+
+    @property
+    def is_installed(self):
+        """Test if the package is installed
+
+        >>> host.package("pip").is_installed
+        True
+        """
+        return self.run_test("{} show %s".format(self.pip_path), self.name).rc == 0
+
+    @property
+    def version(self):
+        """Return package version as returned by pip
+
+        >>> host.package("pip").version
+        '18.1'
+        """
+        return self.check_output(
+            "{} show %s | grep Version: | cut -d' ' -f2".format(self.pip_path),
+            self.name,
+        )
+
+    @classmethod
+    def check(cls, pip_path="pip"):
         """Verify installed packages have compatible dependencies.
 
         >>> cmd = host.pip_package.check()
@@ -42,9 +70,10 @@ class PipPackage(InstanceModule):
         .. _9.0.0: https://pip.pypa.io/en/stable/news/#id526
         """
         cmd = "{} check".format(pip_path)
-        return self.run_expect([0, 1], cmd)
+        return cls.run_expect([0, 1], cmd)
 
-    def get_packages(self, pip_path="pip"):
+    @classmethod
+    def get_packages(cls, pip_path="pip"):
         """Get all installed packages and versions returned by `pip list`:
 
         >>> host.pip_package.get_packages(pip_path='~/venv/website/bin/pip')
@@ -52,7 +81,7 @@ class PipPackage(InstanceModule):
          'mywebsite': {'version': '1.0a3', 'path': '/srv/website'},
          'psycopg2': {'version': '2.6.2'}}
         """
-        out = self.run_expect(
+        out = cls.run_expect(
             [0, 2], "{0} list --no-index --format=json".format(pip_path)
         )
         pkgs = {}
@@ -63,7 +92,7 @@ class PipPackage(InstanceModule):
         else:
             # pip < 9
             output_re = re.compile(r"^(.+) \((.+)\)$")
-            for line in self.check_output(
+            for line in cls.check_output(
                 "{0} list --no-index".format(pip_path)
             ).splitlines():
                 if line.startswith("Warning: "):
@@ -77,14 +106,15 @@ class PipPackage(InstanceModule):
                     pkgs[name] = {"version": version}
         return pkgs
 
-    def get_outdated_packages(self, pip_path="pip"):
+    @classmethod
+    def get_outdated_packages(cls, pip_path="pip"):
         """Get all outdated packages with current and latest version
 
         >>> host.pip_package.get_outdated_packages(
         ...     pip_path='~/venv/website/bin/pip')
         {'Django': {'current': '1.10.2', 'latest': '1.10.3'}}
         """
-        out = self.run_expect([0, 2], "{0} list -o --format=json".format(pip_path))
+        out = cls.run_expect([0, 2], "{0} list -o --format=json".format(pip_path))
         pkgs = {}
         if out.rc == 0:
             for pkg in json.loads(out.stdout):
@@ -100,7 +130,7 @@ class PipPackage(InstanceModule):
                 re.compile(r"^(.+?) \((.+)\) - Latest: (.+) .*$"),
                 re.compile(r"^(.+?) \(Current: (.+) Latest: (.+) .*$"),
             ]
-            for line in self.check_output("{0} list -o".format(pip_path)).splitlines():
+            for line in cls.check_output("{0} list -o".format(pip_path)).splitlines():
                 if line.startswith("Warning: "):
                     # Warning: cannot find svn location for ...
                     continue
@@ -108,3 +138,32 @@ class PipPackage(InstanceModule):
                 name, current, latest = _re_match(line, output_re)
                 pkgs[name] = {"current": current, "latest": latest}
         return pkgs
+
+
+class PipPackage(Pip):
+    """.. deprecated:: 6.2
+
+    Use :class:`~testinfra.modules.pip.Pip` instead.
+    """
+
+    @staticmethod
+    def _deprecated():
+        warnings.warn(
+            "Calling host.pip_package is deprecated, call host.pip instead",
+            DeprecationWarning,
+        )
+
+    @classmethod
+    def check(cls, pip_path="pip"):
+        PipPackage._deprecated()
+        return super(PipPackage, cls).check(pip_path=pip_path)
+
+    @classmethod
+    def get_packages(cls, pip_path="pip"):
+        PipPackage._deprecated()
+        return super(PipPackage, cls).get_packages(pip_path=pip_path)
+
+    @classmethod
+    def get_outdated_packages(cls, pip_path="pip"):
+        PipPackage._deprecated()
+        return super(PipPackage, cls).get_outdated_packages(pip_path=pip_path)
