@@ -58,6 +58,10 @@ host
 
        :class:`testinfra.modules.package.Package` class
 
+    .. attribute:: pip
+
+       :class:`testinfra.modules.pip.Pip` class
+
     .. attribute:: pip_package
 
        :class:`testinfra.modules.pip.PipPackage` class
@@ -182,11 +186,17 @@ Package
    :members:
 
 
+Pip
+~~~~~~~~~~
+
+.. autoclass:: testinfra.modules.pip.Pip
+   :members:
+
+
 PipPackage
 ~~~~~~~~~~
 
 .. autoclass:: testinfra.modules.pip.PipPackage
-   :members:
 
 
 Podman

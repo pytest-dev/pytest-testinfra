@@ -25,6 +25,7 @@ modules = {
     "iptables": "iptables:Iptables",
     "mount_point": "mountpoint:MountPoint",
     "package": "package:Package",
+    "pip": "pip:Pip",
     "pip_package": "pip:PipPackage",
     "process": "process:Process",
     "puppet_resource": "puppet:PuppetResource",
