@@ -34,10 +34,24 @@ class Supervisor(Module):
     True
     >>> gunicorn.pid
     4242
+
+    The path where supervisorctl and its configuration file reside can be specified.
+
+    >>> gunicorn = host.supervisor("gunicorn", "/usr/bin/supervisorctl", "/etc/supervisor/supervisord.conf")
+    >>> gunicorn.status
+    'RUNNING'
     """
 
-    def __init__(self, name, _attrs_cache=None):
+    def __init__(
+        self,
+        name,
+        supervisorctl_path="supervisorctl",
+        supervisorctl_conf=None,
+        _attrs_cache=None,
+    ):
         self.name = name
+        self.supervisorctl_path = supervisorctl_path
+        self.supervisorctl_conf = supervisorctl_conf
         self._attrs_cache = _attrs_cache
         super().__init__()
 
@@ -64,7 +78,17 @@ class Supervisor(Module):
     @property
     def _attrs(self):
         if self._attrs_cache is None:
-            line = self.check_output("supervisorctl status %s", self.name)
+            if self.supervisorctl_conf:
+                line = self.check_output(
+                    "%s -c %s status %s",
+                    self.supervisorctl_path,
+                    self.supervisorctl_conf,
+                    self.name,
+                )
+            else:
+                line = self.check_output(
+                    "%s status %s", self.supervisorctl_path, self.name
+                )
             attrs = self._parse_status(line)
             assert attrs["name"] == self.name
             self._attrs_cache = attrs
@@ -92,23 +116,38 @@ class Supervisor(Module):
         return self._attrs["pid"]
 
     @classmethod
-    def get_services(cls):
+    def get_services(
+        cls,
+        supervisorctl_path="supervisorctl",
+        supervisorctl_conf=None,
+    ):
         """Get a list of services running under supervisor
 
         >>> host.supervisor.get_services()
         [<Supervisor(name="gunicorn", status="RUNNING", pid=4232)>
          <Supervisor(name="celery", status="FATAL", pid=None)>]
+
+        The path where supervisorctl and its configuration file reside can be specified.
+
+        >>> host.supervisor.get_services("/usr/bin/supervisorctl", "/etc/supervisor/supervisord.conf")
+        [<Supervisor(name="gunicorn", status="RUNNING", pid=4232)>
+         <Supervisor(name="celery", status="FATAL", pid=None)>]
         """
         services = []
-        for line in (
-            cls(None)
-            .check_output(
-                "supervisorctl status",
+        if supervisorctl_conf:
+            out = cls.check_output(
+                "%s -c %s status", supervisorctl_path, supervisorctl_conf
             )
-            .splitlines()
-        ):
+        else:
+            out = cls.check_output("%s status", supervisorctl_path)
+        for line in out.splitlines():
             attrs = cls._parse_status(line)
-            service = cls(attrs["name"], attrs)
+            service = cls(
+                attrs["name"],
+                supervisorctl_path=supervisorctl_path,
+                supervisorctl_conf=supervisorctl_conf,
+                _attrs_cache=attrs,
+            )
             services.append(service)
         return services
 
