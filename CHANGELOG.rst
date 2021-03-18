@@ -2,6 +2,15 @@
 Changelog
 =========
 
+6.2.0
+=====
+
+* Fix #590: Systeminfo doesn't resolve Windows correctly  (#592)
+* First implementation of network namespaces in addr module (#596)
+* pip check support in PipPackage module (#605)
+* pip refactoring: implementation of installed and version (#606)
+* Allow to specify supervisorctl and supervisord.conf paths (#536)
+
 6.1.0
 =====
 
