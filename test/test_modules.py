@@ -423,7 +423,14 @@ def test_ansible_module_options(host):
 
 
 @pytest.mark.destructive
-def test_supervisor(host):
+@pytest.mark.parametrize(
+    "supervisorctl_path,supervisorctl_conf",
+    [
+        ("supervisorctl", None),
+        ("/usr/bin/supervisorctl", "/etc/supervisor/supervisord.conf"),
+    ],
+)
+def test_supervisor(host, supervisorctl_path, supervisorctl_conf):
     # Wait supervisord is running
     for _ in range(20):
         if host.service("supervisor").is_running:
@@ -433,7 +440,11 @@ def test_supervisor(host):
         raise RuntimeError("No running supervisor")
 
     for _ in range(20):
-        service = host.supervisor("tail")
+        service = host.supervisor(
+            "tail",
+            supervisorctl_path=supervisorctl_path,
+            supervisorctl_conf=supervisorctl_conf,
+        )
         if service.status == "RUNNING":
             break
         else:
@@ -446,14 +457,21 @@ def test_supervisor(host):
     proc = host.process.get(pid=service.pid)
     assert proc.comm == "tail"
 
-    services = host.supervisor.get_services()
+    services = host.supervisor.get_services(supervisorctl_path, supervisorctl_conf)
     assert len(services) == 1
     assert services[0].name == "tail"
     assert services[0].is_running
     assert services[0].pid == service.pid
+    # Checking if conf is propagated
+    assert services[0].supervisorctl_path == supervisorctl_path
+    assert services[0].supervisorctl_conf == supervisorctl_conf
 
     host.run("supervisorctl stop tail")
-    service = host.supervisor("tail")
+    service = host.supervisor(
+        "tail",
+        supervisorctl_path=supervisorctl_path,
+        supervisorctl_conf=supervisorctl_conf,
+    )
     assert not service.is_running
     assert service.status == "STOPPED"
     assert service.pid is None
@@ -461,7 +479,11 @@ def test_supervisor(host):
     host.run("service supervisor stop")
     assert not host.service("supervisor").is_running
     with pytest.raises(RuntimeError) as excinfo:
-        host.supervisor("tail").is_running
+        host.supervisor(
+            "tail",
+            supervisorctl_path=supervisorctl_path,
+            supervisorctl_conf=supervisorctl_conf,
+        ).is_running
     assert "Is supervisor running" in str(excinfo.value)
 
 
