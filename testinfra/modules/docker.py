@@ -50,6 +50,33 @@ class Docker(Module):
         return self.inspect()["Name"][1:]  # get rid of slash in front
 
     @classmethod
+    def client_version(cls):
+        """Docker client version"""
+        return cls.version("{{.Client.Version}}")
+
+    @classmethod
+    def server_version(cls):
+        """Docker server version"""
+        return cls.version("{{.Server.Version}}")
+
+    @classmethod
+    def version(cls, format=None):
+        """Docker version_ with an optional format (Go template).
+
+        >>> host.docker.version()
+        Client: Docker Engine - Community
+        ...
+        >>> host.docker.version("{{.Client.Context}}"))
+        default
+
+        .. _version: https://docs.docker.com/engine/reference/commandline/version/
+        """
+        cmd = "docker version"
+        if format:
+            cmd = "{} --format '{}'".format(cmd, format)
+        return cls.check_output(cmd)
+
+    @classmethod
     def get_containers(cls, **filters):
         """Return a list of containers
 
