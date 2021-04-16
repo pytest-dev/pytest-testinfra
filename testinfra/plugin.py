@@ -184,12 +184,12 @@ class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
 
 @pytest.mark.trylast
 def pytest_configure(config):
-    if config.option.verbose > 1:
+    if config.getoption("--verbose", 0) > 1:
         root = logging.getLogger()
         if not root.handlers:
             root.addHandler(logging.NullHandler())
         logging.getLogger("testinfra").setLevel(logging.DEBUG)
-    if config.option.nagios:
+    if config.getoption("--nagios"):
         # disable & re-enable terminalreporter to write in a tempfile
         reporter = config.pluginmanager.getplugin("terminalreporter")
         if reporter:
