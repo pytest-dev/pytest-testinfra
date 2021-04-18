@@ -2,6 +2,12 @@
 Changelog
 =========
 
+6.3.0
+=====
+
+* Fix #451 for use with pytest -p no:terminal
+* Add client_version() and server_version() and version() to docker module.
+
 6.2.0
 =====
 
