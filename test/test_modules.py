@@ -537,6 +537,11 @@ def test_command_execution(host):
     assert host.run("true").succeeded
 
 
+def test_command_execution_in_chdir(host):
+    assert host.run("pwd", cwd='/tmp').stdout.strip() == '/tmp'
+    assert host.run("pwd").stdout.strip() != '/tmp'
+
+
 def test_pip_package(host):
     with pytest.warns(DeprecationWarning):
         assert host.pip_package.get_packages()["pip"]["version"] == "18.1"
