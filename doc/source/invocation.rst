@@ -35,6 +35,12 @@ You can also set hosts per test module::
         [....]
 
 
+If you need to filter or update generated host list (f.e. after ["ansible://somegroup"]),
+you can use testinfra_hosts_update function:
+
+    def testinfra_hosts_update(host_list):
+        return [host_list[0]]
+
 
 Parallel execution
 ~~~~~~~~~~~~~~~~~~

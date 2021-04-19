@@ -117,6 +117,10 @@ def pytest_generate_tests(metafunc):
             ansible_inventory=metafunc.config.option.ansible_inventory,
             force_ansible=metafunc.config.option.force_ansible,
         )
+        if hasattr(metafunc.module, "testinfra_hosts_update"):
+            if not callable(metafunc.module.testinfra_update.callable):
+                pytest.fail("testinfra_hosts_update must be a function")
+            params = metafunc.module.testinfra_hosts_update(params)
         params = sorted(params, key=lambda x: x.backend.get_pytest_id())
         ids = [e.backend.get_pytest_id() for e in params]
         metafunc.parametrize(
