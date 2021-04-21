@@ -60,6 +60,26 @@ class Service(Module):
         """
         raise NotImplementedError
 
+    @property
+    def show(self):
+        """Show properties of the service (unit).
+
+        Return service properties as a `dict`.
+        The properties retrieved can be limited to a defined list.
+
+        >>> ntp = host.service("ntp")
+        >>> ntp.show(["FragmentPath", "MainPID"])
+        {'MainPID': '0', 'FragmentPath': '/lib/systemd/system/ntp.service'}
+        >>> ntp.show("FragmentPath")
+        {'FragmentPath': '/lib/systemd/system/ntp.service'}
+        >>> ntp.show()
+        {'Type': 'forking', 'Restart': 'no', 'NotifyAccess': 'none', ...
+
+        This method is only available in the systemd implementation,
+        it will raise NotImplementedError in others implementations
+        """
+        raise NotImplementedError
+
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
@@ -158,6 +178,20 @@ class SystemdService(SysvService):
     def is_masked(self):
         cmd = self.run_test("systemctl is-enabled %s", self.name)
         return cmd.stdout.strip() == "masked"
+
+    def show(self, properties=None):
+        cmd = "systemctl show %s"
+        if properties:
+            # converting property into a list to handle single case
+            if type(properties) is not list:
+                properties = [properties]
+            cmd = "{} --property=%s".format(cmd)
+            out = self.check_output(cmd, self.name, ",".join(properties))
+        else:
+            out = self.check_output(cmd, self.name)
+        # maxsplit is required because values can contain `=`
+        out_d = dict(map(lambda pair: pair.split("=", maxsplit=1), out.splitlines()))
+        return out_d
 
 
 class UpstartService(SysvService):
