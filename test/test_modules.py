@@ -163,19 +163,17 @@ def test_service(host, name, running, enabled):
     service = host.service(name)
     assert service.is_running == running
     assert service.is_enabled == enabled
-    # check with a list
-    props = service.show(["UnitFileState", "ActiveState"])
-    assert props.get("UnitFileState") == "enabled" if enabled else "disabled"
-    assert props.get("ActiveState") in ["active"] if running else ["failed", "inactive"]
-    # check with a single property
-    props = service.show("UnitFileState")
-    assert props.get("UnitFileState") == "enabled" if enabled else "disabled"
-    # check without any property
-    props = service.show()
-    assert props.get("UnitFileState") == "enabled" if enabled else "disabled"
-    # check with something that does not exist
-    props = service.show("DoesNotExist")
-    assert not props, "shall be an empty dict"
+    # check with systemd_properties
+    assert (
+        service.systemd_properties["UnitFileState"] == "enabled"
+        if enabled
+        else "disabled"
+    )
+    assert (
+        service.systemd_properties["ActiveState"] in ["active"]
+        if running
+        else ["failed", "inactive"]
+    )
 
 
 def test_salt(host):
