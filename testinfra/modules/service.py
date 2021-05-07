@@ -182,7 +182,7 @@ class SystemdService(SysvService):
     @cached_property
     def systemd_properties(self):
         out = self.check_output("systemctl show %s", self.name)
-        out_d = dict()
+        out_d = {}
         if out:
             # maxsplit is required because values can contain `=`
             out_d = dict(
