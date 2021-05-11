@@ -47,7 +47,7 @@ class Service(Module):
         """Test if service is valid
 
         This method is only available in the systemd implementation,
-        it will raise NotImplementedError in others implementation
+        it will raise ``NotImplementedError`` in others implementation
         """
         raise NotImplementedError
 
@@ -56,7 +56,27 @@ class Service(Module):
         """Test if service is masked
 
         This method is only available in the systemd implementation,
-        it will raise NotImplementedError in others implementations
+        it will raise ``NotImplementedError`` in others implementations
+        """
+        raise NotImplementedError
+
+    @cached_property
+    def systemd_properties(self):
+        """Properties of the service (unit).
+
+        Return service properties as a `dict`,
+        empty properties are not returned.
+
+        >>> ntp = host.service("ntp")
+        >>> ntp.systemd_properties["FragmentPath"]
+        '/lib/systemd/system/ntp.service'
+
+        This method is only available in the systemd implementation,
+        it will raise ``NotImplementedError`` in others implementations
+
+        Note: based on `systemctl show`_
+
+        .. _systemctl show: https://man7.org/linux/man-pages/man1/systemctl.1.html
         """
         raise NotImplementedError
 
@@ -158,6 +178,17 @@ class SystemdService(SysvService):
     def is_masked(self):
         cmd = self.run_test("systemctl is-enabled %s", self.name)
         return cmd.stdout.strip() == "masked"
+
+    @cached_property
+    def systemd_properties(self):
+        out = self.check_output("systemctl show %s", self.name)
+        out_d = {}
+        if out:
+            # maxsplit is required because values can contain `=`
+            out_d = dict(
+                map(lambda pair: pair.split("=", maxsplit=1), out.splitlines())
+            )
+        return out_d
 
 
 class UpstartService(SysvService):

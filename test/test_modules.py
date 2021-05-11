@@ -163,6 +163,17 @@ def test_service(host, name, running, enabled):
     service = host.service(name)
     assert service.is_running == running
     assert service.is_enabled == enabled
+    # check with systemd_properties
+    assert (
+        service.systemd_properties["UnitFileState"] == "enabled"
+        if enabled
+        else "disabled"
+    )
+    assert (
+        service.systemd_properties["ActiveState"] in ["active"]
+        if running
+        else ["failed", "inactive"]
+    )
 
 
 def test_salt(host):
