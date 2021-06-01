@@ -12,7 +12,7 @@ Checkout existing issues on `project issue tracker <https://github.com/pytest-de
 IRC
 ~~~
 
-You can also ask questions on IRC in `#testinfra <https://webchat.freenode.net/?randomnick=1&channels=%23testinfra>`_ channel on Freenode
+You can also ask questions on IRC in `#pytest <https://web.libera.chat/?channel=#pytest>`_ channel on [libera.chat](https://libera.chat/) network.
 
 pytest documentation
 ~~~~~~~~~~~~~~~~~~~~
