@@ -49,6 +49,24 @@ class Interface(Module):
             return BSDInterface
         raise NotImplementedError
 
+    @classmethod
+    def names(cls):
+        """Return the names of all the interfaces.
+        
+        >>> host.interface.names()
+        ['lo', 'tunl0', 'ip6tnl0', 'eth0']
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def default(cls):
+        """Return the name of the default interface.
+        
+        >>> host.interface.default()
+        'eth0'
+        """
+        raise NotImplementedError
+
 
 class LinuxInterface(Interface):
     @cached_property
@@ -72,6 +90,23 @@ class LinuxInterface(Interface):
             if splitted and splitted[0] in ("inet", "inet6"):
                 addrs.append(splitted[1].split("/", 1)[0])
         return addrs
+
+    @classmethod
+    def default(cls):
+        out = cls.check_output("%s route ls", cls(None)._ip)
+        for line in out.splitlines():
+            if "default" in line:
+                out = line.strip().rsplit(" ", 1)[-1]
+        return out
+
+    @classmethod
+    def names(cls):
+        # -o is to tell the ip command to return 1 line per interface
+        out = cls.check_output("%s -o link show", cls(None)._ip)
+        interfaces = []
+        for line in out.splitlines():
+            interfaces.append(line.strip().split(": ", 2)[1].split("@", 1)[0])
+        return interfaces
 
 
 class BSDInterface(Interface):
