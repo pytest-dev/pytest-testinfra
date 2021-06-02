@@ -18,7 +18,6 @@ import re
 import time
 
 from ipaddress import ip_address
-from ipaddress import ip_network
 from ipaddress import IPv4Address
 from ipaddress import IPv6Address
 
@@ -681,12 +680,15 @@ def test_addr_namespace(host):
 
 
 def test_interface(host):
+    # exist
     assert host.interface("eth0").exists
     assert not host.interface("does_not_exist").exists
-    # default subnet for container networking
-    docker_subnet = ip_network("172.17.0.0/16")
-    for add in map(ip_address, host.interface("eth0").addresses):
-        # Credits to: https://stackoverflow.com/a/59485120/4413446
-        assert docker_subnet.supernet_of(ip_network(f"{add}/{add.max_prefixlen}"))
+    # adresses
+    for add in host.interface("eth0").addresses:
+        try:
+            ip_address(add)
+        except ValueError:
+            pytest.fail(f"{add} is not a valid IP address")
+    # names and default
+    assert "eth0" in host.interface.names()
     assert host.interface.default() == "eth0"
-    assert host.interface.default() in host.interface.names()
