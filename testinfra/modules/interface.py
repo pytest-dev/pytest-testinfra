@@ -52,7 +52,7 @@ class Interface(Module):
     @classmethod
     def names(cls):
         """Return the names of all the interfaces.
-        
+
         >>> host.interface.names()
         ['lo', 'tunl0', 'ip6tnl0', 'eth0']
         """
@@ -61,7 +61,7 @@ class Interface(Module):
     @classmethod
     def default(cls):
         """Return the name of the default interface.
-        
+
         >>> host.interface.default()
         'eth0'
         """
