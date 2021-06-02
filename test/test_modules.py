@@ -18,9 +18,9 @@ import re
 import time
 
 from ipaddress import ip_address
+from ipaddress import ip_network
 from ipaddress import IPv4Address
 from ipaddress import IPv6Address
-from ipaddress import ip_network
 
 
 from testinfra.modules.socket import parse_socketspec
