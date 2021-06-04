@@ -684,11 +684,15 @@ def test_interface(host):
     assert host.interface("eth0").exists
     assert not host.interface("does_not_exist").exists
     # adresses
-    for add in host.interface("eth0").addresses:
+    addresses = host.interface.default().addresses
+    assert len(addresses) > 0
+    for add in addresses:
         try:
             ip_address(add)
         except ValueError:
             pytest.fail(f"{add} is not a valid IP address")
     # names and default
     assert "eth0" in host.interface.names()
-    assert host.interface.default() == "eth0"
+    default_itf = host.interface.default()
+    assert default_itf.name == "eth0"
+    assert default_itf.exists

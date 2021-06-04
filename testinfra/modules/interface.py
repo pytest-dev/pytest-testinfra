@@ -60,10 +60,10 @@ class Interface(Module):
 
     @classmethod
     def default(cls):
-        """Return the name of the default interface.
+        """Return the default interface.
 
         >>> host.interface.default()
-        'eth0'
+        <interface eth0>
         """
         raise NotImplementedError
 
@@ -93,11 +93,12 @@ class LinuxInterface(Interface):
 
     @classmethod
     def default(cls):
-        out = cls.check_output("%s route ls", cls(None)._ip)
+        _default = cls(None)
+        out = cls.check_output("%s route ls", _default._ip)
         for line in out.splitlines():
             if "default" in line:
-                out = line.strip().rsplit(" ", 1)[-1]
-        return out
+                _default.name = line.strip().rsplit(" ", 1)[-1]
+        return _default
 
     @classmethod
     def names(cls):
