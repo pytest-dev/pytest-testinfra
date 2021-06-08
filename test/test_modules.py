@@ -679,12 +679,16 @@ def test_addr_namespace(host):
         assert not namespace_lookup.port("443").is_reachable
 
 
-def test_interface(host):
+@pytest.mark.parametrize(
+    "family",
+    ["inet", None],
+)
+def test_interface(host, family):
     # exist
-    assert host.interface("eth0").exists
-    assert not host.interface("does_not_exist").exists
+    assert host.interface("eth0", family=family).exists
+    assert not host.interface("does_not_exist", family=family).exists
     # adresses
-    addresses = host.interface.default().addresses
+    addresses = host.interface.default(family).addresses
     assert len(addresses) > 0
     for add in addresses:
         try:
@@ -693,6 +697,6 @@ def test_interface(host):
             pytest.fail(f"{add} is not a valid IP address")
     # names and default
     assert "eth0" in host.interface.names()
-    default_itf = host.interface.default()
+    default_itf = host.interface.default(family)
     assert default_itf.name == "eth0"
     assert default_itf.exists
