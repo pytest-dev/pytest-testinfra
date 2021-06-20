@@ -2,6 +2,12 @@
 Changelog
 =========
 
+6.4.0
+=====
+
+* Implement Interface names and default (#615)
+* Implement Service.systemd_properties (#612)
+
 6.3.0
 =====
 
