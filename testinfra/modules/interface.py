@@ -70,7 +70,7 @@ class Interface(Module):
 
     @classmethod
     def default(cls, family=None):
-        """Return the default interface.
+        """Return the interface used for the default route.
 
         >>> host.interface.default()
         <interface eth0>
@@ -85,9 +85,9 @@ class Interface(Module):
 
 class LinuxInterface(Interface):
     @cached_property
-    def _ip(self, include_family=True):
+    def _ip(self):
         ip_cmd = self.find_command("ip")
-        if include_family and self.family is not None:
+        if self.family is not None:
             ip_cmd = f"{ip_cmd} -f {self.family}"
         return ip_cmd
 
