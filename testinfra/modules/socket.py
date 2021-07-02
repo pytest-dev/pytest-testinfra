@@ -96,7 +96,7 @@ class Socket(Module):
 
         >>> host.socket("unix:///var/run/docker.sock").is_listening
         False
-        >>> # This HTTP server listen on all ipv4 adresses but not on ipv6
+        >>> # This HTTP server listen on all ipv4 addresses but not on ipv6
         >>> host.socket("tcp://0.0.0.0:80").is_listening
         True
         >>> host.socket("tcp://:::80").is_listening
@@ -127,7 +127,7 @@ class Socket(Module):
     def clients(self) -> List[Optional[Tuple[str, int]]]:
         """Return a list of clients connected to a listening socket
 
-        For tcp and udp sockets a list of pair (adress, port) is returned.
+        For tcp and udp sockets a list of pair (address, port) is returned.
         For unix sockets a list of None is returned (thus you can make a
         len() for counting clients).
 
@@ -254,7 +254,7 @@ class LinuxSocketSS(Socket):
             elif protocol in ("tcp", "udp"):
                 host, port = local.rsplit(":", 1)
                 port = int(port)
-                # new versions of ss output ipv6 adresses enclosed in []
+                # new versions of ss output ipv6 addresses enclosed in []
                 if host and host[0] == "[" and host[-1] == "]":
                     host = host[1:-1]
             else:
