@@ -687,7 +687,7 @@ def test_interface(host, family):
     # exist
     assert host.interface("eth0", family=family).exists
     assert not host.interface("does_not_exist", family=family).exists
-    # adresses
+    # addresses
     addresses = host.interface.default(family).addresses
     assert len(addresses) > 0
     for add in addresses:

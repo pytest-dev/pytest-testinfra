@@ -22,7 +22,7 @@ class Interface(Module):
 
     Optionally, the protocol family to use can be enforced.
 
-    >>> host.interface("eth0", "inet6").adresses
+    >>> host.interface("eth0", "inet6").addresses
     ['fe80::e291:f5ff:fe98:6b8c']
     """
 
