@@ -14,17 +14,16 @@
 import setuptools
 
 
-def local_scheme(version):
+def local_scheme(version: str) -> str:
     """Generate a PEP440 compatible version if PEP440_VERSION is enabled"""
     import os
 
     import setuptools_scm.version  # only present during setup time
 
-    return (
-        ""
-        if "PEP440_VERSION" in os.environ
-        else setuptools_scm.version.get_local_node_and_date(version)
-    )
+    if "PEP440_VERSION" in os.environ:
+        return ""
+
+    return setuptools_scm.version.get_local_node_and_date(version)  # type: ignore[no-any-return]
 
 
 if __name__ == "__main__":
