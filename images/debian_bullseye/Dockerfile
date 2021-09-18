@@ -67,7 +67,9 @@ RUN echo "*nat\n:PREROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0
 RUN chage -E 20000 user
 
 # Some python3 virtualenv
-RUN virtualenv /v && /v/bin/pip install 'requests>1,<2'
+RUN virtualenv /v
+RUN /v/bin/pip install -U pip
+RUN /v/bin/pip install 'requests>1,<2'
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR
