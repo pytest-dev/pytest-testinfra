@@ -479,7 +479,7 @@ def test_supervisor(host, supervisorctl_path, supervisorctl_conf):
     assert services[0].supervisorctl_path == supervisorctl_path
     assert services[0].supervisorctl_conf == supervisorctl_conf
 
-    host.run("supervisorctl stop tail")
+    host.check_output("supervisorctl stop tail")
     service = host.supervisor(
         "tail",
         supervisorctl_path=supervisorctl_path,

@@ -11,6 +11,7 @@
 # limitations under the License.
 
 from testinfra.modules.base import Module
+from typing import NoReturn
 
 STATUS = [
     "STOPPED",
@@ -22,6 +23,10 @@ STATUS = [
     "FATAL",
     "UNKNOWN",
 ]
+
+
+def supervisor_not_running() -> NoReturn:
+    raise RuntimeError("Cannot get supervisor status. Is supervisor running ?")
 
 
 class Supervisor(Module):
@@ -60,11 +65,11 @@ class Supervisor(Module):
         splitted = line.split()
         name = splitted[0]
         status = splitted[1]
-        # supervisorctl exit status is 0 even if it cannot connect to
-        # supervisord socket and output the error to stdout.
-        # So we check that parsed status is a known status.
+        # some old supervisorctl versions exit status is 0 even if it cannot
+        # connect to supervisord socket and output the error to stdout.  So we
+        # check that parsed status is a known status.
         if status not in STATUS:
-            raise RuntimeError("Cannot get supervisor status. Is supervisor running ?")
+            supervisor_not_running()
         if status == "RUNNING":
             pid = splitted[3]
             if pid[-1] == ",":
@@ -79,16 +84,20 @@ class Supervisor(Module):
     def _attrs(self):
         if self._attrs_cache is None:
             if self.supervisorctl_conf:
-                line = self.check_output(
+                out = self.run_expect(
+                    [0, 3, 4],
                     "%s -c %s status %s",
                     self.supervisorctl_path,
                     self.supervisorctl_conf,
                     self.name,
                 )
             else:
-                line = self.check_output(
-                    "%s status %s", self.supervisorctl_path, self.name
+                out = self.run_expect(
+                    [0, 3, 4], "%s status %s", self.supervisorctl_path, self.name
                 )
+            if out.rc == 4:
+                supervisor_not_running()
+            line = out.stdout.rstrip("\r\n")
             attrs = self._parse_status(line)
             assert attrs["name"] == self.name
             self._attrs_cache = attrs
