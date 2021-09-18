@@ -250,13 +250,20 @@ class BaseBackend(metaclass=abc.ABCMeta):
             user, name = name.split("@", 1)
         return name, user
 
-    def get_encoding(self):
-        cmd = self.run("python -c 'import locale;print(locale.getpreferredencoding())'")
-        if cmd.rc == 0:
-            encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
-        else:
-            # Python is not installed, we hope the encoding to be the same as
-            # local machine...
+    def get_encoding(self) -> str:
+        encoding = None
+        for python in ("python3", "python"):
+            cmd = self.run(
+                "%s -c 'import locale;print(locale.getpreferredencoding())'",
+                python,
+                encoding=None,
+            )
+            if cmd.rc == 0:
+                encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
+                break
+        # Python is not installed, we hope the encoding to be the same as
+        # local machine...
+        if not encoding:
             encoding = locale.getpreferredencoding()
         if encoding == "ANSI_X3.4-1968":
             # Workaround defaut encoding ascii without LANG set
