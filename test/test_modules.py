@@ -553,14 +553,14 @@ def test_command_execution(host):
 def test_pip_package(host):
     with pytest.warns(DeprecationWarning):
         assert host.pip_package.get_packages()["pip"]["version"] == "20.3.4"
-        pytest_package = host.pip_package.get_packages(pip_path="/v/bin/pip")["pytest"]
-        assert pytest_package["version"].startswith("5.")
+        pkg = host.pip_package.get_packages(pip_path="/v/bin/pip")["requests"]
+        assert pkg["version"].startswith("1.")
     with pytest.warns(DeprecationWarning):
         outdated = host.pip_package.get_outdated_packages(pip_path="/v/bin/pip")[
-            "pytest"
+            "requests"
         ]
-        assert outdated["current"] == pytest_package["version"]
-        assert int(outdated["latest"].split(".")[0]) > 2
+        assert outdated["current"] == pkg["version"]
+        assert int(outdated["latest"].split(".")[0]) >= 1
     with pytest.warns(DeprecationWarning):
         assert host.pip_package.check().succeeded
 
@@ -568,22 +568,22 @@ def test_pip_package(host):
 def test_pip(host):
     # get_packages
     assert host.pip.get_packages()["pip"]["version"] == "20.3.4"
-    pytest_package = host.pip.get_packages(pip_path="/v/bin/pip")["pytest"]
-    assert pytest_package["version"].startswith("5.")
+    pkg = host.pip.get_packages(pip_path="/v/bin/pip")["requests"]
+    assert pkg["version"].startswith("1.")
     # outdated
-    outdated = host.pip.get_outdated_packages(pip_path="/v/bin/pip")["pytest"]
-    assert outdated["current"] == pytest_package["version"]
-    assert int(outdated["latest"].split(".")[0]) >= 6
+    outdated = host.pip.get_outdated_packages(pip_path="/v/bin/pip")["requests"]
+    assert outdated["current"] == pkg["version"]
+    assert int(outdated["latest"].split(".")[0]) >= 1
     # check
     assert host.pip.check().succeeded
     # is_installed
     assert host.pip("pip").is_installed
     assert not host.pip("does_not_exist").is_installed
-    pytest_package = host.pip("pytest", pip_path="/v/bin/pip")
-    assert pytest_package.is_installed
+    pkg = host.pip("requests", pip_path="/v/bin/pip")
+    assert pkg.is_installed
     # version
     assert host.pip("pip").version == "20.3.4"
-    assert pytest_package.version.startswith("5.")
+    assert pkg.version.startswith("1.")
     assert host.pip("does_not_exist").version == ""
 
 
