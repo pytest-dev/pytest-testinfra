@@ -164,7 +164,7 @@ class SystemInfo(InstanceModule):
         """Release code name
 
         >>> host.system_info.codename
-        'buster'
+        'bullseye'
         """
         return self.sysinfo["codename"]
 

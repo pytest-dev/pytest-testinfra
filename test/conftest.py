@@ -58,7 +58,7 @@ DOCKER_IMAGES = [
     "alpine",
     "archlinux",
     "centos_7",
-    "debian_buster",
+    "debian_bullseye",
     "ubuntu_xenial",
 ]
 
@@ -215,7 +215,7 @@ def pytest_generate_tests(metafunc):
                 break
         else:
             # Default
-            hosts = ["docker://debian_buster"]
+            hosts = ["docker://debian_bullseye"]
         metafunc.parametrize("host", hosts, indirect=True, scope="function")
 
 

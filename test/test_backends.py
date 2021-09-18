@@ -23,36 +23,36 @@ from testinfra.backend.winrm import _quote
 from testinfra.utils.ansible_runner import AnsibleRunner
 
 HOSTS = [
-    "ssh://debian_buster",
-    "safe-ssh://debian_buster",
-    "docker://debian_buster",
-    "paramiko://debian_buster",
-    "ansible://debian_buster",
-    "ansible://debian_buster?force_ansible=True",
+    "ssh://debian_bullseye",
+    "safe-ssh://debian_bullseye",
+    "docker://debian_bullseye",
+    "paramiko://debian_bullseye",
+    "ansible://debian_bullseye",
+    "ansible://debian_bullseye?force_ansible=True",
 ]
 USER_HOSTS = [
-    "ssh://user@debian_buster",
-    "safe-ssh://user@debian_buster",
-    "docker://user@debian_buster",
-    "paramiko://user@debian_buster",
-    "ansible://user@debian_buster",
-    "ansible://user@debian_buster?force_ansible=True",
+    "ssh://user@debian_bullseye",
+    "safe-ssh://user@debian_bullseye",
+    "docker://user@debian_bullseye",
+    "paramiko://user@debian_bullseye",
+    "ansible://user@debian_bullseye",
+    "ansible://user@debian_bullseye?force_ansible=True",
 ]
 SUDO_HOSTS = [
-    "ssh://user@debian_buster?sudo=True",
-    "safe-ssh://user@debian_buster?sudo=True",
-    "docker://user@debian_buster?sudo=True",
-    "paramiko://user@debian_buster?sudo=True",
-    "ansible://user@debian_buster?sudo=True",
-    "ansible://user@debian_buster?force_ansible=True&sudo=True",
+    "ssh://user@debian_bullseye?sudo=True",
+    "safe-ssh://user@debian_bullseye?sudo=True",
+    "docker://user@debian_bullseye?sudo=True",
+    "paramiko://user@debian_bullseye?sudo=True",
+    "ansible://user@debian_bullseye?sudo=True",
+    "ansible://user@debian_bullseye?force_ansible=True&sudo=True",
 ]
 SUDO_USER_HOSTS = [
-    "ssh://debian_buster?sudo=True&sudo_user=user",
-    "safe-ssh://debian_buster?sudo=True&sudo_user=user",
-    "docker://debian_buster?sudo=True&sudo_user=user",
-    "paramiko://debian_buster?sudo=True&sudo_user=user",
-    "ansible://debian_buster?sudo=True&sudo_user=user",
-    "ansible://debian_buster?force_ansible=True&sudo=True&sudo_user=user",
+    "ssh://debian_bullseye?sudo=True&sudo_user=user",
+    "safe-ssh://debian_bullseye?sudo=True&sudo_user=user",
+    "docker://debian_bullseye?sudo=True&sudo_user=user",
+    "paramiko://debian_bullseye?sudo=True&sudo_user=user",
+    "ansible://debian_bullseye?sudo=True&sudo_user=user",
+    "ansible://debian_bullseye?force_ansible=True&sudo=True&sudo_user=user",
 ]
 
 
@@ -75,7 +75,7 @@ def test_command(host):
 
 @pytest.mark.testinfra_hosts(*HOSTS)
 def test_encoding(host):
-    # buster image is fr_FR@ISO-8859-15
+    # bullseye image is fr_FR@ISO-8859-15
     cmd = host.run("ls -l %s", "/é")
     if host.backend.get_connection_type() == "docker":
         # docker bug ?
@@ -99,7 +99,7 @@ def test_encoding(host):
         )
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_buster?force_ansible=True")
+@pytest.mark.testinfra_hosts("ansible://debian_bullseye?force_ansible=True")
 def test_ansible_any_error_fatal(host):
     os.environ["ANSIBLE_ANY_ERRORS_FATAL"] = "True"
     try:

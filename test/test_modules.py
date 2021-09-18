@@ -31,7 +31,7 @@ all_images = pytest.mark.testinfra_hosts(
             "alpine",
             "archlinux",
             "centos_7",
-            "debian_buster",
+            "debian_bullseye",
             "ubuntu_xenial",
         )
     ]
@@ -51,16 +51,16 @@ def test_package(host, docker_image):
         "alpine": "8.",
         "archlinux": "8.",
         "centos_7": "7.",
-        "debian_buster": "1:7.9",
+        "debian_bullseye": "1:8.4",
         "ubuntu_xenial": "1:7.2",
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "alpine": "r0",
+        "alpine": "r2",
         "archlinux": None,
         "centos_7": ".el7",
-        "debian_buster": None,
+        "debian_bullseye": None,
         "ubuntu_xenial": None,
     }[docker_image]
     if release is None:
@@ -71,9 +71,9 @@ def test_package(host, docker_image):
 
 
 def test_held_package(host):
-    python = host.package("python")
+    python = host.package("python3")
     assert python.is_installed
-    assert python.version.startswith("2.7.")
+    assert python.version.startswith("3.9.")
 
 
 @pytest.mark.testinfra_hosts("docker://centos_7")
@@ -95,7 +95,7 @@ def test_uninstalled_package_version(host):
         host.package("sudo").version
     assert (
         "The package sudo is not installed, dpkg-query output: "
-        "deinstall ok config-files 1.8."
+        "deinstall ok config-files 1.9."
     ) in str(excinfo.value)
 
 
@@ -104,10 +104,10 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename, arch = {
-        "alpine": (r"^3\.11\.", "alpine", None, "x86_64"),
+        "alpine": (r"^3\.14\.", "alpine", None, "x86_64"),
         "archlinux": ("rolling", "arch", None, "x86_64"),
         "centos_7": (r"^7$", "centos", None, "x86_64"),
-        "debian_buster": (r"^10", "debian", "buster", "x86_64"),
+        "debian_bullseye": (r"^11", "debian", "bullseye", "x86_64"),
         "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial", "x86_64"),
     }[docker_image]
 
@@ -178,16 +178,16 @@ def test_service(host, name, running, enabled):
 
 def test_salt(host):
     ssh_version = host.salt("pkg.version", "openssh-server", local=True)
-    assert ssh_version.startswith("1:7.9")
+    assert ssh_version.startswith("1:8.4")
 
 
 def test_puppet_resource(host):
     resource = host.puppet_resource("package", "openssh-server")
-    assert resource["openssh-server"]["ensure"].startswith("1:7.9")
+    assert resource["openssh-server"]["ensure"].startswith("1:8.4")
 
 
 def test_facter(host):
-    assert host.facter()["os"]["distro"]["codename"] == "buster"
+    assert host.facter()["os"]["distro"]["codename"] == "bullseye"
     assert host.facter("virtual") in (
         {"virtual": "docker"},
         {"virtual": "hyperv"},  # github action uses hyperv
@@ -253,7 +253,7 @@ def test_process(host, docker_image):
         "alpine": ("/sbin/init", "init"),
         "archlinux": ("/usr/sbin/init", "systemd"),
         "centos_7": ("/usr/sbin/init", "systemd"),
-        "debian_buster": ("/sbin/init", "systemd"),
+        "debian_bullseye": ("/sbin/init", "systemd"),
         "ubuntu_xenial": ("/sbin/init", "systemd"),
     }[docker_image]
     assert init.args == args
@@ -264,7 +264,7 @@ def test_user(host):
     user = host.user("sshd")
     assert user.exists
     assert user.name == "sshd"
-    assert user.uid == 105
+    assert user.uid == 104
     assert user.gid == 65534
     assert user.group == "nogroup"
     assert user.gids == [65534]
@@ -359,10 +359,10 @@ def test_ansible_unavailable(host):
     assert expected in str(excinfo.value)
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_buster")
+@pytest.mark.testinfra_hosts("ansible://debian_bullseye")
 def test_ansible_module(host):
     setup = host.ansible("setup")["ansible_facts"]
-    assert setup["ansible_lsb"]["codename"] == "buster"
+    assert setup["ansible_lsb"]["codename"] == "bullseye"
     passwd = host.ansible("file", "path=/etc/passwd state=file")
     assert passwd["changed"] is False
     assert passwd["gid"] == 0
@@ -379,11 +379,11 @@ def test_ansible_module(host):
     assert variables["myvar"] == "foo"
     assert variables["myhostvar"] == "bar"
     assert variables["mygroupvar"] == "qux"
-    assert variables["inventory_hostname"] == "debian_buster"
+    assert variables["inventory_hostname"] == "debian_bullseye"
     assert variables["group_names"] == ["testgroup"]
     assert variables["groups"] == {
-        "all": ["debian_buster"],
-        "testgroup": ["debian_buster"],
+        "all": ["debian_bullseye"],
+        "testgroup": ["debian_bullseye"],
     }
 
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
@@ -394,14 +394,16 @@ def test_ansible_module(host):
         host.ansible("command", "zzz", check=False)
     except host.ansible.AnsibleException as exc:
         assert exc.result["rc"] == 2
-        # notez que the debian buster container is set to LANG=fr_FR
+        # notez que the debian bullseye container is set to LANG=fr_FR
         assert exc.result["msg"] == ("[Errno 2] Aucun fichier ou dossier " "de ce type")
 
     result = host.ansible("command", "echo foo", check=False)
     assert result["stdout"] == "foo"
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_buster", "ansible://user@debian_buster")
+@pytest.mark.testinfra_hosts(
+    "ansible://debian_bullseye", "ansible://user@debian_bullseye"
+)
 def test_ansible_module_become(host):
     user_name = host.user().name
     assert host.ansible("shell", "echo $USER", check=False)["stdout"] == user_name
@@ -419,7 +421,7 @@ def test_ansible_module_become(host):
         )
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_buster")
+@pytest.mark.testinfra_hosts("ansible://debian_bullseye")
 def test_ansible_module_options(host):
     assert (
         host.ansible(
@@ -532,7 +534,7 @@ def test_sudo_fail_from_root(host):
         assert host.user().name == "root"
 
 
-@pytest.mark.testinfra_hosts("docker://user@debian_buster")
+@pytest.mark.testinfra_hosts("docker://user@debian_bullseye")
 def test_sudo_to_root(host):
     assert host.user().name == "user"
     with host.sudo():
@@ -550,9 +552,9 @@ def test_command_execution(host):
 
 def test_pip_package(host):
     with pytest.warns(DeprecationWarning):
-        assert host.pip_package.get_packages()["pip"]["version"] == "18.1"
+        assert host.pip_package.get_packages()["pip"]["version"] == "20.3.4"
         pytest_package = host.pip_package.get_packages(pip_path="/v/bin/pip")["pytest"]
-        assert pytest_package["version"].startswith("2.")
+        assert pytest_package["version"].startswith("5.")
     with pytest.warns(DeprecationWarning):
         outdated = host.pip_package.get_outdated_packages(pip_path="/v/bin/pip")[
             "pytest"
@@ -565,13 +567,13 @@ def test_pip_package(host):
 
 def test_pip(host):
     # get_packages
-    assert host.pip.get_packages()["pip"]["version"] == "18.1"
+    assert host.pip.get_packages()["pip"]["version"] == "20.3.4"
     pytest_package = host.pip.get_packages(pip_path="/v/bin/pip")["pytest"]
-    assert pytest_package["version"].startswith("2.")
+    assert pytest_package["version"].startswith("5.")
     # outdated
     outdated = host.pip.get_outdated_packages(pip_path="/v/bin/pip")["pytest"]
     assert outdated["current"] == pytest_package["version"]
-    assert int(outdated["latest"].split(".")[0]) > 2
+    assert int(outdated["latest"].split(".")[0]) >= 6
     # check
     assert host.pip.check().succeeded
     # is_installed
@@ -580,8 +582,8 @@ def test_pip(host):
     pytest_package = host.pip("pytest", pip_path="/v/bin/pip")
     assert pytest_package.is_installed
     # version
-    assert host.pip("pip").version == "18.1"
-    assert pytest_package.version.startswith("2.")
+    assert host.pip("pip").version == "20.3.4"
+    assert pytest_package.version.startswith("5.")
     assert host.pip("does_not_exist").version == ""
 
 
@@ -667,16 +669,10 @@ def test_addr(host):
         assert isinstance(ip_address(ip), (IPv4Address, IPv6Address))
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_buster")
+@pytest.mark.testinfra_hosts("ansible://debian_bullseye")
 def test_addr_namespace(host):
     namespace_lookup = host.addr("localhost", "ns1")
-    # ns1 network namespace does not exist so everything is false
     assert not namespace_lookup.namespace_exists
-    assert not namespace_lookup.is_reachable
-    assert not namespace_lookup.is_resolvable
-    with pytest.raises(NotImplementedError):
-        # nc is not available so an error is raised
-        assert not namespace_lookup.port("443").is_reachable
 
 
 @pytest.mark.parametrize(
