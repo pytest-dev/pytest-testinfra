@@ -17,6 +17,7 @@ import setuptools
 def local_scheme(version):
     """Generate a PEP440 compatible version if PEP440_VERSION is enabled"""
     import os
+
     import setuptools_scm.version  # only present during setup time
 
     return (

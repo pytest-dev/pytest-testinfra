@@ -12,13 +12,13 @@
 
 import operator
 import os
-import pytest
 import tempfile
+
+import pytest
 
 import testinfra
 import testinfra.backend
-from testinfra.backend.base import BaseBackend
-from testinfra.backend.base import HostSpec
+from testinfra.backend.base import BaseBackend, HostSpec
 from testinfra.backend.winrm import _quote
 from testinfra.utils.ansible_runner import AnsibleRunner
 

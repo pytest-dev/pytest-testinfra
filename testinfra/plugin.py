@@ -17,6 +17,7 @@ import tempfile
 import time
 
 import pytest
+
 import testinfra
 import testinfra.host
 import testinfra.modules

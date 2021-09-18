@@ -14,7 +14,6 @@ import importlib
 import os
 import urllib.parse
 
-
 BACKENDS = {
     "local": "testinfra.backend.local.LocalBackend",
     "ssh": "testinfra.backend.ssh.SshBackend",
