@@ -15,6 +15,7 @@ import shutil
 import sys
 import tempfile
 import time
+from typing import AnyStr
 
 import pytest
 
@@ -167,7 +168,7 @@ class NagiosReporter:
         return ret
 
 
-class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
+class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):  # type: ignore[type-arg]
     def __init__(self, *args, **kwargs):
         if "b" in kwargs.get("mode", "b"):
             self._out_encoding = kwargs.pop("encoding")

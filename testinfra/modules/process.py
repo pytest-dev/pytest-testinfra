@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict
 
 from testinfra.modules.base import InstanceModule
 
@@ -23,7 +24,7 @@ def int_or_float(value):
             return value
 
 
-class _Process(dict):
+class _Process(Dict[str, str]):
     def __getattr__(self, key):
         try:
             return self.__getitem__(key)
