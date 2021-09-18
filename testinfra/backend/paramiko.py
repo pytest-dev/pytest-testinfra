@@ -45,7 +45,7 @@ class ParamikoBackend(base.BaseBackend):
         ssh_identity_file=None,
         timeout=10,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
