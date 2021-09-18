@@ -31,7 +31,7 @@ class AnsibleBackend(base.BaseBackend):
         ssh_identity_file=None,
         force_ansible=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.host = host
         self.ansible_inventory = ansible_inventory

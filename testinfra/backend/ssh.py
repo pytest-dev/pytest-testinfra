@@ -29,7 +29,7 @@ class SshBackend(base.BaseBackend):
         controlpersist=60,
         ssh_extra_args=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config

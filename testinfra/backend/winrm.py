@@ -55,7 +55,7 @@ class WinRMBackend(base.BaseBackend):
         read_timeout_sec=None,
         operation_timeout_sec=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.host = self.parse_hostspec(hostspec)
         self.conn_args = {
