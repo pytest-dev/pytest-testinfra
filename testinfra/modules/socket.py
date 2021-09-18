@@ -11,9 +11,7 @@
 # limitations under the License.
 
 import socket
-from typing import List
-from typing import Optional
-from typing import Tuple
+from typing import List, Optional, Tuple
 
 from testinfra.modules.base import Module
 from testinfra.utils import cached_property

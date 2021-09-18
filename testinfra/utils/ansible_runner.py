@@ -16,15 +16,10 @@ import ipaddress
 import json
 import os
 import tempfile
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Union
-
+from typing import Dict, List, Optional, Union
 
 import testinfra
 from testinfra.utils import cached_property
-
 
 __all__ = ["AnsibleRunner"]
 

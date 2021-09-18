@@ -21,9 +21,8 @@ import urllib.parse
 import pytest
 
 import testinfra
-from testinfra.backend.base import BaseBackend
 from testinfra.backend import parse_hostspec
-
+from testinfra.backend.base import BaseBackend
 
 BASETESTDIR = os.path.abspath(os.path.dirname(__file__))
 BASEDIR = os.path.abspath(os.path.join(BASETESTDIR, os.pardir))

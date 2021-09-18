@@ -10,8 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from testinfra.modules.base import Module
 from typing import NoReturn
+
+from testinfra.modules.base import Module
 
 STATUS = [
     "STOPPED",

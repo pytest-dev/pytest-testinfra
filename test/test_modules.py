@@ -13,14 +13,11 @@
 import crypt
 import datetime
 import os
-import pytest
 import re
 import time
+from ipaddress import IPv4Address, IPv6Address, ip_address
 
-from ipaddress import ip_address
-from ipaddress import IPv4Address
-from ipaddress import IPv6Address
-
+import pytest
 
 from testinfra.modules.socket import parse_socketspec
 

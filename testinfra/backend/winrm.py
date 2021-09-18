@@ -11,6 +11,7 @@
 # limitations under the License.
 
 import re
+
 from testinfra.backend import base
 
 try:
