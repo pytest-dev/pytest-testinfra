@@ -550,21 +550,6 @@ def test_command_execution(host):
     assert host.run("true").succeeded
 
 
-def test_pip_package(host):
-    with pytest.warns(DeprecationWarning):
-        assert host.pip_package.get_packages()["pip"]["version"] == "20.3.4"
-        pkg = host.pip_package.get_packages(pip_path="/v/bin/pip")["requests"]
-        assert pkg["version"].startswith("1.")
-    with pytest.warns(DeprecationWarning):
-        outdated = host.pip_package.get_outdated_packages(pip_path="/v/bin/pip")[
-            "requests"
-        ]
-        assert outdated["current"] == pkg["version"]
-        assert int(outdated["latest"].split(".")[0]) >= 1
-    with pytest.warns(DeprecationWarning):
-        assert host.pip_package.check().succeeded
-
-
 def test_pip(host):
     # get_packages
     assert host.pip.get_packages()["pip"]["version"] == "20.3.4"
