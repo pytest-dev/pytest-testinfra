@@ -8,3 +8,4 @@ salt
 pywinrm
 ansible>=3,<4
 mypy
+backports.cached_property

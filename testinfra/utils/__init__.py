@@ -9,26 +9,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable, Type, TypeVar
 
-T = TypeVar("T")
-R = TypeVar("R")
+import sys
+
+if sys.version_info >= (3, 8):
+    from functools import cached_property
+else:
+    from backports.cached_property import cached_property
 
 
-class cached_property:
-    """A cached property computed only once per instance
-
-    A property that is only computed once per instance and then replaces itself
-    with an ordinary attribute. Deleting the attribute resets the property.
-    Source: https://github.com/bottlepy/bottle/commit/fa7733e075da0d790d809aa3d2f53071897e6f76
-    """  # noqa
-
-    def __init__(self, func: Callable[[T], R]):
-        self.__doc__ = func.__doc__
-        self.func = func
-
-    def __get__(self, obj: T, cls: Type[T]) -> R:
-        if obj is None:
-            return self
-        value = obj.__dict__[self.func.__name__] = self.func(obj)
-        return value
+__all__ = ["cached_property"]
