@@ -277,7 +277,7 @@ class AnsibleRunner:
                 raise TypeError("Unsupported argument type '{}'.".format(opt_type))
         return " ".join(cli), cli_args
 
-    def run_module(self, host, module_name, module_args, **options):
+    def run_module(self, host, module_name, module_args, get_encoding=None, **options):
         cmd, args = "ansible --tree %s", []
         if self.inventory_file:
             cmd += " -i %s"
@@ -307,8 +307,15 @@ class AnsibleRunner:
                 raise RuntimeError(
                     "Error while running {}: {}".format(" ".join(cmd), out)
                 )
-            with open(os.path.join(d, files[0]), "r") as f:
-                return json.load(f)
+            fpath = os.path.join(d, files[0])
+            try:
+                with open(fpath, "r", encoding="ascii") as f:
+                    return json.load(f)
+            except UnicodeDecodeError:
+                if get_encoding is None:
+                    raise
+                with open(fpath, "r", encoding=get_encoding()) as f:
+                    return json.load(f)
 
     @classmethod
     def get_runner(cls, inventory):

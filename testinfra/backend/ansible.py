@@ -65,8 +65,11 @@ class AnsibleBackend(base.BaseBackend):
         )
 
     def run_ansible(self, module_name, module_args=None, **kwargs):
+        def get_encoding():
+            return self.encoding
+
         result = self.ansible_runner.run_module(
-            self.host, module_name, module_args, **kwargs
+            self.host, module_name, module_args, get_encoding=get_encoding, **kwargs
         )
         logger.info(
             "RUN Ansible(%s, %s, %s): %s",
