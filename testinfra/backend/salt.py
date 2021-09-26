@@ -54,7 +54,7 @@ class SaltBackend(base.BaseBackend):
         if any(c in host for c in "@*[?"):
             client = salt.client.LocalClient()
             if "@" in host:
-                hosts = client.cmd(host, "test.true", expr_form="compound").keys()
+                hosts = client.cmd(host, "test.true", tgt_type="compound").keys()
             else:
                 hosts = client.cmd(host, "test.true").keys()
             if not hosts:
