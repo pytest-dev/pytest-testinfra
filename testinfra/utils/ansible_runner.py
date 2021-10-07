@@ -16,7 +16,7 @@ import ipaddress
 import json
 import os
 import tempfile
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import testinfra
 from testinfra.utils import cached_property
@@ -78,18 +78,64 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
         "paramiko_ssh": "paramiko",
         "smart": "ssh",
     }.get(connection, connection)
-    testinfra_host = hostvars.get("ansible_host", host)
-    user = config.get("defaults", "remote_user", fallback=None)
-    if "ansible_user" in hostvars:
-        user = hostvars.get("ansible_user")
-    password = hostvars.get("ansible_ssh_pass")
-    port = config.get("defaults", "remote_port", fallback=None)
-    if "ansible_port" in hostvars:
-        port = hostvars.get("ansible_port")
+
+    options: Dict[str, Any] = {
+        "ansible_become": {
+            "ini": {
+                "section": "privilege_escalation",
+                "key": "become",
+            },
+            "environment": "ANSIBLE_BECOME",
+        },
+        "ansible_become_user": {
+            "ini": {
+                "section": "privilege_escalation",
+                "key": "become_user",
+            },
+            "environment": "ANSIBLE_BECOME_USER",
+        },
+        "ansible_port": {
+            "ini": {
+                "section": "defaults",
+                "key": "remote_port",
+            },
+            "environment": "ANSIBLE_REMOTE_PORT",
+        },
+        "ansible_user": {
+            "ini": {
+                "section": "defaults",
+                "key": "remote_user",
+            },
+            "environment": "ANSIBLE_REMOTE_USER",
+        },
+    }
+
+    def get_config(name, default=None):
+        value = default
+        option = options.get(name, {})
+
+        ini = option.get("ini")
+        if ini:
+            value = config.get(ini["section"], ini["key"], fallback=default)
+
+        if name in hostvars:
+            value = hostvars[name]
+
+        var = option.get("environment")
+        if var and var in os.environ:
+            value = os.environ[var]
+
+        return value
+
+    testinfra_host = get_config("ansible_host", host)
+    user = get_config("ansible_user")
+    password = get_config("ansible_ssh_pass")
+    port = get_config("ansible_port")
+
     kwargs: Dict[str, Union[str, bool]] = {}
-    if hostvars.get("ansible_become", False):
+    if get_config("ansible_become", False):
         kwargs["sudo"] = True
-    kwargs["sudo_user"] = hostvars.get("ansible_become_user")
+    kwargs["sudo_user"] = get_config("ansible_become_user")
     if ssh_config is not None:
         kwargs["ssh_config"] = ssh_config
     if ssh_identity_file is not None:
