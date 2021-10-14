@@ -70,9 +70,12 @@ class Package(Module):
             return OpenBSDPackage
         if host.system_info.distribution in ("debian", "ubuntu"):
             return DebianPackage
-        if (
-            host.system_info.distribution
-            and host.system_info.distribution.lower() == "centos"
+        if host.system_info.distribution and (
+            host.system_info.distribution.lower()
+            in (
+                "centos",
+                "fedora",
+            )
         ):
             return RpmPackage
         if host.system_info.distribution == "arch":
