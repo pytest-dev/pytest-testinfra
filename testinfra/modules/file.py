@@ -61,6 +61,9 @@ class File(Module):
         >>> host.file("/var/lock").linked_to
         '/run/lock'
         """
+        res = self.run_expect([0, 127], "realpath %s", self.path)
+        if res.rc == 0:
+            return res.stdout.strip()
         return self.check_output("readlink -f %s", self.path)
 
     @property
