@@ -29,7 +29,11 @@ class Host:
 
     def exists(self, command):
         """Return True if given command exist in $PATH"""
-        return self.run_expect([0, 1, 127], "command -v %s", command).rc == 0
+        rc = self.run_expect([0, 1, 127], "command -v %s", command).rc
+        if rc == 127:
+            return self.run_expect([0, 1], "which %s", command).rc == 0
+        else:
+            return rc == 0
 
     def find_command(self, command, extrapaths=("/sbin", "/usr/sbin")):
         """Return path of given command
@@ -39,6 +43,10 @@ class Host:
         out = self.run_expect([0, 1, 127], "command -v %s", command)
         if out.rc == 0:
             return out.stdout.rstrip("\r\n")
+        if out.rc == 127:
+            out = self.run_expect([0, 1], "which %s", self.path)
+            if out.rc == 0:
+                return out.stdout.rstrip("\r\n")
         for basedir in extrapaths:
             path = os.path.join(basedir, command)
             if self.exists(path):
