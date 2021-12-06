@@ -26,6 +26,10 @@ host
 
        :class:`testinfra.modules.addr.Addr` class
 
+    .. attribute:: blockdevice
+
+       :class:`testinfra.modules.blockdevice.BlockDevice` class
+
     .. attribute:: docker
 
        :class:`testinfra.modules.docker.Docker` class
@@ -128,6 +132,13 @@ Addr
 ~~~~
 
 .. autoclass:: testinfra.modules.addr.Addr(name)
+   :members:
+
+
+BlockDevice
+~~~~~~~~~~~
+
+.. autoclass:: testinfra.modules.blockdevice.BlockDevice(name)
    :members:
 
 
