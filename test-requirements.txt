@@ -6,5 +6,5 @@ types-paramiko
 tornado<5
 salt
 pywinrm
-ansible>=3,<4
+ansible>=4.9.0,<5
 mypy
