@@ -2,6 +2,17 @@
 Changelog
 =========
 
+6.5.0
+=====
+
+* Fallback to which when "command -v" fails
+* Use realpath by default to resolve symlinks instead of "readlink -f"
+* ansible: Support environment variables
+* Force package module to resolve to RpmPackage on Fedora
+* Fix new versions of supervisor may exit with status != 0
+* Eventually decode ansible output when it's not ascii
+* Either use python3 or python to get remote encoding
+
 6.4.0
 =====
 
