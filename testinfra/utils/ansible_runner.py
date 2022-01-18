@@ -101,6 +101,20 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
             },
             "environment": "ANSIBLE_REMOTE_PORT",
         },
+        "ansible_ssh_common_args": {
+            "ini": {
+                "section": "ssh_connection",
+                "key": "ssh_common_args",
+            },
+            "environment": "ANSIBLE_SSH_COMMON_ARGS",
+        },
+        "ansible_ssh_extra_args": {
+            "ini": {
+                "section": "ssh_connection",
+                "key": "ssh_extra_args",
+            },
+            "environment": "ANSIBLE_SSH_EXTRA_ARGS",
+        },
         "ansible_user": {
             "ini": {
                 "section": "defaults",
@@ -149,8 +163,8 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
     kwargs["ssh_extra_args"] = " ".join(
         [
             config.get("ssh_connection", "ssh_args", fallback=""),
-            hostvars.get("ansible_ssh_common_args", ""),
-            hostvars.get("ansible_ssh_extra_args", ""),
+            get_config("ansible_ssh_common_args", ""),
+            get_config("ansible_ssh_extra_args", ""),
         ]
     ).strip()
 
