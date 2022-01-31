@@ -271,6 +271,13 @@ def test_user(host):
     assert user.password == "*"
 
 
+def test_user_password_days(host):
+    assert host.user("root").password_max_days is 99999
+    assert host.user("root").password_min_days is 0
+    assert host.user("user").password_max_days == 90
+    assert host.user("user").password_min_days == 7
+
+
 def test_user_user(host):
     user = host.user("user")
     assert user.exists
