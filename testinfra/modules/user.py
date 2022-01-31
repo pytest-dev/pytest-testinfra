@@ -92,6 +92,24 @@ class User(Module):
         return self.check_output("getent shadow %s", self.name).split(":")[1]
 
     @property
+    def password_max_days(self):
+        """Return the maximum number of days between password changes"""
+        days = self.check_output("getent shadow %s", self.name).split(":")[4]
+        try:
+            return int(days)
+        except ValueError:
+            return None
+
+    @property
+    def password_min_days(self):
+        """Return the minimum number of days between password changes"""
+        days = self.check_output("getent shadow %s", self.name).split(":")[3]
+        try:
+            return int(days)
+        except ValueError:
+            return None
+
+    @property
     def gecos(self):
         """Return the user comment/gecos field"""
         return self.check_output("getent passwd %s", self.name).split(":")[4]
