@@ -272,8 +272,8 @@ def test_user(host):
 
 
 def test_user_password_days(host):
-    assert host.user("root").password_max_days is 99999
-    assert host.user("root").password_min_days is 0
+    assert host.user("root").password_max_days == 99999
+    assert host.user("root").password_min_days == 0
     assert host.user("user").password_max_days == 90
     assert host.user("user").password_min_days == 7
 
