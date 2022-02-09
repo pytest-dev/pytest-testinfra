@@ -44,7 +44,7 @@ class Host:
         if out.rc == 0:
             return out.stdout.rstrip("\r\n")
         if out.rc == 127:
-            out = self.run_expect([0, 1], "which %s", self.path)
+            out = self.run_expect([0, 1], "which %s", command)
             if out.rc == 0:
                 return out.stdout.rstrip("\r\n")
         for basedir in extrapaths:
