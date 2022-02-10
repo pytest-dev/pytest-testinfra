@@ -2,6 +2,15 @@
 Changelog
 =========
 
+6.6.0
+=====
+
+* [NEW] Allow to test for user password expiration
+* [NEW] Handle ANSIBLE_SSH_COMMON_ARGS and ANSIBLE_SSH_EXTRA_ARGS environment variables for ansible connections
+* [FIX] Fix encoding issue in salt connections
+* [FIX] Fix AttributeError when "command" is not available and fallback to "which"
+
+
 6.5.0
 =====
 
