@@ -94,26 +94,48 @@ Hosts can be seleted by using the `glob` and `compound matchers
 ansible
 ~~~~~~~
 
-The ansible backend is able to parse ansible inventories to get host connection details.
-For local, ssh, paramiko or docker connections(based on `ansible_connection` value)
-it will use the equivalent testinfra connection backend, unless `force_ansible=True`
-(or ``--force-ansible``) is set.
+Ansible inventories may be used to describe what hosts Testinfra should use
+and how to connect them, using Testinfra's Ansible backend.
 
-For other connections types or when `force_ansible=True`, testinfra will run
-all commands through ansible, which is substantially slower than using native
-connections backends.
-
-If ssh identity file is not provided via `--ssh-identity-file` flag, testinfra will try
-to use `ansible_ssh_private_key_file`, `ansible_private_key_file` and, finally,
-`ansible_user` with `ansible_ssh_pass` variables, both should be specified.
-
-Examples::
+To use the Ansible backend, prefix the ``--hosts`` option with ``ansible://`` e.g::
 
     $ py.test --hosts='ansible://all' # tests all inventory hosts
     $ py.test --hosts='ansible://host1,ansible://host2'
     $ py.test --hosts='ansible://web*'
+
+An inventory may be specified with the ``--ansible-inventory`` option, otherwise
+the default (``/etc/ansible/hosts``) is used.
+
+The ``ansible_connection`` value in your inventory will be used to determine
+which backend to use for individual hosts: ``local``, ``ssh``, ``paramiko`` and ``docker``
+are supported values. Other connections (or if you are using the ``--force-ansible``
+option) will result in testinfra running all commands via Ansible itself,
+which is substantially slower than the other backends::
+
     $ py.test --force-ansible --hosts='ansible://all'
     $ py.test --hosts='ansible://host?force_ansible=True'
+
+By default, the Ansible connection backend will first try to use
+``ansible_ssh_private_key_file`` and ``ansible_private_key_file`` to authenticate,
+then fall back to the ``ansible_user`` with ``ansible_ssh_pass`` variables (both
+are required), before finally falling back to your own host's SSH config.
+
+This behavior may be overwritten by specifying either the ``--ssh-identity-file``
+option or the ``--ssh-config`` option
+
+Finally, these environment variables are supported and will be passed along to
+their corresponding ansible variable (See Ansible documentation):
+
+https://docs.ansible.com/ansible/2.3/intro_inventory.html
+
+https://docs.ansible.com/ansible/latest/reference_appendices/config.html
+
+* ``ANSIBLE_REMOTE_USER``
+* ``ANSIBLE_SSH_EXTRA_ARGS``
+* ``ANSIBLE_SSH_COMMON_ARGS``
+* ``ANSIBLE_REMOTE_PORT``
+* ``ANSIBLE_BECOME_USER``
+* ``ANSIBLE_BECOME``
 
 kubectl
 ~~~~~~~
