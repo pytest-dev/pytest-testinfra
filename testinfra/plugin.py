@@ -60,6 +60,12 @@ def pytest_addoption(parser):
         help="SSH config file",
     )
     group.addoption(
+        "--ssh-extra-args",
+        action="store",
+        dest="ssh_extra_args",
+        help="SSH extra args",
+    )
+    group.addoption(
         "--ssh-identity-file",
         action="store",
         dest="ssh_identity_file",
