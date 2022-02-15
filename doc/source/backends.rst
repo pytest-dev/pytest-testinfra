@@ -66,7 +66,7 @@ This is a pure SSH backend using the ``ssh`` command. Example::
     $ py.test --ssh-config=/path/to/ssh_config --hosts='ssh://server'
     $ py.test --ssh-identity-file=/path/to/key --hosts='ssh://server'
     $ py.test --hosts='ssh://server?timeout=60&controlpersist=120'
-
+    $ py.test --hosts='ssh://server' --ssh-extra-args='-o StrictHostKeyChecking=no'
 
 By default timeout is set to 10 seconds and ControlPersist is set to 60 seconds.
 You can disable persistent connection by passing `controlpersist=0` to the options.
