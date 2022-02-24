@@ -28,6 +28,7 @@ jobs:
           - tox_env: py37
           - tox_env: py38
           - tox_env: py39
+          - tox_env: py310
           - tox_env: packaging
 
     steps:
