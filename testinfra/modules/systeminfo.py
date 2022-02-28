@@ -17,7 +17,7 @@ from testinfra.utils import cached_property
 
 
 class SystemInfo(InstanceModule):
-    """Return system informations"""
+    """Return system information"""
 
     @cached_property
     def sysinfo(self):

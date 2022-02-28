@@ -121,7 +121,7 @@ Changelog
 =====
 
 * Add extras for backend dependencies (#454)
-* Various enhencements of kitchen integration documentation
+* Various enhancements of kitchen integration documentation
 * ansible backend now support "password" field from ansible inventory
 * New backend "openshift"
 
@@ -134,7 +134,7 @@ Changelog
 =====
 
 * New module "environment" for getting remote environment variables
-* New module "block_device" exposing block device informations
+* New module "block_device" exposing block device information
 * Add a global flag --force-ansible to the command line
 * Raise an error in case of missing ansible inventory file
 * Fix an escape issue with ansible ssh args set inventory or configuration file
@@ -189,7 +189,7 @@ Changelog
 3.0.1
 =====
 
-* Fix parsing of ipv6 adresses for paramiko, ssh and ansible backends.
+* Fix parsing of ipv6 addresses for paramiko, ssh and ansible backends.
 * Fix --connection=ansible invocation when no hosts are provided
 
 3.0.0
@@ -237,7 +237,7 @@ Changelog
 ======
 
 * Add support for ansible "become" user in ansible module
-* Add failed/suceeded property on run() output
+* Add failed/succeeded property on run() output
 
 1.16.0
 ======
@@ -338,7 +338,7 @@ Changelog
 1.7.0
 =====
 
-* Salt: allow specifiy config directory (#230)
+* Salt: allow specify config directory (#230)
 * Add a WinRM backend
 * Socket: ipv6 sockets can handle ipv4 clients (#234)
 * Service: Enhance upstart detection (#243)

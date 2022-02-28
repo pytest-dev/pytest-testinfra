@@ -88,7 +88,7 @@ class User(Module):
 
     @property
     def password(self):
-        """Return the crypted user password"""
+        """Return the encrypted user password"""
         return self.check_output("getent shadow %s", self.name).split(":")[1]
 
     @property

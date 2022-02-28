@@ -266,7 +266,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         if not encoding:
             encoding = locale.getpreferredencoding()
         if encoding == "ANSI_X3.4-1968":
-            # Workaround defaut encoding ascii without LANG set
+            # Workaround default encoding ascii without LANG set
             encoding = "UTF-8"
         return encoding
 
