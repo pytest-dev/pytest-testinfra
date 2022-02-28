@@ -375,7 +375,7 @@ def test_ansible_module(host):
     assert passwd["owner"] == "root"
     assert isinstance(passwd["size"], int)
     assert passwd["path"] == "/etc/passwd"
-    # seems to vary with differents docker fs backend
+    # seems to vary with different docker fs backend
     assert passwd["state"] in ("file", "hard")
     assert passwd["uid"] == 0
 

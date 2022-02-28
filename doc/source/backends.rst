@@ -5,7 +5,7 @@ Testinfra comes with several connections backends for remote command
 execution.
 
 When installing, you should select the backends you require as
-``extras`` to ensure Python dependencies are satisifed (note various
+``extras`` to ensure Python dependencies are satisfied (note various
 system packaged tools may still be required).  For example ::
 
     $ pip install testinfra[ansible,salt]
@@ -85,7 +85,7 @@ The salt backend uses the `salt Python client API
 
 Testinfra will use the salt connection channel to run commands.
 
-Hosts can be seleted by using the `glob` and `compound matchers
+Hosts can be selected by using the `glob` and `compound matchers
 <https://docs.saltstack.com/en/latest/topics/targeting/compound.html>`_.
 
 
