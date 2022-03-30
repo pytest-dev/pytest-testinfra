@@ -8,7 +8,7 @@ When installing, you should select the backends you require as
 ``extras`` to ensure Python dependencies are satisfied (note various
 system packaged tools may still be required).  For example ::
 
-    $ pip install testinfra[ansible,salt]
+    $ pip install pytest-testinfra[ansible,salt]
 
 For all backends, commands can be run as superuser with the ``--sudo``
 option or as specific user with the ``--sudo-user`` option.
