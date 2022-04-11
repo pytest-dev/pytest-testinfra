@@ -285,6 +285,15 @@ def test_ansible_get_variables():
         ),
         (
             {},
+            b"host ansible_connection=community.docker.docker",
+            {
+                "NAME": "docker",
+                "name": "host",
+                "user": None,
+            },
+        ),
+        (
+            {},
             b"host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container",
             {  # noqa
                 "NAME": "docker",
