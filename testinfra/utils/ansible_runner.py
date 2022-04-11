@@ -68,12 +68,14 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
         "paramiko_ssh",
         "local",
         "docker",
+        "community.docker.docker",
         "lxc",
         "lxd",
     ):
         # unhandled connection type, must use force_ansible=True
         return None
     connection = {
+        "community.docker.docker": "docker",
         "lxd": "lxc",
         "paramiko_ssh": "paramiko",
         "smart": "ssh",
