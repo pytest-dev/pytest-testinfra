@@ -2,6 +2,13 @@
 Changelog
 =========
 
+6.7.0
+=====
+
+* [NEW] Handle ansible_connection type community.docker.docker
+* [NEW] add ssh_extra_args option
+
+
 6.6.0
 =====
 
