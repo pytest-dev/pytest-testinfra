@@ -10,9 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 from testinfra.modules.base import Module
 from testinfra.utils import cached_property
-import re
 
 
 class Interface(Module):
