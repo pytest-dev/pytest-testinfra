@@ -252,22 +252,24 @@ class BaseBackend(metaclass=abc.ABCMeta):
 
     def get_encoding(self) -> str:
         encoding = None
-        for python in ("python3", "python"):
-            cmd = self.run(
-                "%s -c 'import locale;print(locale.getpreferredencoding())'",
-                python,
-                encoding=None,
-            )
-            if cmd.rc == 0:
-                encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
-                break
-        # Python is not installed, we hope the encoding to be the same as
-        # local machine...
-        if not encoding:
-            encoding = locale.getpreferredencoding()
-        if encoding == "ANSI_X3.4-1968":
-            # Workaround default encoding ascii without LANG set
-            encoding = "UTF-8"
+        try:
+            for python in ("python3", "python"):
+                cmd = self.run(
+                    "%s -c 'import locale;print(locale.getpreferredencoding())'",
+                    python,
+                    encoding=None,
+                )
+                if cmd.rc == 0:
+                    encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
+                    break
+        except:
+            # Python is not installed, we hope the encoding to be the same as
+            # local machine...
+            if not encoding:
+                encoding = locale.getpreferredencoding()
+            if encoding == "ANSI_X3.4-1968":
+                # Workaround default encoding ascii without LANG set
+                encoding = "UTF-8"
         return encoding
 
     @property
