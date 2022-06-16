@@ -73,8 +73,10 @@ class Package(Module):
         if host.system_info.distribution and (
             host.system_info.distribution.lower()
             in (
+                "almalinux",
                 "centos",
                 "fedora",
+                "rocky",
             )
         ):
             return RpmPackage
