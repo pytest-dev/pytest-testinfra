@@ -2,6 +2,11 @@
 Changelog
 =========
 
+6.8.0
+=====
+
+* [NEW] Add support for AlmaLinux and RockyLinux
+
 6.7.0
 =====
 
