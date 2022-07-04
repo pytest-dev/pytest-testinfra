@@ -75,6 +75,7 @@ class Package(Module):
             in (
                 "almalinux",
                 "centos",
+                "cloudlinux",
                 "fedora",
                 "rocky",
             )
