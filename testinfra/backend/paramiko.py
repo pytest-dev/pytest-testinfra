@@ -54,7 +54,7 @@ class ParamikoBackend(base.BaseBackend):
         self.timeout = int(timeout)
         super().__init__(self.host.name, *args, **kwargs)
 
-    def _load_ssh_config(self, client, cfg, ssh_config):
+    def _load_ssh_config(self, client, cfg, ssh_config, ssh_config_dir="~/.ssh"):
         for key, value in ssh_config.lookup(self.host.name).items():
             if key == "hostname":
                 cfg[key] = value
@@ -74,6 +74,14 @@ class ParamikoBackend(base.BaseBackend):
                 cfg["gss_kex"] = value == "yes"
             elif key == "proxycommand":
                 cfg["sock"] = paramiko.ProxyCommand(value)
+            elif key == "include":
+                new_config_path = os.path.join(
+                    os.path.expanduser(ssh_config_dir), value
+                )
+                with open(new_config_path) as f:
+                    new_ssh_config = paramiko.SSHConfig()
+                    new_ssh_config.parse(f)
+                    self._load_ssh_config(client, cfg, new_ssh_config, ssh_config_dir)
 
     @cached_property
     def client(self):
@@ -87,13 +95,17 @@ class ParamikoBackend(base.BaseBackend):
             "password": self.host.password,
         }
         if self.ssh_config:
+            ssh_config_dir = os.path.dirname(self.ssh_config)
+
             with open(self.ssh_config) as f:
                 ssh_config = paramiko.SSHConfig()
                 ssh_config.parse(f)
-                self._load_ssh_config(client, cfg, ssh_config)
+                self._load_ssh_config(client, cfg, ssh_config, ssh_config_dir)
         else:
             # fallback reading ~/.ssh/config
             default_ssh_config = os.path.join(os.path.expanduser("~"), ".ssh", "config")
+            ssh_config_dir = os.path.dirname(default_ssh_config)
+
             try:
                 with open(default_ssh_config) as f:
                     ssh_config = paramiko.SSHConfig()
@@ -101,7 +113,7 @@ class ParamikoBackend(base.BaseBackend):
             except IOError:
                 pass
             else:
-                self._load_ssh_config(client, cfg, ssh_config)
+                self._load_ssh_config(client, cfg, ssh_config, ssh_config_dir)
 
         if self.ssh_identity_file:
             cfg["key_filename"] = self.ssh_identity_file
