@@ -81,7 +81,7 @@ class Package(Module):
             )
         ):
             return RpmPackage
-        if host.system_info.distribution == "arch":
+        if host.system_info.distribution in ("arch", "manjarolinux"):
             return ArchPackage
         if host.exists("apk"):
             return AlpinePackage
