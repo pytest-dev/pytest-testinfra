@@ -31,7 +31,7 @@ class Package(Module):
 
         - apk (Alpine)
         - apt (Debian, Ubuntu, ...)
-        - pacman (Arch)
+        - pacman (Arch, Manjaro )
         - pkg (FreeBSD)
         - pkg_info (NetBSD)
         - pkg_info (OpenBSD)
