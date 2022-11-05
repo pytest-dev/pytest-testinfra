@@ -31,7 +31,7 @@ class Package(Module):
 
         - apk (Alpine)
         - apt (Debian, Ubuntu, ...)
-        - pacman (Arch)
+        - pacman (Arch, Manjaro )
         - pkg (FreeBSD)
         - pkg_info (NetBSD)
         - pkg_info (OpenBSD)
@@ -81,7 +81,7 @@ class Package(Module):
             )
         ):
             return RpmPackage
-        if host.system_info.distribution == "arch":
+        if host.system_info.distribution in ("arch", "manjarolinux"):
             return ArchPackage
         if host.exists("apk"):
             return AlpinePackage
