@@ -110,12 +110,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
 
     HAS_RUN_SALT = False
     HAS_RUN_ANSIBLE = False
-
-    @property
-    @classmethod
-    @abc.abstractmethod
-    def NAME(cls) -> str:
-        raise NotImplementedError()
+    NAME: str
 
     def __init__(self, hostname, sudo=False, sudo_user=None, *args, **kwargs):
         self._encoding = None
