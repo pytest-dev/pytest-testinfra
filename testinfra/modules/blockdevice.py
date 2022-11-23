@@ -124,7 +124,7 @@ class BlockDevice(Module):
 
     @property
     def zoned_type(self):
-        """Return Zoned Blcok Device type
+        """Return Zoned Block Device type
 
         >>> host.block_device("/dev/sda").zoned_type
         host-managed
