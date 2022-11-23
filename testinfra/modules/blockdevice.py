@@ -113,6 +113,24 @@ class BlockDevice(Module):
         """
         return self._data["read_ahead"]
 
+    @property
+    def zoned(self):
+        """Return Zoned Block Device flag
+
+        >>> host.block_device("/dev/sda").zoned
+        True
+        """
+        return self._data["zoned"]
+
+    @property
+    def zoned_type(self):
+        """Return Zoned Blcok Device type
+
+        >>> host.block_device("/dev/sda").zoned_type
+        host-managed
+        """
+        return self._data["zoned_type"]
+
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
@@ -139,18 +157,14 @@ class LinuxBlockDevice(BlockDevice):
         fields = output[1].split()
         # Trivial Zoned Block Dev test: checks if zoned file exists
         is_zoned = False
-        zoned_type = None
+        zoned_type = "none"
         zoned_cmd = "cat %s"
         cmd_args = ("/sys/block/%s/queue/zoned" % self.device)
         catsys = self.run(zoned_cmd, cmd_args)
-        if catsys.rc == 2:  # No such file or directory
-            is_zoned = False  # Reundant, for clarity
-        else:
-            if catsys.rc != 0 or catsys.stderr:
-                raise RuntimeError("Failed to gather data: {}".format(catsys.stderr))
+        if catsys.rc == 0:
             output = catsys.stdout.splitlines()
             zoned_type = output[0]
-            if zoned_type != "None":
+            if zoned_type != "none":
                 is_zoned = True
         return {
             "rw_mode": str(fields[0]),
@@ -159,5 +173,6 @@ class LinuxBlockDevice(BlockDevice):
             "block_size": int(fields[3]),
             "start_sector": int(fields[4]),
             "size": int(fields[5]),
-            "zoned": bool(is_zoned)
+            "zoned": bool(is_zoned),
+            "zoned_type": str(zoned_type)
         }
