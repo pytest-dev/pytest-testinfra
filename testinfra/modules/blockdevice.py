@@ -137,6 +137,21 @@ class LinuxBlockDevice(BlockDevice):
         if output[0].split() != header:
             raise RuntimeError("Unknown output of blockdev: {}".format(output[0]))
         fields = output[1].split()
+        # Trivial Zoned Block Dev test: checks if zoned file exists
+        is_zoned = False
+        zoned_type = None
+        zoned_cmd = "cat %s"
+        cmd_args = ("/sys/block/%s/queue/zoned" % self.device)
+        catsys = self.run(zoned_cmd, cmd_args)
+        if catsys.rc == 2:  # No such file or directory
+            is_zoned = False  # Reundant, for clarity
+        else:
+            if catsys.rc != 0 or catsys.stderr:
+                raise RuntimeError("Failed to gather data: {}".format(catsys.stderr))
+            output = catsys.stdout.splitlines()
+            zoned_type = output[0]
+            if zoned_type != "None":
+                is_zoned = True
         return {
             "rw_mode": str(fields[0]),
             "read_ahead": int(fields[1]),
@@ -144,4 +159,5 @@ class LinuxBlockDevice(BlockDevice):
             "block_size": int(fields[3]),
             "start_sector": int(fields[4]),
             "size": int(fields[5]),
+            "zoned": bool(is_zoned)
         }
