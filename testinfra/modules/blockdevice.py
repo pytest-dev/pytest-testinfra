@@ -132,9 +132,9 @@ class BlockDevice(Module):
         return self._data["zoned_type"]
 
     def get_zoned_param(self, param_name):
-        """Retunr Zoned Block Device related parameter
+        """Return Zoned Block Device related parameter
 
-         >>> host.block_device("/dev/sda").get_zoned_param[chunk_sectors
+         >>> host.block_device("/dev/sda").get_zoned_param[chunk_sectors]
         """
         if param_name in [ "type", "chunk_sectors", "nr_zones" ]:
             return self._data[ "zoned_%s" % param_name ]
@@ -142,6 +142,11 @@ class BlockDevice(Module):
             return None
 
     def kernel_version_ge (self, major_wanted, minor_wanted):
+        """Check for if Linux version is greater or equal
+
+         >>> host.block_device("/dev/sda").kernel_version_ge(4, 20)
+         True
+        """
         kernel=super.sysctl("kernel.osrelease") # "ex. 5.15.0-52-generic"
         (major, minor) = re.findall(r'^(\d+)\.(\d+)\.', kernel)[0]
         return (int(major) >= major_wanted) and (int(minor) >= minor_wanted)
