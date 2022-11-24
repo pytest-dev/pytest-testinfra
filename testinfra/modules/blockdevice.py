@@ -142,7 +142,7 @@ class BlockDevice(Module):
             return None
 
     def kernel_version_ge (self, major_wanted, minor_wanted):
-        """Check for if Linux version is greater or equal
+        """Check if Linux version is greater or equal; TODO: Move to Host.
 
          >>> host.block_device("/dev/sda").kernel_version_ge(4, 20)
          True
