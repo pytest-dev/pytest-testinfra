@@ -159,7 +159,7 @@ class LinuxBlockDevice(BlockDevice):
         is_zoned = False
         zoned_type = "none"
         zoned_cmd = "cat %s"
-        cmd_args = ("/sys/block/%s/queue/zoned" % self.device)
+        cmd_args = "/sys/block/%s/queue/zoned" % self.device
         catsys = self.run(zoned_cmd, cmd_args)
         if catsys.rc == 0:
             output = catsys.stdout.splitlines()
@@ -174,5 +174,5 @@ class LinuxBlockDevice(BlockDevice):
             "start_sector": int(fields[4]),
             "size": int(fields[5]),
             "zoned": bool(is_zoned),
-            "zoned_type": str(zoned_type)
+            "zoned_type": str(zoned_type),
         }
