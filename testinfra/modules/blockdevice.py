@@ -12,6 +12,7 @@
 
 from testinfra.modules.base import Module
 from testinfra.utils import cached_property
+import re
 
 
 class BlockDevice(Module):
@@ -144,10 +145,10 @@ class BlockDevice(Module):
     def kernel_version_ge (self, major_wanted, minor_wanted):
         """Check if Linux version is greater or equal; TODO: Move to Host.
 
-         >>> host.block_device("/dev/sda").kernel_version_ge(4, 20)
+         >>> host.block_device("/dev/sda").kernel_version_ge(5, 15)
          True
         """
-        kernel=super.sysctl("kernel.osrelease") # "ex. 5.15.0-52-generic"
+        kernel = self._host.sysctl("kernel.osrelease") # "ex. 5.15.0-52-generic"
         (major, minor) = re.findall(r'^(\d+)\.(\d+)\.', kernel)[0]
         return (int(major) >= major_wanted) and (int(minor) >= minor_wanted)
 
