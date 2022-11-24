@@ -183,9 +183,8 @@ class LinuxBlockDevice(BlockDevice):
         zoned_cmd = "cat %s"
         cmd_args = "/sys/block/%s/queue/zoned" % self.device
         catsys = self.run(zoned_cmd, cmd_args)
-        if catsys.rc == 0:
-            output = catsys.stdout.splitlines()
-            zoned_type = output[0]
+        if not catsys.rc:
+            zoned_type = catsys.stdout
             if self.zoned:
                 cmd_args = "/sys/block/%s/queue/chunk_sectors" % self.device
                 catsys = self.run(zoned_cmd, cmd_args)
@@ -197,7 +196,6 @@ class LinuxBlockDevice(BlockDevice):
                         catsys = self.run(zoned_cmd, cmd_args)
                         if not catsys.rc:
                             zoned_nr_zones = catsys.stdout
-
         return {
             "rw_mode": str(fields[0]),
             "read_ahead": int(fields[1]),
