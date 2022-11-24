@@ -120,7 +120,7 @@ class BlockDevice(Module):
         >>> host.block_device("/dev/sda").zoned
         True
         """
-        return self._data["zoned"]
+        return "none" != self._data["zoned_type"]
 
     @property
     def zoned_type(self):
@@ -130,6 +130,21 @@ class BlockDevice(Module):
         host-managed
         """
         return self._data["zoned_type"]
+
+    def get_zoned_param(self, param_name):
+        """Retunr Zoned Block Device related parameter
+
+         >>> host.block_device("/dev/sda").get_zoned_param[chunk_sectors
+        """
+        if param_name in [ "type", "chunk_sectors", "nr_zones" ]:
+            return self._data[ "zoned_%s" % param_name ]
+        else:
+            return None
+
+    def kernel_version_ge (self, major_wanted, minor_wanted):
+        kernel=super.sysctl("kernel.osrelease") # "ex. 5.15.0-52-generic"
+        (major, minor) = re.findall(r'^(\d+)\.(\d+)\.', kernel)[0]
+        return (int(major) >= major_wanted) and (int(minor) >= minor_wanted)
 
     @classmethod
     def get_module_class(cls, host):
@@ -156,16 +171,27 @@ class LinuxBlockDevice(BlockDevice):
             raise RuntimeError("Unknown output of blockdev: {}".format(output[0]))
         fields = output[1].split()
         # Trivial Zoned Block Dev test: checks if zoned file exists
-        is_zoned = False
         zoned_type = "none"
+        zoned_chunk_sectors = -1
+        zoned_nr_zones = -1
         zoned_cmd = "cat %s"
         cmd_args = "/sys/block/%s/queue/zoned" % self.device
         catsys = self.run(zoned_cmd, cmd_args)
         if catsys.rc == 0:
             output = catsys.stdout.splitlines()
             zoned_type = output[0]
-            if zoned_type != "none":
-                is_zoned = True
+            if self.zoned:
+                cmd_args = "/sys/block/%s/queue/chunk_sectors" % self.device
+                catsys = self.run(zoned_cmd, cmd_args)
+                if not catsys.rc:
+                    zoned_chunk_sectors = catsys.stdout
+                    # if Linux higer than 4.20
+                    if self.kernel_version_ge(4, 20):
+                        cmd_args = "/sys/block/%s/queue/nr_zones" % self.device
+                        catsys = self.run(zoned_cmd, cmd_args)
+                        if not catsys.rc:
+                            zoned_nr_zones = catsys.stdout
+
         return {
             "rw_mode": str(fields[0]),
             "read_ahead": int(fields[1]),
@@ -173,6 +199,7 @@ class LinuxBlockDevice(BlockDevice):
             "block_size": int(fields[3]),
             "start_sector": int(fields[4]),
             "size": int(fields[5]),
-            "zoned": bool(is_zoned),
             "zoned_type": str(zoned_type),
+            "zoned_chunk_sectors": int(zoned_chunk_sectors),
+            "zoned_nr_zones": int(zoned_nr_zones),
         }
