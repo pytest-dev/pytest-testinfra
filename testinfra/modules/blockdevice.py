@@ -191,30 +191,30 @@ class LinuxBlockDevice(BlockDevice):
             try:
                 zoned_chunk_sectors = self.check_output(zoned_cmd, cmd_args)
             except AttributeError as error:
-                ...
+                pass
             if self.kernel_version_ge(4, 20):
                 try:
                     cmd_args = "/sys/block/%s/queue/nr_zones" % self.device
                     zoned_nr_zones = self.check_output(zoned_cmd, cmd_args)
                 except AttributeError as error:
-                    ...
+                    pass
             if self.kernel_version_ge(5, 8):
                 try:
                     cmd_args = "/sys/block/%s/queue/zone_append_max_bytes" % self.device
                     zoned_zone_append_max_bytes = self.check_output(zoned_cmd, cmd_args)
                 except AttributeError as error:
-                    ...
+                    pass
             if self.kernel_version_ge(5, 9):
                 try:
                     cmd_args = "/sys/block/%s/queue/max_open_zones" % self.device
                     zoned_max_open_zones = self.check_output(zoned_cmd, cmd_args)
                 except AttributeError as error:
-                    ...
+                    pass
                 try:
                     cmd_args = "/sys/block/%s/queue/max_active_zones" % self.device
                     zoned_max_active_zones = self.check_output(zoned_cmd, cmd_args)
                 except AttributeError as error:
-                    ...
+                    pass
         return {
             "rw_mode": str(fields[0]),
             "read_ahead": int(fields[1]),
