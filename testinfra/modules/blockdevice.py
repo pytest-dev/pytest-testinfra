@@ -137,7 +137,7 @@ class BlockDevice(Module):
 
          >>> host.block_device("/dev/sda").get_zoned_param[chunk_sectors]
         """
-        if param_name in [ "type", "chunk_sectors", "nr_zones" ]:
+        if param_name in [ "type", "chunk_sectors", "nr_zones", "zone_append_max_bytes", "max_open_zones", "max_active_zones" ]:
             return self._data[ "zoned_%s" % param_name ]
         else:
             return None
@@ -176,26 +176,45 @@ class LinuxBlockDevice(BlockDevice):
         if output[0].split() != header:
             raise RuntimeError("Unknown output of blockdev: {}".format(output[0]))
         fields = output[1].split()
-        # Trivial Zoned Block Dev test: checks if zoned file exists
         zoned_type = "none"
-        zoned_chunk_sectors = -1
-        zoned_nr_zones = -1
+        zoned_chunk_sectors = "none"
+        zoned_nr_zones = "none"
+        zoned_zone_append_max_bytes = "none"
         zoned_cmd = "cat %s"
         cmd_args = "/sys/block/%s/queue/zoned" % self.device
-        catsys = self.run(zoned_cmd, cmd_args)
-        if not catsys.rc:
-            zoned_type = catsys.stdout
-            if self.zoned:
-                cmd_args = "/sys/block/%s/queue/chunk_sectors" % self.device
-                catsys = self.run(zoned_cmd, cmd_args)
-                if not catsys.rc:
-                    zoned_chunk_sectors = catsys.stdout
-                    # if Linux higer than 4.20
-                    if self.kernel_version_ge(4, 20):
-                        cmd_args = "/sys/block/%s/queue/nr_zones" % self.device
-                        catsys = self.run(zoned_cmd, cmd_args)
-                        if not catsys.rc:
-                            zoned_nr_zones = catsys.stdout
+        try:
+            zoned_type = self.check_output(zoned_cmd, cmd_args)
+        except AttributeError as error:
+            zoned_type = "none"
+        if zoned_type:
+            cmd_args = "/sys/block/%s/queue/chunk_sectors" % self.device
+            try:
+                zoned_chunk_sectors = self.check_output(zoned_cmd, cmd_args)
+            except AttributeError as error:
+                ...
+            if self.kernel_version_ge(4, 20):
+                try:
+                    cmd_args = "/sys/block/%s/queue/nr_zones" % self.device
+                    zoned_nr_zones = self.check_output(zoned_cmd, cmd_args)
+                except AttributeError as error:
+                    ...
+            if self.kernel_version_ge(5, 8):
+                try:
+                    cmd_args = "/sys/block/%s/queue/zone_append_max_bytes" % self.device
+                    zoned_zone_append_max_bytes = self.check_output(zoned_cmd, cmd_args)
+                except AttributeError as error:
+                    ...
+            if self.kernel_version_ge(5, 9):
+                try:
+                    cmd_args = "/sys/block/%s/queue/max_open_zones" % self.device
+                    zoned_max_open_zones = self.check_output(zoned_cmd, cmd_args)
+                except AttributeError as error:
+                    ...
+                try:
+                    cmd_args = "/sys/block/%s/queue/max_active_zones" % self.device
+                    zoned_max_active_zones = self.check_output(zoned_cmd, cmd_args)
+                except AttributeError as error:
+                    ...
         return {
             "rw_mode": str(fields[0]),
             "read_ahead": int(fields[1]),
@@ -204,6 +223,9 @@ class LinuxBlockDevice(BlockDevice):
             "start_sector": int(fields[4]),
             "size": int(fields[5]),
             "zoned_type": str(zoned_type),
-            "zoned_chunk_sectors": int(zoned_chunk_sectors),
-            "zoned_nr_zones": int(zoned_nr_zones),
+            "zoned_chunk_sectors": str(zoned_chunk_sectors),
+            "zoned_nr_zones": str(zoned_nr_zones),
+            "zone_append_max_bytes": str(zoned_zone_append_max_bytes),
+            "max_open_zones": str(zoned_max_open_zones),
+            "max_actives_zones": str(zoned_max_active_zones),
         }
