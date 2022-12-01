@@ -2,6 +2,16 @@
 Changelog
 =========
 
+7.0.0
+=====
+
+* [NEW] Improved ssh config support in Paramiko backend
+* [NEW] Add chroot backend
+* [NEW] Add support for Manjaro-Linux
+* [NEW] Add support for Cloudlinux
+* [BREAKING] Drop support for python 3.6 which is EOL
+
+
 6.8.0
 =====
 
