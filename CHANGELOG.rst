@@ -2,6 +2,11 @@
 Changelog
 =========
 
+7.0.1
+=====
+
+* [FIX] Fix `command -v` compatibility with dash shell
+
 7.0.0
 =====
 
