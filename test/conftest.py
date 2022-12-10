@@ -56,7 +56,7 @@ ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
 DOCKER_IMAGES = [
     "alpine",
     "archlinux",
-    "centos_7",
+    "rockylinux8",
     "debian_bullseye",
     "ubuntu_xenial",
 ]
@@ -181,7 +181,7 @@ def host(request, tmpdir_factory):
         # Wait ssh to be up
         service = testinfra.get_host(docker_id, connection="docker").service
 
-        images_with_sshd = ("centos_7", "alpine", "archlinux")
+        images_with_sshd = ("rockylinux8", "alpine", "archlinux")
 
         if image in images_with_sshd:
             service_name = "sshd"
