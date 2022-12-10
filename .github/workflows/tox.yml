@@ -12,7 +12,7 @@ on:
     types:
       - published  # It seems that you can publish directly without creating
   schedule:
-    - cron: 1 0 * * *  # Run daily at 0:01 UTC
+    - cron: 4 0 10 * *  # Run 10th of month at 4AM
 
 jobs:
   build:
