@@ -3,80 +3,89 @@ name: tox
 on:
   create:  # is used for publishing to TestPyPI
     tags:  # any tag regardless of its name, no branches
-      - "**"
+    - "**"
   push:  # only publishes pushes to the main branch to TestPyPI
     branches:  # any integration branch but not tag
-      - "master"
+    - "master"
   pull_request:
   release:
     types:
-      - published  # It seems that you can publish directly without creating
+    - published  # It seems that you can publish directly without creating
   schedule:
-    - cron: 4 0 10 * *  # Run 10th of month at 4AM
+  - cron: 4 0 10 * *  # Run 10th of month at 4AM
 
 jobs:
-  build:
-    name: ${{ matrix.tox_env }}
+  lint-mypy:
+    name: lint and types
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         include:
-          - tox_env: lint
-          - tox_env: docs
-          - tox_env: py37
-          - tox_env: py38
-          - tox_env: py39
-          - tox_env: py310
-          - tox_env: packaging
+        - python_version: "3.7"
+        - python_version: "3.8"
+        - python_version: "3.9"
+        - python_version: "3.10"
 
     steps:
-      - uses: actions/checkout@v1
-      - name: Find python version
-        id: py_ver
-        shell: python
-        if: ${{ contains(matrix.tox_env, 'py') }}
-        run: |
-          v = '${{ matrix.tox_env }}'.split('-')[0].lstrip('py')
-          print('::set-output name=version::{0}.{1}'.format(v[0],v[1:]))
-      # Even our lint and other envs need access to tox
-      - name: Install a default Python
-        uses: actions/setup-python@v2
-        if: ${{ ! contains(matrix.tox_env, 'py') }}
-      # Be sure to install the version of python needed by a specific test, if necessary
-      - name: Set up Python version
-        uses: actions/setup-python@v2
-        if: ${{ contains(matrix.tox_env, 'py') }}
-        with:
-          python-version: ${{ steps.py_ver.outputs.version }}
-      - name: Install dependencies
-        run: |
-          docker version
-          docker info
-          python -m pip install -U pip
-          pip install tox
-      - name: Run tox -e ${{ matrix.tox_env }}
-        run: |
-          echo "${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}"
-          ${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}
+    - uses: actions/checkout@v1
+    - name: Set up Python version
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python_version }}
+    - name: Install tox
+      run: pip install tox
+    - name: Run tox -e lint,mypy
+      run: tox -e lint,mypy
+
+  docs-packaging:
+    name: docs and packaging
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python version
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.9"
+    - name: Install tox
+      run: pip install tox
+    - name: Run tox -e docs,packaging
+      run: tox -e docs,packaging
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    needs:
+    - lint-mypy
+    - docs-packaging
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python version
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.9"
+    - name: Install dependencies
+      run: |
+        docker version
+        docker info
+        pip install tox
+    - name: Run tox -e py3
+      run: |
+        tox -e py3
 
   publish:
     name: Publish to PyPI registry
     needs:
-      - build
+      - test
     runs-on: ubuntu-latest
-
     env:
       PY_COLORS: 1
-      TOXENV: packaging
-
     steps:
-      - name: Switch to using Python 3.7 by default
+      - name: Setup python version
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: "3.9"
       - name: Install tox
-        run: python -m pip install --user tox
+        run: python -m pip install tox
       - name: Check out src from Git
         uses: actions/checkout@v2
         with:
@@ -108,7 +117,7 @@ jobs:
           |
           xargs git tag --delete
       - name: Build dists
-        run: python -m tox
+        run: tox -e packaging
       - name: Publish to test.pypi.org
         if: >-
           (
