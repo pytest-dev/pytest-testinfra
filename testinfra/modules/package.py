@@ -35,7 +35,7 @@ class Package(Module):
         - pkg (FreeBSD)
         - pkg_info (NetBSD)
         - pkg_info (OpenBSD)
-        - rpm (RHEL, Centos, Fedora, ...)
+        - rpm (RHEL, RockyLinux, Fedora, ...)
         """
         raise NotImplementedError
 
