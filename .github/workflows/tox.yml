@@ -20,18 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-        - python_version: "3.7"
-        - python_version: "3.8"
-        - python_version: "3.9"
-        - python_version: "3.10"
-
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python version
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python_version }}
+        python-version: ${{ matrix.python-version }}
     - name: Install tox
       run: pip install tox
     - name: Run tox -e lint,mypy
@@ -41,9 +36,9 @@ jobs:
     name: docs and packaging
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python version
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.9"
     - name: Install tox
@@ -58,9 +53,9 @@ jobs:
     - lint-mypy
     - docs-packaging
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python version
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.9"
     - name: Install dependencies
@@ -81,13 +76,13 @@ jobs:
       PY_COLORS: 1
     steps:
       - name: Setup python version
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9"
       - name: Install tox
         run: python -m pip install tox
       - name: Check out src from Git
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # Get shallow Git history (default) for release events
           # but have a complete clone for any other workflows.
