@@ -116,6 +116,9 @@ class File(Module):
         raise NotImplementedError
 
     def contains(self, pattern):
+        """Checks content of file for pattern. This uses grep and thus follows the grep
+        regex syntax.
+        """  # noqa
         return self.run_test("grep -qs -- %s %s", pattern, self.path).rc == 0
 
     @property
