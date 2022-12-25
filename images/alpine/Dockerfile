@@ -12,5 +12,3 @@ RUN apk add --update --no-cache python3 openrc openssh && \
 
 EXPOSE 22
 CMD ["/sbin/init"]
-
-
