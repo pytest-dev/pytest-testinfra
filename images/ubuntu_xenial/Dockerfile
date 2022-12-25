@@ -20,4 +20,3 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i =
 
 EXPOSE 22
 CMD ["/sbin/init"]
-
