@@ -24,7 +24,6 @@ jobs:
         include:
           - tox_env: lint
           - tox_env: docs
-          - tox_env: py37
           - tox_env: py38
           - tox_env: py39
           - tox_env: py310
@@ -71,10 +70,10 @@ jobs:
       TOXENV: packaging
 
     steps:
-      - name: Switch to using Python 3.7 by default
+      - name: Switch to using Python 3.8 by default
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Install tox
         run: python -m pip install --user tox
       - name: Check out src from Git
