@@ -42,6 +42,10 @@ class Docker(Module):
         return self.inspect()["State"]["Running"]
 
     @property
+    def is_restarting(self):
+        return self.inspect()["State"]["Restarting"]
+
+    @property
     def id(self):
         return self.inspect()["Id"]
 
