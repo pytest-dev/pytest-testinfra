@@ -189,7 +189,7 @@ class SpooledTemporaryFile(tempfile.SpooledTemporaryFile):
         return super().write(s)
 
 
-@pytest.mark.trylast
+@pytest.hookimpl(trylast=True)
 def pytest_configure(config):
     if config.getoption("--verbose", 0) > 1:
         root = logging.getLogger()
@@ -207,7 +207,7 @@ def pytest_configure(config):
             config.pluginmanager.register(NagiosReporter(out), "nagiosreporter")
 
 
-@pytest.mark.trylast
+@pytest.hookimpl(trylast=True)
 def pytest_sessionfinish(session, exitstatus):
     reporter = session.config.pluginmanager.getplugin("nagiosreporter")
     if reporter:
