@@ -109,8 +109,9 @@ class Process(InstanceModule):
     def get_module_class(cls, host):
         if host.file("/bin/ps").linked_to == "/bin/busybox":
             return BusyboxProcess
-        if host.file("/bin/ps").inode == host.file("/bin/busybox").inode:
-            return BusyboxProcess
+        if host.file("/bin/busybox").exists:
+            if host.file("/bin/ps").inode == host.file("/bin/busybox").inode:
+                return BusyboxProcess
         if host.system_info.type == "linux" or host.system_info.type.endswith("bsd"):
             return PosixProcess
         raise NotImplementedError
