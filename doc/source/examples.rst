@@ -179,3 +179,30 @@ fixture.
     def test_myimage(host):
         # 'host' now binds to the container
         assert host.check_output('myapp -v') == 'Myapp 1.0'
+
+.. _using delegation:
+
+Using delegation
+~~~~~~~~~~~~~~~~
+
+If testinfra is used with Ansible backend, it is possible to delegate
+to another host using `delegate_to` fixture.
+
+.. code-block:: python
+
+    @pytest.mark.testinfra_hosts("ansible://foo")
+    def test_bar_configured_with_foo(host, delegate_to):
+        foo_config = host.check_output("foo --get-foo")
+        bar_host = delegate_to("ansible://bar")
+        assert bar_host.check_output(f"bar --check {foo_config}") == "OK"
+
+
+.. code-block:: python
+
+    testinfra_hosts = ["ansible://foo"]
+
+    # this test is not dependent on testinfra_hosts value
+    # because it's not using 'host' fixture.
+    def test_skip_if_empty(delegate_to):
+        bar_host = delegate_to("ansible://bar", skip_empty=True)
+            assert bar_host.check_output(f"foobar")

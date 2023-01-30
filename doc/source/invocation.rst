@@ -65,3 +65,23 @@ For more usages and features, see the Pytest_ documentation.
 
 .. _Pytest: https://docs.pytest.org/en/latest/
 .. _pytest-xdist: https://pypi.org/project/pytest-xdist/
+
+Delegation
+~~~~~~~~~~
+
+If testinfra is used with Ansible backend, it is possible to create
+another Host object using `delegate_to` fixture. This fixture is a function
+which can produce a new Host object based on `host_specs` parameter
+(e.g. "ansible://foo" or "ansible://bar?force_ansible").
+
+It can delegate only to one host (no parametrization), so fixture fail
+if there are more than one host resolved from host_specs to host list.
+
+If host_specs resolves to empty list, fixture either fail test
+or skip it, depending on value of optional parameter `skip_empty`
+(default value is False, meaning 'fail the test if hostlist is empty').
+
+With `skip_empty=True` (i.e. `delegate_to("ansible://foo", skip_empty=True)`,
+if there are no hosts for a given host_specs, test is skipped.
+
+See :ref:`Using delegation` for examples.

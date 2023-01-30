@@ -33,6 +33,31 @@ def host(_testinfra_host):
     return _testinfra_host
 
 
+@pytest.fixture(scope="session")
+def delegate_to(request):
+    """Allow to run on different host via delegation"""
+    def delegate(host_spec, skip_empty=False):
+        hostlist = testinfra.get_hosts(
+            [host_spec],
+            connection=request.config.option.connection,
+            ssh_config=request.config.option.ssh_config,
+            ssh_identity_file=request.config.option.ssh_identity_file,
+            sudo=request.config.option.sudo,
+            sudo_user=request.config.option.sudo_user,
+            ansible_inventory=request.config.option.ansible_inventory,
+            force_ansible=request.config.option.force_ansible,
+        )
+        if len(hostlist) > 1:
+            pytest.fail("hostlist resolved into more than one host. Unsupported.")
+        if len(hostlist) == 0:
+            if skip_empty:
+                pytest.skip("Empty delegation")
+            else:
+                pytest.fail("Empty hostlist but skip_empty=False.")
+        return hostlist[0]
+
+    return delegate
+
 host.__doc__ = testinfra.host.Host.__doc__
 
 

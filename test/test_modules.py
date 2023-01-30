@@ -427,6 +427,19 @@ def test_ansible_module_become(host):
 
 
 @pytest.mark.testinfra_hosts("ansible://debian_bullseye")
+def test_delegate_to_existing_group(host, delegate_to):
+    delegated_host = delegate_to(
+        "ansible://user@debian_bullseye"
+    )  # reuse the same host with different hostspec as 'different host'
+    assert host.user().name != delegated_host.user().name
+
+
+def test_without_host(delegate_to):
+    delegated_host = delegate_to("ansible://debian_bullseye")
+    assert host.check_output("uptime")
+
+
+@pytest.mark.testinfra_hosts("ansible://debian_bullseye")
 def test_ansible_module_options(host):
     assert (
         host.ansible(
