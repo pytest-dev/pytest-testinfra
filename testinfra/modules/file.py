@@ -237,6 +237,10 @@ class GNUFile(File):
         return int(self.check_output("stat -c %%s %s", self.path))
 
     @property
+    def inode(self):
+        return int(self.check_output("stat -c %%i %s", self.path))
+
+    @property
     def md5sum(self):
         return self.check_output("md5sum %s | cut -d' ' -f1", self.path)
 
