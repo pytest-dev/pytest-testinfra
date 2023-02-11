@@ -11,6 +11,7 @@
 # limitations under the License.
 
 import datetime
+import six
 
 from testinfra.modules.base import Module
 
@@ -201,6 +202,8 @@ class File(Module):
             return BSDFile
         if host.system_info.type == "darwin":
             return DarwinFile
+        if host.system_info.type == "windows":
+            return WindowsFile
         raise NotImplementedError
 
 
@@ -312,3 +315,200 @@ class NetBSDFile(BSDFile):
     @property
     def sha256sum(self):
         return self.check_output("cksum -a sha256 < %s", self.path)
+
+
+class WindowsFile(File):
+    @property
+    def exists(self):
+        """Test if file exists
+
+        >>> host.file(r"C:/Users").exists
+        True
+        >>> host.file(r"C:/nonexistent").exists
+        False
+        """
+
+        return (
+            self.check_output(r"powershell -command \"Test-Path '%s'\"", self.path)
+            == "True"
+        )
+
+    @property
+    def is_file(self):
+        return (
+            self.check_output(
+                r"powershell -command \"(Get-Item '%s') -is [System.IO.FileInfo]\"",
+                self.path,
+            )
+            == "True"
+        )
+
+    @property
+    def is_directory(self):
+        return (
+            self.check_output(
+                r"powershell -command \"(Get-Item '%s') -is [System.IO.DirectoryInfo]\"",
+                self.path,
+            )
+            == "True"
+        )
+
+    @property
+    def is_pipe(self):
+        raise NotImplementedError
+
+    @property
+    def is_socket(self):
+        raise NotImplementedError
+
+    @property
+    def is_symlink(self):
+        return (
+            self.check_output(
+                r"powershell -command \"(Get-Item -Path '%s').Attributes -band [System.IO.FileAttributes]::ReparsePoint\"",
+                self.path,
+            )
+            == "True"
+        )
+
+    @property
+    def linked_to(self):
+        """Resolve symlink
+
+        >>> host.file("C:/Users/lock").linked_to
+        'C:/Program Files/lock'
+        """
+        return self.check_output(
+            r"powershell -command \"(Get-Item -Path '%s' -ReadOnly).FullName\"",
+            self.path,
+        )
+
+    @property
+    def user(self):
+        """Return file owner as string
+
+        >>> host.file("C:/Windows/passwd").user
+        'root'
+        """
+        raise NotImplementedError
+
+    @property
+    def uid(self):
+        """Return file user id as integer
+
+        >>> host.file("C:/Windows/passwd").uid
+        0
+        """
+        raise NotImplementedError
+
+    @property
+    def group(self):
+        raise NotImplementedError
+
+    @property
+    def gid(self):
+        raise NotImplementedError
+
+    @property
+    def mode(self):
+        raise NotImplementedError
+
+    def contains(self, pattern):
+        """Checks content of file for pattern
+
+        This follows the regex syntax.
+        """
+        return (
+            self.run_test(
+                r"powershell -command \"Select-String -Path '%s' -Pattern '%s'\"",
+                self.path,
+                pattern,
+            ).stdout
+            != ""
+        )
+
+    @property
+    def md5sum(self):
+        raise NotImplementedError
+
+    @property
+    def sha256sum(self):
+        raise NotImplementedError
+
+    def _get_content(self, decode):
+        out = self.run_test(r"powershell -command \"cat -- '%s'\"", self.path)
+        if out.rc != 0:
+            raise RuntimeError("Unexpected output %s" % (out,))
+        if decode:
+            return out.stdout
+        return out.stdout_bytes
+
+    @property
+    def content(self):
+        """Return file content as bytes
+
+        >>> host.file("C:/Windows/Temp/foo").content
+        b'caf\\xc3\\xa9'
+        """
+        return self._get_content(False)
+
+    @property
+    def content_string(self):
+        """Return file content as string
+
+        >>> host.file("C:/Windows/Temp/foo").content_string
+        'café'
+        """
+        return self._get_content(True)
+
+    @property
+    def mtime(self):
+        """Return time of last modification as datetime.datetime object
+
+        >>> host.file("C:/Windows/passwd").mtime
+        datetime.datetime(2015, 3, 15, 20, 25, 40)
+        """
+        date_time_str = self.check_output(
+            r"powershell -command \"Get-ChildItem -Path '%s' | Select-Object -ExpandProperty LastWriteTime\"",
+            self.path,
+        )
+        return datetime.datetime.strptime(
+            date_time_str.strip(), "%A, %B %d, %Y %I:%M:%S %p"
+        )
+
+    @property
+    def size(self):
+        """Return size of file in bytes"""
+        return int(
+            self.check_output(
+                r"powershell -command \"Get-Item -Path '%s' | Select-Object -ExpandProperty Length\"",
+                self.path,
+            )
+        )
+
+    def listdir(self):
+        """Return list of items under the directory
+
+        >>> host.file("C:/Windows/Temp").listdir()
+        ['foo_file', 'bar_dir']
+        """
+        out = self.run_test(
+            r"powershell -command \"Get-ChildItem -Path '%s' | Select-Object -ExpandProperty Name\"",
+            self.path,
+        )
+        if out.rc != 0:
+            raise RuntimeError("Unexpected output {}".format(out))
+        return [item.strip() for item in out.stdout.strip().split("\n")]
+
+    def __repr__(self):
+        return "<file %s>" % (self.path,)
+
+    def __eq__(self, other):
+        if isinstance(other, File):
+            return self.path == other.path
+        if isinstance(other, six.string_types):
+            return self.path == other
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
