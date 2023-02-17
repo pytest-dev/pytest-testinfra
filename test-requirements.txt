@@ -1,4 +1,3 @@
-mock
 pytest-cov
 pytest-xdist
 paramiko
@@ -7,4 +6,3 @@ tornado<5
 salt
 pywinrm
 ansible>=4.9.0,<5
-mypy

@@ -14,6 +14,7 @@ import os
 
 import testinfra.backend
 import testinfra.modules
+from testinfra.utils import cached_property
 
 
 class Host:
@@ -27,26 +28,30 @@ class Host:
     def __repr__(self):
         return "<testinfra.host.Host {}>".format(self.backend.get_pytest_id())
 
+    @cached_property
+    def has_command_v(self):
+        """Return True if `command -v` is available"""
+        return self.run("command -v command").rc == 0
+
     def exists(self, command):
         """Return True if given command exist in $PATH"""
-        rc = self.run_expect([0, 1, 127], "command -v %s", command).rc
-        if rc == 127:
-            return self.run_expect([0, 1], "which %s", command).rc == 0
+        if self.has_command_v:
+            out = self.run("command -v %s", command)
         else:
-            return rc == 0
+            out = self.run_expect([0, 1], "which %s", command)
+        return out.rc == 0
 
     def find_command(self, command, extrapaths=("/sbin", "/usr/sbin")):
         """Return path of given command
 
         raise ValueError if command cannot be found
         """
-        out = self.run_expect([0, 1, 127], "command -v %s", command)
+        if self.has_command_v:
+            out = self.run("command -v %s", command)
+        else:
+            out = self.run_expect([0, 1], "which %s", command)
         if out.rc == 0:
             return out.stdout.rstrip("\r\n")
-        if out.rc == 127:
-            out = self.run_expect([0, 1], "which %s", command)
-            if out.rc == 0:
-                return out.stdout.rstrip("\r\n")
         for basedir in extrapaths:
             path = os.path.join(basedir, command)
             if self.exists(path):
