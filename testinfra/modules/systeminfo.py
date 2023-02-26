@@ -79,7 +79,7 @@ class SystemInfo(InstanceModule):
                             line[len(key) :].replace('"', "").replace("'", "").strip()
                         )
             # Arch doesn't have releases
-            if sysinfo["distribution"] == "arch":
+            if "distribution" in sysinfo and sysinfo["distribution"] == "arch":
                 sysinfo["release"] = "rolling"
             return sysinfo
 
