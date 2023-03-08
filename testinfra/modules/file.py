@@ -36,10 +36,12 @@ class File(Module):
 
     @property
     def is_file(self):
+        """Test if the path is a regular file"""
         return self.run_test("test -f %s", self.path).rc == 0
 
     @property
     def is_directory(self):
+        """Test if the path exists and a directory"""
         return self.run_test("test -d %s", self.path).rc == 0
 
     @property
@@ -49,14 +51,17 @@ class File(Module):
 
     @property
     def is_pipe(self):
+        """Test if the path exists and is a pipe"""
         return self.run_test("test -p %s", self.path).rc == 0
 
     @property
     def is_socket(self):
+        """Test if the path exists and is a socket"""
         return self.run_test("test -S %s", self.path).rc == 0
 
     @property
     def is_symlink(self):
+        """Test if the path exists and is a symbolic link"""
         return self.run_test("test -L %s", self.path).rc == 0
 
     @property
@@ -91,10 +96,12 @@ class File(Module):
 
     @property
     def group(self):
+        """Return file group name as string"""
         raise NotImplementedError
 
     @property
     def gid(self):
+        """Return file group id as integer"""
         raise NotImplementedError
 
     @property
@@ -129,10 +136,12 @@ class File(Module):
 
     @property
     def md5sum(self):
+        """Compute the MD5 message digest of the file content"""
         raise NotImplementedError
 
     @property
     def sha256sum(self):
+        """Compute the SHA256 message digest of the file content"""
         raise NotImplementedError
 
     def _get_content(self, decode):
