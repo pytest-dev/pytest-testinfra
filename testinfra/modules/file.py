@@ -43,6 +43,11 @@ class File(Module):
         return self.run_test("test -d %s", self.path).rc == 0
 
     @property
+    def is_executable(self):
+        """Test if the path exists and permission to execute is granted"""
+        return self.run_test("test -x %s", self.path).rc == 0
+
+    @property
     def is_pipe(self):
         return self.run_test("test -p %s", self.path).rc == 0
 
