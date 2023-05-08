@@ -1,6 +1,6 @@
 FROM rockylinux:8
 
-RUN dnf -y install openssh-server procps python39 && dnf clean all &&\
+RUN dnf -y install openssh-server procps python39 iproute && dnf clean all &&\
     (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \
     rm -f /etc/systemd/system/*.wants/* && \
