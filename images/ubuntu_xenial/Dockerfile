@@ -5,7 +5,8 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
 	python \
 	iputils-ping \
-	openssh-server && \
+	openssh-server \
+	iproute2  && \
     rm -rf /var/lib/apt/lists/*
 RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do if ! test $i = systemd-tmpfiles-setup.service; then rm -f $i; fi; done) && \
     rm -f /lib/systemd/system/multi-user.target.wants/* && \

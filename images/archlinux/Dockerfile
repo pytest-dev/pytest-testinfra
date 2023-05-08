@@ -1,6 +1,6 @@
 FROM archlinux/archlinux:base
 
-RUN pacman -Syu --noconfirm --noprogressbar --quiet python openssh iputils procps systemd systemd-sysvcompat && \
+RUN pacman -Syu --noconfirm --noprogressbar --quiet python openssh iputils procps systemd systemd-sysvcompat iproute2 && \
     systemctl enable sshd.service
 
 EXPOSE 22
