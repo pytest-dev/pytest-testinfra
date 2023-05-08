@@ -16,5 +16,5 @@ import pytest
 
 
 def main():
-    warnings.warn("calling testinfra is deprecated, call py.test instead")
+    warnings.warn("calling testinfra is deprecated, call py.test instead", stacklevel=1)
     return pytest.main()
