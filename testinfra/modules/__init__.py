@@ -39,6 +39,7 @@ modules = {
     "system_info": "systeminfo:SystemInfo",
     "user": "user:User",
     "block_device": "blockdevice:BlockDevice",
+    "bond": "bond:Bond",
 }
 
 
