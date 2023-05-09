@@ -120,6 +120,13 @@ def build_docker_container_fixture(image, scope):
         # output
         port = int(port.splitlines()[0].rsplit(":", 1)[-1])
 
+        # connect networks to get eth1 and eth2 network devices
+        # inside the container for bond testing
+        [
+            check_output(f"docker network connect infratest-net{idx} {docker_id}")
+            for idx in range(2)
+        ]
+
         return docker_id, docker_host, port
 
     fname = "_docker_container_{}_{}".format(image, scope)
@@ -128,6 +135,22 @@ def build_docker_container_fixture(image, scope):
 
 
 def initialize_container_fixtures():
+    # create two networks to allow bond setups
+    # without intervening with the default network
+    for idx in range(2):
+        cmd = [
+            "docker",
+            "network",
+            "create",
+            "--driver=bridge",
+            f"infratest-net{idx}",
+            f"--subnet=172.19.{idx}.0/24",
+        ]
+        try:
+            check_output(" ".join(cmd))
+        except Exception:
+            pass
+
     for image, scope in itertools.product(DOCKER_IMAGES, ["function", "session"]):
         build_docker_container_fixture(image, scope)
 
