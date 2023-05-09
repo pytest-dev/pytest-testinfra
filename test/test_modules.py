@@ -686,3 +686,33 @@ def test_interface(host, family):
     default_itf = host.interface.default(family)
     assert default_itf.name == "eth0"
     assert default_itf.exists
+
+
+@all_images
+def test_bond(host):
+    # ensure bond does not exists
+    assert not host.bond("bond0").exists
+
+    # setup bond0
+    assert host.run_expect([0], "ip link add bond0 type bond")
+    assert host.bond("bond0").exists
+    assert host.bond("bond0").mode == ("balance-rr", 0)
+    assert host.bond("bond0").mii == (0, "down")
+    assert host.bond("bond0").ports == []
+
+    # changed mode is reported correctly
+    assert host.run_expect([0], "ip link set bond0 type bond mode 802.3ad")
+
+    assert host.bond("bond0").mode == ("802.3ad", 4)
+
+    # add ports to bond
+    assert host.run_expect([0], "ip link set eth1 down")
+    assert host.run_expect([0], "ip link set eth2 down")
+    assert host.run_expect([0], "ip link set eth1 master bond0")
+    assert host.run_expect([0], "ip link set eth2 master bond0")
+    assert host.run_expect([0], "ip link set bond0 up")
+
+    assert host.bond("bond0").ports == ["eth1", "eth2"]
+    assert host.bond("bond0").slaves == ["eth1", "eth2"]
+
+    assert host.bond("bond0").mii == (100, "up")
