@@ -10,6 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import re
+
 from testinfra.modules.base import Module
 from testinfra.utils import cached_property
 
@@ -45,6 +48,26 @@ class Interface(Module):
 
         >>> host.interface("eth0").addresses
         ['192.168.31.254', '192.168.31.252', 'fe80::e291:f5ff:fe98:6b8c']
+        """
+        raise NotImplementedError
+
+    def routes(self, scope=None):
+        """Return the routes associated with the interface, optionally filtered by scope
+        ("host", "link" or "global").
+
+        >>> host.interface("eth0").routes()
+        [{'dst': 'default',
+        'flags': [],
+        'gateway': '192.0.2.1',
+        'metric': 3003,
+        'prefsrc': '192.0.2.5',
+        'protocol': 'dhcp'},
+        {'dst': '192.0.2.0/24',
+        'flags': [],
+        'metric': 3003,
+        'prefsrc': '192.0.2.5',
+        'protocol': 'dhcp',
+        'scope': 'link'}]
         """
         raise NotImplementedError
 
@@ -109,13 +132,25 @@ class LinuxInterface(Interface):
                 addrs.append(splitted[1].split("/", 1)[0])
         return addrs
 
+    def routes(self, scope=None):
+        cmd = f"{self._ip} --json route list dev %s"
+
+        if scope is None:
+            out = self.check_output(cmd, self.name)
+        else:
+            out = self.check_output(cmd + " scope %s", self.name, scope)
+
+        return json.loads(out)
+
     @classmethod
     def default(cls, family=None):
         _default = cls(None, family=family)
         out = cls.check_output("{} route ls".format(_default._ip))
         for line in out.splitlines():
             if "default" in line:
-                _default.name = line.strip().rsplit(" ", 1)[-1]
+                match = re.search(r"dev\s(\S+)", line)
+                if match:
+                    _default.name = match.group(1)
         return _default
 
     @classmethod

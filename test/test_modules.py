@@ -350,8 +350,22 @@ def test_file(host):
     assert f == host.file("/d/f")
     assert not d == f
 
+    host.check_output("ln /d/f /d/h")
+    hardlink = host.file("/d/h")
+    assert hardlink.is_file
+    assert not hardlink.is_symlink
+    assert isinstance(hardlink.inode, int)
+    assert isinstance(f.inode, int)
+    assert hardlink.inode == f.inode
+    assert f == host.file("/d/f")
+    assert not d == f
+
     host.check_output("rm -f /d/p && mkfifo /d/p")
     assert host.file("/d/p").is_pipe
+
+    host.check_output("chmod 700 /d/f")
+    assert f.is_executable
+    assert f.mode == 0o700
 
 
 def test_ansible_unavailable(host):

@@ -37,5 +37,13 @@ class Group(Module):
     def gid(self):
         return int(self.check_output("getent group %s | cut -d':' -f3", self.name))
 
+    @property
+    def members(self):
+        """Return all users that are members of this group."""
+        users = self.check_output("getent group %s | cut -d':' -f4", self.name)
+        if users:
+            return users.split(",")
+        return []
+
     def __repr__(self):
         return "<group {}>".format(self.name)
