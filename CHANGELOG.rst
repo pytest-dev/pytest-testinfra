@@ -2,6 +2,17 @@
 Changelog
 =========
 
+7.1.0
+=====
+
+* [NEW] Add Group.members attribute
+* [NEW] Add File.inode attribute
+* [NEW] Add Interface.routes() method
+* [NEW] Add Docker.is_restarting attribute
+* [FIX] Fix possible error in Interface.default()
+* [FIX] Fix busybox detection in Process module
+* [FIX] Fix possible KeyError in SysInfo module
+
 7.0.1
 =====
 
