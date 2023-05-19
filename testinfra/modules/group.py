@@ -38,7 +38,7 @@ class Group(Module):
         return int(self.check_output("getent group %s | cut -d':' -f3", self.name))
 
     @property
-    def user_list(self):
+    def members(self):
         """Return all users that are members of this group."""
         users = self.check_output("getent group %s | cut -d':' -f4", self.name)
         if users:
