@@ -16,7 +16,6 @@ include dev-requirements.txt
 include test-requirements.txt
 include LICENSE
 exclude .editorconfig
-exclude .travis.yml
 exclude .gitignore
 prune doc/build
 prune .github
