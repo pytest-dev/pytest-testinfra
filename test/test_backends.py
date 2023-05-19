@@ -129,7 +129,7 @@ def test_ansible_get_hosts():
                 b"[g1]\n"
                 b"debian\n"
                 b"[g2]\n"
-                b"centos\n"
+                b"rockylinux\n"
                 b"[g3:children]\n"
                 b"g1\n"
                 b"g2\n"
@@ -142,13 +142,13 @@ def test_ansible_get_hosts():
         def get_hosts(spec):
             return AnsibleRunner(f.name).get_hosts(spec)
 
-        assert get_hosts("all") == ["centos", "debian", "ungrp"]
-        assert get_hosts("*") == ["centos", "debian", "ungrp"]
+        assert get_hosts("all") == ["debian", "rockylinux", "ungrp"]
+        assert get_hosts("*") == ["debian", "rockylinux", "ungrp"]
         assert get_hosts("g1") == ["debian"]
-        assert get_hosts("*2") == ["centos"]
+        assert get_hosts("*2") == ["rockylinux"]
         assert get_hosts("*ia*") == ["debian"]
-        assert get_hosts("*3") == ["centos", "debian"]
-        assert get_hosts("*4") == ["centos", "debian"]
+        assert get_hosts("*3") == ["debian", "rockylinux"]
+        assert get_hosts("*4") == ["debian", "rockylinux"]
         assert get_hosts("ungrouped") == ["ungrp"]
         assert get_hosts("un*") == ["ungrp"]
         assert get_hosts("nope") == []
@@ -159,7 +159,7 @@ def test_ansible_get_variables():
         f.write(
             (
                 b"debian a=b c=d\n"
-                b"centos e=f\n"
+                b"rockylinux e=f\n"
                 b"[all:vars]\n"
                 b"a=a\n"
                 b"[g]\n"
@@ -174,9 +174,9 @@ def test_ansible_get_variables():
             return AnsibleRunner(f.name).get_variables(host)
 
         groups = {
-            "all": ["centos", "debian"],
+            "all": ["debian", "rockylinux"],
             "g": ["debian"],
-            "ungrouped": ["centos"],
+            "ungrouped": ["rockylinux"],
         }
         assert get_vars("debian") == {
             "a": "b",
@@ -186,10 +186,10 @@ def test_ansible_get_variables():
             "group_names": ["g"],
             "groups": groups,
         }
-        assert get_vars("centos") == {
+        assert get_vars("rockylinux") == {
             "a": "a",
             "e": "f",
-            "inventory_hostname": "centos",
+            "inventory_hostname": "rockylinux",
             "group_names": ["ungrouped"],
             "groups": groups,
         }
@@ -485,12 +485,12 @@ def test_backend_importables():
         assert obj.get_connection_type() == connection_type
 
 
-@pytest.mark.testinfra_hosts("docker://centos_7", "ssh://centos_7")
+@pytest.mark.testinfra_hosts("docker://rockylinux8", "ssh://rockylinux8")
 def test_docker_encoding(host):
     encoding = host.check_output(
-        "python -c 'import locale;print(locale.getpreferredencoding())'"
+        "python3 -c 'import locale;print(locale.getpreferredencoding())'"
     )
-    assert encoding == "ANSI_X3.4-1968"
+    assert encoding == "UTF-8"
     string = "ťēꞩƫìṇḟřặ ṧꝕèȃǩ ửƫᵮ8"
     assert host.check_output("echo %s | tee /tmp/s.txt", string) == string
     assert host.file("/tmp/s.txt").content_string.strip() == string

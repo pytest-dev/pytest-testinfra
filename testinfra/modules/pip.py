@@ -147,7 +147,8 @@ class PipPackage(Pip):
         """Raise a `DeprecationWarning`"""
         warnings.warn(
             "Calling host.pip_package is deprecated, call host.pip instead",
-            DeprecationWarning,
+            category=DeprecationWarning,
+            stacklevel=2,
         )
 
     @classmethod

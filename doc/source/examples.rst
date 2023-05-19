@@ -137,7 +137,7 @@ Integration with KitchenCI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 KitchenCI (aka Test Kitchen) can use testinfra via its :code:`shell` verifier.
-Add the following to your :code:`.kitchen.yml`, this requires installing `paramiko` 
+Add the following to your :code:`.kitchen.yml`, this requires installing `paramiko`
 additionally (on your host machine, not in the VM handled by kitchen) ::
 
     verifier:

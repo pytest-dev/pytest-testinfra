@@ -2,6 +2,26 @@
 Changelog
 =========
 
+7.0.1
+=====
+
+* [FIX] Fix `command -v` compatibility with dash shell
+
+7.0.0
+=====
+
+* [NEW] Improved ssh config support in Paramiko backend
+* [NEW] Add chroot backend
+* [NEW] Add support for Manjaro-Linux
+* [NEW] Add support for Cloudlinux
+* [BREAKING] Drop support for python 3.6 which is EOL
+
+
+6.8.0
+=====
+
+* [NEW] Add support for AlmaLinux and RockyLinux
+
 6.7.0
 =====
 

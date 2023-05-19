@@ -56,7 +56,7 @@ ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
 DOCKER_IMAGES = [
     "alpine",
     "archlinux",
-    "centos_7",
+    "rockylinux8",
     "debian_bullseye",
     "ubuntu_xenial",
 ]
@@ -113,7 +113,13 @@ def build_docker_container_fixture(image, scope):
         request.addfinalizer(teardown)
 
         port = check_output("docker port %s 22", docker_id)
-        port = int(port.rsplit(":", 1)[-1])
+        # IPv4 addresses seem to be reported consistently
+        # in the first line of the output.
+        # To workaround https://github.com/moby/moby/issues/42442
+        # use only the values of the first line of the command
+        # output
+        port = int(port.splitlines()[0].rsplit(":", 1)[-1])
+
         return docker_id, docker_host, port
 
     fname = "_docker_container_{}_{}".format(image, scope)
@@ -181,7 +187,7 @@ def host(request, tmpdir_factory):
         # Wait ssh to be up
         service = testinfra.get_host(docker_id, connection="docker").service
 
-        images_with_sshd = ("centos_7", "alpine", "archlinux")
+        images_with_sshd = ("rockylinux8", "alpine", "archlinux")
 
         if image in images_with_sshd:
             service_name = "sshd"

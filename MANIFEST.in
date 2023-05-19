@@ -8,6 +8,7 @@ include tox.ini
 include .flake8
 include mypy.ini
 include Makefile
+include *.yaml
 include README.rst CONTRIBUTING.rst CHANGELOG.rst
 include MANIFEST.in
 include ansible.cfg
@@ -15,7 +16,6 @@ include dev-requirements.txt
 include test-requirements.txt
 include LICENSE
 exclude .editorconfig
-exclude .travis.yml
 exclude .gitignore
 prune doc/build
 prune .github

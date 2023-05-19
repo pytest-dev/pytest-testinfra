@@ -116,6 +116,10 @@ class File(Module):
         raise NotImplementedError
 
     def contains(self, pattern):
+        """Checks content of file for pattern
+
+        This uses grep and thus follows the grep regex syntax.
+        """
         return self.run_test("grep -qs -- %s %s", pattern, self.path).rc == 0
 
     @property
@@ -231,6 +235,10 @@ class GNUFile(File):
     @property
     def size(self):
         return int(self.check_output("stat -c %%s %s", self.path))
+
+    @property
+    def inode(self):
+        return int(self.check_output("stat -c %%i %s", self.path))
 
     @property
     def md5sum(self):

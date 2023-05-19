@@ -27,7 +27,7 @@ all_images = pytest.mark.testinfra_hosts(
         for image in (
             "alpine",
             "archlinux",
-            "centos_7",
+            "rockylinux8",
             "debian_bullseye",
             "ubuntu_xenial",
         )
@@ -46,8 +46,8 @@ def test_package(host, docker_image):
     ssh = host.package(name)
     version = {
         "alpine": "8.",
-        "archlinux": "8.",
-        "centos_7": "7.",
+        "archlinux": "9.",
+        "rockylinux8": "8.",
         "debian_bullseye": "1:8.4",
         "ubuntu_xenial": "1:7.2",
     }[docker_image]
@@ -56,7 +56,7 @@ def test_package(host, docker_image):
     release = {
         "alpine": "r3",
         "archlinux": None,
-        "centos_7": ".el7",
+        "rockylinux8": ".el8",
         "debian_bullseye": None,
         "ubuntu_xenial": None,
     }[docker_image]
@@ -73,7 +73,7 @@ def test_held_package(host):
     assert python.version.startswith("3.9.")
 
 
-@pytest.mark.testinfra_hosts("docker://centos_7")
+@pytest.mark.testinfra_hosts("docker://rockylinux8")
 def test_non_default_package_tool(host):
     # Make non default pkg tool binary present
     host.run("install -m a+rx /bin/true /usr/bin/dpkg-query")
@@ -103,7 +103,7 @@ def test_systeminfo(host, docker_image):
     release, distribution, codename, arch = {
         "alpine": (r"^3\.14\.", "alpine", None, "x86_64"),
         "archlinux": ("rolling", "arch", None, "x86_64"),
-        "centos_7": (r"^7$", "centos", None, "x86_64"),
+        "rockylinux8": (r"^8.\d+$", "rocky", None, "x86_64"),
         "debian_bullseye": (r"^11", "debian", "bullseye", "x86_64"),
         "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial", "x86_64"),
     }[docker_image]
@@ -115,7 +115,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("centos_7", "alpine", "archlinux"):
+    if docker_image in ("rockylinux8", "alpine", "archlinux"):
         name = "sshd"
     else:
         name = "ssh"
@@ -188,6 +188,7 @@ def test_facter(host):
     assert host.facter("virtual") in (
         {"virtual": "docker"},
         {"virtual": "hyperv"},  # github action uses hyperv
+        {"virtual": "physical"},  # I've this on my machine...
     )
 
 
@@ -249,7 +250,7 @@ def test_process(host, docker_image):
     args, comm = {
         "alpine": ("/sbin/init", "init"),
         "archlinux": ("/usr/sbin/init", "systemd"),
-        "centos_7": ("/usr/sbin/init", "systemd"),
+        "rockylinux8": ("/usr/sbin/init", "systemd"),
         "debian_bullseye": ("/sbin/init", "systemd"),
         "ubuntu_xenial": ("/sbin/init", "systemd"),
     }[docker_image]
@@ -346,6 +347,16 @@ def test_file(host):
     assert link.is_file
     assert link.linked_to == "/d/f"
     assert link.linked_to == f
+    assert f == host.file("/d/f")
+    assert not d == f
+
+    host.check_output("ln /d/f /d/h")
+    hardlink = host.file("/d/h")
+    assert hardlink.is_file
+    assert not hardlink.is_symlink
+    assert isinstance(hardlink.inode, int)
+    assert isinstance(f.inode, int)
+    assert hardlink.inode == f.inode
     assert f == host.file("/d/f")
     assert not d == f
 
