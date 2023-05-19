@@ -284,7 +284,7 @@ class WindowsService(Service):
     def is_running(self):
         return (
             self.check_output(
-                "Get-Service '%s' | Select -ExpandProperty Status",  # noqa: E501
+                "Get-Service '%s' | Select -ExpandProperty Status",
                 self.name,
             )
             == "Running"
@@ -294,7 +294,7 @@ class WindowsService(Service):
     def is_enabled(self):
         return (
             self.check_output(
-                "Get-Service '%s' | Select -ExpandProperty StartType",  # noqa: E501
+                "Get-Service '%s' | Select -ExpandProperty StartType",
                 self.name,
             )
             == "Automatic"

@@ -11,7 +11,6 @@
 # limitations under the License.
 
 import datetime
-import six
 
 from testinfra.modules.base import Module
 
@@ -385,20 +384,10 @@ class WindowsFile(File):
 
     @property
     def user(self):
-        """Return file owner as string
-
-        >>> host.file("C:/Windows/passwd").user
-        'root'
-        """
         raise NotImplementedError
 
     @property
     def uid(self):
-        """Return file user id as integer
-
-        >>> host.file("C:/Windows/passwd").uid
-        0
-        """
         raise NotImplementedError
 
     @property
@@ -436,9 +425,7 @@ class WindowsFile(File):
         raise NotImplementedError
 
     def _get_content(self, decode):
-        out = self.run_test(r"powershell -command \"cat -- '%s'\"", self.path)
-        if out.rc != 0:
-            raise RuntimeError("Unexpected output %s" % (out,))
+        out = self.run_expect([0], r"powershell -command \"cat -- '%s'\"", self.path)
         if decode:
             return out.stdout
         return out.stdout_bytes
@@ -492,23 +479,8 @@ class WindowsFile(File):
         >>> host.file("C:/Windows/Temp").listdir()
         ['foo_file', 'bar_dir']
         """
-        out = self.run_test(
+        out = self.check_output(
             r"powershell -command \"Get-ChildItem -Path '%s' | Select-Object -ExpandProperty Name\"",
             self.path,
         )
-        if out.rc != 0:
-            raise RuntimeError("Unexpected output {}".format(out))
-        return [item.strip() for item in out.stdout.strip().split("\n")]
-
-    def __repr__(self):
-        return "<file %s>" % (self.path,)
-
-    def __eq__(self, other):
-        if isinstance(other, File):
-            return self.path == other.path
-        if isinstance(other, six.string_types):
-            return self.path == other
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
+        return [item.strip() for item in out.strip().split("\n")]
