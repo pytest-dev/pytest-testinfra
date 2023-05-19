@@ -11,6 +11,7 @@
 # limitations under the License.
 
 import json
+import re
 
 from testinfra.modules.base import Module
 from testinfra.utils import cached_property
@@ -147,7 +148,9 @@ class LinuxInterface(Interface):
         out = cls.check_output("{} route ls".format(_default._ip))
         for line in out.splitlines():
             if "default" in line:
-                _default.name = line.strip().rsplit(" ", 1)[-1]
+                match = re.search(r"dev\s(\S+)", line)
+                if match:
+                    _default.name = match.group(1)
         return _default
 
     @classmethod
