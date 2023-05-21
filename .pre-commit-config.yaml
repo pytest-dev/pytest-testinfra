@@ -54,7 +54,6 @@ repos:
     hooks:
       - id: mypy
         # empty args needed in order to match mypy cli behavior
-        args: []  # [--strict]
         additional_dependencies:
           - types-paramiko
           - types-setuptools
