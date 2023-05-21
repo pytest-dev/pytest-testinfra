@@ -2,6 +2,12 @@
 Changelog
 =========
 
+8.1.0
+=====
+
+* [NEW] Add Windows support for File and Service modules
+* [NEW] Add File.is_executable property
+
 8.0.0
 =====
 
