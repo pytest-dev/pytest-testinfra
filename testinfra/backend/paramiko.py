@@ -135,7 +135,7 @@ class ParamikoBackend(base.BaseBackend):
         command = self.encode(command)
         try:
             rc, stdout, stderr = self._exec_command(command)
-        except paramiko.ssh_exception.SSHException:
+        except (paramiko.ssh_exception.SSHException, ConnectionResetError):
             if not self.client.get_transport().is_active():
                 # try to reinit connection (once)
                 del self.client
