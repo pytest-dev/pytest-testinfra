@@ -16,7 +16,7 @@ from testinfra.modules.base import Module
 class Group(Module):
     """Test unix group"""
 
-    def __init__(self, name=None):
+    def __init__(self, name):
         self.name = name
         super().__init__()
 
@@ -28,9 +28,7 @@ class Group(Module):
         True
         >>> host.group("nosuchgroup").exists
         False
-
         """
-
         return self.run_expect([0, 2], "getent group %s", self.name).rc == 0
 
     @property
