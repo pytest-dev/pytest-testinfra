@@ -133,6 +133,34 @@ class User(Module):
             epoch = datetime.datetime.utcfromtimestamp(0)
             return epoch + datetime.timedelta(days=int(days))
 
+    @property
+    def get_all_users(self):
+        """Returns a list of local and remote user names
+
+        >>> host.user().get_all_users
+        ["root", "bin", "daemon", "lp", <...>]
+        """
+        all_users = [
+            line.split(":")[0]
+            for line in self.check_output("getent passwd").splitlines()
+        ]
+        return all_users
+
+    @property
+    def get_local_users(self):
+        """Returns a list of local user names
+
+        >>> host.user().get_local_users
+        ["root", "bin", "daemon", "lp", <...>]
+        """
+        local_users = [
+            line.split(":")[0]
+            for line in self.check_output("cat /etc/passwd").splitlines()
+        ]
+        # strip NIS compat mode entries
+        local_users = [i for i in local_users if not i.startswith("+")]
+        return local_users
+
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type.endswith("bsd"):

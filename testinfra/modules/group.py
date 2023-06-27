@@ -32,6 +32,32 @@ class Group(Module):
         return self.run_expect([0, 2], "getent group %s", self.name).rc == 0
 
     @property
+    def get_all_groups(self):
+        """Returns a list of local and remote group names
+
+        >>> host.group("anyname").get_all_groups
+        ["root", "wheel", "man", "tty", <...>]
+        """
+        all_groups = [
+            line.split(":")[0]
+            for line in self.check_output("getent group").splitlines()
+        ]
+        return all_groups
+
+    @property
+    def get_local_groups(self):
+        """Returns a list of local group names
+
+        >>> host.group("anyname").get_local_groups
+        ["root", "wheel", "man", "tty", <...>]
+        """
+        local_groups = [
+            line.split(":")[0]
+            for line in self.check_output("cat /etc/group").splitlines()
+        ]
+        return local_groups
+
+    @property
     def gid(self):
         return int(self.check_output("getent group %s | cut -d':' -f3", self.name))
 
