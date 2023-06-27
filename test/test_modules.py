@@ -272,6 +272,13 @@ def test_user(host):
     assert user.password == "*"
 
 
+def test_user_get_all_users(host):
+    user_list = host.user("root").get_all_users
+    assert "root" in user_list
+    assert "man" in user_list
+    assert "nobody" in user_list
+
+
 def test_user_password_days(host):
     assert host.user("root").password_max_days == 99999
     assert host.user("root").password_min_days == 0
@@ -303,6 +310,12 @@ def test_current_user(host):
 def test_group(host):
     assert host.group("root").exists
     assert host.group("root").gid == 0
+    group_list = host.group("root").get_all_groups
+    assert "root" in group_list
+    assert "bin" in group_list
+    group_list = host.group("root").get_local_groups
+    assert "root" in group_list
+    assert "bin" in group_list
 
 
 def test_empty_command_output(host):
