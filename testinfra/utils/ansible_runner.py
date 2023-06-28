@@ -170,6 +170,16 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
         ]
     ).strip()
 
+    control_path = config.get("ssh_connection", "control_path", fallback="", raw=True)
+    if control_path:
+        directory = config.get(
+            "persistent_connection", "control_path_dir", fallback="~/.ansible/cp"
+        )
+        control_path = control_path % ({"directory": directory})  # noqa: S001
+        # restore original "%%"
+        control_path = control_path.replace("%", "%%")
+        kwargs["controlpath"] = control_path
+
     spec = "{}://".format(connection)
 
     # Fallback to user:password auth when identity file is not used

@@ -26,6 +26,7 @@ class SshBackend(base.BaseBackend):
         ssh_config=None,
         ssh_identity_file=None,
         timeout=10,
+        controlpath="",
         controlpersist=60,
         ssh_extra_args=None,
         *args,
@@ -35,6 +36,7 @@ class SshBackend(base.BaseBackend):
         self.ssh_config = ssh_config
         self.ssh_identity_file = ssh_identity_file
         self.timeout = int(timeout)
+        self.controlpath = controlpath
         self.controlpersist = int(controlpersist)
         self.ssh_extra_args = ssh_extra_args
         super().__init__(self.host.name, *args, **kwargs)
@@ -74,6 +76,12 @@ class SshBackend(base.BaseBackend):
                     self.controlpersist
                 )
             )
+        if (
+            "ControlMaster" in " ".join(cmd)
+            and self.controlpath
+            and ("controlpath" not in (self.ssh_extra_args or "").lower())
+        ):
+            cmd.append("-o ControlPath={}".format(self.controlpath))
         cmd.append("%s %s")
         cmd_args.extend([self.host.name, command])
         return cmd, cmd_args
