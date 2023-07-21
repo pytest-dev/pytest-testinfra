@@ -286,7 +286,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
 
     def result(self, *args, **kwargs) -> CommandResult:
         result = CommandResult(
-            backend=self,
+            backend=kwargs.get("backend", self),
             exit_status=kwargs.get("exit_status", 0),
             command=kwargs.get("command", b""),
             stdout_bytes=kwargs.get("stdout_bytes", b""),
