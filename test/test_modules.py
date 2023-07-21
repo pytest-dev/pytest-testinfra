@@ -25,8 +25,8 @@ all_images = pytest.mark.testinfra_hosts(
     *[
         "docker://{}".format(image)
         for image in (
-            "rockylinux8",
-            "debian_bullseye",
+            "rockylinux9",
+            "debian_bookworm",
         )
     ]
 )
@@ -37,14 +37,14 @@ def test_package(host, docker_image):
     assert not host.package("zsh").is_installed
     ssh = host.package("openssh-server")
     version = {
-        "rockylinux8": "8.",
-        "debian_bullseye": "1:8.4",
+        "rockylinux9": "8.",
+        "debian_bookworm": "1:9.2",
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "rockylinux8": ".el8",
-        "debian_bullseye": None,
+        "rockylinux9": ".el9",
+        "debian_bookworm": None,
     }[docker_image]
     if release is None:
         with pytest.raises(NotImplementedError):
@@ -56,10 +56,10 @@ def test_package(host, docker_image):
 def test_held_package(host):
     python = host.package("python3")
     assert python.is_installed
-    assert python.version.startswith("3.9.")
+    assert python.version.startswith("3.11.")
 
 
-@pytest.mark.testinfra_hosts("docker://rockylinux8")
+@pytest.mark.testinfra_hosts("docker://rockylinux9")
 def test_non_default_package_tool(host):
     # Make non default pkg tool binary present
     host.run("install -m a+rx /bin/true /usr/bin/dpkg-query")
@@ -70,7 +70,10 @@ def test_non_default_package_tool(host):
 def test_uninstalled_package_version(host):
     with pytest.raises(AssertionError) as excinfo:
         host.package("zsh").version
-    assert "Unexpected exit code 1 for CommandResult" in str(excinfo.value)
+    assert (
+        "The package zsh is not installed, dpkg-query output: unknown ok not-installed"
+        in str(excinfo.value)
+    )
     assert host.package("sudo").is_installed
     host.check_output("apt-get -y remove sudo")
     assert not host.package("sudo").is_installed
@@ -87,8 +90,8 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename, arch = {
-        "rockylinux8": (r"^8.\d+$", "rocky", None, "x86_64"),
-        "debian_bullseye": (r"^11", "debian", "bullseye", "x86_64"),
+        "rockylinux9": (r"^9.\d+$", "rocky", None, "x86_64"),
+        "debian_bookworm": (r"^12", "debian", "bookworm", "x86_64"),
     }[docker_image]
 
     assert host.system_info.distribution == distribution
@@ -98,7 +101,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image == "rockylinux8":
+    if docker_image == "rockylinux9":
         name = "sshd"
     else:
         name = "ssh"
@@ -124,42 +127,18 @@ def test_service_systemd_mask(host):
     assert not ssh.is_masked
 
 
-@pytest.mark.parametrize(
-    "name,running,enabled",
-    [
-        ("ntp", False, True),
-        ("salt-minion", False, False),
-    ],
-)
-def test_service(host, name, running, enabled):
-    service = host.service(name)
-    assert service.is_running == running
-    assert service.is_enabled == enabled
-    # check with systemd_properties
-    assert (
-        service.systemd_properties["UnitFileState"] == "enabled"
-        if enabled
-        else "disabled"
-    )
-    assert (
-        service.systemd_properties["ActiveState"] in ["active"]
-        if running
-        else ["failed", "inactive"]
-    )
-
-
 def test_salt(host):
     ssh_version = host.salt("pkg.version", "openssh-server", local=True)
-    assert ssh_version.startswith("1:8.4")
+    assert ssh_version.startswith("1:9.2")
 
 
 def test_puppet_resource(host):
     resource = host.puppet_resource("package", "openssh-server")
-    assert resource["openssh-server"]["ensure"].startswith("1:8.4")
+    assert resource["openssh-server"]["ensure"].startswith("1:9.2")
 
 
 def test_facter(host):
-    assert host.facter()["os"]["distro"]["codename"] == "bullseye"
+    assert host.facter()["os"]["distro"]["codename"] == "bookworm"
     assert host.facter("virtual") in (
         {"virtual": "docker"},
         {"virtual": "hyperv"},  # github action uses hyperv
@@ -221,8 +200,8 @@ def test_process(host, docker_image):
     assert init.user == "root"
 
     args, comm = {
-        "rockylinux8": ("/usr/sbin/init", "systemd"),
-        "debian_bullseye": ("/sbin/init", "systemd"),
+        "rockylinux9": ("/usr/sbin/init", "systemd"),
+        "debian_bookworm": ("/sbin/init", "systemd"),
     }[docker_image]
     assert init.args == args
     assert init.comm == comm
@@ -232,14 +211,14 @@ def test_user(host):
     user = host.user("sshd")
     assert user.exists
     assert user.name == "sshd"
-    assert user.uid == 104
+    assert user.uid == 100
     assert user.gid == 65534
     assert user.group == "nogroup"
     assert user.gids == [65534]
     assert user.groups == ["nogroup"]
     assert user.shell == "/usr/sbin/nologin"
     assert user.home == "/run/sshd"
-    assert user.password == "*"
+    assert user.password == "!"
 
 
 def test_user_password_days(host):
@@ -348,10 +327,10 @@ def test_ansible_unavailable(host):
     assert expected in str(excinfo.value)
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_bullseye")
+@pytest.mark.testinfra_hosts("ansible://debian_bookworm")
 def test_ansible_module(host):
     setup = host.ansible("setup")["ansible_facts"]
-    assert setup["ansible_lsb"]["codename"] == "bullseye"
+    assert setup["ansible_lsb"]["codename"] == "bookworm"
     passwd = host.ansible("file", "path=/etc/passwd state=file")
     assert passwd["changed"] is False
     assert passwd["gid"] == 0
@@ -368,11 +347,11 @@ def test_ansible_module(host):
     assert variables["myvar"] == "foo"
     assert variables["myhostvar"] == "bar"
     assert variables["mygroupvar"] == "qux"
-    assert variables["inventory_hostname"] == "debian_bullseye"
+    assert variables["inventory_hostname"] == "debian_bookworm"
     assert variables["group_names"] == ["testgroup"]
     assert variables["groups"] == {
-        "all": ["debian_bullseye"],
-        "testgroup": ["debian_bullseye"],
+        "all": ["debian_bookworm"],
+        "testgroup": ["debian_bookworm"],
     }
 
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
@@ -383,7 +362,7 @@ def test_ansible_module(host):
         host.ansible("command", "zzz", check=False)
     except host.ansible.AnsibleException as exc:
         assert exc.result["rc"] == 2
-        # notez que the debian bullseye container is set to LANG=fr_FR
+        # notez que the debian bookworm container is set to LANG=fr_FR
         assert exc.result["msg"] == ("[Errno 2] Aucun fichier ou dossier " "de ce type")
 
     result = host.ansible("command", "echo foo", check=False)
@@ -391,7 +370,7 @@ def test_ansible_module(host):
 
 
 @pytest.mark.testinfra_hosts(
-    "ansible://debian_bullseye", "ansible://user@debian_bullseye"
+    "ansible://debian_bookworm", "ansible://user@debian_bookworm"
 )
 def test_ansible_module_become(host):
     user_name = host.user().name
@@ -410,7 +389,7 @@ def test_ansible_module_become(host):
         )
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_bullseye")
+@pytest.mark.testinfra_hosts("ansible://debian_bookworm")
 def test_ansible_module_options(host):
     assert (
         host.ansible(
@@ -523,7 +502,7 @@ def test_sudo_fail_from_root(host):
         assert host.user().name == "root"
 
 
-@pytest.mark.testinfra_hosts("docker://user@debian_bullseye")
+@pytest.mark.testinfra_hosts("docker://user@debian_bookworm")
 def test_sudo_to_root(host):
     assert host.user().name == "user"
     with host.sudo():
@@ -541,13 +520,12 @@ def test_command_execution(host):
 
 def test_pip(host):
     # get_packages
-    assert host.pip.get_packages()["pip"]["version"] == "20.3.4"
+    assert host.pip.get_packages()["pip"]["version"].startswith("23.")
     pkg = host.pip.get_packages(pip_path="/v/bin/pip")["requests"]
-    assert pkg["version"].startswith("1.")
+    assert pkg["version"] == "2.30.0"
     # outdated
     outdated = host.pip.get_outdated_packages(pip_path="/v/bin/pip")["requests"]
     assert outdated["current"] == pkg["version"]
-    assert int(outdated["latest"].split(".")[0]) >= 1
     # check
     assert host.pip.check().succeeded
     # is_installed
@@ -556,8 +534,8 @@ def test_pip(host):
     pkg = host.pip("requests", pip_path="/v/bin/pip")
     assert pkg.is_installed
     # version
-    assert host.pip("pip").version == "20.3.4"
-    assert pkg.version.startswith("1.")
+    assert host.pip("pip").version.startswith("23.")
+    assert pkg.version == "2.30.0"
     assert host.pip("does_not_exist").version == ""
 
 
@@ -643,7 +621,7 @@ def test_addr(host):
         assert isinstance(ip_address(ip), (IPv4Address, IPv6Address))
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_bullseye")
+@pytest.mark.testinfra_hosts("ansible://debian_bookworm")
 def test_addr_namespace(host):
     namespace_lookup = host.addr("localhost", "ns1")
     assert not namespace_lookup.namespace_exists

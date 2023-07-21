@@ -23,36 +23,36 @@ from testinfra.backend.winrm import _quote
 from testinfra.utils.ansible_runner import AnsibleRunner
 
 HOSTS = [
-    "ssh://debian_bullseye",
-    "safe-ssh://debian_bullseye",
-    "docker://debian_bullseye",
-    "paramiko://debian_bullseye",
-    "ansible://debian_bullseye",
-    "ansible://debian_bullseye?force_ansible=True",
+    "ssh://debian_bookworm",
+    "safe-ssh://debian_bookworm",
+    "docker://debian_bookworm",
+    "paramiko://debian_bookworm",
+    "ansible://debian_bookworm",
+    "ansible://debian_bookworm?force_ansible=True",
 ]
 USER_HOSTS = [
-    "ssh://user@debian_bullseye",
-    "safe-ssh://user@debian_bullseye",
-    "docker://user@debian_bullseye",
-    "paramiko://user@debian_bullseye",
-    "ansible://user@debian_bullseye",
-    "ansible://user@debian_bullseye?force_ansible=True",
+    "ssh://user@debian_bookworm",
+    "safe-ssh://user@debian_bookworm",
+    "docker://user@debian_bookworm",
+    "paramiko://user@debian_bookworm",
+    "ansible://user@debian_bookworm",
+    "ansible://user@debian_bookworm?force_ansible=True",
 ]
 SUDO_HOSTS = [
-    "ssh://user@debian_bullseye?sudo=True",
-    "safe-ssh://user@debian_bullseye?sudo=True",
-    "docker://user@debian_bullseye?sudo=True",
-    "paramiko://user@debian_bullseye?sudo=True",
-    "ansible://user@debian_bullseye?sudo=True",
-    "ansible://user@debian_bullseye?force_ansible=True&sudo=True",
+    "ssh://user@debian_bookworm?sudo=True",
+    "safe-ssh://user@debian_bookworm?sudo=True",
+    "docker://user@debian_bookworm?sudo=True",
+    "paramiko://user@debian_bookworm?sudo=True",
+    "ansible://user@debian_bookworm?sudo=True",
+    "ansible://user@debian_bookworm?force_ansible=True&sudo=True",
 ]
 SUDO_USER_HOSTS = [
-    "ssh://debian_bullseye?sudo=True&sudo_user=user",
-    "safe-ssh://debian_bullseye?sudo=True&sudo_user=user",
-    "docker://debian_bullseye?sudo=True&sudo_user=user",
-    "paramiko://debian_bullseye?sudo=True&sudo_user=user",
-    "ansible://debian_bullseye?sudo=True&sudo_user=user",
-    "ansible://debian_bullseye?force_ansible=True&sudo=True&sudo_user=user",
+    "ssh://debian_bookworm?sudo=True&sudo_user=user",
+    "safe-ssh://debian_bookworm?sudo=True&sudo_user=user",
+    "docker://debian_bookworm?sudo=True&sudo_user=user",
+    "paramiko://debian_bookworm?sudo=True&sudo_user=user",
+    "ansible://debian_bookworm?sudo=True&sudo_user=user",
+    "ansible://debian_bookworm?force_ansible=True&sudo=True&sudo_user=user",
 ]
 
 
@@ -75,7 +75,7 @@ def test_command(host):
 
 @pytest.mark.testinfra_hosts(*HOSTS)
 def test_encoding(host):
-    # bullseye image is fr_FR@ISO-8859-15
+    # bookworm image is fr_FR@ISO-8859-15
     cmd = host.run("ls -l %s", "/é")
     if host.backend.get_connection_type() == "docker":
         # docker bug ?
@@ -99,7 +99,7 @@ def test_encoding(host):
         )
 
 
-@pytest.mark.testinfra_hosts("ansible://debian_bullseye?force_ansible=True")
+@pytest.mark.testinfra_hosts("ansible://debian_bookworm?force_ansible=True")
 def test_ansible_any_error_fatal(host):
     os.environ["ANSIBLE_ANY_ERRORS_FATAL"] = "True"
     try:
@@ -485,7 +485,7 @@ def test_backend_importables():
         assert obj.get_connection_type() == connection_type
 
 
-@pytest.mark.testinfra_hosts("docker://rockylinux8", "ssh://rockylinux8")
+@pytest.mark.testinfra_hosts("docker://rockylinux9", "ssh://rockylinux9")
 def test_docker_encoding(host):
     encoding = host.check_output(
         "python3 -c 'import locale;print(locale.getpreferredencoding())'"
