@@ -17,7 +17,7 @@ import logging
 import shlex
 import subprocess
 import urllib.parse
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger("testinfra")
 
@@ -113,7 +113,14 @@ class BaseBackend(metaclass=abc.ABCMeta):
     HAS_RUN_ANSIBLE = False
     NAME: str
 
-    def __init__(self, hostname, sudo: bool = False, sudo_user=None, *args, **kwargs):
+    def __init__(
+        self,
+        hostname: str,
+        sudo: bool = False,
+        sudo_user: bool = False,
+        *args: Any,
+        **kwargs: Any,
+    ):
         self._encoding = None
         self._host = None
         self.hostname = hostname
@@ -284,7 +291,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         except UnicodeEncodeError:
             return data.encode(self.encoding)
 
-    def result(self, *args, **kwargs) -> CommandResult:
+    def result(self, *args: Any, **kwargs: Any) -> CommandResult:
         result = CommandResult(
             backend=kwargs.get("backend", self),
             exit_status=kwargs.get("exit_status", 0),
