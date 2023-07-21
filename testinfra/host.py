@@ -10,11 +10,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import os
 
 import testinfra.backend
 import testinfra.modules
-from testinfra.utils import cached_property
 
 
 class Host:
@@ -28,7 +28,7 @@ class Host:
     def __repr__(self):
         return "<testinfra.host.Host {}>".format(self.backend.get_pytest_id())
 
-    @cached_property
+    @functools.cached_property
     def has_command_v(self):
         """Return True if `command -v` is available"""
         return self.run("command -v command").rc == 0

@@ -10,8 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
+
 from testinfra.modules.base import Module
-from testinfra.utils import cached_property
 
 
 class BlockDevice(Module):
@@ -124,7 +125,7 @@ class BlockDevice(Module):
 
 
 class LinuxBlockDevice(BlockDevice):
-    @cached_property
+    @functools.cached_property
     def _data(self):
         header = ["RO", "RA", "SSZ", "BSZ", "StartSec", "Size", "Device"]
         command = "blockdev  --report %s"
