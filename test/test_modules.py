@@ -25,11 +25,8 @@ all_images = pytest.mark.testinfra_hosts(
     *[
         "docker://{}".format(image)
         for image in (
-            "alpine",
-            "archlinux",
             "rockylinux8",
             "debian_bullseye",
-            "ubuntu_xenial",
         )
     ]
 )
@@ -38,27 +35,16 @@ all_images = pytest.mark.testinfra_hosts(
 @all_images
 def test_package(host, docker_image):
     assert not host.package("zsh").is_installed
-    if docker_image in ("alpine", "archlinux"):
-        name = "openssh"
-    else:
-        name = "openssh-server"
-
-    ssh = host.package(name)
+    ssh = host.package("openssh-server")
     version = {
-        "alpine": "8.",
-        "archlinux": "9.",
         "rockylinux8": "8.",
         "debian_bullseye": "1:8.4",
-        "ubuntu_xenial": "1:7.2",
     }[docker_image]
     assert ssh.is_installed
     assert ssh.version.startswith(version)
     release = {
-        "alpine": "r3",
-        "archlinux": None,
         "rockylinux8": ".el8",
         "debian_bullseye": None,
-        "ubuntu_xenial": None,
     }[docker_image]
     if release is None:
         with pytest.raises(NotImplementedError):
@@ -101,11 +87,8 @@ def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
     release, distribution, codename, arch = {
-        "alpine": (r"^3\.14\.", "alpine", None, "x86_64"),
-        "archlinux": ("rolling", "arch", None, "x86_64"),
         "rockylinux8": (r"^8.\d+$", "rocky", None, "x86_64"),
         "debian_bullseye": (r"^11", "debian", "bullseye", "x86_64"),
-        "ubuntu_xenial": (r"^16\.04$", "ubuntu", "xenial", "x86_64"),
     }[docker_image]
 
     assert host.system_info.distribution == distribution
@@ -115,29 +98,21 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image in ("rockylinux8", "alpine", "archlinux"):
+    if docker_image == "rockylinux8":
         name = "sshd"
     else:
         name = "ssh"
 
     ssh = host.service(name)
-    if docker_image == "ubuntu_xenial":
-        assert not ssh.is_running
+    # wait at max 10 seconds for ssh is running
+    for _ in range(10):
+        if ssh.is_running:
+            break
+        time.sleep(1)
     else:
-        # wait at max 10 seconds for ssh is running
-        for _ in range(10):
-            if ssh.is_running:
-                break
-            time.sleep(1)
-        else:
-            if docker_image == "archlinux":
-                raise pytest.skip("FIXME: flapping test")
-            raise AssertionError("ssh is not running")
+        raise AssertionError("ssh is not running")
 
-    if docker_image == "ubuntu_xenial":
-        assert not ssh.is_enabled
-    else:
-        assert ssh.is_enabled
+    assert ssh.is_enabled
 
 
 def test_service_systemd_mask(host):
@@ -242,17 +217,12 @@ def test_socket(host):
 def test_process(host, docker_image):
     init = host.process.get(pid=1)
     assert init.ppid == 0
-    if docker_image != "alpine":
-        # busybox ps doesn't have a euid equivalent
-        assert init.euid == 0
+    assert init.euid == 0
     assert init.user == "root"
 
     args, comm = {
-        "alpine": ("/sbin/init", "init"),
-        "archlinux": ("/usr/sbin/init", "systemd"),
         "rockylinux8": ("/usr/sbin/init", "systemd"),
         "debian_bullseye": ("/sbin/init", "systemd"),
-        "ubuntu_xenial": ("/sbin/init", "systemd"),
     }[docker_image]
     assert init.args == args
     assert init.comm == comm
