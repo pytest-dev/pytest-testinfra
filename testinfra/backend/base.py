@@ -124,8 +124,8 @@ class BaseBackend(metaclass=abc.ABCMeta):
         self._encoding = None
         self._host = None
         self.hostname = hostname
-        self.sudo: bool = sudo
-        self.sudo_user: Optional[bool] = sudo_user
+        self.sudo = sudo
+        self.sudo_user = sudo_user
         super().__init__()
 
     def set_host(self, host):
