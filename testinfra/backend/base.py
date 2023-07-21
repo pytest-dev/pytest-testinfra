@@ -35,13 +35,13 @@ class CommandResult:
         stdout: Optional[str] = None,
         stderr: Optional[str] = None,
     ):
-        self.exit_status: int = exit_status
-        self._stdout_bytes: bytes = stdout_bytes
-        self._stderr_bytes: bytes = stderr_bytes
-        self._stdout: Optional[str] = stdout
-        self._stderr: Optional[str] = stderr
-        self.command: bytes = command
-        self._backend: BaseBackend = backend
+        self.exit_status = exit_status
+        self._stdout_bytes = stdout_bytes
+        self._stderr_bytes = stderr_bytes
+        self._stdout = stdout
+        self._stderr = stderr
+        self.command = command
+        self._backend = backend
         super().__init__()
 
     @property
