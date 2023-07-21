@@ -117,7 +117,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         self,
         hostname: str,
         sudo: bool = False,
-        sudo_user: bool = False,
+        sudo_user: Optional[bool] = None,
         *args: Any,
         **kwargs: Any,
     ):
@@ -125,7 +125,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         self._host = None
         self.hostname = hostname
         self.sudo: bool = sudo
-        self.sudo_user = sudo_user
+        self.sudo_user: Optional[bool] = sudo_user
         super().__init__()
 
     def set_host(self, host):
@@ -292,14 +292,6 @@ class BaseBackend(metaclass=abc.ABCMeta):
             return data.encode(self.encoding)
 
     def result(self, *args: Any, **kwargs: Any) -> CommandResult:
-        result = CommandResult(
-            backend=kwargs.get("backend", self),
-            exit_status=kwargs.get("exit_status", 0),
-            command=kwargs.get("command", b""),
-            stdout_bytes=kwargs.get("stdout_bytes", b""),
-            stderr_bytes=kwargs.get("stderr_bytes", b""),
-            stdout=kwargs.get("stdout"),
-            stderr=kwargs.get("stderr"),
-        )
+        result = CommandResult(self, *args, **kwargs)
         logger.debug("RUN %s", result)
         return result
