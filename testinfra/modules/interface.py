@@ -10,11 +10,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import json
 import re
 
 from testinfra.modules.base import Module
-from testinfra.utils import cached_property
 
 
 class Interface(Module):
@@ -107,7 +107,7 @@ class Interface(Module):
 
 
 class LinuxInterface(Interface):
-    @cached_property
+    @functools.cached_property
     def _ip(self):
         ip_cmd = self.find_command("ip")
         if self.family is not None:

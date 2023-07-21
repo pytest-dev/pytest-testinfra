@@ -22,10 +22,11 @@ except ImportError:
         )
     )
 
+import functools
+
 import paramiko.ssh_exception
 
 from testinfra.backend import base
-from testinfra.utils import cached_property
 
 
 class IgnorePolicy(paramiko.MissingHostKeyPolicy):
@@ -83,7 +84,7 @@ class ParamikoBackend(base.BaseBackend):
                     new_ssh_config.parse(f)
                     self._load_ssh_config(client, cfg, new_ssh_config, ssh_config_dir)
 
-    @cached_property
+    @functools.cached_property
     def client(self):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.WarningPolicy())

@@ -10,8 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
+
 from testinfra.modules.base import Module
-from testinfra.utils import cached_property
 
 
 class Service(Module):
@@ -60,7 +61,7 @@ class Service(Module):
         """
         raise NotImplementedError
 
-    @cached_property
+    @functools.cached_property
     def systemd_properties(self):
         """Properties of the service (unit).
 
@@ -112,7 +113,7 @@ class Service(Module):
 
 
 class SysvService(Service):
-    @cached_property
+    @functools.cached_property
     def _service_command(self):
         return self.find_command("service")
 
@@ -181,7 +182,7 @@ class SystemdService(SysvService):
         cmd = self.run_test("systemctl is-enabled %s", self.name)
         return cmd.stdout.strip() == "masked"
 
-    @cached_property
+    @functools.cached_property
     def systemd_properties(self):
         out = self.check_output("systemctl show %s", self.name)
         out_d = {}
@@ -221,7 +222,7 @@ class UpstartService(SysvService):
 
 
 class OpenRCService(SysvService):
-    @cached_property
+    @functools.cached_property
     def _service_command(self):
         return self.find_command("rc-service")
 

@@ -12,6 +12,7 @@
 
 import configparser
 import fnmatch
+import functools
 import ipaddress
 import json
 import os
@@ -19,7 +20,6 @@ import tempfile
 from typing import Any, Dict, List, Optional, Union
 
 import testinfra
-from testinfra.utils import cached_property
 
 __all__ = ["AnsibleRunner"]
 
@@ -270,11 +270,11 @@ class AnsibleRunner:
                         result.add(host)
         return sorted(result)
 
-    @cached_property
+    @functools.cached_property
     def inventory(self):
         return get_ansible_inventory(self.ansible_config, self.inventory_file)
 
-    @cached_property
+    @functools.cached_property
     def ansible_config(self):
         return get_ansible_config()
 
