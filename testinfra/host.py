@@ -12,13 +12,15 @@
 
 import functools
 import os
+from typing import Any
 
 import testinfra.backend
+import testinfra.backend.base
 import testinfra.modules
 
 
 class Host:
-    _host_cache = {}  # type: ignore[var-annotated]
+    _host_cache: dict[tuple[str, frozenset[tuple[str, Any]]], "Host"] = {}
     _hosts_cache = {}  # type: ignore[var-annotated]
 
     def __init__(self, backend):
@@ -58,7 +60,9 @@ class Host:
                 return path
         raise ValueError('cannot find "{}" command'.format(command))
 
-    def run(self, command, *args, **kwargs):
+    def run(
+        self, command: str, *args: str, **kwargs: Any
+    ) -> testinfra.backend.base.CommandResult:
         """Run given command and return rc (exit status), stdout and stderr
 
         >>> cmd = host.run("ls -l /etc/passwd")
@@ -85,9 +89,11 @@ class Host:
               'ls: cannot access /;echo inject: No such file or directory\\n'),
             command="ls -l '/;echo inject'")
         """
-        return self.backend.run(command, *args, **kwargs)
+        return self.backend.run(command, *args, **kwargs)  # type: ignore[no-any-return]
 
-    def run_expect(self, expected, command, *args, **kwargs):
+    def run_expect(
+        self, expected: list[int], command: str, *args: str, **kwargs: Any
+    ) -> testinfra.backend.base.CommandResult:
         """Run command and check it return an expected exit status
 
         :param expected: A list of expected exit status
@@ -105,7 +111,7 @@ class Host:
         """
         return self.run_expect([0, 1], command, *args, **kwargs)
 
-    def check_output(self, command, *args, **kwargs):
+    def check_output(self, command: str, *args: str, **kwargs: Any) -> str:
         """Get stdout of a command which has run successfully
 
         :returns: stdout without trailing newline
@@ -127,7 +133,7 @@ class Host:
         )
 
     @classmethod
-    def get_host(cls, hostspec, **kwargs):
+    def get_host(cls, hostspec: str, **kwargs: Any) -> "Host":
         """Return a Host instance from `hostspec`
 
         `hostspec` should be like
