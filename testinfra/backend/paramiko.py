@@ -23,7 +23,9 @@ except ImportError:
     )
 
 import functools
+from typing import Any, Optional
 
+import paramiko.pkey
 import paramiko.ssh_exception
 
 from testinfra.backend import base
@@ -32,7 +34,9 @@ from testinfra.backend import base
 class IgnorePolicy(paramiko.MissingHostKeyPolicy):
     """Policy for ignoring missing host key."""
 
-    def missing_host_key(self, client, hostname, key):
+    def missing_host_key(
+        self, client: paramiko.SSHClient, hostname: str, key: paramiko.pkey.PKey
+    ) -> None:
         pass
 
 
@@ -41,12 +45,12 @@ class ParamikoBackend(base.BaseBackend):
 
     def __init__(
         self,
-        hostspec,
-        ssh_config=None,
-        ssh_identity_file=None,
-        timeout=10,
-        *args,
-        **kwargs,
+        hostspec: str,
+        ssh_config: Optional[str] = None,
+        ssh_identity_file: Optional[str] = None,
+        timeout: int = 10,
+        *args: Any,
+        **kwargs: Any,
     ):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
@@ -55,7 +59,13 @@ class ParamikoBackend(base.BaseBackend):
         self.timeout = int(timeout)
         super().__init__(self.host.name, *args, **kwargs)
 
-    def _load_ssh_config(self, client, cfg, ssh_config, ssh_config_dir="~/.ssh"):
+    def _load_ssh_config(
+        self,
+        client: paramiko.SSHClient,
+        cfg: dict[str, Any],
+        ssh_config: paramiko.SSHConfig,
+        ssh_config_dir: str = "~/.ssh",
+    ) -> None:
         for key, value in ssh_config.lookup(self.host.name).items():
             if key == "hostname":
                 cfg[key] = value
@@ -85,7 +95,7 @@ class ParamikoBackend(base.BaseBackend):
                     self._load_ssh_config(client, cfg, new_ssh_config, ssh_config_dir)
 
     @functools.cached_property
-    def client(self):
+    def client(self) -> paramiko.SSHClient:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.WarningPolicy())
         cfg = {
@@ -118,11 +128,13 @@ class ParamikoBackend(base.BaseBackend):
 
         if self.ssh_identity_file:
             cfg["key_filename"] = self.ssh_identity_file
-        client.connect(**cfg)
+        client.connect(**cfg)  # type: ignore[arg-type]
         return client
 
-    def _exec_command(self, command):
-        chan = self.client.get_transport().open_session()
+    def _exec_command(self, command: bytes) -> tuple[int, bytes, bytes]:
+        transport = self.client.get_transport()
+        assert transport is not None
+        chan = transport.open_session()
         if self.get_pty:
             chan.get_pty()
         chan.exec_command(command)
@@ -131,17 +143,19 @@ class ParamikoBackend(base.BaseBackend):
         stderr = b"".join(chan.makefile_stderr("rb"))
         return rc, stdout, stderr
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         command = self.get_command(command, *args)
-        command = self.encode(command)
+        cmd = self.encode(command)
         try:
-            rc, stdout, stderr = self._exec_command(command)
+            rc, stdout, stderr = self._exec_command(cmd)
         except paramiko.ssh_exception.SSHException:
-            if not self.client.get_transport().is_active():
+            transport = self.client.get_transport()
+            assert transport is not None
+            if not transport.is_active():
                 # try to reinit connection (once)
                 del self.client
-                rc, stdout, stderr = self._exec_command(command)
+                rc, stdout, stderr = self._exec_command(cmd)
             else:
                 raise
 
-        return self.result(rc, command, stdout, stderr)
+        return self.result(rc, cmd, stdout, stderr)

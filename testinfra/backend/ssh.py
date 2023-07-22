@@ -11,6 +11,7 @@
 # limitations under the License.
 
 import base64
+from typing import Any, Optional
 
 from testinfra.backend import base
 
@@ -22,14 +23,14 @@ class SshBackend(base.BaseBackend):
 
     def __init__(
         self,
-        hostspec,
-        ssh_config=None,
-        ssh_identity_file=None,
-        timeout=10,
-        controlpersist=60,
-        ssh_extra_args=None,
-        *args,
-        **kwargs,
+        hostspec: str,
+        ssh_config: Optional[str] = None,
+        ssh_identity_file: Optional[str] = None,
+        timeout: int = 10,
+        controlpersist: int = 60,
+        ssh_extra_args: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
     ):
         self.host = self.parse_hostspec(hostspec)
         self.ssh_config = ssh_config
@@ -39,10 +40,10 @@ class SshBackend(base.BaseBackend):
         self.ssh_extra_args = ssh_extra_args
         super().__init__(self.host.name, *args, **kwargs)
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         return self.run_ssh(self.get_command(command, *args))
 
-    def _build_ssh_command(self, command):
+    def _build_ssh_command(self, command: str) -> tuple[list[str], list[str]]:
         if not self.host.password:
             cmd = ["ssh"]
             cmd_args = []
@@ -78,7 +79,7 @@ class SshBackend(base.BaseBackend):
         cmd_args.extend([self.host.name, command])
         return cmd, cmd_args
 
-    def run_ssh(self, command):
+    def run_ssh(self, command: str) -> base.CommandResult:
         cmd, cmd_args = self._build_ssh_command(command)
         out = self.run_local(" ".join(cmd), *cmd_args)
         out.command = self.encode(command)
@@ -106,7 +107,7 @@ class SafeSshBackend(SshBackend):
 
     NAME = "safe-ssh"
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         orig_command = self.get_command(command, *args)
         orig_command = self.get_command("sh -c %s", orig_command)
 
@@ -121,7 +122,9 @@ class SafeSshBackend(SshBackend):
         start = out.stdout.find("TESTINFRA_START;") + len("TESTINFRA_START;")
         end = out.stdout.find("TESTINFRA_END") - 1
         rc, stdout, stderr = out.stdout[start:end].split(";")
-        rc = int(rc)
-        stdout = base64.b64decode(stdout)
-        stderr = base64.b64decode(stderr)
-        return self.result(rc, self.encode(orig_command), stdout, stderr)
+        return self.result(
+            int(rc),
+            self.encode(orig_command),
+            base64.b64decode(stdout),
+            base64.b64decode(stderr),
+        )

@@ -353,7 +353,7 @@ class AnsibleRunner:
         self,
         host: str,
         module_name: str,
-        module_args: str,
+        module_args: Optional[str],
         get_encoding: Optional[Callable[[], str]] = None,
         **options: Any,
     ) -> Any:

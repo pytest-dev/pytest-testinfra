@@ -10,21 +10,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from testinfra.backend import base
 
 
 class LocalBackend(base.BaseBackend):
     NAME = "local"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__("local", **kwargs)
 
-    def get_pytest_id(self):
+    def get_pytest_id(self) -> str:
         return "local"
 
     @classmethod
-    def get_hosts(cls, host, **kwargs):
+    def get_hosts(cls, host: str, **kwargs: Any) -> list[str]:
         return [host]
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         return self.run_local(self.get_command(command, *args))
