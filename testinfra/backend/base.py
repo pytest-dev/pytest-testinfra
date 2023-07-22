@@ -11,7 +11,7 @@
 # limitations under the License.
 
 import abc
-import collections
+import dataclasses
 import locale
 import logging
 import shlex
@@ -24,7 +24,13 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("testinfra")
 
-HostSpec = collections.namedtuple("HostSpec", ["name", "port", "user", "password"])
+
+@dataclasses.dataclass
+class HostSpec:
+    name: str
+    port: Optional[str]
+    user: Optional[str]
+    password: Optional[str]
 
 
 class CommandResult:
