@@ -11,6 +11,10 @@
 # limitations under the License.
 
 import importlib
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import testinfra.modules.base
 
 modules = {
     "addr": "addr:Addr",
@@ -42,8 +46,8 @@ modules = {
 }
 
 
-def get_module_class(name):
+def get_module_class(name: str) -> type["testinfra.modules.base.Module"]:
     modname, classname = modules[name].split(":")
     modname = ".".join([__name__, modname])
     module = importlib.import_module(modname)
-    return getattr(module, classname)
+    return getattr(module, classname)  # type: ignore[no-any-return]

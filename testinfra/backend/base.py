@@ -17,7 +17,10 @@ import logging
 import shlex
 import subprocess
 import urllib.parse
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
+
+if TYPE_CHECKING:
+    import testinfra.host
 
 logger = logging.getLogger("testinfra")
 
@@ -117,29 +120,29 @@ class BaseBackend(metaclass=abc.ABCMeta):
         self,
         hostname: str,
         sudo: bool = False,
-        sudo_user: Optional[bool] = None,
+        sudo_user: Optional[str] = None,
         *args: Any,
         **kwargs: Any,
     ):
-        self._encoding = None
-        self._host = None
+        self._encoding: Optional[str] = None
+        self._host: Optional["testinfra.host.Host"] = None
         self.hostname = hostname
         self.sudo = sudo
         self.sudo_user = sudo_user
         super().__init__()
 
-    def set_host(self, host):
+    def set_host(self, host: "testinfra.host.Host") -> None:
         self._host = host
 
     @classmethod
-    def get_connection_type(cls):
+    def get_connection_type(cls) -> str:
         """Return the connection backend used as string.
 
         Can be local, paramiko, ssh, docker, salt or ansible
         """
         return cls.NAME
 
-    def get_hostname(self):
+    def get_hostname(self) -> str:
         """Return the hostname (for testinfra) of the remote or local system
 
 
@@ -166,11 +169,11 @@ class BaseBackend(metaclass=abc.ABCMeta):
         """
         return self.hostname
 
-    def get_pytest_id(self):
+    def get_pytest_id(self) -> str:
         return self.get_connection_type() + "://" + self.get_hostname()
 
     @classmethod
-    def get_hosts(cls, host, **kwargs):
+    def get_hosts(cls, host: str, **kwargs: Any) -> list[str]:
         if host is None:
             raise RuntimeError(
                 "One or more hosts is required with the {} backend".format(
@@ -180,41 +183,41 @@ class BaseBackend(metaclass=abc.ABCMeta):
         return [host]
 
     @staticmethod
-    def quote(command, *args):
+    def quote(command: str, *args: str) -> str:
         if args:
             return command % tuple(shlex.quote(a) for a in args)  # noqa: S001
         return command
 
-    def get_sudo_command(self, command, sudo_user):
+    def get_sudo_command(self, command: str, sudo_user: Optional[str]) -> str:
         if sudo_user is None:
             return self.quote("sudo /bin/sh -c %s", command)
         return self.quote("sudo -u %s /bin/sh -c %s", sudo_user, command)
 
-    def get_command(self, command, *args):
+    def get_command(self, command: str, *args: str) -> str:
         command = self.quote(command, *args)
         if self.sudo:
             command = self.get_sudo_command(command, self.sudo_user)
         return command
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> CommandResult:
         raise NotImplementedError
 
-    def run_local(self, command, *args):
+    def run_local(self, command: str, *args: str) -> CommandResult:
         command = self.quote(command, *args)
-        command = self.encode(command)
+        cmd = self.encode(command)
         p = subprocess.Popen(
-            command,
+            cmd,
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate()
-        result = self.result(p.returncode, command, stdout, stderr)
+        result = self.result(p.returncode, cmd, stdout, stderr)
         return result
 
     @staticmethod
-    def parse_hostspec(hostspec):
+    def parse_hostspec(hostspec: str) -> HostSpec:
         name = hostspec
         port = None
         user = None
@@ -246,14 +249,14 @@ class BaseBackend(metaclass=abc.ABCMeta):
         return HostSpec(name, port, user, password)
 
     @staticmethod
-    def parse_containerspec(containerspec):
+    def parse_containerspec(containerspec: str) -> tuple[str, Optional[str]]:
         name = containerspec
         user = None
         if "@" in name:
             user, name = name.split("@", 1)
         return name, user
 
-    def get_encoding(self):
+    def get_encoding(self) -> str:
         encoding = None
         for python in ("python3", "python"):
             cmd = self.run(
@@ -274,7 +277,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         return encoding
 
     @property
-    def encoding(self):
+    def encoding(self) -> str:
         if self._encoding is None:
             self._encoding = self.get_encoding()
         return self._encoding

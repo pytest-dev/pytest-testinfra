@@ -12,30 +12,34 @@
 
 import functools
 import os
+from collections.abc import Iterable
 from typing import Any
 
 import testinfra.backend
 import testinfra.backend.base
 import testinfra.modules
+import testinfra.modules.base
 
 
 class Host:
     _host_cache: dict[tuple[str, frozenset[tuple[str, Any]]], "Host"] = {}
-    _hosts_cache = {}  # type: ignore[var-annotated]
+    _hosts_cache: dict[
+        tuple[frozenset[str], frozenset[tuple[str, Any]]], list["Host"]
+    ] = {}
 
-    def __init__(self, backend):
+    def __init__(self, backend: testinfra.backend.base.BaseBackend):
         self.backend = backend
         super().__init__()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<testinfra.host.Host {}>".format(self.backend.get_pytest_id())
 
     @functools.cached_property
-    def has_command_v(self):
+    def has_command_v(self) -> bool:
         """Return True if `command -v` is available"""
         return self.run("command -v command").rc == 0
 
-    def exists(self, command):
+    def exists(self, command: str) -> bool:
         """Return True if given command exist in $PATH"""
         if self.has_command_v:
             out = self.run("command -v %s", command)
@@ -43,7 +47,9 @@ class Host:
             out = self.run_expect([0, 1], "which %s", command)
         return out.rc == 0
 
-    def find_command(self, command, extrapaths=("/sbin", "/usr/sbin")):
+    def find_command(
+        self, command: str, extrapaths: Iterable[str] = ("/sbin", "/usr/sbin")
+    ) -> str:
         """Return path of given command
 
         raise ValueError if command cannot be found
@@ -89,7 +95,7 @@ class Host:
               'ls: cannot access /;echo inject: No such file or directory\\n'),
             command="ls -l '/;echo inject'")
         """
-        return self.backend.run(command, *args, **kwargs)  # type: ignore[no-any-return]
+        return self.backend.run(command, *args, **kwargs)
 
     def run_expect(
         self, expected: list[int], command: str, *args: str, **kwargs: Any
@@ -104,7 +110,9 @@ class Host:
         assert out.rc in expected, "Unexpected exit code {} for {}".format(out.rc, out)
         return out
 
-    def run_test(self, command, *args, **kwargs):
+    def run_test(
+        self, command: str, *args: str, **kwargs: Any
+    ) -> testinfra.backend.base.CommandResult:
         """Run command and check it return an exit status of 0 or 1
 
         :raises: AssertionError
@@ -122,7 +130,7 @@ class Host:
         assert out.rc == 0, "Unexpected exit code {} for {}".format(out.rc, out)
         return out.stdout.rstrip("\r\n")
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> type[testinfra.modules.base.Module]:
         if name in testinfra.modules.modules:
             module_class = testinfra.modules.get_module_class(name)
             obj = module_class.get_module(self)
@@ -157,7 +165,7 @@ class Host:
         return cache[key]
 
     @classmethod
-    def get_hosts(cls, hosts, **kwargs):
+    def get_hosts(cls, hosts: Iterable[str], **kwargs: Any) -> list["Host"]:
         key = (frozenset(hosts), frozenset(kwargs.items()))
         cache = cls._hosts_cache
         if key not in cache:
