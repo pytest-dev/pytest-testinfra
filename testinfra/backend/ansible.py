@@ -58,11 +58,9 @@ class AnsibleBackend(base.BaseBackend):
         out = self.run_ansible("shell", module_args=command, check=False)
         return self.result(
             out["rc"],
-            command,
-            stdout_bytes=None,
-            stderr_bytes=None,
-            stdout=out["stdout"],
-            stderr=out["stderr"],
+            self.encode(command),
+            out["stdout"],
+            out["stderr"],
         )
 
     def run_ansible(

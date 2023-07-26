@@ -88,7 +88,7 @@ class WinRMBackend(base.BaseBackend):
         stdout, stderr, rc = p.get_command_output(shell_id, command_id)
         p.cleanup_command(shell_id, command_id)
         p.close_shell(shell_id)
-        return self.result(rc, command, stdout, stderr)
+        return self.result(rc, self.encode(command), stdout, stderr)
 
     @staticmethod
     def quote(command: str, *args: str) -> str:
