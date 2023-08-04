@@ -301,12 +301,14 @@ class AnsibleRunner:
         hostvars.setdefault("inventory_hostname", host)
         group_names = []
         groups = {}
+
         for group in sorted(inventory):
             if group == "_meta":
                 continue
             groups[group] = sorted(itergroup(inventory, group))
-            if group != "all" and host in inventory[group].get("hosts", []):
+            if host in groups[group]:
                 group_names.append(group)
+
         hostvars.setdefault("group_names", group_names)
         hostvars.setdefault("groups", groups)
         return hostvars
