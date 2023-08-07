@@ -58,6 +58,32 @@ def test_package(host, docker_image):
         assert sshd_release in ssh.release
 
 
+@all_images
+def test_get_packages(host, docker_image):
+    arch = docker_image_info[docker_image][2]
+    sshd_release_number = ssh_pkg_info[docker_image][1]
+
+    package_ssh = host.package("openssh-server")
+    assert package_ssh.is_installed
+
+    all_pkgs = host.package.get_packages()
+    assert f"zsh.{arch}" not in all_pkgs
+
+    name_arch = f"openssh-server.{arch}"
+    assert name_arch in all_pkgs
+
+    pkg = all_pkgs[name_arch]
+    assert pkg["version"] == package_ssh.version
+    assert pkg["arch"] == arch
+    assert pkg["name"] == "openssh-server"
+    if sshd_release_number is None:
+        with pytest.raises(NotImplementedError):
+            package_ssh.release
+    else:
+        assert sshd_release_number in pkg["release"]
+        assert pkg["release"] == package_ssh.release
+
+
 def test_held_package(host):
     python = host.package("python3")
     assert python.is_installed
