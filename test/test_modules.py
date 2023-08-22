@@ -633,7 +633,7 @@ def test_addr_namespace(host):
 )
 def test_interface(host, family):
     # exist
-    assert host.interface("eth0", family=family).exists
+    assert host.interface("tap0", family=family).exists
     assert not host.interface("does_not_exist", family=family).exists
     # addresses
     addresses = host.interface.default(family).addresses
@@ -648,3 +648,40 @@ def test_interface(host, family):
     default_itf = host.interface.default(family)
     assert default_itf.name == "eth0"
     assert default_itf.exists
+
+
+def test_ip_links(host):
+    assert host.ip.exists
+    iphandle = host.ip()
+
+    links = iphandle.links()
+    assert len(links) > 0 and len(links) < 4
+
+    assert links[0].get("ifname") and links[0].get("ifindex")
+
+
+def test_ip_routes(host):
+    assert host.ip.exists
+    iphandle = host.ip()
+
+    routes = iphandle.routes()
+    assert len(routes) > 0
+
+
+def test_ip_rules(host):
+    assert host.ip.exists
+    iphandle = host.ip()
+
+    rules = iphandle.rules()
+    assert len(rules) > 0 and len(rules) < 4
+    assert rules[0].get("priority") == 0
+    assert rules[0].get("src") == "all"
+    assert rules[0].get("table") == "local"
+
+
+def test_ip_tunnels(host):
+    assert host.ip.exists
+    iphandle = host.ip()
+
+    tunnels = iphandle.tunnels()
+    assert len(tunnels) == 0
