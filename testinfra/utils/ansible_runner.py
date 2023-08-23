@@ -383,9 +383,7 @@ class AnsibleRunner:
                     "msg": "Skipped. You might want to try check=False",
                 }
             if not files:
-                raise RuntimeError(
-                    "Error while running {}: {}".format(" ".join(cmd), out)
-                )
+                raise RuntimeError(f"{out}")
             fpath = os.path.join(d, files[0])
             try:
                 with open(fpath, "r", encoding="ascii") as f:
