@@ -10,15 +10,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import socket
 from typing import List, Optional, Tuple
 
 from testinfra.modules.base import Module
-from testinfra.utils import cached_property
 
 
 def parse_socketspec(socketspec):
-
     protocol, address = socketspec.split("://", 1)
 
     if protocol not in ("udp", "tcp", "unix"):
@@ -314,7 +313,7 @@ class LinuxSocketNetstat(Socket):
 
 
 class BSDSocket(Socket):
-    @cached_property
+    @functools.cached_property
     def _command(self):
         return self.find_command("netstat")
 
@@ -333,7 +332,6 @@ class BSDSocket(Socket):
             # FreeBSD: tcp4/tcp6
             # OpeNBSD/NetBSD: tcp/tcp6
             if splitted[0] in ("tcp", "udp", "udp4", "tcp4", "tcp6", "udp6"):
-
                 address = splitted[3]
                 if address == "*.*":
                     # On OpenBSD 6.3 (issue #338)

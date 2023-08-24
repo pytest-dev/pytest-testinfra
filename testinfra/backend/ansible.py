@@ -12,6 +12,7 @@
 
 import logging
 import pprint
+from typing import Any, Optional
 
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
@@ -25,13 +26,13 @@ class AnsibleBackend(base.BaseBackend):
 
     def __init__(
         self,
-        host,
-        ansible_inventory=None,
-        ssh_config=None,
-        ssh_identity_file=None,
-        force_ansible=False,
-        *args,
-        **kwargs,
+        host: str,
+        ansible_inventory: Optional[str] = None,
+        ssh_config: Optional[str] = None,
+        ssh_identity_file: Optional[str] = None,
+        force_ansible: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ):
         self.host = host
         self.ansible_inventory = ansible_inventory
@@ -41,10 +42,10 @@ class AnsibleBackend(base.BaseBackend):
         super().__init__(host, *args, **kwargs)
 
     @property
-    def ansible_runner(self):
+    def ansible_runner(self) -> AnsibleRunner:
         return AnsibleRunner.get_runner(self.ansible_inventory)
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         command = self.get_command(command, *args)
         if not self.force_ansible:
             host = self.ansible_runner.get_host(
@@ -64,8 +65,10 @@ class AnsibleBackend(base.BaseBackend):
             stderr=out["stderr"],
         )
 
-    def run_ansible(self, module_name, module_args=None, **kwargs):
-        def get_encoding():
+    def run_ansible(
+        self, module_name: str, module_args: Optional[str] = None, **kwargs: Any
+    ) -> Any:
+        def get_encoding() -> str:
             return self.encoding
 
         result = self.ansible_runner.run_module(
@@ -80,10 +83,10 @@ class AnsibleBackend(base.BaseBackend):
         )
         return result
 
-    def get_variables(self):
+    def get_variables(self) -> dict[str, Any]:
         return self.ansible_runner.get_variables(self.host)
 
     @classmethod
-    def get_hosts(cls, host, **kwargs):
+    def get_hosts(cls, host: str, **kwargs: Any) -> list[str]:
         inventory = kwargs.get("ansible_inventory")
         return AnsibleRunner.get_runner(inventory).get_hosts(host or "all")

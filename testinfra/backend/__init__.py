@@ -13,6 +13,10 @@
 import importlib
 import os
 import urllib.parse
+from typing import TYPE_CHECKING, Any, Iterable
+
+if TYPE_CHECKING:
+    import testinfra.backend.base
 
 BACKENDS = {
     "local": "testinfra.backend.local.LocalBackend",
@@ -31,17 +35,17 @@ BACKENDS = {
 }
 
 
-def get_backend_class(connection):
+def get_backend_class(connection: str) -> type["testinfra.backend.base.BaseBackend"]:
     try:
         classpath = BACKENDS[connection]
     except KeyError:
         raise RuntimeError("Unknown connection type '{}'".format(connection))
     module, name = classpath.rsplit(".", 1)
-    return getattr(importlib.import_module(module), name)
+    return getattr(importlib.import_module(module), name)  # type: ignore[no-any-return]
 
 
-def parse_hostspec(hostspec):
-    kw = {}
+def parse_hostspec(hostspec: str) -> tuple[str, dict[str, Any]]:
+    kw: dict[str, Any] = {}
     if hostspec is not None and "://" in hostspec:
         url = urllib.parse.urlparse(hostspec)
         kw["connection"] = url.scheme
@@ -75,7 +79,7 @@ def parse_hostspec(hostspec):
     return host, kw
 
 
-def get_backend(hostspec, **kwargs):
+def get_backend(hostspec: str, **kwargs: Any) -> "testinfra.backend.base.BaseBackend":
     host, kw = parse_hostspec(hostspec)
     for k, v in kwargs.items():
         kw.setdefault(k, v)
@@ -86,7 +90,9 @@ def get_backend(hostspec, **kwargs):
     return klass(host, **kw)
 
 
-def get_backends(hosts, **kwargs):
+def get_backends(
+    hosts: Iterable[str], **kwargs: Any
+) -> list["testinfra.backend.base.BaseBackend"]:
     backends = {}
     for hostspec in hosts:
         host, kw = parse_hostspec(hostspec)

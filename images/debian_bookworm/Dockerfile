@@ -1,17 +1,14 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
 ENV container docker
 
-# ntpd is linked to /bin/false, so the service is not running but is enabled
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
     lsb-release \
-    python3 \
+    python3-pip \
     openssh-server \
     puppet \
-    salt-minion \
     locales \
-    ntp \
     sudo \
     supervisor \
     systemd-sysv \
@@ -29,11 +26,8 @@ RUN mkdir -p /var/run/sshd && \
     rm -f /lib/systemd/system/sockets.target.wants/*udev* && \
     rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
     systemctl enable ssh.service && \
-    systemctl disable salt-minion.service && \
-    systemctl enable ntp.service && \
     systemctl enable supervisor.service && \
     systemctl enable netfilter-persistent.service && \
-    ln -fsn /bin/false /usr/sbin/ntpd && \
     echo "python3 hold" | dpkg --set-selections && \
     echo "LANG=fr_FR.ISO-8859-15" > /etc/default/locale && \
     echo "LANGUAGE=fr_FR" >> /etc/default/locale && \
@@ -69,7 +63,10 @@ RUN chage -E 20000 -m 7 -M 90 user
 # Some python3 virtualenv
 RUN virtualenv /v
 RUN /v/bin/pip install -U pip
-RUN /v/bin/pip install 'requests>1,<2'
+RUN /v/bin/pip install 'requests==2.30.0'
+
+# install salt
+RUN python3 -m pip install --break-system-packages --no-cache salt
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR

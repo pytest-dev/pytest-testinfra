@@ -10,13 +10,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from testinfra.backend import base
 
 
 class KubectlBackend(base.BaseBackend):
     NAME = "kubectl"
 
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name: str, *args: Any, **kwargs: Any):
         self.name = name
         self.container = kwargs.get("container")
         self.namespace = kwargs.get("namespace")
@@ -24,7 +26,7 @@ class KubectlBackend(base.BaseBackend):
         self.context = kwargs.get("context")
         super().__init__(self.name, *args, **kwargs)
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         cmd = self.get_command(command, *args)
         # `kubectl exec` does not support specifying the user to run as.
         # See https://github.com/kubernetes/kubernetes/issues/30656

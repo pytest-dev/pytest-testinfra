@@ -10,17 +10,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
 from testinfra.backend import base
 
 
 class DockerBackend(base.BaseBackend):
     NAME = "docker"
 
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name: str, *args: Any, **kwargs: Any):
         self.name, self.user = self.parse_containerspec(name)
         super().__init__(self.name, *args, **kwargs)
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         cmd = self.get_command(command, *args)
         if self.user is not None:
             out = self.run_local(

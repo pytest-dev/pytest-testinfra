@@ -11,6 +11,7 @@
 # limitations under the License.
 
 import re
+from typing import Any, Optional
 
 from testinfra.backend import base
 
@@ -31,7 +32,7 @@ _find_unsafe = re.compile(r"[^\w@%+=:,./-]", re.ASCII)
 
 # (gtmanfred) This is copied from pipes.quote, but changed to use double quotes
 # instead of single quotes.  This is used by the winrm backend.
-def _quote(s):
+def _quote(s: str) -> str:
     """Return a shell-escaped version of the string *s*."""
     if not s:
         return "''"
@@ -50,16 +51,16 @@ class WinRMBackend(base.BaseBackend):
 
     def __init__(
         self,
-        hostspec,
-        no_ssl=False,
-        no_verify_ssl=False,
-        read_timeout_sec=None,
-        operation_timeout_sec=None,
-        *args,
-        **kwargs,
+        hostspec: str,
+        no_ssl: bool = False,
+        no_verify_ssl: bool = False,
+        read_timeout_sec: Optional[int] = None,
+        operation_timeout_sec: Optional[int] = None,
+        *args: Any,
+        **kwargs: Any,
     ):
         self.host = self.parse_hostspec(hostspec)
-        self.conn_args = {
+        self.conn_args: dict[str, Any] = {
             "endpoint": "{}://{}{}/wsman".format(
                 "http" if no_ssl else "https",
                 self.host.name,
@@ -77,10 +78,10 @@ class WinRMBackend(base.BaseBackend):
             self.conn_args["operation_timeout_sec"] = operation_timeout_sec
         super().__init__(self.host.name, *args, **kwargs)
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         return self.run_winrm(self.get_command(command, *args))
 
-    def run_winrm(self, command, *args):
+    def run_winrm(self, command: str, *args: str) -> base.CommandResult:
         p = winrm.protocol.Protocol(**self.conn_args)
         shell_id = p.open_shell()
         command_id = p.run_command(shell_id, command, *args)
@@ -90,7 +91,7 @@ class WinRMBackend(base.BaseBackend):
         return self.result(rc, command, stdout, stderr)
 
     @staticmethod
-    def quote(command, *args):
+    def quote(command: str, *args: str) -> str:
         if args:
             return command % tuple(_quote(a) for a in args)  # noqa: S001
         return command

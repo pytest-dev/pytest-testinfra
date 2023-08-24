@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os.path
+from typing import Any
 
 from testinfra.backend import base
 
@@ -23,11 +24,11 @@ class ChrootBackend(base.BaseBackend):
 
     NAME = "chroot"
 
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name: str, *args: Any, **kwargs: Any):
         self.name = name
         super().__init__(self.name, *args, **kwargs)
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         if not os.path.exists(self.name) and os.path.isdir(self.name):
             raise RuntimeError(
                 "chroot path {} not found or not a directory".format(self.name)

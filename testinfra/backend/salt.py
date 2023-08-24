@@ -15,6 +15,8 @@ try:
 except ImportError:
     raise RuntimeError("You must install salt package to use the salt backend")
 
+from typing import Any, Optional
+
 from testinfra.backend import base
 
 
@@ -22,18 +24,18 @@ class SaltBackend(base.BaseBackend):
     HAS_RUN_SALT = True
     NAME = "salt"
 
-    def __init__(self, host, *args, **kwargs):
+    def __init__(self, host: str, *args: Any, **kwargs: Any):
         self.host = host
-        self._client = None
+        self._client: Optional[salt.client.LocalClient] = None
         super().__init__(self.host, *args, **kwargs)
 
     @property
-    def client(self):
+    def client(self) -> salt.client.LocalClient:
         if self._client is None:
             self._client = salt.client.LocalClient()
         return self._client
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         command = self.get_command(command, *args)
         out = self.run_salt("cmd.run_all", [command])
         return self.result(
@@ -45,7 +47,7 @@ class SaltBackend(base.BaseBackend):
             stderr=out["stderr"],
         )
 
-    def run_salt(self, func, args=None):
+    def run_salt(self, func: str, args: Any = None) -> Any:
         out = self.client.cmd(self.host, func, args or [])
         if self.host not in out:
             raise RuntimeError(
@@ -55,7 +57,7 @@ class SaltBackend(base.BaseBackend):
         return out[self.host]
 
     @classmethod
-    def get_hosts(cls, host, **kwargs):
+    def get_hosts(cls, host: str, **kwargs: Any) -> list[str]:
         if host is None:
             host = "*"
         if any(c in host for c in "@*[?"):

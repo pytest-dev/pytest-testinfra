@@ -12,21 +12,22 @@
 
 import configparser
 import fnmatch
+import functools
 import ipaddress
 import json
 import os
 import tempfile
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Iterator, Optional, Union
 
 import testinfra
-from testinfra.utils import cached_property
+import testinfra.host
 
 __all__ = ["AnsibleRunner"]
 
 local = testinfra.get_host("local://")
 
 
-def get_ansible_config():
+def get_ansible_config() -> configparser.ConfigParser:
     fname = os.environ.get("ANSIBLE_CONFIG")
     if not fname:
         for possible in (
@@ -44,7 +45,12 @@ def get_ansible_config():
     return config
 
 
-def get_ansible_inventory(config, inventory_file):
+Inventory = dict[str, Any]
+
+
+def get_ansible_inventory(
+    config: configparser.ConfigParser, inventory_file: Optional[str]
+) -> Inventory:
     # Disable ansible verbosity to avoid
     # https://github.com/ansible/ansible/issues/59973
     cmd = "ANSIBLE_VERBOSITY=0 ansible-inventory --list"
@@ -52,10 +58,16 @@ def get_ansible_inventory(config, inventory_file):
     if inventory_file:
         cmd += " -i %s"
         args += [inventory_file]
-    return json.loads(local.check_output(cmd, *args))
+    return json.loads(local.check_output(cmd, *args))  # type: ignore[no-any-return]
 
 
-def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file=None):
+def get_ansible_host(
+    config: configparser.ConfigParser,
+    inventory: Inventory,
+    host: str,
+    ssh_config: Optional[str] = None,
+    ssh_identity_file: Optional[str] = None,
+) -> Optional[testinfra.host.Host]:
     if is_empty_inventory(inventory):
         if host == "localhost":
             return testinfra.get_host("local://")
@@ -81,7 +93,7 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
         "smart": "ssh",
     }.get(connection, connection)
 
-    options: Dict[str, Any] = {
+    options: dict[str, Any] = {
         "ansible_become": {
             "ini": {
                 "section": "privilege_escalation",
@@ -126,7 +138,9 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
         },
     }
 
-    def get_config(name, default=None):
+    def get_config(
+        name: str, default: Union[None, bool, str] = None
+    ) -> Union[None, bool, str]:
         value = default
         option = options.get(name, {})
 
@@ -144,11 +158,12 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
         return value
 
     testinfra_host = get_config("ansible_host", host)
+    assert isinstance(testinfra_host, str), testinfra_host
     user = get_config("ansible_user")
     password = get_config("ansible_ssh_pass")
     port = get_config("ansible_port")
 
-    kwargs: Dict[str, Union[str, bool]] = {}
+    kwargs: dict[str, Union[None, str, bool]] = {}
     if get_config("ansible_become", False):
         kwargs["sudo"] = True
     kwargs["sudo_user"] = get_config("ansible_become_user")
@@ -165,8 +180,8 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
     kwargs["ssh_extra_args"] = " ".join(
         [
             config.get("ssh_connection", "ssh_args", fallback=""),
-            get_config("ansible_ssh_common_args", ""),
-            get_config("ansible_ssh_extra_args", ""),
+            get_config("ansible_ssh_common_args", ""),  # type: ignore[list-item]
+            get_config("ansible_ssh_extra_args", ""),  # type: ignore[list-item]
         ]
     ).strip()
 
@@ -191,7 +206,7 @@ def get_ansible_host(config, inventory, host, ssh_config=None, ssh_identity_file
     return testinfra.get_host(spec, **kwargs)
 
 
-def itergroup(inventory, group):
+def itergroup(inventory: Inventory, group: str) -> Iterator[str]:
     for host in inventory.get(group, {}).get("hosts", []):
         yield host
     for g in inventory.get(group, {}).get("children", []):
@@ -199,12 +214,12 @@ def itergroup(inventory, group):
             yield host
 
 
-def is_empty_inventory(inventory):
+def is_empty_inventory(inventory: Inventory) -> bool:
     return not any(True for _ in itergroup(inventory, "all"))
 
 
 class AnsibleRunner:
-    _runners: Dict[Optional[str], "AnsibleRunner"] = {}
+    _runners: dict[Optional[str], "AnsibleRunner"] = {}
     _known_options = {
         # Boolean arguments.
         "become": {
@@ -243,12 +258,12 @@ class AnsibleRunner:
         },
     }
 
-    def __init__(self, inventory_file=None):
+    def __init__(self, inventory_file: Optional[str] = None):
         self.inventory_file = inventory_file
-        self._host_cache = {}
+        self._host_cache: dict[str, Optional[testinfra.host.Host]] = {}
         super().__init__()
 
-    def get_hosts(self, pattern="all"):
+    def get_hosts(self, pattern: str = "all") -> list[str]:
         inventory = self.inventory
         result = set()
         if is_empty_inventory(inventory):
@@ -270,19 +285,19 @@ class AnsibleRunner:
                         result.add(host)
         return sorted(result)
 
-    @cached_property
-    def inventory(self):
+    @functools.cached_property
+    def inventory(self) -> Inventory:
         return get_ansible_inventory(self.ansible_config, self.inventory_file)
 
-    @cached_property
-    def ansible_config(self):
+    @functools.cached_property
+    def ansible_config(self) -> configparser.ConfigParser:
         return get_ansible_config()
 
-    def get_variables(self, host):
+    def get_variables(self, host: str) -> dict[str, Any]:
         inventory = self.inventory
         # inventory_hostname, group_names and groups are for backward
         # compatibility with testinfra 2.X
-        hostvars = inventory["_meta"].get("hostvars", {}).get(host, {})
+        hostvars: dict[str, Any] = inventory["_meta"].get("hostvars", {}).get(host, {})
         hostvars.setdefault("inventory_hostname", host)
         group_names = []
         groups = {}
@@ -296,7 +311,7 @@ class AnsibleRunner:
         hostvars.setdefault("groups", groups)
         return hostvars
 
-    def get_host(self, host, **kwargs):
+    def get_host(self, host: str, **kwargs: Any) -> Optional[testinfra.host.Host]:
         try:
             return self._host_cache[host]
         except KeyError:
@@ -305,14 +320,14 @@ class AnsibleRunner:
             )
             return self._host_cache[host]
 
-    def options_to_cli(self, options):
+    def options_to_cli(self, options: dict[str, Any]) -> tuple[str, list[str]]:
         verbose = options.pop("verbose", 0)
 
         args = {"become": False, "check": True}
         args.update(options)
 
-        cli: List[str] = []
-        cli_args: List[str] = []
+        cli: list[str] = []
+        cli_args: list[str] = []
         if verbose:
             cli.append("-" + "v" * verbose)
         for arg_name, value in args.items():
@@ -334,7 +349,14 @@ class AnsibleRunner:
                 raise TypeError("Unsupported argument type '{}'.".format(opt_type))
         return " ".join(cli), cli_args
 
-    def run_module(self, host, module_name, module_args, get_encoding=None, **options):
+    def run_module(
+        self,
+        host: str,
+        module_name: str,
+        module_args: Optional[str],
+        get_encoding: Optional[Callable[[], str]] = None,
+        **options: Any,
+    ) -> Any:
         cmd, args = "ansible --tree %s", []
         if self.inventory_file:
             cmd += " -i %s"
@@ -375,7 +397,7 @@ class AnsibleRunner:
                     return json.load(f)
 
     @classmethod
-    def get_runner(cls, inventory):
+    def get_runner(cls, inventory: Optional[str]) -> "AnsibleRunner":
         try:
             return cls._runners[inventory]
         except KeyError:
