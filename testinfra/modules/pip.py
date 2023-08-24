@@ -12,7 +12,6 @@
 
 import json
 import re
-import warnings
 
 from testinfra.modules.base import Module
 
@@ -58,7 +57,7 @@ class Pip(Module):
     def check(cls, pip_path="pip"):
         """Verify installed packages have compatible dependencies.
 
-        >>> cmd = host.pip_package.check()
+        >>> cmd = host.pip.check()
         >>> cmd.rc
         0
         >>> cmd.stdout
@@ -76,7 +75,7 @@ class Pip(Module):
     def get_packages(cls, pip_path="pip"):
         """Get all installed packages and versions returned by `pip list`:
 
-        >>> host.pip_package.get_packages(pip_path='~/venv/website/bin/pip')
+        >>> host.pip.get_packages(pip_path='~/venv/website/bin/pip')
         {'Django': {'version': '1.10.2'},
          'mywebsite': {'version': '1.0a3', 'path': '/srv/website'},
          'psycopg2': {'version': '2.6.2'}}
@@ -106,7 +105,7 @@ class Pip(Module):
     def get_outdated_packages(cls, pip_path="pip"):
         """Get all outdated packages with current and latest version
 
-        >>> host.pip_package.get_outdated_packages(
+        >>> host.pip.get_outdated_packages(
         ...     pip_path='~/venv/website/bin/pip')
         {'Django': {'current': '1.10.2', 'latest': '1.10.3'}}
         """
@@ -134,34 +133,3 @@ class Pip(Module):
                 name, current, latest = _re_match(line, output_re)
                 pkgs[name] = {"current": current, "latest": latest}
         return pkgs
-
-
-class PipPackage(Pip):
-    """.. deprecated:: 6.2
-
-    Use :class:`~testinfra.modules.pip.Pip` instead.
-    """
-
-    @staticmethod
-    def _deprecated():
-        """Raise a `DeprecationWarning`"""
-        warnings.warn(
-            "Calling host.pip_package is deprecated, call host.pip instead",
-            category=DeprecationWarning,
-            stacklevel=2,
-        )
-
-    @classmethod
-    def check(cls, pip_path="pip"):
-        PipPackage._deprecated()
-        return super().check(pip_path=pip_path)
-
-    @classmethod
-    def get_packages(cls, pip_path="pip"):
-        PipPackage._deprecated()
-        return super().get_packages(pip_path=pip_path)
-
-    @classmethod
-    def get_outdated_packages(cls, pip_path="pip"):
-        PipPackage._deprecated()
-        return super().get_outdated_packages(pip_path=pip_path)
