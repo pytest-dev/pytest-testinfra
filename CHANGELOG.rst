@@ -2,6 +2,16 @@
 Changelog
 =========
 
+9.0.0
+=====
+
+* [BREAKING] pytest-testinfra now require python >= 3.9
+* [BREAKING] Drop deprecated module PipPackage
+* [NEW] Add support for the SSH ControlPath connection sharing option (#713)
+* [FIX] Retry SSH on ConnectionResetError (#708)
+* [FIX] List openSUSE Leap and Tumbleweed explicitly as rpm based distributions
+* [FIX] Make group name mandatory in group module
+
 8.1.0
 =====
 
