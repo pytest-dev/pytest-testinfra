@@ -77,6 +77,8 @@ class Package(Module):
                 "centos",
                 "cloudlinux",
                 "fedora",
+                "opensuse-leap",
+                "opensuse-tumbleweed",
                 "rocky",
             )
         ):

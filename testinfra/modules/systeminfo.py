@@ -50,21 +50,6 @@ class SystemInfo(InstanceModule):
     def _get_linux_sysinfo(self):
         sysinfo = {}
 
-        # LSB
-        lsb = self.run("lsb_release -a")
-        if lsb.rc == 0:
-            for line in lsb.stdout.splitlines():
-                key, value = line.split(":", 1)
-                key = key.strip().lower()
-                value = value.strip().lower()
-                if key == "distributor id":
-                    sysinfo["distribution"] = value
-                elif key == "release":
-                    sysinfo["release"] = value
-                elif key == "codename":
-                    sysinfo["codename"] = value
-            return sysinfo
-
         # https://www.freedesktop.org/software/systemd/man/os-release.html
         os_release = self.run("cat /etc/os-release")
         if os_release.rc == 0:
@@ -98,6 +83,21 @@ class SystemInfo(InstanceModule):
         if alpine_release.rc == 0:
             sysinfo["distribution"] = "alpine"
             sysinfo["release"] = alpine_release.stdout.strip()
+            return sysinfo
+
+        # LSB
+        lsb = self.run("lsb_release -a")
+        if lsb.rc == 0:
+            for line in lsb.stdout.splitlines():
+                key, value = line.split(":", 1)
+                key = key.strip().lower()
+                value = value.strip().lower()
+                if key == "distributor id":
+                    sysinfo["distribution"] = value
+                elif key == "release":
+                    sysinfo["release"] = value
+                elif key == "codename":
+                    sysinfo["codename"] = value
             return sysinfo
 
         return sysinfo
