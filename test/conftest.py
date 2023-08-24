@@ -54,11 +54,8 @@ ANSIBLE_HOSTVARS = """$ANSIBLE_VAULT;1.1;AES256
 """
 
 DOCKER_IMAGES = [
-    "alpine",
-    "archlinux",
-    "rockylinux8",
-    "debian_bullseye",
-    "ubuntu_xenial",
+    "rockylinux9",
+    "debian_bookworm",
 ]
 
 
@@ -187,9 +184,7 @@ def host(request, tmpdir_factory):
         # Wait ssh to be up
         service = testinfra.get_host(docker_id, connection="docker").service
 
-        images_with_sshd = ("rockylinux8", "alpine", "archlinux")
-
-        if image in images_with_sshd:
+        if image == "rockylinux9":
             service_name = "sshd"
         else:
             service_name = "ssh"
@@ -220,7 +215,7 @@ def pytest_generate_tests(metafunc):
                 break
         else:
             # Default
-            hosts = ["docker://debian_bullseye"]
+            hosts = ["docker://debian_bookworm"]
         metafunc.parametrize("host", hosts, indirect=True, scope="function")
 
 

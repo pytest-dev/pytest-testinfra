@@ -9,17 +9,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
+from typing import TYPE_CHECKING
 
 
 class Module:
-    if typing.TYPE_CHECKING:
+    if TYPE_CHECKING:
         import testinfra.host
 
         _host: testinfra.host.Host
 
     @classmethod
-    def get_module(cls, _host):
+    def get_module(cls, _host: "testinfra.host.Host") -> type["Module"]:
         klass = cls.get_module_class(_host)
         return type(
             klass.__name__,

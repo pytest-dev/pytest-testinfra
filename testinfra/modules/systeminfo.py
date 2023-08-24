@@ -10,16 +10,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import re
 
 from testinfra.modules.base import InstanceModule
-from testinfra.utils import cached_property
 
 
 class SystemInfo(InstanceModule):
     """Return system information"""
 
-    @cached_property
+    @functools.cached_property
     def sysinfo(self):
         sysinfo = {
             "type": None,

@@ -11,28 +11,38 @@
 # limitations under the License.
 
 import abc
-import collections
+import dataclasses
 import locale
 import logging
 import shlex
 import subprocess
 import urllib.parse
+from typing import TYPE_CHECKING, Any, Optional
+
+if TYPE_CHECKING:
+    import testinfra.host
 
 logger = logging.getLogger("testinfra")
 
-HostSpec = collections.namedtuple("HostSpec", ["name", "port", "user", "password"])
+
+@dataclasses.dataclass
+class HostSpec:
+    name: str
+    port: Optional[str]
+    user: Optional[str]
+    password: Optional[str]
 
 
 class CommandResult:
     def __init__(
         self,
-        backend,
-        exit_status,
-        command,
-        stdout_bytes,
-        stderr_bytes,
-        stdout=None,
-        stderr=None,
+        backend: "BaseBackend",
+        exit_status: int,
+        command: bytes,
+        stdout_bytes: bytes,
+        stderr_bytes: bytes,
+        stdout: Optional[str] = None,
+        stderr: Optional[str] = None,
     ):
         self.exit_status = exit_status
         self._stdout_bytes = stdout_bytes
@@ -44,7 +54,7 @@ class CommandResult:
         super().__init__()
 
     @property
-    def succeeded(self):
+    def succeeded(self) -> bool:
         """Returns whether the command was successful
 
         >>> host.run("true").succeeded
@@ -53,7 +63,7 @@ class CommandResult:
         return self.exit_status == 0
 
     @property
-    def failed(self):
+    def failed(self) -> bool:
         """Returns whether the command failed
 
         >>> host.run("false").failed
@@ -62,7 +72,7 @@ class CommandResult:
         return self.exit_status != 0
 
     @property
-    def rc(self):
+    def rc(self) -> int:
         """Gets the returncode of a command
 
         >>> host.run("true").rc
@@ -71,30 +81,30 @@ class CommandResult:
         return self.exit_status
 
     @property
-    def stdout(self):
+    def stdout(self) -> str:
         if self._stdout is None:
             self._stdout = self._backend.decode(self._stdout_bytes)
         return self._stdout
 
     @property
-    def stderr(self):
+    def stderr(self) -> str:
         if self._stderr is None:
             self._stderr = self._backend.decode(self._stderr_bytes)
         return self._stderr
 
     @property
-    def stdout_bytes(self):
+    def stdout_bytes(self) -> bytes:
         if self._stdout_bytes is None:
             self._stdout_bytes = self._backend.encode(self._stdout)
         return self._stdout_bytes
 
     @property
-    def stderr_bytes(self):
+    def stderr_bytes(self) -> bytes:
         if self._stderr_bytes is None:
             self._stderr_bytes = self._backend.encode(self._stderr)
         return self._stderr_bytes
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             "CommandResult(command={!r}, exit_status={}, stdout={!r}, " "stderr={!r})"
         ).format(
@@ -112,26 +122,33 @@ class BaseBackend(metaclass=abc.ABCMeta):
     HAS_RUN_ANSIBLE = False
     NAME: str
 
-    def __init__(self, hostname, sudo=False, sudo_user=None, *args, **kwargs):
-        self._encoding = None
-        self._host = None
+    def __init__(
+        self,
+        hostname: str,
+        sudo: bool = False,
+        sudo_user: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ):
+        self._encoding: Optional[str] = None
+        self._host: Optional["testinfra.host.Host"] = None
         self.hostname = hostname
         self.sudo = sudo
         self.sudo_user = sudo_user
         super().__init__()
 
-    def set_host(self, host):
+    def set_host(self, host: "testinfra.host.Host") -> None:
         self._host = host
 
     @classmethod
-    def get_connection_type(cls):
+    def get_connection_type(cls) -> str:
         """Return the connection backend used as string.
 
         Can be local, paramiko, ssh, docker, salt or ansible
         """
         return cls.NAME
 
-    def get_hostname(self):
+    def get_hostname(self) -> str:
         """Return the hostname (for testinfra) of the remote or local system
 
 
@@ -158,11 +175,11 @@ class BaseBackend(metaclass=abc.ABCMeta):
         """
         return self.hostname
 
-    def get_pytest_id(self):
+    def get_pytest_id(self) -> str:
         return self.get_connection_type() + "://" + self.get_hostname()
 
     @classmethod
-    def get_hosts(cls, host, **kwargs):
+    def get_hosts(cls, host: str, **kwargs: Any) -> list[str]:
         if host is None:
             raise RuntimeError(
                 "One or more hosts is required with the {} backend".format(
@@ -172,41 +189,41 @@ class BaseBackend(metaclass=abc.ABCMeta):
         return [host]
 
     @staticmethod
-    def quote(command, *args):
+    def quote(command: str, *args: str) -> str:
         if args:
             return command % tuple(shlex.quote(a) for a in args)  # noqa: S001
         return command
 
-    def get_sudo_command(self, command, sudo_user):
+    def get_sudo_command(self, command: str, sudo_user: Optional[str]) -> str:
         if sudo_user is None:
             return self.quote("sudo /bin/sh -c %s", command)
         return self.quote("sudo -u %s /bin/sh -c %s", sudo_user, command)
 
-    def get_command(self, command, *args):
+    def get_command(self, command: str, *args: str) -> str:
         command = self.quote(command, *args)
         if self.sudo:
             command = self.get_sudo_command(command, self.sudo_user)
         return command
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command: str, *args: str, **kwargs: Any) -> CommandResult:
         raise NotImplementedError
 
-    def run_local(self, command, *args):
+    def run_local(self, command: str, *args: str) -> CommandResult:
         command = self.quote(command, *args)
-        command = self.encode(command)
+        cmd = self.encode(command)
         p = subprocess.Popen(
-            command,
+            cmd,
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate()
-        result = self.result(p.returncode, command, stdout, stderr)
+        result = self.result(p.returncode, cmd, stdout, stderr)
         return result
 
     @staticmethod
-    def parse_hostspec(hostspec):
+    def parse_hostspec(hostspec: str) -> HostSpec:
         name = hostspec
         port = None
         user = None
@@ -238,7 +255,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         return HostSpec(name, port, user, password)
 
     @staticmethod
-    def parse_containerspec(containerspec):
+    def parse_containerspec(containerspec: str) -> tuple[str, Optional[str]]:
         name = containerspec
         user = None
         if "@" in name:
@@ -266,24 +283,24 @@ class BaseBackend(metaclass=abc.ABCMeta):
         return encoding
 
     @property
-    def encoding(self):
+    def encoding(self) -> str:
         if self._encoding is None:
             self._encoding = self.get_encoding()
         return self._encoding
 
-    def decode(self, data):
+    def decode(self, data: bytes) -> str:
         try:
             return data.decode("ascii")
         except UnicodeDecodeError:
             return data.decode(self.encoding)
 
-    def encode(self, data):
+    def encode(self, data: str) -> bytes:
         try:
             return data.encode("ascii")
         except UnicodeEncodeError:
             return data.encode(self.encoding)
 
-    def result(self, *args, **kwargs):
+    def result(self, *args: Any, **kwargs: Any) -> CommandResult:
         result = CommandResult(self, *args, **kwargs)
         logger.debug("RUN %s", result)
         return result
