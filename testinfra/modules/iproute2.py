@@ -16,10 +16,10 @@ import json
 from testinfra.modules.base import InstanceModule
 
 
-class IP(InstanceModule):
+class IProute2(InstanceModule):
     """Test network configuration via iproute2 commands
 
-    >>> host.ip.rules()
+    >>> host.iproute2.rules()
 
     host.ip.rules(from,to,tos,fwmark,iif,oif,pref, uidrange, ipproto, sport, dport)
     host.ip.routes(table, device, scope, proto, src, metric)
@@ -28,11 +28,11 @@ class IP(InstanceModule):
     host.ip.tunnels()
 
     Optionally, the protocol family can be provided to reduce the number of routes returned:
-    >>> host.ip.routes("inet6", table="main")
+    >>> host.iproute2.routes("inet6", table="main")
     ...FIX
 
     Optionally, this can work inside a different network namespace:
-    >>> host.ip.routes("inet6", "vpn")
+    >>> host.iproute2.routes("inet6", "vpn")
     ...FIX
     """
 
@@ -97,6 +97,6 @@ class IP(InstanceModule):
         """Return all configured network namespaces"""
         cmd = f"{self._ip} --json netns show"
         out = self.check_output(cmd)
-        if out is None:  # ip netns returns null instead of [] in json mode
-            return json.loads("[]")
+        if not out:  # ip netns returns null instead of [] in json mode
+            return json.loads("[]\n")
         return json.loads(out)
