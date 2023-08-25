@@ -148,7 +148,7 @@ class ParamikoBackend(base.BaseBackend):
         cmd = self.encode(command)
         try:
             rc, stdout, stderr = self._exec_command(cmd)
-        except paramiko.ssh_exception.SSHException:
+        except (paramiko.ssh_exception.SSHException, ConnectionResetError):
             transport = self.client.get_transport()
             assert transport is not None
             if not transport.is_active():
