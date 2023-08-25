@@ -183,7 +183,7 @@ def test_ansible_get_variables():
             "c": "d",
             "x": "z",
             "inventory_hostname": "debian",
-            "group_names": ["g"],
+            "group_names": ["all", "g"],
             "groups": groups,
         }
         assert get_vars("rockylinux") == {
