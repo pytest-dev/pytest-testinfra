@@ -650,6 +650,23 @@ def test_interface(host, family):
     assert default_itf.exists
 
 
+def test_iproute2_addresses(host):
+    assert host.iproute2.exists
+
+    addresses = host.iproute2.addresses()
+
+    assert len(addresses) > 0
+    assert addresses[0].get("ifname") and addresses[0].get("ifindex")
+
+    filtered_addresses = host.iproute2.addresses(ifname="lo")
+    assert filtered_addresses[0].get("ifname") == "lo" and len(filtered_addresses) == 1
+
+    filtered_addresses2 = host.iproute2.addresses(local="127.0.0.1")
+    assert (
+        filtered_addresses2[0].get("ifname") == "lo" and len(filtered_addresses2) == 1
+    )
+
+
 def test_iproute2_links(host):
     assert host.iproute2.exists
 
@@ -665,6 +682,9 @@ def test_iproute2_routes(host):
     routes = host.iproute2.routes()
     assert len(routes) > 0
 
+    filtered_routes = host.iproute2.routes(table="local", scope="host", src="127.0.0.1")
+    assert filtered_routes[0].get("protocol") == "kernel" and len(filtered_routes) > 1
+
 
 def test_iproute2_rules(host):
     assert host.iproute2.exists
@@ -674,6 +694,13 @@ def test_iproute2_rules(host):
     assert rules[0].get("priority") == 0
     assert rules[0].get("src") == "all"
     assert rules[0].get("table") == "local"
+
+    cmd = host.run("ip rule add from 1.2.3.4/32 table 123")
+    assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
+
+    rules_123 = host.iproute2.rules(src="1.2.3.4/32")
+    assert len(rules_123) > 0
+    assert rules_123[0].get("src") == "1.2.3.4"
 
 
 def test_iproute2_tunnels(host):
