@@ -12,12 +12,12 @@
 
 import functools
 import json
-import re
 
-from testinfra.modules.base import Module
+from testinfra.modules.base import InstanceModule
 
-class IP(Module):
-    """Test network configuration via ip commands
+
+class IP(InstanceModule):
+    """Test network configuration via iproute2 commands
 
     >>> host.ip.rules()
 
@@ -27,7 +27,7 @@ class IP(Module):
     host.ip.addresses()
     host.ip.tunnels()
 
-    Optionally, the protocol family can be provided:
+    Optionally, the protocol family can be provided to reduce the number of routes returned:
     >>> host.ip.routes("inet6", table="main")
     ...FIX
 
@@ -36,94 +36,67 @@ class IP(Module):
     ...FIX
     """
 
-    def __init__(self, family=None, netns=None):
+    def __init__(self, family=None, namespace=None):
         self.family = family
-        self.netns = netns
+        self.namespace = namespace
         super().__init__()
-
-    @property
-    def exists(self):
-        raise NotImplementedError
-
-    def addresses(self):
-        """Return the addresses associated with interfaces
-        """
-        raise NotImplementedError
-
-    def links(self):
-        """Return links and their state
-        """
-        raise NotImplementedError
-
-    def routes(self):
-        """Return the routes associated with the routing table
-        """
-        raise NotImplementedError
-
-    def rules(self):
-        """Return all configured ip rules
-        """
-        raise NotImplementedError
-
-    def tunnels(self):
-        """Return all configured tunnels
-        """
-        raise NotImplementedError
 
     def __repr__(self):
         return "<ip>"
 
-    @classmethod
-    def get_module_class(cls, host):
-        if host.system_info.type == "linux":
-            return LinuxIP
-        raise NotImplementedError
-
-class LinuxIP(IP):
     @functools.cached_property
     def _ip(self):
         ip_cmd = self.find_command("ip")
-        if self.netns is not None:
-            ip_cmd = f"{ip_cmd} netns exec {self.netns} {ip_cmd}"
+        if self.namespace is not None:
+            ip_cmd = f"{ip_cmd} netns exec {self.namespace} {ip_cmd}"
         if self.family is not None:
             ip_cmd = f"{ip_cmd} -f {self.family}"
         return ip_cmd
 
     @property
     def exists(self):
-        return self.run_test("{} -V".format(self._ip), self.name).rc == 0
+        return self.run_test("{} -V".format(self._ip)).rc == 0
 
     def addresses(self):
-        """Return the addresses associated with interfaces
-        """
+        """Return the addresses associated with interfaces"""
         cmd = f"{self._ip} --json address show"
         out = self.check_output(cmd)
         return json.loads(out)
 
     def links(self):
-        """Return links and their state
-        """
+        """Return links and their state"""
         cmd = f"{self._ip} --json link show"
         out = self.check_output(cmd)
         return json.loads(out)
 
     def routes(self):
-        """Return the routes installed
-        """
+        """Return the routes installed"""
         cmd = f"{self._ip} --json route show table all"
         out = self.check_output(cmd)
         return json.loads(out)
 
     def rules(self):
-        """Return the rules our routing policy consists of
-        """
+        """Return the rules our routing policy consists of"""
         cmd = f"{self._ip} --json rule show"
         out = self.check_output(cmd)
         return json.loads(out)
 
     def tunnels(self):
-        """Return all configured tunnels
-        """
+        """Return all configured tunnels"""
         cmd = f"{self._ip} --json tunnel show"
         out = self.check_output(cmd)
+        return json.loads(out)
+
+    def vrfs(self):
+        """Return all configured vrfs"""
+        cmd = f"{self._ip} --json vrf show"
+        out = self.check_output(cmd)
+        return json.loads(out)
+
+    def netns(self):
+        """Return all configured network namespaces"""
+        cmd = f"{self._ip} --json netns show"
+        out = self.check_output(cmd)
+        if out is None:  # ip netns returns null instead of [] in json mode
+            return json.loads("[]")
         return json.loads(out)

@@ -650,38 +650,48 @@ def test_interface(host, family):
     assert default_itf.exists
 
 
-def test_ip_links(host):
+def test_iproute2_links(host):
     assert host.ip.exists
-    iphandle = host.ip()
 
-    links = iphandle.links()
+    links = host.ip.links()
     assert len(links) > 0 and len(links) < 4
 
     assert links[0].get("ifname") and links[0].get("ifindex")
 
 
-def test_ip_routes(host):
+def test_iproute2_routes(host):
     assert host.ip.exists
-    iphandle = host.ip()
 
-    routes = iphandle.routes()
+    routes = host.ip.routes()
     assert len(routes) > 0
 
 
-def test_ip_rules(host):
+def test_iproute2_rules(host):
     assert host.ip.exists
-    iphandle = host.ip()
 
-    rules = iphandle.rules()
+    rules = host.ip.rules()
     assert len(rules) > 0 and len(rules) < 4
     assert rules[0].get("priority") == 0
     assert rules[0].get("src") == "all"
     assert rules[0].get("table") == "local"
 
 
-def test_ip_tunnels(host):
+def test_iproute2_tunnels(host):
     assert host.ip.exists
-    iphandle = host.ip()
 
-    tunnels = iphandle.tunnels()
+    tunnels = host.ip.tunnels()
     assert len(tunnels) == 0
+
+
+def test_iproute2_vrfs(host):
+    assert host.ip.exists
+
+    vrfs = host.ip.vrfs()
+    assert len(vrfs) == 0
+
+
+def test_iproute2_netns(host):
+    assert host.ip.exists
+
+    namespaces = host.ip.netns()
+    assert len(namespaces) == 0
