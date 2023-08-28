@@ -190,7 +190,7 @@ def test_ansible_get_variables():
             "a": "a",
             "e": "f",
             "inventory_hostname": "rockylinux",
-            "group_names": ["ungrouped"],
+            "group_names": ["all", "ungrouped"],
             "groups": groups,
         }
 
