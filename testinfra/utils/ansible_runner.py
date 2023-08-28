@@ -185,6 +185,16 @@ def get_ansible_host(
         ]
     ).strip()
 
+    control_path = config.get("ssh_connection", "control_path", fallback="", raw=True)
+    if control_path:
+        directory = config.get(
+            "persistent_connection", "control_path_dir", fallback="~/.ansible/cp"
+        )
+        control_path = control_path % ({"directory": directory})  # noqa: S001
+        # restore original "%%"
+        control_path = control_path.replace("%", "%%")
+        kwargs["controlpath"] = control_path
+
     spec = "{}://".format(connection)
 
     # Fallback to user:password auth when identity file is not used
@@ -385,9 +395,7 @@ class AnsibleRunner:
                     "msg": "Skipped. You might want to try check=False",
                 }
             if not files:
-                raise RuntimeError(
-                    "Error while running {}: {}".format(" ".join(cmd), out)
-                )
+                raise RuntimeError(f"{out}")
             fpath = os.path.join(d, files[0])
             try:
                 with open(fpath, "r", encoding="ascii") as f:
