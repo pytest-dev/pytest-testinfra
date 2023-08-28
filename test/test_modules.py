@@ -348,7 +348,7 @@ def test_ansible_module(host):
     assert variables["myhostvar"] == "bar"
     assert variables["mygroupvar"] == "qux"
     assert variables["inventory_hostname"] == "debian_bookworm"
-    assert variables["group_names"] == ["testgroup"]
+    assert variables["group_names"] == ["all", "testgroup"]
     assert variables["groups"] == {
         "all": ["debian_bookworm"],
         "testgroup": ["debian_bookworm"],
