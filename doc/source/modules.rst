@@ -180,6 +180,13 @@ Interface
    :undoc-members:
    :exclude-members: get_module_class
 
+IProute2
+~~~~~~~~~
+
+.. autoclass:: testinfra.modules.iproute2.IProute2
+   :members:
+   :undoc-members:
+
 
 Iptables
 ~~~~~~~~~
