@@ -19,21 +19,10 @@ from testinfra.modules.base import InstanceModule
 class IProute2(InstanceModule):
     """Test network configuration via iproute2 commands
 
-    >>> host.iproute2.rules()
+        Optional arguments:
+        - family: force iproute2 tools to use a specific protocol family
+        - namespace: execute iproute2 tools inside the provided namespace
 
-    host.ip.rules(from,to,tos,fwmark,iif,oif,pref, uidrange, ipproto, sport, dport)
-    host.ip.routes(table, device, scope, proto, src, metric)
-    host.ip.links()
-    host.ip.addresses()
-    host.ip.tunnels()
-
-    Optionally, the protocol family can be provided to reduce the number of routes returned:
-    >>> host.iproute2.routes("inet6", table="main")
-    ...FIX
-
-    Optionally, this can work inside a different network namespace:
-    >>> host.iproute2.routes("inet6", "vpn")
-    ...FIX
     """
 
     def __init__(self, family=None, namespace=None):
@@ -58,7 +47,14 @@ class IProute2(InstanceModule):
         return self.run_test("{} -V".format(self._ip)).rc == 0
 
     def addresses(self, address=None, ifname=None, local=None):
-        """Return the addresses associated with interfaces"""
+        """Return the addresses associated with interfaces
+
+            Optionally, results can be filtered by:
+            - address
+            - ifname
+            - local
+
+        """
         cmd = f"{self._ip} --json address show"
         out = self.check_output(cmd)
         j = json.loads(out)
@@ -86,7 +82,20 @@ class IProute2(InstanceModule):
     def routes(
         self, table="all", device=None, scope=None, proto=None, src=None, metric=None
     ):
-        """Return the routes installed"""
+        """Returns the routes installed
+
+            Optionally, routes returned can be filtered with the following
+            selectors. This can be useful in busy routing tables.
+
+            Selectors:
+            - table
+            - device (maps to ip-route's 'dev' selector)
+            - scope
+            - proto
+            - src
+            - metric
+
+        """
         cmd = f"{self._ip} --json route show "
         options = []
         if table is not None:
@@ -120,7 +129,25 @@ class IProute2(InstanceModule):
         sport=None,
         dport=None,
     ):
-        """Return the rules our routing policy consists of"""
+        """Returns the rules our routing policy consists of
+
+            Optionally, rules returned can be filtered with the following
+            selectors. This can be useful in busy rulesets.
+
+            Selectors:
+            - src (maps to ip-rule's 'from' selector)
+            - to
+            - tos
+            - fwmark
+            - iif
+            - oif
+            - pref
+            - uidrange
+            - ipproto
+            - sport
+            - dport
+
+        """
         cmd = f"{self._ip} --json rule show "
 
         options = []
@@ -162,7 +189,15 @@ class IProute2(InstanceModule):
         return json.loads(out)
 
     def tunnels(self, ifname=None):
-        """Return all configured tunnels"""
+        """Returns all configured tunnels
+
+            Optionally, tunnels returned can be filtered with the interface name.
+            This can be faster in busy tunnel installations.
+
+            Selectors:
+            - ifname
+
+        """
         cmd = f"{self._ip} --json tunnel show "
 
         options = []
@@ -174,13 +209,13 @@ class IProute2(InstanceModule):
         return json.loads(out)
 
     def vrfs(self):
-        """Return all configured vrfs"""
+        """Returns all configured vrfs"""
         cmd = f"{self._ip} --json vrf show"
         out = self.check_output(cmd)
         return json.loads(out)
 
     def netns(self):
-        """Return all configured network namespaces"""
+        """Returns all configured network namespaces"""
         cmd = f"{self._ip} --json netns show"
         out = self.check_output(cmd)
         if not out:  # ip netns returns null instead of [] in json mode
