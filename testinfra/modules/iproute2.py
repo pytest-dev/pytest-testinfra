@@ -161,9 +161,15 @@ class IProute2(InstanceModule):
         out = self.check_output(cmd)
         return json.loads(out)
 
-    def tunnels(self):
+    def tunnels(self, ifname=None):
         """Return all configured tunnels"""
-        cmd = f"{self._ip} --json tunnel show"
+        cmd = f"{self._ip} --json tunnel show "
+
+        options = []
+        if ifname is not None:
+            options += [ifname]
+
+        cmd += " ".join(options)
         out = self.check_output(cmd)
         return json.loads(out)
 

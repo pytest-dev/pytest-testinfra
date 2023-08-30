@@ -707,7 +707,16 @@ def test_iproute2_tunnels(host):
     assert host.iproute2.exists
 
     tunnels = host.iproute2.tunnels()
-    assert len(tunnels) == 0
+    assert len(tunnels) > 0
+
+    cmd = host.run("ip tunnel add test mode ipip remote 127.0.0.1")
+    assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
+
+    tunnels = host.iproute2.tunnels(ifname="test")
+    assert len(tunnels) > 0
+    assert tunnels[0].get("ifname") == "test"
+    assert tunnels[0].get("mode") == "ip/ip"
+    assert tunnels[0].get("remote") == "127.0.0.1"
 
 
 def test_iproute2_vrfs(host):
@@ -722,3 +731,10 @@ def test_iproute2_netns(host):
 
     namespaces = host.iproute2.netns()
     assert len(namespaces) == 0
+
+    cmd = host.run("ip netns add test")
+    assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
+
+    namespaces = host.iproute2.netns()
+    assert len(namespaces) == 1
+    assert namespaces[0].get("name") == "test"
