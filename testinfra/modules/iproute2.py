@@ -221,3 +221,27 @@ class IProute2(InstanceModule):
         if not out:  # ip netns returns null instead of [] in json mode
             return json.loads("[]\n")
         return json.loads(out)
+
+    def bridge_vlan(self):
+        """Returns all configured vlans"""
+        cmd = f"{self._bridge} -json vlan show"
+        out = self.check_output(cmd)
+        return json.loads(out)
+
+    def bridge_fdb(self):
+        """Returns all configured fdb entries"""
+        cmd = f"{self._bridge} -json fdb show"
+        out = self.check_output(cmd)
+        return json.loads(out)
+
+    def bridge_mdb(self):
+        """Returns all configured mdb entries"""
+        cmd = f"{self._bridge} -json mdb show"
+        out = self.check_output(cmd)
+        return json.loads(out)
+
+    def bridge_link(self):
+        """Returns all configured links"""
+        cmd = f"{self._bridge} -json link show"
+        out = self.check_output(cmd)
+        return json.loads(out)

@@ -738,3 +738,29 @@ def test_iproute2_netns(host):
     namespaces = host.iproute2.netns()
     assert len(namespaces) == 1
     assert namespaces[0].get("name") == "test"
+
+def test_iproute2_bridge_vlan(host):
+    assert host.iproute2.bridge_exists
+
+    vlans = host.iproute2.bridge_vlan()
+    assert len(vlans) == 0
+
+def test_iproute2_bridge_fdb(host):
+    assert host.iproute2.bridge_exists
+
+    fdb = host.iproute2.bridge_fdb()
+    assert len(fdb) > 0
+
+def test_iproute2_bridge_mdb(host):
+    assert host.iproute2.bridge_exists
+
+    mdb = host.iproute2.bridge_mdb()
+    assert len(mdb) == 1
+    assert len(mdb[0].get("mdb")) == 0
+    assert len(mdb[0].get("router")) == 0
+
+def test_iproute2_bridge_link(host):
+    assert host.iproute2.bridge_exists
+
+    links = host.iproute2.bridge_link()
+    assert len(links) == 0
