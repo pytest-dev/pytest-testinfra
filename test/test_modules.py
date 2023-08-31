@@ -650,18 +650,22 @@ def test_interface(host, family):
     assert default_itf.exists
 
 
-def test_iproute2_addresses(host):
+@pytest.mark.parametrize(
+    "family",
+    ["inet", None],
+)
+def test_iproute2_addresses(host, family):
     assert host.iproute2.exists
 
-    addresses = host.iproute2.addresses()
+    addresses = host.iproute2(family=family).addresses()
 
     assert len(addresses) > 0
     assert addresses[0].get("ifname") and addresses[0].get("ifindex")
 
-    filtered_addresses = host.iproute2.addresses(ifname="lo")
+    filtered_addresses = host.iproute2(family=family).addresses(ifname="lo")
     assert filtered_addresses[0].get("ifname") == "lo" and len(filtered_addresses) == 1
 
-    filtered_addresses2 = host.iproute2.addresses(local="127.0.0.1")
+    filtered_addresses2 = host.iproute2(family=family).addresses(local="127.0.0.1")
     assert (
         filtered_addresses2[0].get("ifname") == "lo" and len(filtered_addresses2) == 1
     )
@@ -670,7 +674,7 @@ def test_iproute2_addresses(host):
 def test_iproute2_links(host):
     assert host.iproute2.exists
 
-    links = host.iproute2.links()
+    links = host.iproute2().links()
     assert len(links) > 0 and len(links) < 4
 
     assert links[0].get("ifname") and links[0].get("ifindex")
@@ -679,17 +683,19 @@ def test_iproute2_links(host):
 def test_iproute2_routes(host):
     assert host.iproute2.exists
 
-    routes = host.iproute2.routes()
+    routes = host.iproute2().routes()
     assert len(routes) > 0
 
-    filtered_routes = host.iproute2.routes(table="local", scope="host", src="127.0.0.1")
+    filtered_routes = host.iproute2().routes(
+        table="local", scope="host", src="127.0.0.1"
+    )
     assert filtered_routes[0].get("protocol") == "kernel" and len(filtered_routes) > 1
 
 
 def test_iproute2_rules(host):
     assert host.iproute2.exists
 
-    rules = host.iproute2.rules()
+    rules = host.iproute2().rules()
     assert len(rules) > 0 and len(rules) < 4
     assert rules[0].get("priority") == 0
     assert rules[0].get("src") == "all"
@@ -698,7 +704,7 @@ def test_iproute2_rules(host):
     cmd = host.run("ip rule add from 1.2.3.4/32 table 123")
     assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
 
-    rules_123 = host.iproute2.rules(src="1.2.3.4/32")
+    rules_123 = host.iproute2().rules(src="1.2.3.4/32")
     assert len(rules_123) > 0
     assert rules_123[0].get("src") == "1.2.3.4"
 
@@ -706,13 +712,13 @@ def test_iproute2_rules(host):
 def test_iproute2_tunnels(host):
     assert host.iproute2.exists
 
-    tunnels = host.iproute2.tunnels()
+    tunnels = host.iproute2().tunnels()
     assert len(tunnels) > 0
 
     cmd = host.run("ip tunnel add test mode ipip remote 127.0.0.1")
     assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
 
-    tunnels = host.iproute2.tunnels(ifname="test")
+    tunnels = host.iproute2().tunnels(ifname="test")
     assert len(tunnels) > 0
     assert tunnels[0].get("ifname") == "test"
     assert tunnels[0].get("mode") == "ip/ip"
@@ -722,20 +728,20 @@ def test_iproute2_tunnels(host):
 def test_iproute2_vrfs(host):
     assert host.iproute2.exists
 
-    vrfs = host.iproute2.vrfs()
+    vrfs = host.iproute2().vrfs()
     assert len(vrfs) == 0
 
 
 def test_iproute2_netns(host):
     assert host.iproute2.exists
 
-    namespaces = host.iproute2.netns()
+    namespaces = host.iproute2().netns()
     assert len(namespaces) == 0
 
     cmd = host.run("ip netns add test")
     assert cmd.exit_status == 0, f"{cmd.stdout}\n{cmd.stderr}"
 
-    namespaces = host.iproute2.netns()
+    namespaces = host.iproute2().netns()
     assert len(namespaces) == 1
     assert namespaces[0].get("name") == "test"
 
@@ -743,21 +749,21 @@ def test_iproute2_netns(host):
 def test_iproute2_bridge_vlan(host):
     assert host.iproute2.bridge_exists
 
-    vlans = host.iproute2.bridge_vlan()
+    vlans = host.iproute2().bridge_vlan()
     assert len(vlans) == 0
 
 
 def test_iproute2_bridge_fdb(host):
     assert host.iproute2.bridge_exists
 
-    fdb = host.iproute2.bridge_fdb()
+    fdb = host.iproute2().bridge_fdb()
     assert len(fdb) > 0
 
 
 def test_iproute2_bridge_mdb(host):
     assert host.iproute2.bridge_exists
 
-    mdb = host.iproute2.bridge_mdb()
+    mdb = host.iproute2().bridge_mdb()
     assert len(mdb) == 1
     assert len(mdb[0].get("mdb")) == 0
     assert len(mdb[0].get("router")) == 0
@@ -766,5 +772,5 @@ def test_iproute2_bridge_mdb(host):
 def test_iproute2_bridge_link(host):
     assert host.iproute2.bridge_exists
 
-    links = host.iproute2.bridge_link()
+    links = host.iproute2().bridge_link()
     assert len(links) == 0

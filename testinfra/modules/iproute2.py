@@ -80,7 +80,7 @@ class IProute2(Module):
     def addresses(self, address=None, ifname=None, local=None):
         """Returns the addresses associated with interfaces
 
-        >>> host.iproute2.addresses()
+        >>> host.iproute2().addresses()
         [{'ifindex': 1,
           'ifname': 'lo',
           'flags': ['LOOPBACK', 'UP', 'LOWER_UP'],
@@ -114,11 +114,12 @@ class IProute2(Module):
         * local
 
         """
+        raise NotImplementedError
 
     def links(self):
         """Returns links and their state.
 
-        >>> host.iproute2.links()
+        >>> host.iproute2().links()
         [{'ifindex': 1,
             'ifname': 'lo',
             'flags': ['LOOPBACK', 'UP', 'LOWER_UP'],
@@ -133,13 +134,14 @@ class IProute2(Module):
             'broadcast': '00:00:00:00:00:00'}]
 
         """
+        raise NotImplementedError
 
     def routes(
         self, table="all", device=None, scope=None, proto=None, src=None, metric=None
     ):
         """Returns the routes installed in *all* routing tables.
 
-        >>> host.iproute2.routes()
+        >>> host.iproute2().routes()
         [{'dst': '169.254.0.0/16',
           'dev': 'wlp4s0',
           'scope': 'link',
@@ -165,6 +167,7 @@ class IProute2(Module):
         * metric
 
         """
+        raise NotImplementedError
 
     def rules(
         self,
@@ -182,7 +185,7 @@ class IProute2(Module):
     ):
         """Returns the rules our routing policy consists of.
 
-        >>> host.iproute2.rules()
+        >>> host.iproute2().rules()
         [{'priority': 0, 'src': 'all', 'table': 'local'},
          {'priority': 32765, 'src': '1.2.3.4', 'table': '123'},
          {'priority': 32766, 'src': 'all', 'table': 'main'},
@@ -204,11 +207,12 @@ class IProute2(Module):
         * dport
 
         """
+        raise NotImplementedError
 
     def tunnels(self, ifname=None):
         """Returns all configured tunnels
 
-        >>> host.iproute2.tunnels()
+        >>> host.iproute2().tunnels()
         [{'ifname': 'test1',
           'mode': 'ip/ip',
           'remote': '127.0.0.2',
@@ -220,51 +224,55 @@ class IProute2(Module):
         * ifname
 
         """
+        raise NotImplementedError
 
     def vrfs(self):
         """Returns all configured vrfs"""
-        cmd = f"{self._ip} --json vrf show"
-        out = self.check_output(cmd)
-        return json.loads(out)
+        raise NotImplementedError
 
     def netns(self):
         """Returns all configured network namespaces
 
-        >>> host.iproute2.netns()
+        >>> host.iproute2().netns()
         [{'name': 'test'}]
         """
+        raise NotImplementedError
 
     def bridge_vlan(self):
         """Returns all configured vlans
 
-        >>> host.iproute2.bridge_vlan()
+        >>> host.iproute2().bridge_vlan()
         []
         """
+        raise NotImplementedError
 
     def bridge_fdb(self):
         """Returns all configured fdb entries
 
-        >>> host.iproute2.bridge_fdb()
+        >>> host.iproute2().bridge_fdb()
         [{'mac': '33:33:00:00:00:01',
           'ifname': 'enp0s31f6',
           'flags': ['self'],
           'state': 'permanent'}]
         """
+        raise NotImplementedError
 
     def bridge_mdb(self):
         """Returns all configured mdb entries
 
-        >>> host.iproute2.bridge_mdb()
+        >>> host.iproute2().bridge_mdb()
         [{'mdb': [], 'router': {}}]
 
         """
+        raise NotImplementedError
 
     def bridge_link(self):
         """Returns all configured links
 
-        >>> host.iproute2.bridge_link()
+        >>> host.iproute2().bridge_link()
         []
         """
+        raise NotImplementedError
 
 
 class LinuxIProute2(IProute2):
@@ -307,7 +315,7 @@ class LinuxIProute2(IProute2):
     def addresses(self, address=None, ifname=None, local=None):
         """Returns the addresses associated with interfaces
 
-        >>> host.iproute2.addresses()
+        >>> host.iproute2().addresses()
         [{'ifindex': 1,
           'ifname': 'lo',
           'flags': ['LOOPBACK', 'UP', 'LOWER_UP'],
@@ -362,7 +370,7 @@ class LinuxIProute2(IProute2):
     def links(self):
         """Returns links and their state.
 
-        >>> host.iproute2.links()
+        >>> host.iproute2().links()
         [{'ifindex': 1,
             'ifname': 'lo',
             'flags': ['LOOPBACK', 'UP', 'LOWER_UP'],
@@ -386,7 +394,7 @@ class LinuxIProute2(IProute2):
     ):
         """Returns the routes installed in *all* routing tables.
 
-        >>> host.iproute2.routes()
+        >>> host.iproute2().routes()
         [{'dst': '169.254.0.0/16',
           'dev': 'wlp4s0',
           'scope': 'link',
@@ -447,7 +455,7 @@ class LinuxIProute2(IProute2):
     ):
         """Returns the rules our routing policy consists of.
 
-        >>> host.iproute2.rules()
+        >>> host.iproute2().rules()
         [{'priority': 0, 'src': 'all', 'table': 'local'},
          {'priority': 32765, 'src': '1.2.3.4', 'table': '123'},
          {'priority': 32766, 'src': 'all', 'table': 'main'},
@@ -512,7 +520,7 @@ class LinuxIProute2(IProute2):
     def tunnels(self, ifname=None):
         """Returns all configured tunnels
 
-        >>> host.iproute2.tunnels()
+        >>> host.iproute2().tunnels()
         [{'ifname': 'test1',
           'mode': 'ip/ip',
           'remote': '127.0.0.2',
@@ -543,7 +551,7 @@ class LinuxIProute2(IProute2):
     def netns(self):
         """Returns all configured network namespaces
 
-        >>> host.iproute2.netns()
+        >>> host.iproute2().netns()
         [{'name': 'test'}]
         """
 
@@ -556,7 +564,7 @@ class LinuxIProute2(IProute2):
     def bridge_vlan(self):
         """Returns all configured vlans
 
-        >>> host.iproute2.bridge_vlan()
+        >>> host.iproute2().bridge_vlan()
         []
         """
 
@@ -567,7 +575,7 @@ class LinuxIProute2(IProute2):
     def bridge_fdb(self):
         """Returns all configured fdb entries
 
-        >>> host.iproute2.bridge_fdb()
+        >>> host.iproute2().bridge_fdb()
         [{'mac': '33:33:00:00:00:01',
           'ifname': 'enp0s31f6',
           'flags': ['self'],
@@ -581,7 +589,7 @@ class LinuxIProute2(IProute2):
     def bridge_mdb(self):
         """Returns all configured mdb entries
 
-        >>> host.iproute2.bridge_mdb()
+        >>> host.iproute2().bridge_mdb()
         [{'mdb': [], 'router': {}}]
 
         """
@@ -593,7 +601,7 @@ class LinuxIProute2(IProute2):
     def bridge_link(self):
         """Returns all configured links
 
-        >>> host.iproute2.bridge_link()
+        >>> host.iproute2().bridge_link()
         []
         """
 
