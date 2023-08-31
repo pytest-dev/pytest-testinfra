@@ -186,7 +186,7 @@ IProute2
 .. autoclass:: testinfra.modules.iproute2.IProute2
    :members:
    :undoc-members:
-
+   :exclude-members: get_module_class
 
 Iptables
 ~~~~~~~~~

@@ -13,11 +13,11 @@
 import functools
 import json
 
-from testinfra.modules.base import InstanceModule
+from testinfra.modules.base import Module
 
 
-class IProute2(InstanceModule):
-    """Test network configuration via iproute2 commands
+class IProute2(Module):
+    """Tests network configuration via iproute2 commands
 
     Currently supported:
 
@@ -33,12 +33,14 @@ class IProute2(InstanceModule):
     * bridge fdb
     * bridge mdb
 
-    Optional module-level arguments can also be provided to contro; execution:
+    Optional module-level arguments can also be provided to control execution:
 
-    * family: force iproute2 tools to use a specific protocol family
+        * **family**: force iproute2 tools to use a specific protocol family
+
         >>> host.iproute2(family="inet").addresses()
 
-    * namespace: execute iproute2 tools inside the provided namespace
+        * **namespace**: execute iproute2 tools inside the provided namespace
+
         >>> host.iproute2(namespace="test").addresses()
 
     """
@@ -51,6 +53,221 @@ class IProute2(InstanceModule):
     def __repr__(self):
         return "<ip>"
 
+    @classmethod
+    def get_module_class(cls, host):
+        if host.system_info.type == "linux":
+            return LinuxIProute2
+        raise NotImplementedError
+
+    @property
+    def exists(self):
+        """Returns True if ip -V succeeds
+
+        >>> host.iproute2.exists
+        True
+
+        """
+
+    @property
+    def bridge_exists(self):
+        """Returns True if bridge -V succeeds
+
+        >>> host.iproute2.bridge_exists
+        True
+
+        """
+
+    def addresses(self, address=None, ifname=None, local=None):
+        """Returns the addresses associated with interfaces
+
+        >>> host.iproute2.addresses()
+        [{'ifindex': 1,
+          'ifname': 'lo',
+          'flags': ['LOOPBACK', 'UP', 'LOWER_UP'],
+          'mtu': 65536,
+          'qdisc': 'noqueue',
+          'operstate': 'UNKNOWN',
+          'group': 'default',
+          'txqlen': 1000,
+          'link_type': 'loopback',
+          'address': '00:00:00:00:00:00',
+          'broadcast': '00:00:00:00:00:00',
+          'addr_info': [{'family': 'inet',
+            'local': '127.0.0.1',
+            'prefixlen': 8,
+            'scope': 'host',
+            'label': 'lo',
+            'valid_life_time': 4294967295,
+            'preferred_life_time': 4294967295},
+           {'family': 'inet6',
+            'local': '::1',
+            'prefixlen': 128,
+            'scope': 'host',
+            'noprefixroute': True,
+            'valid_life_time': 4294967295,
+            'preferred_life_time': 4294967295}]}]
+
+        Optionally, results can be filtered with the following selectors:
+
+        * address
+        * ifname
+        * local
+
+        """
+
+    def links(self):
+        """Returns links and their state.
+
+        >>> host.iproute2.links()
+        [{'ifindex': 1,
+            'ifname': 'lo',
+            'flags': ['LOOPBACK', 'UP', 'LOWER_UP'],
+            'mtu': 65536,
+            'qdisc': 'noqueue',
+            'operstate': 'UNKNOWN',
+            'linkmode': 'DEFAULT',
+            'group': 'default',
+            'txqlen': 1000,
+            'link_type': 'loopback',
+            'address': '00:00:00:00:00:00',
+            'broadcast': '00:00:00:00:00:00'}]
+
+        """
+
+    def routes(
+        self, table="all", device=None, scope=None, proto=None, src=None, metric=None
+    ):
+        """Returns the routes installed in *all* routing tables.
+
+        >>> host.iproute2.routes()
+        [{'dst': '169.254.0.0/16',
+          'dev': 'wlp4s0',
+          'scope': 'link',
+          'metric': 1000,
+          'flags': []},
+         {'type': 'multicast',
+          'dst': 'ff00::/8',
+          'dev': 'wlp4s0',
+          'table': 'local',
+          'protocol': 'kernel',
+          'metric': 256,
+          'flags': [],
+          'pref': 'medium'}]
+
+        Optionally, routes returned can be filtered with the following
+        selectors. This can be useful in busy routing tables.
+
+        * table
+        * device (maps to ip-route's 'dev' selector)
+        * scope
+        * proto
+        * src
+        * metric
+
+        """
+
+    def rules(
+        self,
+        src=None,
+        to=None,
+        tos=None,
+        fwmark=None,
+        iif=None,
+        oif=None,
+        pref=None,
+        uidrange=None,
+        ipproto=None,
+        sport=None,
+        dport=None,
+    ):
+        """Returns the rules our routing policy consists of.
+
+        >>> host.iproute2.rules()
+        [{'priority': 0, 'src': 'all', 'table': 'local'},
+         {'priority': 32765, 'src': '1.2.3.4', 'table': '123'},
+         {'priority': 32766, 'src': 'all', 'table': 'main'},
+         {'priority': 32767, 'src': 'all', 'table': 'default'}]
+
+        Optionally, rules returned can be filtered with the following
+        selectors. This can be useful in busy rulesets.
+
+        * src (maps to ip-rule's 'from' selector)
+        * to
+        * tos
+        * fwmark
+        * iif
+        * oif
+        * pref
+        * uidrange
+        * ipproto
+        * sport
+        * dport
+
+        """
+
+    def tunnels(self, ifname=None):
+        """Returns all configured tunnels
+
+        >>> host.iproute2.tunnels()
+        [{'ifname': 'test1',
+          'mode': 'ip/ip',
+          'remote': '127.0.0.2',
+          'local': '0.0.0.0'}]
+
+        Optionally, tunnels returned can be filtered with the interface name.
+        This can be faster in busy tunnel installations.
+
+        * ifname
+
+        """
+
+    def vrfs(self):
+        """Returns all configured vrfs"""
+        cmd = f"{self._ip} --json vrf show"
+        out = self.check_output(cmd)
+        return json.loads(out)
+
+    def netns(self):
+        """Returns all configured network namespaces
+
+        >>> host.iproute2.netns()
+        [{'name': 'test'}]
+        """
+
+    def bridge_vlan(self):
+        """Returns all configured vlans
+
+        >>> host.iproute2.bridge_vlan()
+        []
+        """
+
+    def bridge_fdb(self):
+        """Returns all configured fdb entries
+
+        >>> host.iproute2.bridge_fdb()
+        [{'mac': '33:33:00:00:00:01',
+          'ifname': 'enp0s31f6',
+          'flags': ['self'],
+          'state': 'permanent'}]
+        """
+
+    def bridge_mdb(self):
+        """Returns all configured mdb entries
+
+        >>> host.iproute2.bridge_mdb()
+        [{'mdb': [], 'router': {}}]
+
+        """
+
+    def bridge_link(self):
+        """Returns all configured links
+
+        >>> host.iproute2.bridge_link()
+        []
+        """
+
+
+class LinuxIProute2(IProute2):
     @functools.cached_property
     def _ip(self):
         ip_cmd = self.find_command("ip")
@@ -326,9 +543,9 @@ class IProute2(InstanceModule):
     def netns(self):
         """Returns all configured network namespaces
 
-		>>> host.iproute2.netns()
-		[{'name': 'test'}]
-		"""
+        >>> host.iproute2.netns()
+        [{'name': 'test'}]
+        """
 
         cmd = f"{self._ip} --json netns show"
         out = self.check_output(cmd)
@@ -339,9 +556,9 @@ class IProute2(InstanceModule):
     def bridge_vlan(self):
         """Returns all configured vlans
 
-		>>> host.iproute2.bridge_vlan()
-		[]
-		"""
+        >>> host.iproute2.bridge_vlan()
+        []
+        """
 
         cmd = f"{self._bridge} -json vlan show"
         out = self.check_output(cmd)
@@ -350,11 +567,11 @@ class IProute2(InstanceModule):
     def bridge_fdb(self):
         """Returns all configured fdb entries
 
-		>>> host.iproute2.bridge_fdb()
-		[{'mac': '33:33:00:00:00:01',
-		  'ifname': 'enp0s31f6',
-		  'flags': ['self'],
-		  'state': 'permanent'}]
+        >>> host.iproute2.bridge_fdb()
+        [{'mac': '33:33:00:00:00:01',
+          'ifname': 'enp0s31f6',
+          'flags': ['self'],
+          'state': 'permanent'}]
         """
 
         cmd = f"{self._bridge} -json fdb show"
@@ -364,10 +581,10 @@ class IProute2(InstanceModule):
     def bridge_mdb(self):
         """Returns all configured mdb entries
 
-		>>> host.iproute2.bridge_mdb()
-		[{'mdb': [], 'router': {}}]
+        >>> host.iproute2.bridge_mdb()
+        [{'mdb': [], 'router': {}}]
 
-		"""
+        """
 
         cmd = f"{self._bridge} -json mdb show"
         out = self.check_output(cmd)
@@ -376,9 +593,9 @@ class IProute2(InstanceModule):
     def bridge_link(self):
         """Returns all configured links
 
-		>>> host.iproute2.bridge_link()
-		[]
-		"""
+        >>> host.iproute2.bridge_link()
+        []
+        """
 
         cmd = f"{self._bridge} -json link show"
         out = self.check_output(cmd)
