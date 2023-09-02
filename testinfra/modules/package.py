@@ -40,6 +40,15 @@ class Package(Module):
         raise NotImplementedError
 
     @property
+    def is_not_installed(self):
+        """Test if the package is not installed
+
+        >>> host.package("nginx").is_not_installed
+        'True'
+        """
+        raise NotImplementedError
+
+    @property
     def release(self):
         """Return the release specific info from the package version
 
@@ -106,6 +115,10 @@ class DebianPackage(Package):
         return out[0] in ["install", "hold"] and out[1:3] == installed_status
 
     @property
+    def is_not_installed(self):
+        return self.run_test("dpkg -s %s", self.name).rc == 1
+
+    @property
     def release(self):
         raise NotImplementedError
 
@@ -129,6 +142,12 @@ class FreeBSDPackage(Package):
         return (
             self.run_expect([0, EX_UNAVAILABLE], "pkg query %%n %s", self.name).rc == 0
         )
+    @property
+    def is_not_installed(self):
+        EX_UNAVAILABLE = 69
+        return (
+            self.run_expect([0, EX_UNAVAILABLE], "pkg query %%n %s", self.name).rc == 1
+        )
 
     @property
     def release(self):
@@ -143,6 +162,10 @@ class OpenBSDPackage(Package):
     @property
     def is_installed(self):
         return self.run_test("pkg_info -e %s", "{}-*".format(self.name)).rc == 0
+
+    @property
+    def is_not_installed(self):
+        return self.run_test("pkg_info -e %s", "{}-*".format(self.name)).rc == 1
 
     @property
     def release(self):
@@ -162,6 +185,10 @@ class RpmPackage(Package):
         return self.run_test("rpm -q %s", self.name).rc == 0
 
     @property
+    def is_not_installed(self):
+        return self.run_test("rpm -q %s", self.name).rc == 1
+
+    @property
     def version(self):
         return self.check_output('rpm -q --queryformat="%%{VERSION}" %s', self.name)
 
@@ -174,6 +201,10 @@ class AlpinePackage(Package):
     @property
     def is_installed(self):
         return self.run_test("apk -e info %s", self.name).rc == 0
+
+    @property
+    def is_not_installed(self):
+        return self.run_test("apk -e info %s", self.name).rc == 1
 
     @property
     def version(self):
@@ -192,6 +223,10 @@ class ArchPackage(Package):
         return self.run_test("pacman -Q %s", self.name).rc == 0
 
     @property
+    def is_not_installed(self):
+        return self.run_test("pacman -Q %s", self.name).rc == 1
+
+    @property
     def version(self):
         out = self.check_output("pacman -Q %s", self.name).split(" ")
         return out[1]
@@ -205,6 +240,10 @@ class ChocolateyPackage(Package):
     @property
     def is_installed(self):
         return self.run_test("choco info -lo %s", self.name).rc == 0
+
+    @property
+    def is_not_installed(self):
+        return self.run_test("choco info -lo %s", self.name).rc == 1
 
     @property
     def version(self):
