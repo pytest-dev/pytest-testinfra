@@ -77,10 +77,11 @@ class Package(Module):
                 "centos",
                 "cloudlinux",
                 "fedora",
+                "ol",
                 "opensuse-leap",
                 "opensuse-tumbleweed",
-                "rocky",
                 "rhel",
+                "rocky",
             )
         ):
             return RpmPackage
