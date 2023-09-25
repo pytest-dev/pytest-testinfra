@@ -145,6 +145,12 @@ Docker
    :members:
 
 
+Environment
+~~~~~~
+
+.. autoclass:: testinfra.modules.environment.Environment(name)
+   :members:
+
 File
 ~~~~
 
