@@ -18,7 +18,7 @@ class Environment(InstanceModule):
 
     Example:
 
-     >>> host.environment()
+    >>> host.environment()
     {
         "EDITOR": "vim",
         "SHELL": "/bin/bash",
