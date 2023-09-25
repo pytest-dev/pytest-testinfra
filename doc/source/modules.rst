@@ -146,7 +146,7 @@ Docker
 
 
 Environment
-~~~~~~
+~~~~~~~~~~~
 
 .. autoclass:: testinfra.modules.environment.Environment(name)
    :members:
