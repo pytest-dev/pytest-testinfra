@@ -143,6 +143,32 @@ class SysvService(Service):
 
 
 class SystemdService(SysvService):
+    suffix_list = [
+        "service",
+        "socket",
+        "device",
+        "mount",
+        "automount",
+        "swap",
+        "target",
+        "path",
+        "timer",
+        "slice",
+        "scope",
+    ]
+    """
+    List of valid suffixes for systemd unit files
+
+    See systemd.unit(5) for more details
+    """
+
+    def _has_systemd_suffix(self):
+        """
+        Check if service name has a known systemd unit suffix
+        """
+        unit_suffix = self.name.split(".")[-1]
+        return unit_suffix in self.suffix_list
+
     @property
     def is_running(self):
         out = self.run_expect([0, 1, 3], "systemctl is-active %s", self.name)
@@ -164,8 +190,8 @@ class SystemdService(SysvService):
 
     @property
     def is_valid(self):
-        # systemd-analyze requires a full path.
-        if self.name.endswith(".service"):
+        # systemd-analyze requires a full unit name.
+        if self._has_systemd_suffix():
             name = self.name
         else:
             name = self.name + ".service"
