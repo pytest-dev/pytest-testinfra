@@ -184,9 +184,15 @@ class SystemdService(SysvService):
             return True
         if cmd.stdout.strip() == "disabled":
             return False
-        # Fallback on SysV
+        # Fallback on SysV - only for non-systemd units
         # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616
-        return super().is_enabled
+        if not self._has_systemd_suffix():
+            return super().is_enabled
+        raise RuntimeError(
+            "Unable to determine state of {0}. Does this service exist?".format(
+                self.name
+            )
+        )
 
     @property
     def is_valid(self):
@@ -290,9 +296,7 @@ class OpenBSDService(Service):
         if self.name in self.check_output("rcctl ls off").splitlines():
             return False
         raise RuntimeError(
-            "Unable to determine state of {0}. Does this service exist?".format(
-                self.name
-            )
+            f"Unable to determine state of {self.name}. Does this service exist?"
         )
 
 
