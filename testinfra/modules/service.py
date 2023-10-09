@@ -34,6 +34,11 @@ class Service(Module):
         super().__init__()
 
     @property
+    def exists(self):
+        """Test if service is exists"""
+        raise NotImplementedError
+
+    @property
     def is_running(self):
         """Test if service is running"""
         raise NotImplementedError
@@ -144,6 +149,11 @@ class SysvService(Service):
 
 class SystemdService(SysvService):
     @property
+    def exists(self):
+        cmd = self.run_test('systemctl list-unit-files | grep -q"^%s"', self.name)
+        return cmd.rc == 0
+
+    @property
     def is_running(self):
         out = self.run_expect([0, 1, 3], "systemctl is-active %s", self.name)
         if out.rc == 1:
@@ -196,6 +206,10 @@ class SystemdService(SysvService):
 
 class UpstartService(SysvService):
     @property
+    def exists(self):
+        return self._host.file(f"/etc/init/{self.name}.conf").exists
+
+    @property
     def is_enabled(self):
         if (
             self.run(
@@ -238,6 +252,10 @@ class OpenRCService(SysvService):
 
 class FreeBSDService(Service):
     @property
+    def exists(self):
+        return self._host.file(f"/etc/rc.d/{self.name}").exists
+
+    @property
     def is_running(self):
         return self.run_test("service %s onestatus", self.name).rc == 0
 
@@ -253,6 +271,10 @@ class FreeBSDService(Service):
 
 
 class OpenBSDService(Service):
+    @property
+    def exists(self):
+        return self._host.file(f"/etc/rc.d/{self.name}").exists
+
     @property
     def is_running(self):
         return self.run_test("/etc/rc.d/%s check", self.name).rc == 0
@@ -272,6 +294,10 @@ class OpenBSDService(Service):
 
 class NetBSDService(Service):
     @property
+    def exists(self):
+        return self._host.file(f"/etc/rc.d/{self.name}").exists
+
+    @property
     def is_running(self):
         return self.run_test("/etc/rc.d/%s onestatus", self.name).rc == 0
 
@@ -281,6 +307,13 @@ class NetBSDService(Service):
 
 
 class WindowsService(Service):
+    @property
+    def exists(self):
+        out = self.check_output(
+            f"Get-Service -Name {self.name} -ErrorAction SilentlyContinue"
+        )
+        return self.name in out
+
     @property
     def is_running(self):
         return (
