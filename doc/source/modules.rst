@@ -284,4 +284,11 @@ User
    :exclude-members: get_module_class
 
 
+CommandResult
+~~~~~~~~~~~~~
+
+.. autoclass:: testinfra.backend.base.CommandResult
+   :members:
+
+
 .. _fixture: https://docs.pytest.org/en/latest/fixture.html#fixture
