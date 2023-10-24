@@ -34,6 +34,23 @@ class HostSpec:
 
 
 class CommandResult:
+    """Object that encapsulates all returned details of the command execution.
+
+    Example:
+
+    >>> cmd = host.run("ls -l /etc/passwd")
+    >>> cmd.rc
+    0
+    >>> cmd.stdout
+    '-rw-r--r-- 1 root root 1790 Feb 11 00:28 /etc/passwd\\n'
+    >>> cmd.stderr
+    ''
+    >>> cmd.succeeded
+    True
+    >>> cmd.failed
+    False
+    """
+
     def __init__(
         self,
         backend: "BaseBackend",
@@ -82,24 +99,44 @@ class CommandResult:
 
     @property
     def stdout(self) -> str:
+        """Gets standard output (stdout) stream of an executed command
+
+        >>> host.run("mkdir -v new_directory").stdout
+        mkdir: created directory 'new_directory'
+        """
         if self._stdout is None:
             self._stdout = self._backend.decode(self._stdout_bytes)
         return self._stdout
 
     @property
     def stderr(self) -> str:
+        """Gets standard error (stderr) stream of an executed command
+
+        >>> host.run("mkdir new_directory").stderr
+        mkdir: cannot create directory 'new_directory': File exists
+        """
         if self._stderr is None:
             self._stderr = self._backend.decode(self._stderr_bytes)
         return self._stderr
 
     @property
     def stdout_bytes(self) -> bytes:
+        """Gets standard output (stdout) stream of an executed command as bytes
+
+        >>> host.run("mkdir -v new_directory").stdout_bytes
+        b"mkdir: created directory 'new_directory'"
+        """
         if self._stdout_bytes is None:
             self._stdout_bytes = self._backend.encode(self._stdout)
         return self._stdout_bytes
 
     @property
     def stderr_bytes(self) -> bytes:
+        """Gets standard error (stderr) stream of an executed command as bytes
+
+        >>> host.run("mkdir new_directory").stderr_bytes
+        b"mkdir: cannot create directory 'new_directory': File exists"
+        """
         if self._stderr_bytes is None:
             self._stderr_bytes = self._backend.encode(self._stderr)
         return self._stderr_bytes
