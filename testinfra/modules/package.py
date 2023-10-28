@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 
 from testinfra.modules.base import Module
 
@@ -31,6 +32,7 @@ class Package(Module):
 
         - apk (Alpine)
         - apt (Debian, Ubuntu, ...)
+        - brew (macOS)
         - pacman (Arch, Manjaro )
         - pkg (FreeBSD)
         - pkg_info (NetBSD)
@@ -94,6 +96,8 @@ class Package(Module):
             return DebianPackage
         if host.exists("rpm"):
             return RpmPackage
+        if host.exists("brew"):
+            return HomebrewPackage
         raise NotImplementedError
 
 
@@ -211,6 +215,23 @@ class ChocolateyPackage(Package):
     @property
     def version(self):
         _, version = self.check_output("choco info -lo %s -r", self.name).split("|", 1)
+        return version
+
+    @property
+    def release(self):
+        raise NotImplementedError
+
+
+class HomebrewPackage(Package):
+    @property
+    def is_installed(self):
+        info = self.check_output("brew info --formula --json %s", self.name)
+        return len(json.loads(info)[0]["installed"]) > 0
+
+    @property
+    def version(self):
+        info = self.check_output("brew info --formula --json %s", self.name)
+        version = json.loads(info)[0]["installed"][0]["version"]
         return version
 
     @property
