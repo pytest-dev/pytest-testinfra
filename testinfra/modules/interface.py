@@ -51,6 +51,26 @@ class Interface(Module):
         """
         raise NotImplementedError
 
+    @property
+    def link(self):
+        """Return the link properties associated with the interface.
+
+        >>> host.interface("lo").link
+        {'address': '00:00:00:00:00:00',
+        'broadcast': '00:00:00:00:00:00',
+        'flags': ['LOOPBACK', 'UP', 'LOWER_UP'],
+        'group': 'default',
+        'ifindex': 1,
+        'ifname': 'lo',
+        'link_type': 'loopback',
+        'linkmode': 'DEFAULT',
+        'mtu': 65536,
+        'operstate': 'UNKNOWN',
+        'qdisc': 'noqueue',
+        'txqlen': 1000}
+        """
+        raise NotImplementedError
+
     def routes(self, scope=None):
         """Return the routes associated with the interface, optionally filtered by scope
         ("host", "link" or "global").
@@ -131,6 +151,12 @@ class LinuxInterface(Interface):
             if splitted and splitted[0] in ("inet", "inet6"):
                 addrs.append(splitted[1].split("/", 1)[0])
         return addrs
+
+    @property
+    def link(self):
+        return json.loads(
+            self.check_output(f"{self._ip} --json link show %s", self.name)
+        )
 
     def routes(self, scope=None):
         cmd = f"{self._ip} --json route list dev %s"
