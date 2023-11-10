@@ -130,7 +130,7 @@ class LinuxBlockDevice(BlockDevice):
         header = ["RO", "RA", "SSZ", "BSZ", "StartSec", "Size", "Device"]
         command = "blockdev  --report %s"
         blockdev = self.run(command, self.device)
-        if blockdev.rc != 0 or blockdev.stderr:
+        if blockdev.rc != 0:
             raise RuntimeError("Failed to gather data: {}".format(blockdev.stderr))
         output = blockdev.stdout.splitlines()
         if len(output) < 2:
