@@ -40,9 +40,7 @@ class SaltBackend(base.BaseBackend):
         out = self.run_salt("cmd.run_all", [command])
         return self.result(
             out["retcode"],
-            command,
-            out["stdout"].encode("utf8"),
-            out["stderr"].encode("utf8"),
+            self.encode(command),
             stdout=out["stdout"],
             stderr=out["stderr"],
         )

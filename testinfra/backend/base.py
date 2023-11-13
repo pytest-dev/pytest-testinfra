@@ -17,7 +17,7 @@ import logging
 import shlex
 import subprocess
 import urllib.parse
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 if TYPE_CHECKING:
     import testinfra.host
@@ -33,6 +33,7 @@ class HostSpec:
     password: Optional[str]
 
 
+@dataclasses.dataclass
 class CommandResult:
     """Object that encapsulates all returned details of the command execution.
 
@@ -51,24 +52,11 @@ class CommandResult:
     False
     """
 
-    def __init__(
-        self,
-        backend: "BaseBackend",
-        exit_status: int,
-        command: bytes,
-        stdout_bytes: bytes,
-        stderr_bytes: bytes,
-        stdout: Optional[str] = None,
-        stderr: Optional[str] = None,
-    ):
-        self.exit_status = exit_status
-        self._stdout_bytes = stdout_bytes
-        self._stderr_bytes = stderr_bytes
-        self._stdout = stdout
-        self._stderr = stderr
-        self.command = command
-        self._backend = backend
-        super().__init__()
+    backend: "BaseBackend"
+    exit_status: int
+    command: bytes
+    _stdout: Union[str, bytes]
+    _stderr: Union[str, bytes]
 
     @property
     def succeeded(self) -> bool:
@@ -104,8 +92,8 @@ class CommandResult:
         >>> host.run("mkdir -v new_directory").stdout
         mkdir: created directory 'new_directory'
         """
-        if self._stdout is None:
-            self._stdout = self._backend.decode(self._stdout_bytes)
+        if isinstance(self._stdout, bytes):
+            return self.backend.decode(self._stdout)
         return self._stdout
 
     @property
@@ -115,8 +103,8 @@ class CommandResult:
         >>> host.run("mkdir new_directory").stderr
         mkdir: cannot create directory 'new_directory': File exists
         """
-        if self._stderr is None:
-            self._stderr = self._backend.decode(self._stderr_bytes)
+        if isinstance(self._stderr, bytes):
+            return self.backend.decode(self._stderr)
         return self._stderr
 
     @property
@@ -126,9 +114,9 @@ class CommandResult:
         >>> host.run("mkdir -v new_directory").stdout_bytes
         b"mkdir: created directory 'new_directory'"
         """
-        if self._stdout_bytes is None:
-            self._stdout_bytes = self._backend.encode(self._stdout)
-        return self._stdout_bytes
+        if isinstance(self._stdout, str):
+            return self.backend.encode(self._stdout)
+        return self._stdout
 
     @property
     def stderr_bytes(self) -> bytes:
@@ -137,19 +125,9 @@ class CommandResult:
         >>> host.run("mkdir new_directory").stderr_bytes
         b"mkdir: cannot create directory 'new_directory': File exists"
         """
-        if self._stderr_bytes is None:
-            self._stderr_bytes = self._backend.encode(self._stderr)
-        return self._stderr_bytes
-
-    def __repr__(self) -> str:
-        return (
-            "CommandResult(command={!r}, exit_status={}, stdout={!r}, " "stderr={!r})"
-        ).format(
-            self.command,
-            self.exit_status,
-            self._stdout_bytes or self._stdout,
-            self._stderr_bytes or self._stderr,
-        )
+        if isinstance(self._stderr, str):
+            return self.backend.encode(self._stderr)
+        return self._stderr
 
 
 class BaseBackend(metaclass=abc.ABCMeta):
@@ -337,7 +315,15 @@ class BaseBackend(metaclass=abc.ABCMeta):
         except UnicodeEncodeError:
             return data.encode(self.encoding)
 
-    def result(self, *args: Any, **kwargs: Any) -> CommandResult:
-        result = CommandResult(self, *args, **kwargs)
+    def result(
+        self, rc: int, cmd: bytes, stdout: Union[str, bytes], stderr: Union[str, bytes]
+    ) -> CommandResult:
+        result = CommandResult(
+            backend=self,
+            exit_status=rc,
+            command=cmd,
+            _stdout=stdout,
+            _stderr=stderr,
+        )
         logger.debug("RUN %s", result)
         return result
