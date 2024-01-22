@@ -425,9 +425,8 @@ def test_supervisor(host, supervisorctl_path, supervisorctl_conf):
         )
         if service.status == "RUNNING":
             break
-        else:
-            assert service.status == "STARTING"
-            time.sleep(0.5)
+        assert service.status == "STARTING"
+        time.sleep(0.5)
     else:
         raise RuntimeError("No running tail in supervisor")
 
