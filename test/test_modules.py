@@ -33,10 +33,10 @@ all_images = pytest.mark.testinfra_hosts(
     ]
 )
 
-# content: ssh version, release shortcut,
+# content: ssh version, release shortcut, service name
 ssh_pkg_info = {
-    "rockylinux9": ("8.", ".el9"),
-    "debian_bookworm": ("1:9.2", None),
+    "rockylinux9": ("8.", ".el9", "sshd"),
+    "debian_bookworm": ("1:9.2", None, "ssh"),
 }
 
 # content: distribution, codename, architecture, release_regex
@@ -50,7 +50,7 @@ docker_image_info = {
 def test_package(host, docker_image):
     assert not host.package("zsh").is_installed
     ssh = host.package("openssh-server")
-    ssh_version, sshd_release = ssh_pkg_info[docker_image]
+    ssh_version, sshd_release = ssh_pkg_info[docker_image][:2]
     assert ssh.is_installed
     assert ssh.version.startswith(ssh_version)
     if sshd_release is None:
@@ -115,8 +115,8 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    name = "sshd" if docker_image == "rockylinux9" else "ssh"
-    ssh = host.service(name)
+    service_name = ssh_pkg_info[docker_image][2]
+    ssh = host.service(service_name)
     # wait at max 10 seconds for ssh is running
     for _ in range(10):
         if ssh.is_running:
