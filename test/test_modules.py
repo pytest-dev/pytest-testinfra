@@ -116,25 +116,37 @@ def test_systeminfo(host, docker_image):
 @all_images
 def test_ssh_service(host, docker_image):
     service_name = ssh_pkg_info[docker_image][2]
-    ssh = host.service(service_name)
+    ssh_svc = host.service(service_name)
     # wait at max 10 seconds for ssh is running
     for _ in range(10):
-        if ssh.is_running:
+        if ssh_svc.is_running:
             break
         time.sleep(1)
     else:
         raise AssertionError("ssh is not running")
 
-    assert ssh.is_enabled
+    assert ssh_svc.is_enabled
+
+
+@all_images
+def test_systemdservice_exists(host, docker_image):
+    service_name = ssh_pkg_info[docker_image][2]
+    for name in [service_name, f"{service_name}.service"]:
+        ssh_svc = host.service(name)
+        assert ssh_svc.exists
+
+    for name in ["non-existing", "non-existing.service", "non-existing.timer"]:
+        non_existing_service = host.service(name)
+        assert not non_existing_service.exists
 
 
 def test_service_systemd_mask(host):
-    ssh = host.service("ssh")
-    assert not ssh.is_masked
+    ssh_svc = host.service("ssh")
+    assert not ssh_svc.is_masked
     host.run("systemctl mask ssh")
-    assert ssh.is_masked
+    assert ssh_svc.is_masked
     host.run("systemctl unmask ssh")
-    assert not ssh.is_masked
+    assert not ssh_svc.is_masked
 
 
 def test_salt(host):
