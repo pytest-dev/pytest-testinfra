@@ -18,7 +18,7 @@ import json
 import os
 import re
 import tempfile
-from typing import Any, Callable, Iterator, List, Optional, Set, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Union
 
 import testinfra
 import testinfra.host
