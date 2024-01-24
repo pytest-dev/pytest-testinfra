@@ -27,7 +27,7 @@ __all__ = ["AnsibleRunner"]
 
 local = testinfra.get_host("local://")
 
-Inventory = dict[str, Any]
+Inventory = Dict[str, Any]
 
 
 def expand_group(name: str, inventory: Inventory) -> Iterator[str]:
