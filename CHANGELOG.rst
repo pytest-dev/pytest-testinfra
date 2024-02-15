@@ -2,6 +2,13 @@
 Changelog
 =========
 
+10.1.0
+======
+
+* [NEW] Add Interface.link property
+* [FIX] Make file properties follow symlinks
+* [FIX] Require pytest>=6 and use future annotations for pytest<7 compatibility
+
 10.0.0
 ======
 
