@@ -2,6 +2,20 @@
 Changelog
 =========
 
+10.0.0
+======
+
+* [FIX] Ansible: Fix for missing group names in get_variables()
+* [FIX] testinfra/modules/blockdevice: Don't fail on stderr
+* [DOC] Extend and show the documentation of CommandResult
+* [FIX] Extend list of valid suffixes for systemd units
+* [DOC] Add missing Environment doc section
+* [MISC] Define types for plugin.py
+* [FIX] Missing RHEL distribution in package module
+* [NEW] Add brew support in package module
+* [NEW] Add Service.exists
+* [MISC] Make CommandResult a dataclass
+
 9.0.0
 =====
 
