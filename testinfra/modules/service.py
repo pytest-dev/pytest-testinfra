@@ -176,7 +176,12 @@ class SystemdService(SysvService):
 
     @property
     def exists(self):
-        cmd = self.run_test('systemctl list-unit-files | grep -q"^%s"', self.name)
+        # list-unit-files: Older systemd versions only show native unit files
+        # list-units:      List all units that Systemd currently has in memory,
+        #                  this includes generated units like SysV files also
+        cmd = self.run_test(
+            r'systemctl list-units --all | grep -q "^[[:space:]]*%s"', self.name
+        )
         return cmd.rc == 0
 
     @property
