@@ -28,9 +28,14 @@ class BlockDevice(Module):
     def _data(self):
         raise NotImplementedError
 
-    def __init__(self, device):
+    def __init__(self, device, _data_cache=None):
         self.device = device
+        self._data_cache = _data_cache
         super().__init__()
+
+    @classmethod
+    def _iter_blockdevices(cls):
+        raise NotImplementedError
 
     @property
     def is_partition(self):
@@ -116,6 +121,19 @@ class BlockDevice(Module):
         return self._data["read_ahead"]
 
     @classmethod
+    def get_blockdevices(cls):
+        """Returns a list of BlockDevice instances
+
+        >>> host.block_device.get_blockevices()
+        [<BlockDevice(path=/dev/sda)>,
+         <BlockDevice(path=/dev/sda1)>]
+        """
+        blockdevices = []
+        for device in cls._iter_blockdevices():
+            blockdevices.append(cls(device["name"], device))
+        return blockdevices
+
+    @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             return LinuxBlockDevice
@@ -128,6 +146,8 @@ class BlockDevice(Module):
 class LinuxBlockDevice(BlockDevice):
     @functools.cached_property
     def _data(self):
+        if self._data_cache:
+            return self._data_cache
         # -J Use JSON output format
         # -O Output all available columns
         # -b Print the sizes in bytes
@@ -149,6 +169,35 @@ class LinuxBlockDevice(BlockDevice):
                 except AssertionError:
                     blockdevs[0]["start"] = 0
         return blockdevs[0]
+
+    @classmethod
+    def _iter_blockdevices(cls):
+        def children_generator(children_list):
+            for child in children_list:
+                if "start" not in child:
+                    try:
+                        cmd = f"cat /sys/dev/block/{child['maj:min']}/start"
+                        out = check_output(cmd)
+                        child["start"] = int(out)
+                    # At this point, the AssertionError only indicates that
+                    # the device is a virtual block device (device mapper target).
+                    # It can be assumed that the start sector is 0.
+                    except AssertionError:
+                        child["start"] = 0
+                if "children" in child:
+                    yield from children_generator(child["children"])
+                yield child
+
+        command = "lsblk -JOb"
+        check_output = cls(None).check_output
+        blockdevices = json.loads(check_output(command))["blockdevices"]
+        for device in blockdevices:
+            if "start" not in device:
+                # Parent devices always start from 0
+                device["start"] = 0
+            if "children" in device:
+                yield from children_generator(device["children"])
+            yield device
 
     @property
     def is_partition(self):
