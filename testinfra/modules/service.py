@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import enum
 import functools
 
 from testinfra.modules.base import Module
@@ -147,6 +147,11 @@ class SysvService(Service):
         )
 
 
+class SystemdServiceScope(enum.Enum):
+    SYSTEM = "--system"
+    USER = "--user"
+
+
 class SystemdService(SysvService):
     suffix_list = [
         "service",
@@ -167,6 +172,23 @@ class SystemdService(SysvService):
     See systemd.unit(5) for more details
     """
 
+    def __init__(self, name,
+                 service_scope=SystemdServiceScope.SYSTEM,
+                 user="",
+                 ):
+        self.name = name
+        machine = ""
+        if user:
+            systemctl_user_cmd_line = "-M {}@{}".format(user, machine)
+        else:
+            systemctl_user_cmd_line = ""
+        self.systemctl_scope_cmd_line = "{} {}".format(
+            service_scope.value,
+            systemctl_user_cmd_line
+        )
+
+        super().__init__(name)
+
     def _has_systemd_suffix(self):
         """
         Check if service name has a known systemd unit suffix
@@ -176,12 +198,21 @@ class SystemdService(SysvService):
 
     @property
     def exists(self):
-        cmd = self.run_test('systemctl list-unit-files | grep -q"^%s"', self.name)
+        cmd = self.run_test(
+            'systemctl {} list-unit-files | grep -q "^{}"'.format(
+                self.systemctl_scope_cmd_line,
+                self.name)
+        )
         return cmd.rc == 0
 
     @property
     def is_running(self):
-        out = self.run_expect([0, 1, 3], "systemctl is-active %s", self.name)
+        out = self.run_expect(
+            [0, 1, 3],
+            "systemctl {} is-active {}".format(
+                self.systemctl_scope_cmd_line,
+                self.name)
+        )
         if out.rc == 1:
             # Failed to connect to bus: No such file or directory
             return super().is_running
@@ -189,7 +220,12 @@ class SystemdService(SysvService):
 
     @property
     def is_enabled(self):
-        cmd = self.run_test("systemctl is-enabled %s", self.name)
+        cmd = self.run_test(
+            "systemctl {} is-enabled {}".format(
+                self.systemctl_scope_cmd_line,
+                self.name,
+            )
+        )
         if cmd.rc == 0:
             return True
         if cmd.stdout.strip() == "disabled":
@@ -211,7 +247,10 @@ class SystemdService(SysvService):
             name = self.name
         else:
             name = self.name + ".service"
-        cmd = self.run("systemd-analyze verify %s", name)
+        cmd = self.run("systemd-analyze {} verify {}".format(
+            self.systemctl_scope_cmd_line,
+            name)
+        )
         # A bad unit file still returns a rc of 0, so check the
         # stdout for anything.  Nothing means no warns/errors.
         # Docs at https://www.freedesktop.org/software/systemd/man/systemd
@@ -221,12 +260,19 @@ class SystemdService(SysvService):
 
     @property
     def is_masked(self):
-        cmd = self.run_test("systemctl is-enabled %s", self.name)
+        cmd = self.run_test("systemctl {} is-enabled {}".format(
+                            self.systemctl_scope_cmd_line,
+                            self.name)
+        )
         return cmd.stdout.strip() == "masked"
 
     @functools.cached_property
     def systemd_properties(self):
-        out = self.check_output("systemctl show %s", self.name)
+        out = self.check_output("systemctl {} show {}".format(
+                                self.systemctl_scope_cmd_line,
+                                self.name
+                                )
+        )
         out_d = {}
         if out:
             # maxsplit is required because values can contain `=`
