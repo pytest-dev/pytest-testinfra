@@ -187,13 +187,18 @@ def get_ansible_host(
 
     control_path = config.get("ssh_connection", "control_path", fallback="", raw=True)
     if control_path:
-        directory = config.get(
+        control_path_dir = config.get(
             "persistent_connection", "control_path_dir", fallback="~/.ansible/cp"
         )
-        control_path = control_path % ({"directory": directory})  # noqa: S001
-        # restore original "%%"
-        control_path = control_path.replace("%", "%%")
-        kwargs["controlpath"] = control_path
+        control_path_dir = os.path.expanduser(control_path_dir)
+        control_path_dir = os.path.normpath(control_path_dir)
+
+        if os.path.isdir(control_path_dir):
+            control_path = control_path % (  # noqa: S001
+                {"directory": control_path_dir}
+            )
+            control_path = control_path.replace("%", "%%")  # restore original "%%"
+            kwargs["controlpath"] = control_path
 
     spec = "{}://".format(connection)
 
