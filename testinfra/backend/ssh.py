@@ -27,7 +27,7 @@ class SshBackend(base.BaseBackend):
         ssh_config: Optional[str] = None,
         ssh_identity_file: Optional[str] = None,
         timeout: int = 10,
-        controlpath: str = "",
+        controlpath: Optional[str] = None,
         controlpersist: int = 60,
         ssh_extra_args: Optional[str] = None,
         *args: Any,
