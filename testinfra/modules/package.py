@@ -169,12 +169,10 @@ class RpmPackage(Package):
         if result.succeeded:
             return True
 
-        if "not installed" in result.stdout:
+        if "not installed" in result.stdout or not result.stdout.startswith(self.name):
             return False
 
-        raise RuntimeError(
-            "Could not check if RPM package '{}' is installed. {}".format(self.name, result)
-        )
+        raise RuntimeError(f"Could not check if RPM package '{self.name}' is installed. {result}")
 
     @property
     def version(self):

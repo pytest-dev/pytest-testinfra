@@ -58,6 +58,19 @@ def test_held_package(host):
     assert python.is_installed
     assert python.version.startswith("3.11.")
 
+@pytest.mark.destructive
+@pytest.mark.testinfra_hosts("docker://rockylinux9")
+def test_rpm_package_broken_db(host):
+    with host.sudo():
+        # Corrupt RPM database so that we make RpmPackage.is_installed throw an exception
+        host.run_test('rpm --rebuilddb')
+        host.run_test('dd if=/dev/zero of=$(rpm --dbpath)/Packages bs=1024 count=1024 seek=1024')
+    with pytest.raises(RuntimeError) as excinfo:
+        host.package("zsh").is_installed
+    assert (
+        "DB_PAGE_NOT_FOUND"
+        in str(excinfo.value)
+    )
 
 @pytest.mark.testinfra_hosts("docker://rockylinux9")
 def test_non_default_package_tool(host):
