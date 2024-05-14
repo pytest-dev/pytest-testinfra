@@ -165,14 +165,13 @@ class OpenBSDPackage(Package):
 class RpmPackage(Package):
     @property
     def is_installed(self):
-        result = self.run("rpm -q %s", self.name)
+        result = self.run("rpm -q --quiet %s 2>&1", self.name)
         if result.succeeded:
             return True
-
-        if "not installed" in result.stdout or not result.stdout.startswith(self.name):
+        elif result.failed and result.stdout == '':
             return False
-
-        raise RuntimeError(f"Could not check if RPM package '{self.name}' is installed. {result}")
+        else:
+            raise RuntimeError(f"Could not check if RPM package '{self.name}' is installed. {result.stdout}")
 
     @property
     def version(self):
