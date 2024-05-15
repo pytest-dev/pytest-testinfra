@@ -223,38 +223,38 @@ class File(Module):
 class GNUFile(File):
     @property
     def user(self):
-        return self.check_output("stat -c %%U %s", self.path)
+        return self.check_output("stat -Lc %%U %s", self.path)
 
     @property
     def uid(self):
-        return int(self.check_output("stat -c %%u %s", self.path))
+        return int(self.check_output("stat -Lc %%u %s", self.path))
 
     @property
     def group(self):
-        return self.check_output("stat -c %%G %s", self.path)
+        return self.check_output("stat -Lc %%G %s", self.path)
 
     @property
     def gid(self):
-        return int(self.check_output("stat -c %%g %s", self.path))
+        return int(self.check_output("stat -Lc %%g %s", self.path))
 
     @property
     def mode(self):
         # Supply a base of 8 when parsing an octal integer
         # e.g. int('644', 8) -> 420
-        return int(self.check_output("stat -c %%a %s", self.path), 8)
+        return int(self.check_output("stat -Lc %%a %s", self.path), 8)
 
     @property
     def mtime(self):
-        ts = self.check_output("stat -c %%Y %s", self.path)
+        ts = self.check_output("stat -Lc %%Y %s", self.path)
         return datetime.datetime.fromtimestamp(float(ts))
 
     @property
     def size(self):
-        return int(self.check_output("stat -c %%s %s", self.path))
+        return int(self.check_output("stat -Lc %%s %s", self.path))
 
     @property
     def inode(self):
-        return int(self.check_output("stat -c %%i %s", self.path))
+        return int(self.check_output("stat -Lc %%i %s", self.path))
 
     @property
     def md5sum(self):
