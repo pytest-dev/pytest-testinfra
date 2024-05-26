@@ -58,19 +58,16 @@ def test_held_package(host):
     assert python.is_installed
     assert python.version.startswith("3.11.")
 
+@pytest.mark.destructive
 @pytest.mark.testinfra_hosts("docker://rockylinux9")
 def test_rpmdb_corrupted(host):
-    host.check_output("mv /var/lib/rpm/rpmdb.sqlite /var/lib/rpm/rpmdb.sqlite.bck")
-    try:
-        host.check_output("dd if=/dev/zero of=/var/lib/rpm/rpmdb.sqlite bs=1024 count=1")
-        with pytest.raises(RuntimeError) as excinfo:
-            host.package("zsh").is_installed
-        assert (
-            f"Could not check if RPM package 'zsh' is installed. "
-            "error: sqlite failure:"
-        ) in str(excinfo.value)
-    finally:
-        host.check_output("mv /var/lib/rpm/rpmdb.sqlite.bck /var/lib/rpm/rpmdb.sqlite")
+    host.check_output("dd if=/dev/zero of=/var/lib/rpm/rpmdb.sqlite bs=1024 count=1")
+    with pytest.raises(RuntimeError) as excinfo:
+        host.package("zsh").is_installed
+    assert (
+        f"Could not check if RPM package 'zsh' is installed. "
+        "error: sqlite failure:"
+    ) in str(excinfo.value)
 
 @pytest.mark.testinfra_hosts("docker://rockylinux9")
 def test_non_default_package_tool(host):
