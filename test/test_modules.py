@@ -65,7 +65,7 @@ def test_rpmdb_corrupted(host):
     with pytest.raises(RuntimeError) as excinfo:
         host.package("zsh").is_installed
     assert (
-        f"Could not check if RPM package 'zsh' is installed. "
+        "Could not check if RPM package 'zsh' is installed. "
         "error: sqlite failure:"
     ) in str(excinfo.value)
 
