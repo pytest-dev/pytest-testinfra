@@ -13,7 +13,6 @@
 import crypt
 import datetime
 import os
-from unittest import mock
 import re
 import time
 from ipaddress import IPv4Address, IPv6Address, ip_address
