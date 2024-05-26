@@ -66,7 +66,12 @@ RUN /v/bin/pip install -U pip
 RUN /v/bin/pip install 'requests==2.30.0'
 
 # install salt
-RUN python3 -m pip install --break-system-packages --no-cache salt
+ARG _BUILD_DEPS="gcc g++ libc6-dev python3-dev"
+RUN apt update && apt install -y $_BUILD_DEPS && \
+    python3 -m pip install --break-system-packages --no-cache salt && \
+    apt -y purge $_BUILD_DEPS && \
+    apt -y autoremove --purge && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV LANG fr_FR.ISO-8859-15
 ENV LANGUAGE fr_FR
