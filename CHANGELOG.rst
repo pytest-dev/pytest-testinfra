@@ -2,6 +2,13 @@
 Changelog
 =========
 
+10.1.1
+======
+
+* [FIX] Add check for the existence of ssh control path directory
+* [FIX] Handle is_installed for rpm package when rpm database is corrupted
+* [FIX] Fix service.exists
+
 10.1.0
 ======
 
