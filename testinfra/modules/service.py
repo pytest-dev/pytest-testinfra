@@ -176,7 +176,7 @@ class SystemdService(SysvService):
 
     @property
     def exists(self):
-        cmd = self.run_test('systemctl list-unit-files | grep -q"^%s"', self.name)
+        cmd = self.run_test('systemctl list-unit-files | grep -q "^%s"', self.name)
         return cmd.rc == 0
 
     @property
