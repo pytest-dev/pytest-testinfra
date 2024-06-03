@@ -13,12 +13,15 @@
 import datetime
 import os
 import re
+import tempfile
+import textwrap
 import time
 from ipaddress import IPv4Address, IPv6Address, ip_address
 
 import pytest
 
 from testinfra.modules.socket import parse_socketspec
+from testinfra.utils.ansible_runner import AnsibleRunner
 
 all_images = pytest.mark.testinfra_hosts(
     *[
@@ -329,7 +332,7 @@ def test_file(host):
 
 
 def test_ansible_unavailable(host):
-    expected = "Ansible module is only available with " "ansible connection backend"
+    expected = "Ansible module is only available with ansible connection backend"
     with pytest.raises(RuntimeError) as excinfo:
         host.ansible("setup")
     assert expected in str(excinfo.value)
@@ -354,17 +357,6 @@ def test_ansible_module(host):
     assert passwd["state"] in ("file", "hard")
     assert passwd["uid"] == 0
 
-    variables = host.ansible.get_variables()
-    assert variables["myvar"] == "foo"
-    assert variables["myhostvar"] == "bar"
-    assert variables["mygroupvar"] == "qux"
-    assert variables["inventory_hostname"] == "debian_bookworm"
-    assert variables["group_names"] == ["all", "testgroup"]
-    assert variables["groups"] == {
-        "all": ["debian_bookworm"],
-        "testgroup": ["debian_bookworm"],
-    }
-
     with pytest.raises(host.ansible.AnsibleException) as excinfo:
         host.ansible("command", "zzz")
     assert excinfo.value.result["msg"] == "Skipped. You might want to try check=False"
@@ -378,6 +370,47 @@ def test_ansible_module(host):
 
     result = host.ansible("command", "echo foo", check=False)
     assert result["stdout"] == "foo"
+
+
+@pytest.mark.testinfra_hosts("ansible://debian_bookworm")
+def test_ansible_get_variables_flat_wo_child_groups(host):
+    """Test AnsibleRunner.get_variables() with parent groups only"""
+    variables = host.ansible.get_variables()
+    assert variables["myvar"] == "foo"
+    assert variables["myhostvar"] == "bar"
+    assert variables["mygroupvar"] == "qux"
+    assert variables["inventory_hostname"] == "debian_bookworm"
+    assert variables["group_names"] == ["all", "testgroup"]
+    assert variables["groups"] == {
+        "all": ["debian_bookworm"],
+        "testgroup": ["debian_bookworm"],
+    }
+
+
+def test_ansible_get_variables_w_child_groups():
+    """Test AnsibleRunner.get_variables() with parent and child groups"""
+    inventory = """
+        host_a
+        [toplevel1]
+        host_b
+        [toplevel2]
+        host_c
+        [toplevel3:children]
+        toplevel1
+        """
+    with tempfile.NamedTemporaryFile(mode="wt", encoding="ascii") as file_inventory:
+        file_inventory.write(textwrap.dedent(inventory.strip()))
+        file_inventory.flush()
+
+        get_variables = AnsibleRunner(file_inventory.name).get_variables
+
+        assert get_variables("host_a")["group_names"] == ["all", "ungrouped"]
+        assert get_variables("host_b")["group_names"] == [
+            "all",
+            "toplevel1",
+            "toplevel3",
+        ]
+        assert get_variables("host_c")["group_names"] == ["all", "toplevel2"]
 
 
 @pytest.mark.testinfra_hosts(
@@ -439,9 +472,8 @@ def test_supervisor(host, supervisorctl_path, supervisorctl_conf):
         )
         if service.status == "RUNNING":
             break
-        else:
-            assert service.status == "STARTING"
-            time.sleep(0.5)
+        assert service.status == "STARTING"
+        time.sleep(0.5)
     else:
         raise RuntimeError("No running tail in supervisor")
 
