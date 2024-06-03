@@ -16,8 +16,9 @@ import functools
 import ipaddress
 import json
 import os
+import re
 import tempfile
-from typing import Any, Callable, Iterator, Optional, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Union
 
 import testinfra
 import testinfra.host
@@ -25,6 +26,86 @@ import testinfra.host
 __all__ = ["AnsibleRunner"]
 
 local = testinfra.get_host("local://")
+
+Inventory = Dict[str, Any]
+
+
+def expand_group(name: str, inventory: Inventory) -> Iterator[str]:
+    """Return all the underlying hostnames for the given group name/pattern."""
+    group = inventory.get(name)
+    if group is None:
+        return
+
+    # this is a meta-group so recurse
+    children = group.get("children")
+    if children is not None:
+        for child in children:
+            yield from expand_group(child, inventory)
+
+    # this is a regular group
+    hosts = group.get("hosts")
+    if hosts is not None:
+        yield from iter(hosts)
+
+
+def expand_pattern(pattern: str, inventory: Inventory) -> Set[str]:
+    """Return all underlying hostnames for the given name/pattern."""
+    if pattern.startswith("~"):
+        # this is a regex, so cut off the indicating character
+        pattern = re.compile(pattern[1:])
+        # match is used, not search or fullmatch
+        filter_ = lambda l: [i for i in l if pattern.match(i)]
+    else:
+        filter_ = lambda l: fnmatch.filter(l, pattern)
+
+    # hosts in the inventory directly matched by the pattern
+    matching_hosts = set(filter_(expand_group('all', inventory)))
+
+    # look for matches in the groups
+    for group in filter_(inventory.keys()):
+        if group == "_meta":
+            continue
+        matching_hosts.update(expand_group(group, inventory))
+
+    return matching_hosts
+
+
+def get_hosts(pattern: str, inventory: Inventory) -> List[str]:
+    """Return hostnames with a name/group that matches the given name/pattern.
+
+    Reference:
+    https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html
+
+    This is but a shadow of Ansible's full InventoryManager. The source of the
+    `inventory_hostnames` module would be a good starting point for a more
+    faithful reproduction if this turns out to be insufficient.
+    """
+    from ansible.inventory.manager import split_host_pattern
+
+    patterns = split_host_pattern(pattern)
+
+    positive = set()
+    intersect = None
+    negative = set()
+
+    for requirement in patterns:
+        if requirement.startswith('&'):
+            expanded = expand_pattern(requirement[1:], inventory)
+            if intersect is None:
+                intersect = expanded
+            else:
+                intersect &= expanded
+        elif requirement.startswith('!'):
+            negative.update(expand_pattern(requirement[1:], inventory))
+        else:
+            positive.update(expand_pattern(requirement, inventory))
+
+    result = positive
+    if intersect is not None:
+        result &= intersect
+    if negative:
+        result -= negative
+    return sorted(result)
 
 
 def get_ansible_config() -> configparser.ConfigParser:
@@ -43,9 +124,6 @@ def get_ansible_config() -> configparser.ConfigParser:
         return config
     config.read(fname)
     return config
-
-
-Inventory = dict[str, Any]
 
 
 def get_ansible_inventory(
@@ -221,16 +299,8 @@ def get_ansible_host(
     return testinfra.get_host(spec, **kwargs)
 
 
-def itergroup(inventory: Inventory, group: str) -> Iterator[str]:
-    for host in inventory.get(group, {}).get("hosts", []):
-        yield host
-    for g in inventory.get(group, {}).get("children", []):
-        for host in itergroup(inventory, g):
-            yield host
-
-
 def is_empty_inventory(inventory: Inventory) -> bool:
-    return not any(True for _ in itergroup(inventory, "all"))
+    return next(expand_group("all", inventory), None) is None
 
 
 class AnsibleRunner:
@@ -280,25 +350,15 @@ class AnsibleRunner:
 
     def get_hosts(self, pattern: str = "all") -> list[str]:
         inventory = self.inventory
-        result = set()
         if is_empty_inventory(inventory):
             # empty inventory should not return any hosts except for localhost
             if pattern == "localhost":
-                result.add("localhost")
-            else:
-                raise RuntimeError(
-                    "No inventory was parsed (missing file ?), "
-                    "only implicit localhost is available"
-                )
-        else:
-            for group in inventory:
-                groupmatch = fnmatch.fnmatch(group, pattern)
-                if groupmatch:
-                    result |= set(itergroup(inventory, group))
-                for host in inventory[group].get("hosts", []):
-                    if fnmatch.fnmatch(host, pattern):
-                        result.add(host)
-        return sorted(result)
+                return ["localhost"]
+            raise RuntimeError(
+                "No inventory was parsed (missing file ?), "
+                "only implicit localhost is available"
+            )
+        return get_hosts(pattern, inventory)
 
     @functools.cached_property
     def inventory(self) -> Inventory:
@@ -320,7 +380,7 @@ class AnsibleRunner:
         for group in sorted(inventory):
             if group == "_meta":
                 continue
-            groups[group] = sorted(itergroup(inventory, group))
+            groups[group] = sorted(expand_group(group, inventory))
             if host in groups[group]:
                 group_names.append(group)
 
