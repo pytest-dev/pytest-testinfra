@@ -50,6 +50,10 @@ host
 
        :class:`testinfra.modules.interface.Interface` class
 
+    .. attribute:: iproute2
+
+       :class:`testinfra.modules.iproute2.IProute2` class
+
     .. attribute:: iptables
 
        :class:`testinfra.modules.iptables.Iptables` class
@@ -176,6 +180,13 @@ Interface
    :undoc-members:
    :exclude-members: get_module_class
 
+IProute2
+~~~~~~~~~
+
+.. autoclass:: testinfra.modules.iproute2.IProute2
+   :members:
+   :undoc-members:
+   :exclude-members: get_module_class
 
 Iptables
 ~~~~~~~~~
