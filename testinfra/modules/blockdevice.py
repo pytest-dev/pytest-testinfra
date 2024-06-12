@@ -11,6 +11,7 @@
 # limitations under the License.
 
 import functools
+import json
 
 from testinfra.modules.base import Module
 
@@ -27,9 +28,14 @@ class BlockDevice(Module):
     def _data(self):
         raise NotImplementedError
 
-    def __init__(self, device):
+    def __init__(self, device, _data_cache=None):
         self.device = device
+        self._data_cache = _data_cache
         super().__init__()
+
+    @classmethod
+    def _iter_blockdevices(cls):
+        raise NotImplementedError
 
     @property
     def is_partition(self):
@@ -115,6 +121,19 @@ class BlockDevice(Module):
         return self._data["read_ahead"]
 
     @classmethod
+    def get_blockdevices(cls):
+        """Returns a list of BlockDevice instances
+
+        >>> host.block_device.get_blockevices()
+        [<BlockDevice(path=/dev/sda)>,
+         <BlockDevice(path=/dev/sda1)>]
+        """
+        blockdevices = []
+        for device in cls._iter_blockdevices():
+            blockdevices.append(cls(device["name"], device))
+        return blockdevices
+
+    @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
             return LinuxBlockDevice
@@ -127,22 +146,210 @@ class BlockDevice(Module):
 class LinuxBlockDevice(BlockDevice):
     @functools.cached_property
     def _data(self):
-        header = ["RO", "RA", "SSZ", "BSZ", "StartSec", "Size", "Device"]
-        command = "blockdev  --report %s"
-        blockdev = self.run(command, self.device)
-        if blockdev.rc != 0:
-            raise RuntimeError("Failed to gather data: {}".format(blockdev.stderr))
-        output = blockdev.stdout.splitlines()
-        if len(output) < 2:
-            raise RuntimeError("No data from {}".format(self.device))
-        if output[0].split() != header:
-            raise RuntimeError("Unknown output of blockdev: {}".format(output[0]))
-        fields = output[1].split()
-        return {
-            "rw_mode": str(fields[0]),
-            "read_ahead": int(fields[1]),
-            "sector_size": int(fields[2]),
-            "block_size": int(fields[3]),
-            "start_sector": int(fields[4]),
-            "size": int(fields[5]),
-        }
+        if self._data_cache:
+            return self._data_cache
+        # -J Use JSON output format
+        # -O Output all available columns
+        # -b Print the sizes in bytes
+        command = f"lsblk -JOb {self.device}"
+        out = self.check_output(command)
+        blockdevs = json.loads(out)["blockdevices"]
+        if not blockdevs:
+            raise RuntimeError(f"No data from {self.device}")
+        # start sector is not available in older lsblk version,
+        # but we can read it from SYSFS
+        if "start" not in blockdevs[0]:
+            blockdevs[0]["start"] = 0
+            # checking if device has internal parent kernel device name
+            if blockdevs[0]["pkname"]:
+                try:
+                    command = f"cat /sys/dev/block/{blockdevs[0]['maj:min']}/start"
+                    out = self.check_output(command)
+                    blockdevs[0]["start"] = int(out)
+                except AssertionError:
+                    blockdevs[0]["start"] = 0
+        return blockdevs[0]
+
+    @classmethod
+    def _iter_blockdevices(cls):
+        def children_generator(children_list):
+            for child in children_list:
+                if "start" not in child:
+                    try:
+                        cmd = f"cat /sys/dev/block/{child['maj:min']}/start"
+                        out = check_output(cmd)
+                        child["start"] = int(out)
+                    # At this point, the AssertionError only indicates that
+                    # the device is a virtual block device (device mapper target).
+                    # It can be assumed that the start sector is 0.
+                    except AssertionError:
+                        child["start"] = 0
+                if "children" in child:
+                    yield from children_generator(child["children"])
+                yield child
+
+        command = "lsblk -JOb"
+        check_output = cls(None).check_output
+        blockdevices = json.loads(check_output(command))["blockdevices"]
+        for device in blockdevices:
+            if "start" not in device:
+                # Parent devices always start from 0
+                device["start"] = 0
+            if "children" in device:
+                yield from children_generator(device["children"])
+            yield device
+
+    @property
+    def is_partition(self):
+        return self._data["type"] == "part"
+
+    @property
+    def sector_size(self):
+        return self._data["log-sec"]
+
+    @property
+    def block_size(self):
+        return self._data["phy-sec"]
+
+    @property
+    def start_sector(self):
+        if self._data["start"]:
+            return self._data["start"]
+        return 0
+
+    @property
+    def is_writable(self):
+        if self._data["ro"] == 0:
+            return True
+        return False
+
+    @property
+    def ra(self):
+        return self._data["ra"]
+
+    @property
+    def is_removable(self):
+        """Return True if device is removable
+
+        >>> host.block_device("/dev/sda").is_removable
+        False
+
+        """
+        return self._data["rm"]
+
+    @property
+    def hctl(self):
+        """Return Host:Channel:Target:Lun for SCSI
+
+        >>> host.block_device("/dev/sda").hctl
+        '1:0:0:0'
+
+        >>> host.block_device("/dev/nvme1n1").hctl
+        None
+
+        """
+        return self._data["hctl"]
+
+    @property
+    def model(self):
+        """Return device identifier
+
+        >>> host.block_device("/dev/nvme1n1").model
+        'Samsung SSD 970 EVO Plus 500GB'
+
+        >>> host.block_device("/dev/nvme1n1p1").model
+        None
+
+        """
+        return self._data["model"]
+
+    @property
+    def state(self):
+        """Return state of the device
+
+        >>> host.block_device("/dev/nvme1n1").state
+        'live'
+
+        >>> host.block_device("/dev/nvme1n1p1").state
+        None
+
+        """
+        return self._data["state"]
+
+    @property
+    def partition_type(self):
+        """Return partition table type
+
+        >>> host.block_device("/dev/nvme1n1p1").partition_type
+        'gpt'
+
+        >>> host.block_device("/dev/nvme1n1").partition_type
+        None
+
+        """
+        return self._data["pttype"]
+
+    @property
+    def wwn(self):
+        """Return unique storage identifier
+
+        >>> host.block_device("/dev/nvme1n1").wwn
+        'eui.00253856a5ebaa6f'
+
+        >>> host.block_device("/dev/nvme1n1p1").wwn
+        'eui.00253856a5ebaa6f'
+
+        """
+        return self._data["wwn"]
+
+    @property
+    def filesystem_type(self):
+        """Return filesystem type
+
+        >>> host.block_device("/dev/nvme1n1p1").filesystem_type
+        'vfat'
+
+        >>> host.block_device("/dev/nvme1n1").filesystem_type
+        None
+
+        """
+        return self._data["fstype"]
+
+    @property
+    def is_mounted(self):
+        """Return True if the device is mounted
+
+        >>> host.block_device("/dev/nvme1n1p1").is_mounted
+        True
+
+        """
+        return bool(self._data["mountpoint"])
+
+    @property
+    def type(self):
+        """Return device type
+
+        >>> host.block_device("/dev/nvme1n1").type
+        'disk'
+
+        >>> host.block_device("/dev/nvme1n1p1").type
+        'part'
+
+        >>> host.block_device("/dev/mapper/vg-lvol0").type
+        'lvm'
+
+        """
+        return self._data["type"]
+
+    @property
+    def transport_type(self):
+        """Return device transport type
+
+        >>> host.block_device("/dev/nvme1n1p1").transport_type
+        'nvme'
+
+        >>> host.block_device("/dev/sdc").transport_type
+        'iscsi'
+
+        """
+        return self._data["tran"]
