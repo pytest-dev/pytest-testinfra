@@ -64,6 +64,7 @@ def parse_hostspec(hostspec: str) -> tuple[str, dict[str, Any]]:
             "controlpersist",
             "kubeconfig",
             "context",
+            "transport",
         ):
             if key in query:
                 kw[key] = query[key][0]

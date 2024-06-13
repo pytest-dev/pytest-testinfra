@@ -56,6 +56,7 @@ class WinRMBackend(base.BaseBackend):
         no_verify_ssl: bool = False,
         read_timeout_sec: Optional[int] = None,
         operation_timeout_sec: Optional[int] = None,
+        transport: str = None,
         *args: Any,
         **kwargs: Any,
     ):
@@ -66,7 +67,7 @@ class WinRMBackend(base.BaseBackend):
                 self.host.name,
                 ":{}".format(self.host.port) if self.host.port else "",
             ),
-            "transport": "ntlm",
+            "transport": transport or "ntlm",
             "username": self.host.user,
             "password": self.host.password,
         }
