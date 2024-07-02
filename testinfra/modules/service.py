@@ -181,7 +181,13 @@ class SystemdService(SysvService):
 
     @property
     def is_running(self):
-        out = self.run_expect([0, 1, 3], "systemctl is-active %s", self.name)
+        # based on https://man7.org/linux/man-pages/man1/systemctl.1.html
+        # 0: program running
+        # 1: program is dead and pid file exists
+        # 3: not running and pid file does not exists
+        # 4: Unable to determine status (no such unit)
+        out = self.run_expect([0, 1, 3, 4], "systemctl is-active %s",
+                              self.name)
         if out.rc == 1:
             # Failed to connect to bus: No such file or directory
             return super().is_running
