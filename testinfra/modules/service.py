@@ -186,8 +186,7 @@ class SystemdService(SysvService):
         # 1: program is dead and pid file exists
         # 3: not running and pid file does not exists
         # 4: Unable to determine status (no such unit)
-        out = self.run_expect([0, 1, 3, 4], "systemctl is-active %s",
-                              self.name)
+        out = self.run_expect([0, 1, 3, 4], "systemctl is-active %s", self.name)
         if out.rc == 1:
             # Failed to connect to bus: No such file or directory
             return super().is_running
