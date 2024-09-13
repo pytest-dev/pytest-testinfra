@@ -181,7 +181,7 @@ class SystemdService(SysvService):
 
     @property
     def is_running(self):
-        out = self.run_expect([0, 1, 3], "systemctl is-active %s", self.name)
+        out = self.run_expect([0, 1, 3, 4], "systemctl is-active %s", self.name)
         if out.rc == 1:
             # Failed to connect to bus: No such file or directory
             return super().is_running
