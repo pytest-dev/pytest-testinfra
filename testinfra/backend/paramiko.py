@@ -138,9 +138,9 @@ class ParamikoBackend(base.BaseBackend):
         if self.get_pty:
             chan.get_pty()
         chan.exec_command(command)
-        rc = chan.recv_exit_status()
         stdout = b"".join(chan.makefile("rb"))
         stderr = b"".join(chan.makefile_stderr("rb"))
+        rc = chan.recv_exit_status()
         return rc, stdout, stderr
 
     def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
