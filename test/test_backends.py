@@ -640,3 +640,12 @@ def test_get_hosts():
         ("a", 10),
         ("a", 1),
     ]
+
+
+@pytest.mark.testinfra_hosts(*HOSTS)
+def test_command_deadlock(host):
+    # Test for deadlock when exceeding Paramiko transport buffer (2MB)
+    # https://docs.paramiko.org/en/latest/api/channel.html#paramiko.channel.Channel.recv_exit_status
+    size = 3 * 1024 * 1024
+    output = host.check_output(f"python3 -c 'print(\"a\" * {size})'")
+    assert len(output) == size
