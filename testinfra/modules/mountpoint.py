@@ -101,13 +101,17 @@ class MountPoint(Module):
         raise NotImplementedError
 
     def __repr__(self):
+        if self.exists:
+            d = self.device
+            f = self.filesystem
+            o = ",".join(self.options)
+        else:
+            d = ""
+            f = ""
+            o = ""
         return (
-            "<MountPoint(path={}, device={}, filesystem={}, " "options={})>"
-        ).format(
-            self.path,
-            self.device,
-            self.filesystem,
-            ",".join(self.options),
+            f'<MountPoint(path="{self.path}", exists={self.exists}, device="{d}", '
+            f'filesystem="{f}", options="{o}") at 0x{id(self):08x}>'
         )
 
 
