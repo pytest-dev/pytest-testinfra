@@ -482,12 +482,14 @@ def test_supervisor(host, supervisorctl_path, supervisorctl_conf):
 def test_mountpoint(host):
     root_mount = host.mount_point("/")
     assert root_mount.exists
+    assert repr(root_mount)
     assert isinstance(root_mount.options, list)
     assert "rw" in root_mount.options
     assert root_mount.filesystem
 
     fake_mount = host.mount_point("/fake/mount")
     assert not fake_mount.exists
+    assert repr(fake_mount)
 
     mountpoints = host.mount_point.get_mountpoints()
     assert mountpoints
