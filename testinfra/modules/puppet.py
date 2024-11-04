@@ -102,7 +102,7 @@ class Facter(InstanceModule):
     """
 
     def __call__(self, *facts):
-        cmd = "facter --json --puppet " + " ".join(facts)
+        cmd = f'facter --json --puppet {" ".join(facts)}'
         return json.loads(self.check_output(cmd))
 
     def __repr__(self):

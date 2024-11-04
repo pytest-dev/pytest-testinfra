@@ -101,9 +101,7 @@ class MountPoint(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return (
-            "<MountPoint(path={}, device={}, filesystem={}, " "options={})>"
-        ).format(
+        return ("<MountPoint(path={}, device={}, filesystem={}, options={})>").format(
             self.path,
             self.device,
             self.filesystem,

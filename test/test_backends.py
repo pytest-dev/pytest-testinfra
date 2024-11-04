@@ -86,16 +86,18 @@ def test_encoding(host):
     elif host.backend.get_connection_type() == "ansible" and host.backend.force_ansible:
         # XXX: this encoding issue comes directly from ansible
         # not sure how to handle this...
-        assert cmd.stderr == (
-            "ls: impossible d'accéder à '/Ã©': " "Aucun fichier ou dossier de ce type"
+        assert (
+            cmd.stderr
+            == "ls: impossible d'accéder à '/Ã©': Aucun fichier ou dossier de ce type"
         )
     else:
         assert cmd.stderr_bytes == (
             b"ls: impossible d'acc\xe9der \xe0 '/\xe9': "
             b"Aucun fichier ou dossier de ce type\n"
         )
-        assert cmd.stderr == (
-            "ls: impossible d'accéder à '/é': " "Aucun fichier ou dossier de ce type\n"
+        assert (
+            cmd.stderr
+            == "ls: impossible d'accéder à '/é': Aucun fichier ou dossier de ce type\n"
         )
 
 

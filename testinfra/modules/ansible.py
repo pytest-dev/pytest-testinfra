@@ -38,7 +38,7 @@ def need_ansible(func):
     def wrapper(self, *args, **kwargs):
         if not self._host.backend.HAS_RUN_ANSIBLE:
             raise RuntimeError(
-                ("Ansible module is only available with ansible " "connection backend")
+                ("Ansible module is only available with ansible connection backend")
             )
         return func(self, *args, **kwargs)
 

@@ -329,7 +329,7 @@ def test_file(host):
 
 
 def test_ansible_unavailable(host):
-    expected = "Ansible module is only available with " "ansible connection backend"
+    expected = "Ansible module is only available with ansible connection backend"
     with pytest.raises(RuntimeError) as excinfo:
         host.ansible("setup")
     assert expected in str(excinfo.value)
@@ -374,7 +374,7 @@ def test_ansible_module(host):
     except host.ansible.AnsibleException as exc:
         assert exc.result["rc"] == 2
         # notez que the debian bookworm container is set to LANG=fr_FR
-        assert exc.result["msg"] == ("[Errno 2] Aucun fichier ou dossier " "de ce type")
+        assert exc.result["msg"] == "[Errno 2] Aucun fichier ou dossier de ce type"
 
     result = host.ansible("command", "echo foo", check=False)
     assert result["stdout"] == "foo"

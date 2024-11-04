@@ -25,7 +25,7 @@ class LxcBackend(base.BaseBackend):
     def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         cmd = self.get_command(command, *args)
         out = self.run_local(
-            "lxc exec %s --mode=non-interactive -- " "/bin/sh -c %s", self.name, cmd
+            "lxc exec %s --mode=non-interactive -- /bin/sh -c %s", self.name, cmd
         )
         out.command = self.encode(cmd)
         return out
