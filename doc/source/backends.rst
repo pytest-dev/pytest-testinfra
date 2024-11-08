@@ -13,6 +13,63 @@ system packaged tools may still be required).  For example ::
 For all backends, commands can be run as superuser with the ``--sudo``
 option or as specific user with the ``--sudo-user`` option.
 
+General Host specification
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``--hosts`` parameter in Testinfra is used to specify the target hosts for the tests.
+
+You can specify multiple hosts by separating each target with a comma, allowing you to run tests using different backends across different environments or machines.
+
+The user, password, and port fields are optional, providing flexibility depending on your authentication and connection requirements.
+
+Please also read the details for the individual backends, as the host spec is handled slightly differently from backend to backend.
+
+**Syntax:**
+
+::
+
+    --hosts=<backend>://<user>:<password>@<host>:<port>
+
+
+**Components:**
+
+* ``<backend>``: type of backend to be used (e.g., ssh, docker, paramiko, local)
+* ``<user>``: username for authentication (optional)
+* ``<password>``: password for authentication (optional)
+* ``<host>``: target hostname or IP address
+* ``<port>``: target port number (optional)
+
+Special characters (e.g. ":") in the user and password fields need to be percent-encoded according to RFC 3986. This can be done using ``urllib.parse.quote()`` in Python.
+
+For example::
+
+    import urllib.parse
+
+    user = urllib.parse.quote('user:name')
+    password = urllib.parse.quote('p@ssw:rd')
+    host = 'hostname'
+    port = 22
+
+    host_spec = f"ssh://{user}:{password}@{host}:{port}"
+    print(host_spec)
+
+This will ensure that any special characters are properly encoded, making the connection string valid.
+
+**Examples:**
+
+SSH Backend with Full Specification::
+
+    testinfra --hosts=ssh://user:password@hostname:22
+
+Docker Backend::
+
+    testinfra --hosts=docker://container_id
+
+Mixed Backends::
+
+    testinfra --hosts=ssh://user:password@hostname:22,docker://container_id,local://
+
+
 local
 ~~~~~
 
