@@ -523,6 +523,14 @@ def test_docker_encoding(host):
 def test_parse_hostspec(hostspec, expected):
     assert BaseBackend.parse_hostspec(hostspec) == expected
 
+@pytest.mark.parametrize(
+    "hostspec,expected",
+    [
+        ("ansible://host1", ('host1', {'connection': 'ansible'})),
+    ],
+)
+def test_init_parse_hostspec(hostspec, expected):
+    assert testinfra.backend.parse_hostspec(hostspec) == expected
 
 @pytest.mark.parametrize(
     "hostspec,pod,container,namespace,kubeconfig,context",
@@ -641,6 +649,16 @@ def test_get_hosts():
         ("a", 1),
     ]
 
+
+def test_get_hosts_ansible_limit():
+    # Hosts returned by get_host must be deduplicated (by name & kwargs) and in
+    # same order as asked
+    hosts = testinfra.backend.get_backends(
+        [
+            "ansible://s%5B1-4%5D%2A?ansible_inventory=inventory.yml" # s%5B1-4%5D%2A == s[1-4]*
+        ]
+    )
+    assert [h.hostname for h in hosts] == ["s1", "s2", "s3", "s4"]
 
 @pytest.mark.testinfra_hosts(*HOSTS)
 def test_command_deadlock(host):
