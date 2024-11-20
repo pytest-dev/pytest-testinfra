@@ -87,4 +87,15 @@ class AnsibleBackend(base.BaseBackend):
     @classmethod
     def get_hosts(cls, host: str, **kwargs: Any) -> list[str]:
         inventory = kwargs.get("ansible_inventory")
-        return AnsibleRunner.get_runner(inventory).get_hosts(host or "all")
+        hosts = AnsibleRunner.get_runner(inventory).get_hosts(host or "all")
+        limit = kwargs.get("ansible_limit")
+        if limit:
+            # Filter hosts based on the limit expression
+            from ansible.parsing.dataloader import DataLoader
+            from ansible.inventory.manager import InventoryManager
+
+            loader = DataLoader()
+            inventory_manager = InventoryManager(loader=loader, sources=inventory)
+            return list(map(lambda h: h.address, inventory_manager.get_hosts(pattern=limit)))
+        else:
+            return hosts
