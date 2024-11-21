@@ -17,6 +17,9 @@ from typing import Any, Optional
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
 
+from ansible.parsing.dataloader import DataLoader
+from ansible.inventory.manager import InventoryManager
+
 logger = logging.getLogger("testinfra")
 
 
@@ -90,10 +93,6 @@ class AnsibleBackend(base.BaseBackend):
         hosts = AnsibleRunner.get_runner(inventory).get_hosts(host or "all")
         limit = kwargs.get("ansible_limit")
         if limit:
-            # Filter hosts based on the limit expression
-            from ansible.parsing.dataloader import DataLoader
-            from ansible.inventory.manager import InventoryManager
-
             loader = DataLoader()
             inventory_manager = InventoryManager(loader=loader, sources=inventory)
             return list(map(lambda h: h.address, inventory_manager.get_hosts(pattern=limit)))
