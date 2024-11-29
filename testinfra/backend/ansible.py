@@ -55,7 +55,15 @@ class AnsibleBackend(base.BaseBackend):
             )
             if host is not None:
                 return host.run(command)
-        out = self.run_ansible("shell", module_args=command, check=False)
+
+        ansible_connection = self.ansible_runner.get_variables(self.host).get(
+            "ansible_connection")
+
+        module_name = "shell"
+        if ansible_connection == "winrm":
+            module_name = "win_shell"
+
+        out = self.run_ansible(module_name, module_args=command, check=False)
         return self.result(
             out["rc"],
             self.encode(command),

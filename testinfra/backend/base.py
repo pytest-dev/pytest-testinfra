@@ -279,15 +279,19 @@ class BaseBackend(metaclass=abc.ABCMeta):
 
     def get_encoding(self) -> str:
         encoding = None
-        for python in ("python3", "python"):
-            cmd = self.run(
-                "%s -c 'import locale;print(locale.getpreferredencoding())'",
-                python,
-                encoding=None,
-            )
-            if cmd.rc == 0:
-                encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
-                break
+        try:
+            for python in ("python3", "python"):
+
+                cmd = self.run(
+                    "%s -c 'import locale;print(locale.getpreferredencoding())'",
+                    python,
+                    encoding=None,
+                )
+                if cmd.rc == 0:
+                    encoding = cmd.stdout_bytes.splitlines()[0].decode("ascii")
+                    break
+        except Exception as e:
+            logger.warning("Problem occurred during detecting encoding: ", e)
         # Python is not installed, we hope the encoding to be the same as
         # local machine...
         if not encoding:
