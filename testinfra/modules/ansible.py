@@ -30,7 +30,7 @@ class AnsibleException(Exception):
 
     def __init__(self, result):
         self.result = result
-        super().__init__("Unexpected error: {}".format(pprint.pformat(result)))
+        super().__init__(f"Unexpected error: {pprint.pformat(result)}")
 
 
 def need_ansible(func):
@@ -38,7 +38,7 @@ def need_ansible(func):
     def wrapper(self, *args, **kwargs):
         if not self._host.backend.HAS_RUN_ANSIBLE:
             raise RuntimeError(
-                ("Ansible module is only available with ansible " "connection backend")
+                "Ansible module is only available with ansible " "connection backend"
             )
         return func(self, *args, **kwargs)
 

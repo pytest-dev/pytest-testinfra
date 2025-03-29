@@ -92,7 +92,7 @@ class Interface(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return "<interface {}>".format(self.name)
+        return f"<interface {self.name}>"
 
     @classmethod
     def get_module_class(cls, host):
@@ -136,7 +136,7 @@ class LinuxInterface(Interface):
 
     @property
     def exists(self):
-        return self.run_test("{} link show %s".format(self._ip), self.name).rc == 0
+        return self.run_test(f"{self._ip} link show %s", self.name).rc == 0
 
     @property
     def speed(self):
@@ -144,7 +144,7 @@ class LinuxInterface(Interface):
 
     @property
     def addresses(self):
-        stdout = self.check_output("{} addr show %s".format(self._ip), self.name)
+        stdout = self.check_output(f"{self._ip} addr show %s", self.name)
         addrs = []
         for line in stdout.splitlines():
             splitted = [e.strip() for e in line.split(" ") if e]
@@ -171,7 +171,7 @@ class LinuxInterface(Interface):
     @classmethod
     def default(cls, family=None):
         _default = cls(None, family=family)
-        out = cls.check_output("{} route ls".format(_default._ip))
+        out = cls.check_output(f"{_default._ip} route ls")
         for line in out.splitlines():
             if "default" in line:
                 match = re.search(r"dev\s(\S+)", line)
@@ -182,7 +182,7 @@ class LinuxInterface(Interface):
     @classmethod
     def names(cls):
         # -o is to tell the ip command to return 1 line per interface
-        out = cls.check_output("{} -o link show".format(cls(None)._ip))
+        out = cls.check_output(f"{cls(None)._ip} -o link show")
         interfaces = []
         for line in out.splitlines():
             interfaces.append(line.strip().split(": ", 2)[1].split("@", 1)[0])

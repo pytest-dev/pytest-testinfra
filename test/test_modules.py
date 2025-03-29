@@ -25,7 +25,7 @@ from testinfra.utils.ansible_runner import AnsibleRunner
 
 all_images = pytest.mark.testinfra_hosts(
     *[
-        "docker://{}".format(image)
+        f"docker://{image}"
         for image in (
             "rockylinux9",
             "debian_bookworm",

@@ -30,14 +30,14 @@ class Iptables(InstanceModule):
         elif version == 6:
             iptables = "ip6tables"
         else:
-            raise RuntimeError("Invalid version: {}".format(version))
+            raise RuntimeError(f"Invalid version: {version}")
         if self._has_w_argument is False:
             return iptables
         else:
-            return "{} -w 90".format(iptables)
+            return f"{iptables} -w 90"
 
     def _run_iptables(self, version, cmd, *args):
-        ipt_cmd = "{} {}".format(self._iptables_command(version), cmd)
+        ipt_cmd = f"{self._iptables_command(version)} {cmd}"
         if self._has_w_argument is None:
             result = self.run_expect([0, 2], ipt_cmd, *args)
             if result.rc == 2:

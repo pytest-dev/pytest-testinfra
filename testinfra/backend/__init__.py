@@ -13,7 +13,8 @@
 import importlib
 import os
 import urllib.parse
-from typing import TYPE_CHECKING, Any, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import testinfra.backend.base
@@ -39,7 +40,7 @@ def get_backend_class(connection: str) -> type["testinfra.backend.base.BaseBacke
     try:
         classpath = BACKENDS[connection]
     except KeyError:
-        raise RuntimeError("Unknown connection type '{}'".format(connection))
+        raise RuntimeError(f"Unknown connection type '{connection}'")
     module, name = classpath.rsplit(".", 1)
     return getattr(importlib.import_module(module), name)  # type: ignore[no-any-return]
 

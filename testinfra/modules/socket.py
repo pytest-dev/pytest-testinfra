@@ -22,7 +22,7 @@ def parse_socketspec(socketspec):
 
     if protocol not in ("udp", "tcp", "unix"):
         raise RuntimeError(
-            "Cannot validate protocol '{}'. Should be tcp, udp or unix".format(protocol)
+            f"Cannot validate protocol '{protocol}'. Should be tcp, udp or unix"
         )
 
     if protocol == "unix":
@@ -43,20 +43,20 @@ def parse_socketspec(socketspec):
         for f in (socket.AF_INET, socket.AF_INET6):
             try:
                 socket.inet_pton(f, host)
-            except socket.error:
+            except OSError:
                 pass
             else:
                 family = f
                 break
 
         if family is None:
-            raise RuntimeError("Cannot validate ip address '{}'".format(host))
+            raise RuntimeError(f"Cannot validate ip address '{host}'")
 
     if port is not None:
         try:
             port = int(port)
         except ValueError:
-            raise RuntimeError("Cannot validate port '{}'".format(port))
+            raise RuntimeError(f"Cannot validate port '{port}'")
 
     return protocol, host, port
 
@@ -169,11 +169,7 @@ class Socket(Module):
                 sockets.append("unix://" + sock[1])
             else:
                 sockets.append(
-                    "{}://{}:{}".format(
-                        sock[0],
-                        sock[1],
-                        sock[2],
-                    )
+                    f"{sock[0]}://{sock[1]}:{sock[2]}"
                 )
         return sockets
 

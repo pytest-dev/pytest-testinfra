@@ -32,7 +32,7 @@ class Host:
         super().__init__()
 
     def __repr__(self) -> str:
-        return "<testinfra.host.Host {}>".format(self.backend.get_pytest_id())
+        return f"<testinfra.host.Host {self.backend.get_pytest_id()}>"
 
     @functools.cached_property
     def has_command_v(self) -> bool:
@@ -64,7 +64,7 @@ class Host:
             path = os.path.join(basedir, command)
             if self.exists(path):
                 return path
-        raise ValueError('cannot find "{}" command'.format(command))
+        raise ValueError(f'cannot find "{command}" command')
 
     def run(
         self, command: str, *args: str, **kwargs: Any
@@ -107,7 +107,7 @@ class Host:
         """
         __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
-        assert out.rc in expected, "Unexpected exit code {} for {}".format(out.rc, out)
+        assert out.rc in expected, f"Unexpected exit code {out.rc} for {out}"
         return out
 
     def run_test(
@@ -127,7 +127,7 @@ class Host:
         """
         __tracebackhide__ = True
         out = self.run(command, *args, **kwargs)
-        assert out.rc == 0, "Unexpected exit code {} for {}".format(out.rc, out)
+        assert out.rc == 0, f"Unexpected exit code {out.rc} for {out}"
         return out.stdout.rstrip("\r\n")
 
     def __getattr__(self, name: str) -> type[testinfra.modules.base.Module]:
@@ -137,7 +137,7 @@ class Host:
             setattr(self, name, obj)
             return obj
         raise AttributeError(
-            "'{}' object has no attribute '{}'".format(self.__class__.__name__, name)
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
     @classmethod

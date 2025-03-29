@@ -40,9 +40,7 @@ class _AddrPort:
 
         return (
             self._addr.run(
-                "{}nc -w 1 -z {} {}".format(
-                    self._addr._prefix, self._addr.name, self._port
-                )
+                f"{self._addr._prefix}nc -w 1 -z {self._addr.name} {self._port}"
             ).rc
             == 0
         )
@@ -104,7 +102,7 @@ class Addr(Module):
         """Return the prefix to use for commands"""
         prefix = ""
         if self.namespace:
-            prefix = "ip netns exec {} ".format(self.namespace)
+            prefix = f"ip netns exec {self.namespace} "
         return prefix
 
     @property
@@ -126,7 +124,7 @@ class Addr(Module):
         """Return if address is reachable"""
         return (
             self.run_expect(
-                [0, 1, 2], "{}ping -W 1 -c 1 {}".format(self._prefix, self.name)
+                [0, 1, 2], f"{self._prefix}ping -W 1 -c 1 {self.name}"
             ).rc
             == 0
         )
@@ -151,11 +149,11 @@ class Addr(Module):
         return _AddrPort(self, port)
 
     def __repr__(self):
-        return "<addr {}>".format(self.name)
+        return f"<addr {self.name}>"
 
     def _resolve(self, method):
         result = self.run_expect(
-            [0, 1, 2], "{}getent {} {}".format(self._prefix, method, self.name)
+            [0, 1, 2], f"{self._prefix}getent {method} {self.name}"
         )
         lines = result.stdout.splitlines()
         return list({line.split()[0] for line in lines})

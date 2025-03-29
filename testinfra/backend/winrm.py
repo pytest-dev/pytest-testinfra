@@ -19,10 +19,10 @@ try:
     import winrm
 except ImportError:
     raise RuntimeError(
-        (
+        
             "You must install the pywinrm package (pip install pywinrm) "
             "to use the winrm backend"
-        )
+        
     )
 
 import winrm.protocol
@@ -64,7 +64,7 @@ class WinRMBackend(base.BaseBackend):
             "endpoint": "{}://{}{}/wsman".format(
                 "http" if no_ssl else "https",
                 self.host.name,
-                ":{}".format(self.host.port) if self.host.port else "",
+                f":{self.host.port}" if self.host.port else "",
             ),
             "transport": "ntlm",
             "username": self.host.user,
@@ -93,5 +93,5 @@ class WinRMBackend(base.BaseBackend):
     @staticmethod
     def quote(command: str, *args: str) -> str:
         if args:
-            return command % tuple(_quote(a) for a in args)  # noqa: S001
+            return command % tuple(_quote(a) for a in args)
         return command

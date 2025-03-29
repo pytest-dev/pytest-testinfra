@@ -17,7 +17,8 @@ import ipaddress
 import json
 import os
 import tempfile
-from typing import Any, Callable, Iterator, Optional, Union
+from collections.abc import Iterator
+from typing import Any, Callable, Optional, Union
 
 import testinfra
 import testinfra.host
@@ -194,19 +195,19 @@ def get_ansible_host(
         control_path_dir = os.path.normpath(control_path_dir)
 
         if os.path.isdir(control_path_dir):
-            control_path = control_path % (  # noqa: S001
+            control_path = control_path % (
                 {"directory": control_path_dir}
             )
             control_path = control_path.replace("%", "%%")  # restore original "%%"
             kwargs["controlpath"] = control_path
 
-    spec = "{}://".format(connection)
+    spec = f"{connection}://"
 
     # Fallback to user:password auth when identity file is not used
     if user and password and not kwargs.get("ssh_identity_file"):
-        spec += "{}:{}@".format(user, password)
+        spec += f"{user}:{password}@"
     elif user:
-        spec += "{}@".format(user)
+        spec += f"{user}@"
 
     try:
         version = ipaddress.ip_address(testinfra_host).version
@@ -217,7 +218,7 @@ def get_ansible_host(
     else:
         spec += testinfra_host
     if port:
-        spec += ":{}".format(port)
+        spec += f":{port}"
     return testinfra.get_host(spec, **kwargs)
 
 
@@ -363,7 +364,7 @@ class AnsibleRunner:
                 value_json = json.dumps(value)
                 cli_args.append(value_json)
             else:
-                raise TypeError("Unsupported argument type '{}'.".format(opt_type))
+                raise TypeError(f"Unsupported argument type '{opt_type}'.")
         return " ".join(cli), cli_args
 
     def run_module(
@@ -403,12 +404,12 @@ class AnsibleRunner:
                 raise RuntimeError(f"{out}")
             fpath = os.path.join(d, files[0])
             try:
-                with open(fpath, "r", encoding="ascii") as f:
+                with open(fpath, encoding="ascii") as f:
                     return json.load(f)
             except UnicodeDecodeError:
                 if get_encoding is None:
                     raise
-                with open(fpath, "r", encoding=get_encoding()) as f:
+                with open(fpath, encoding=get_encoding()) as f:
                     return json.load(f)
 
     @classmethod

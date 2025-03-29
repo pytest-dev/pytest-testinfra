@@ -60,7 +60,7 @@ class Package(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return "<package {}>".format(self.name)
+        return f"<package {self.name}>"
 
     @classmethod
     def get_module_class(cls, host):
@@ -122,9 +122,7 @@ class DebianPackage(Package):
         assert splitted[0].lower() in (
             "install",
             "hold",
-        ), "The package {} is not installed, dpkg-query output: {}".format(
-            self.name, out
-        )
+        ), f"The package {self.name} is not installed, dpkg-query output: {out}"
         return splitted[3]
 
 
@@ -148,7 +146,7 @@ class FreeBSDPackage(Package):
 class OpenBSDPackage(Package):
     @property
     def is_installed(self):
-        return self.run_test("pkg_info -e %s", "{}-*".format(self.name)).rc == 0
+        return self.run_test("pkg_info -e %s", f"{self.name}-*").rc == 0
 
     @property
     def release(self):
@@ -156,7 +154,7 @@ class OpenBSDPackage(Package):
 
     @property
     def version(self):
-        out = self.check_output("pkg_info -e %s", "{}-*".format(self.name))
+        out = self.check_output("pkg_info -e %s", f"{self.name}-*")
         # OpenBSD: inst:zsh-5.0.5p0
         # NetBSD: zsh-5.0.7nb1
         return out.split(self.name + "-", 1)[1]

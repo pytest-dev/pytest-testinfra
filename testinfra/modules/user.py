@@ -170,7 +170,7 @@ class User(Module):
         return super().get_module_class(host)
 
     def __repr__(self):
-        return "<user {}>".format(self.name)
+        return f"<user {self.name}>"
 
 
 class BSDUser(User):

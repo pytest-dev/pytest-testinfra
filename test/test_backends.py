@@ -125,7 +125,7 @@ def test_sudo(host):
 def test_ansible_get_hosts():
     with tempfile.NamedTemporaryFile() as f:
         f.write(
-            (
+            
                 b"ungrp\n"
                 b"[g1]\n"
                 b"debian\n"
@@ -136,7 +136,7 @@ def test_ansible_get_hosts():
                 b"g2\n"
                 b"[g4:children]\n"
                 b"g3"
-            )
+            
         )
         f.flush()
 
@@ -158,7 +158,7 @@ def test_ansible_get_hosts():
 def test_ansible_get_variables():
     with tempfile.NamedTemporaryFile() as f:
         f.write(
-            (
+            
                 b"debian a=b c=d\n"
                 b"rockylinux e=f\n"
                 b"[all:vars]\n"
@@ -167,7 +167,7 @@ def test_ansible_get_variables():
                 b"debian\n"
                 b"[g:vars]\n"
                 b"x=z\n"
-            )
+            
         )
         f.flush()
 
@@ -202,7 +202,7 @@ def test_ansible_get_variables():
         (
             {},
             b"host ansible_connection=local ansible_become=yes ansible_become_user=u",
-            {  # noqa
+            {
                 "NAME": "local",
                 "sudo": True,
                 "sudo_user": "u",
@@ -227,7 +227,7 @@ def test_ansible_get_variables():
         (
             {},
             b"host ansible_host=127.0.1.1 ansible_user=u ansible_ssh_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u",
-            {  # noqa
+            {
                 "NAME": "ssh",
                 "sudo": True,
                 "sudo_user": "u",
@@ -239,7 +239,7 @@ def test_ansible_get_variables():
         (
             {},
             b"host ansible_host=127.0.1.1 ansible_user=u ansible_private_key_file=key ansible_port=2222 ansible_become=yes ansible_become_user=u",
-            {  # noqa
+            {
                 "NAME": "ssh",
                 "sudo": True,
                 "sudo_user": "u",
@@ -269,7 +269,7 @@ def test_ansible_get_variables():
         (
             {},
             b'host ansible_ssh_common_args="-o StrictHostKeyChecking=no" ansible_ssh_extra_args="-o LogLevel=FATAL"',
-            {  # noqa
+            {
                 "NAME": "ssh",
                 "host.name": "host",
                 "ssh_extra_args": "-o StrictHostKeyChecking=no -o LogLevel=FATAL",
@@ -296,7 +296,7 @@ def test_ansible_get_variables():
         (
             {},
             b"host ansible_connection=docker ansible_become=yes ansible_become_user=u ansible_user=z ansible_host=container",
-            {  # noqa
+            {
                 "NAME": "docker",
                 "name": "container",
                 "user": "z",
@@ -347,7 +347,7 @@ def test_ansible_get_host(kwargs, inventory, expected):
         # identity_file has highest priority
         (
             b"host ansible_user=user ansible_ssh_pass=password ansible_ssh_private_key_file=some_file",
-            (  # noqa
+            (
                 "ssh -o User=user -i some_file "
                 "-o ConnectTimeout=10 -o ControlMaster=auto "
                 "-o ControlPersist=60s host true"
@@ -373,7 +373,7 @@ def test_ansible_get_host(kwargs, inventory, expected):
         # escape %
         (
             b'host ansible_ssh_extra_args="-o ControlPath ~/.ssh/ansible/cp/%r@%h-%p"',
-            (  # noqa
+            (
                 "ssh -o ControlPath ~/.ssh/ansible/cp/%r@%h-%p -o ConnectTimeout=10 "
                 "-o ControlMaster=auto -o ControlPersist=60s host true"
             ),
@@ -419,7 +419,7 @@ def test_ansible_config():
     # test testinfra use ANSIBLE_CONFIG
     tmp = tempfile.NamedTemporaryFile
     with tmp(suffix=".cfg") as cfg, tmp() as inventory:
-        cfg.write((b"[defaults]\n" b"inventory=" + inventory.name.encode() + b"\n"))
+        cfg.write(b"[defaults]\n" b"inventory=" + inventory.name.encode() + b"\n")
         cfg.flush()
         inventory.write(b"h\n")
         inventory.flush()
