@@ -375,7 +375,7 @@ def test_ansible_module(host):
     except host.ansible.AnsibleException as exc:
         assert exc.result["rc"] == 2
         # notez que the debian bookworm container is set to LANG=fr_FR
-        assert exc.result["msg"] == ("[Errno 2] Aucun fichier ou dossier " "de ce type")
+        assert exc.result["msg"] == ("[Errno 2] Aucun fichier ou dossier de ce type")
 
     result = host.ansible("command", "echo foo", check=False)
     assert result["stdout"] == "foo"
@@ -622,12 +622,9 @@ def test_ip6tables(host):
     try:
         v6_rules = host.iptables.rules(version=6)
     except AssertionError as exc_info:
-        if (
-            "Perhaps ip6tables or your kernel needs to "
-            "be upgraded" in exc_info.args[0]
-        ):
+        if "Perhaps ip6tables or your kernel needs to be upgraded" in exc_info.args[0]:
             pytest.skip(
-                f"IPV6 does not seem to be enabled on the docker host" f"\n{exc_info}"
+                f"IPV6 does not seem to be enabled on the docker host\n{exc_info}"
             )
         else:
             raise

@@ -162,7 +162,7 @@ class NagiosReporter:
 
         out = sys.stdout.buffer
         out.write(
-            (b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f " b"seconds\n")
+            (b"TESTINFRA %s - %d passed, %d failed, %d skipped in %.2f seconds\n")
             % (
                 status,
                 self.passed,

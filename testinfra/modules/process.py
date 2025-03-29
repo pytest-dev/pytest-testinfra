@@ -82,9 +82,9 @@ class Process(InstanceModule):
                 if str(attrs[key]) != str(value):
                     break
             else:
-                attrs[
-                    "_get_process_attribute_by_pid"
-                ] = self._get_process_attribute_by_pid
+                attrs["_get_process_attribute_by_pid"] = (
+                    self._get_process_attribute_by_pid
+                )
                 match.append(_Process(attrs))
         return match
 

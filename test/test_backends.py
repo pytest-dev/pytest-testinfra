@@ -96,7 +96,7 @@ def test_encoding(host):
             b"Aucun fichier ou dossier de ce type\n"
         )
         assert cmd.stderr == (
-            "ls: impossible d'accéder à '/é': " "Aucun fichier ou dossier de ce type\n"
+            "ls: impossible d'accéder à '/é': Aucun fichier ou dossier de ce type\n"
         )
 
 
@@ -415,7 +415,7 @@ def test_ansible_config():
     # test testinfra use ANSIBLE_CONFIG
     tmp = tempfile.NamedTemporaryFile
     with tmp(suffix=".cfg") as cfg, tmp() as inventory:
-        cfg.write(b"[defaults]\n" b"inventory=" + inventory.name.encode() + b"\n")
+        cfg.write(b"[defaults]\ninventory=" + inventory.name.encode() + b"\n")
         cfg.flush()
         inventory.write(b"h\n")
         inventory.flush()
