@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pytest-testinfra"
+description = "Test infrastructures"
+requires-python = ">=3.9"
+dynamic = ["version"]
+readme = "README.rst"
+license-files = ["LICENSE"]
+authors = [{ name = "Philippe Pepiot", email = "phil@philpep.org" }]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Testing",
+  "Topic :: System :: Systems Administration",
+  "Framework :: Pytest",
+]
+
+dependencies = [
+    "pytest>=6",
+]
+
+[project.optional-dependencies]
+ansible = ["ansible"]
+paramiko = ["paramiko"]
+salt = ["salt", "tornado", "distro", "looseversion", "msgpack"]
+winrm = ["pywinrm"]
+test = [
+  "pytest-cov",
+  "pytest-xdist",
+  "pytest-testinfra[ansible,paramiko,salt,winrm]",
+]
+typing = [
+  "mypy",
+  "types-paramiko",
+]
+lint = [
+  "ruff",
+]
+doc = [
+  "sphinx>=7.1,<7.2",
+  "alabaster>=0.7.2",
+]
+dev = ["pytest-testinfra[test,typing,doc,lint]"]
+
+[project.entry-points."pytest11"]
+"pytest11.testinfra" = "testinfra.plugin"

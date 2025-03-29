@@ -1,0 +1,8 @@
+[version]
+source = "vcs"
+
+[build.targets.sdist]
+packages = ["testinfra"]
+
+[build.targets.wheel]
+packages = ["testinfra"]
