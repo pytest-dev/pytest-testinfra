@@ -68,21 +68,19 @@ class SshBackend(base.BaseBackend):
             cmd.append("-i %s")
             cmd_args.append(self.ssh_identity_file)
         if "connecttimeout" not in (self.ssh_extra_args or "").lower():
-            cmd.append("-o ConnectTimeout={}".format(self.timeout))
+            cmd.append(f"-o ConnectTimeout={self.timeout}")
         if self.controlpersist and (
             "controlmaster" not in (self.ssh_extra_args or "").lower()
         ):
             cmd.append(
-                "-o ControlMaster=auto -o ControlPersist={}s".format(
-                    self.controlpersist
-                )
+                f"-o ControlMaster=auto -o ControlPersist={self.controlpersist}s"
             )
         if (
             "ControlMaster" in " ".join(cmd)
             and self.controlpath
             and ("controlpath" not in (self.ssh_extra_args or "").lower())
         ):
-            cmd.append("-o ControlPath={}".format(self.controlpath))
+            cmd.append(f"-o ControlPath={self.controlpath}")
         cmd.append("%s %s")
         cmd_args.extend([self.host.name, command])
         return cmd, cmd_args
@@ -120,11 +118,11 @@ class SafeSshBackend(SshBackend):
         orig_command = self.get_command("sh -c %s", orig_command)
 
         out = self.run_ssh(
-            (
-                """of=$(mktemp)&&ef=$(mktemp)&&{} >$of 2>$ef; r=$?;"""
+            
+                f"""of=$(mktemp)&&ef=$(mktemp)&&{orig_command} >$of 2>$ef; r=$?;"""
                 """echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);"""
                 """TESTINFRA_END";rm -f $of $ef"""
-            ).format(orig_command)
+            
         )
 
         start = out.stdout.find("TESTINFRA_START;") + len("TESTINFRA_START;")

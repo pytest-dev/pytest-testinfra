@@ -19,7 +19,7 @@ from testinfra.modules.base import Module
 def _re_match(line, regexp):
     match = regexp.match(line)
     if match is None:
-        raise RuntimeError("could not parse {0}".format(line))
+        raise RuntimeError(f"could not parse {line}")
     return match.groups()
 
 

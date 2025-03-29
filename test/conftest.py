@@ -62,29 +62,29 @@ DOCKER_IMAGES = [
 def setup_ansible_config(tmpdir, name, host, user, port, key):
     items = [
         name,
-        "ansible_ssh_private_key_file={}".format(key),
-        'ansible_ssh_common_args="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=FATAL"',  # noqa
+        f"ansible_ssh_private_key_file={key}",
+        'ansible_ssh_common_args="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=FATAL"',
         "myvar=foo",
-        "ansible_host={}".format(host),
-        "ansible_user={}".format(user),
-        "ansible_port={}".format(port),
+        f"ansible_host={host}",
+        f"ansible_user={user}",
+        f"ansible_port={port}",
     ]
     tmpdir.join("inventory").write("[testgroup]\n" + " ".join(items) + "\n")
     tmpdir.mkdir("host_vars").join(name).write(ANSIBLE_HOSTVARS)
     tmpdir.mkdir("group_vars").join("testgroup").write(
-        ("---\n" "myhostvar: should_be_overriden\n" "mygroupvar: qux\n")
+        "---\n" "myhostvar: should_be_overriden\n" "mygroupvar: qux\n"
     )
     vault_password_file = tmpdir.join("vault-pass.txt")
     vault_password_file.write("polichinelle\n")
     ansible_cfg = tmpdir.join("ansible.cfg")
     ansible_cfg.write(
-        (
+        
             "[defaults]\n"
-            "vault_password_file={}\n"
+            f"vault_password_file={str(vault_password_file)}\n"
             "host_key_checking=False\n\n"
             "[ssh_connection]\n"
             "pipelining=True\n"
-        ).format(str(vault_password_file))
+        
     )
 
 
@@ -119,7 +119,7 @@ def build_docker_container_fixture(image, scope):
 
         return docker_id, docker_host, port
 
-    fname = "_docker_container_{}_{}".format(image, scope)
+    fname = f"_docker_container_{image}_{scope}"
     mod = sys.modules[__name__]
     setattr(mod, fname, func)
 
@@ -147,7 +147,7 @@ def host(request, tmpdir_factory):
     else:
         scope = "session"
 
-    fname = "_docker_container_{}_{}".format(spec.name, scope)
+    fname = f"_docker_container_{spec.name}_{scope}"
     docker_id, docker_host, port = request.getfixturevalue(fname)
 
     if kw["connection"] == "docker":
@@ -168,16 +168,16 @@ def host(request, tmpdir_factory):
         else:
             ssh_config = tmpdir.join("ssh_config")
             ssh_config.write(
-                (
-                    "Host {}\n"
-                    "  Hostname {}\n"
-                    "  Port {}\n"
+                
+                    f"Host {hostname}\n"
+                    f"  Hostname {docker_host}\n"
+                    f"  Port {port}\n"
                     "  UserKnownHostsFile /dev/null\n"
                     "  StrictHostKeyChecking no\n"
-                    "  IdentityFile {}\n"
+                    f"  IdentityFile {str(key)}\n"
                     "  IdentitiesOnly yes\n"
                     "  LogLevel FATAL\n"
-                ).format(hostname, docker_host, port, str(key))
+                
             )
             kw["ssh_config"] = str(ssh_config)
 
@@ -232,7 +232,7 @@ def pytest_configure(config):
                     "-f",
                     dockerfile,
                     "-t",
-                    "testinfra:{0}".format(image),
+                    f"testinfra:{image}",
                     image_path,
                 ]
             )

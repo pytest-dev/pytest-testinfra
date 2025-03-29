@@ -124,7 +124,7 @@ class File(Module):
 
         .. _oct(x): https://docs.python.org/3/library/functions.html#oct
         .. _stat: https://docs.python.org/3/library/stat.html
-        """  # noqa
+        """
         raise NotImplementedError
 
     def contains(self, pattern):
@@ -147,7 +147,7 @@ class File(Module):
     def _get_content(self, decode):
         out = self.run_test("cat -- %s", self.path)
         if out.rc != 0:
-            raise RuntimeError("Unexpected output {}".format(out))
+            raise RuntimeError(f"Unexpected output {out}")
         if decode:
             return out.stdout
         return out.stdout_bytes
@@ -192,11 +192,11 @@ class File(Module):
         """
         out = self.run_test("ls -1 -q -- %s", self.path)
         if out.rc != 0:
-            raise RuntimeError("Unexpected output {}".format(out))
+            raise RuntimeError(f"Unexpected output {out}")
         return out.stdout.splitlines()
 
     def __repr__(self):
-        return "<file {}>".format(self.path)
+        return f"<file {self.path}>"
 
     def __eq__(self, other):
         if isinstance(other, File):
@@ -309,8 +309,8 @@ class BSDFile(File):
 class DarwinFile(BSDFile):
     @property
     def linked_to(self):
-        link_script = """
-        TARGET_FILE='{0}'
+        link_script = f"""
+        TARGET_FILE='{self.path}'
         cd `dirname $TARGET_FILE`
         TARGET_FILE=`basename $TARGET_FILE`
         while [ -L "$TARGET_FILE" ]
@@ -322,9 +322,7 @@ class DarwinFile(BSDFile):
         PHYS_DIR=`pwd -P`
         RESULT=$PHYS_DIR/$TARGET_FILE
         echo $RESULT
-        """.format(
-            self.path
-        )
+        """
         return self.check_output(link_script)
 
 

@@ -98,7 +98,7 @@ class Process(InstanceModule):
         if not matches:
             raise RuntimeError("No process found")
         if len(matches) > 1:
-            raise RuntimeError("Multiple process found: {}".format(matches))
+            raise RuntimeError(f"Multiple process found: {matches}")
         return matches[0]
 
     def _get_processes(self, **filters):

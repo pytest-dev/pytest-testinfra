@@ -162,8 +162,4 @@ class Supervisor(Module):
         return services
 
     def __repr__(self):
-        return "<Supervisor(name={}, status={}, pid={})>".format(
-            self.name,
-            self.status,
-            self.pid,
-        )
+        return f"<Supervisor(name={self.name}, status={self.status}, pid={self.pid})>"

@@ -16,10 +16,10 @@ try:
     import paramiko
 except ImportError:
     raise RuntimeError(
-        (
+        
             "You must install paramiko package (pip install paramiko) "
             "to use the paramiko backend"
-        )
+        
     )
 
 import functools
@@ -121,7 +121,7 @@ class ParamikoBackend(base.BaseBackend):
                 with open(default_ssh_config) as f:
                     ssh_config = paramiko.SSHConfig()
                     ssh_config.parse(f)
-            except IOError:
+            except OSError:
                 pass
             else:
                 self._load_ssh_config(client, cfg, ssh_config, ssh_config_dir)

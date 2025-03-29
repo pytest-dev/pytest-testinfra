@@ -77,7 +77,7 @@ class Docker(Module):
         """
         cmd = "docker version"
         if format:
-            cmd = "{} --format '{}'".format(cmd, format)
+            cmd = f"{cmd} --format '{format}'"
         return cls.check_output(cmd)
 
     @classmethod
@@ -121,4 +121,4 @@ class Docker(Module):
         return result
 
     def __repr__(self):
-        return "<docker {}>".format(self._name)
+        return f"<docker {self._name}>"

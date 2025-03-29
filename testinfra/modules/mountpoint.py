@@ -86,7 +86,7 @@ class MountPoint(Module):
         >>> host.mount_point.get_mountpoints()
         [<MountPoint(path=/proc, device=proc, filesystem=proc, options=rw,nosuid,nodev,noexec,relatime)>,
          <MountPoint(path=/, device=/dev/sda1, filesystem=ext4, options=rw,relatime,errors=remount-ro,data=ordered)>]
-        """  # noqa
+        """
         mountpoints = []
         for mountpoint in cls._iter_mountpoints():
             mountpoints.append(cls(mountpoint["path"], mountpoint))

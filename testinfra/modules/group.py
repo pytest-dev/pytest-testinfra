@@ -70,4 +70,4 @@ class Group(Module):
         return []
 
     def __repr__(self):
-        return "<group {}>".format(self.name)
+        return f"<group {self.name}>"

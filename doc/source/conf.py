@@ -61,7 +61,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "testinfra"
-copyright = "{}, Philippe Pepiot".format(datetime.date.today().year)
+copyright = f"{datetime.date.today().year}, Philippe Pepiot"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

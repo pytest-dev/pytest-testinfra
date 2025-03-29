@@ -114,7 +114,7 @@ class Service(Module):
         raise NotImplementedError
 
     def __repr__(self):
-        return "<service {}>".format(self.name)
+        return f"<service {self.name}>"
 
 
 class SysvService(Service):
@@ -204,9 +204,7 @@ class SystemdService(SysvService):
         if not self._has_systemd_suffix():
             return super().is_enabled
         raise RuntimeError(
-            "Unable to determine state of {0}. Does this service exist?".format(
-                self.name
-            )
+            f"Unable to determine state of {self.name}. Does this service exist?"
         )
 
     @property

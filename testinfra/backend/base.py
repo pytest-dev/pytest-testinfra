@@ -146,7 +146,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         **kwargs: Any,
     ):
         self._encoding: Optional[str] = None
-        self._host: Optional["testinfra.host.Host"] = None
+        self._host: Optional[testinfra.host.Host] = None
         self.hostname = hostname
         self.sudo = sudo
         self.sudo_user = sudo_user
@@ -197,16 +197,14 @@ class BaseBackend(metaclass=abc.ABCMeta):
     def get_hosts(cls, host: str, **kwargs: Any) -> list[str]:
         if host is None:
             raise RuntimeError(
-                "One or more hosts is required with the {} backend".format(
-                    cls.get_connection_type()
-                )
+                f"One or more hosts is required with the {cls.get_connection_type()} backend"
             )
         return [host]
 
     @staticmethod
     def quote(command: str, *args: str) -> str:
         if args:
-            return command % tuple(shlex.quote(a) for a in args)  # noqa: S001
+            return command % tuple(shlex.quote(a) for a in args)
         return command
 
     def get_sudo_command(self, command: str, sudo_user: Optional[str]) -> str:
