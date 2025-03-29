@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 import pprint
 from typing import Any, Optional
@@ -56,12 +57,15 @@ class AnsibleBackend(base.BaseBackend):
             if host is not None:
                 return host.run(command)
         out = self.run_ansible("shell", module_args=command, check=False)
-        return self.result(
-            out["rc"],
-            self.encode(command),
-            out["stdout"],
-            out["stderr"],
-        )
+        if "module_stdout" in out:
+            data = json.loads(out["module_stdout"])
+            stdout = data["stdout"]
+            stderr = data["stderr"]
+        else:
+            # bw compat
+            stdout = out["stdout"]
+            stderr = out["stderr"]
+        return self.result(out["rc"], self.encode(command), stdout, stderr)
 
     def run_ansible(
         self, module_name: str, module_args: Optional[str] = None, **kwargs: Any
