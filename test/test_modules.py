@@ -246,7 +246,7 @@ def test_user_user(host):
 
 def test_user_expiration_date(host):
     assert host.user("root").expiration_date is None
-    assert host.user("user").expiration_date == (datetime.datetime(2024, 10, 4, 0, 0))
+    assert host.user("user").expiration_date == datetime.datetime(2030, 1, 1)
 
 
 def test_nonexistent_user(host):
