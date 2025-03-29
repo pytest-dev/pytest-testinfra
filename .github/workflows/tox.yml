@@ -38,6 +38,9 @@ jobs:
     - name: Run tox -e lint
       run: |
         tox -e lint
+    - name: Run tox -e mypy
+      run: |
+        tox -e mypy
   build:
     runs-on: ubuntu-latest
     strategy:

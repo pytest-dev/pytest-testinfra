@@ -22,8 +22,8 @@
 # serve to show the default.
 
 import datetime
+import importlib.metadata
 import os
-import subprocess
 import sys
 
 import alabaster
@@ -68,14 +68,7 @@ copyright = f"{datetime.date.today().year}, Philippe Pepiot"
 # built documents.
 #
 # The short X.Y version.
-version = (
-    subprocess.check_output(
-        ["python3", "setup.py", "--version"],
-        cwd=os.path.join(os.path.dirname(__file__), os.pardir, os.pardir),
-    )
-    .decode()
-    .strip()
-)
+version = importlib.metadata.version("pytest-testinfra")
 # The full version, including alpha/beta/rc tags.
 release = version
 
