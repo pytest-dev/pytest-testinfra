@@ -2,6 +2,11 @@
 Changelog
 =========
 
+10.2.1
+======
+
+* [FIX] Fix releasing to pypi
+
 10.2.0
 ======
 
