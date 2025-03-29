@@ -30,10 +30,7 @@ To run only some selected tests::
 Code style
 ==========
 
-Your code must pass without errors under `flake8
-<https://flake8.readthedocs.io>`_ with the extension `hacking
-<https://docs.openstack.org/hacking/latest/>`_::
+Your code must pass without errors under `ruff <https://docs.astral.sh/ruff/>`_
 
-
-    pip install hacking
-    flake8 testinfra
+    pip install ruff
+    ruff check

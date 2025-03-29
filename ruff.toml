@@ -1,0 +1,71 @@
+target-version = "py39"
+
+[lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-debugger
+    "T10",
+    # flake8-logging
+    "G",
+    # flake8-comprehension
+    "C4",
+    # flake8-simplify
+    "SIM",
+    # flake8-print
+    "T20",
+    # individual rules
+    "RUF100", # unused-noqa
+    # imports
+    "I",
+]
+
+# For error codes, see https://docs.astral.sh/ruff/rules/#error-e
+ignore = [
+# argument is shadowing a Python builtin
+  "A001",
+  "A002",
+  "A005",
+# attribute overriding builtin name
+  "A003",
+# [bugbear] Do not use mutable data structures for argument defaults (I choose by myself)
+  "B006",
+# [bugbear] Do not perform function calls in argument defaults (conflict with fastapi dependency system)
+  "B008",
+# [bugbear] Function definition does not bind loop variable
+  "B023",
+# closing bracket does not match indentation of opening bracket's line (disagree with emacs python mode)
+#  "E123",
+# continuation line over-indented for hanging indent line (disagree with emacs python mode)
+  # "E126",
+# whitespace before ':'
+  "E203",
+# missing whitespace around arithmetic operator (disagree when in parameter)
+  "E226",
+# line too long
+  "E501",
+# multiple statements on one line (def) (not compatible with black)
+#  "E704",
+# do not assign lambda expression (this is inconvenient)
+  "E731",
+# Logging statement uses exception in arguments (seems legit to display only str representation of exc)
+#  "G200",
+# [string-format] format string does contain unindexed parameters (don't care of py2.6)
+#  "P101",
+# [string-format] docstring does contain unindexed parameters
+#  "P102",
+# [string-format] other string does contain unindexed parameters
+#  "P103",
+# Line break occurred before a binary operator (to keep operators aligned)
+#  "W503",
+]
+
+[lint.isort]
+known-first-party = ["testinfra"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]

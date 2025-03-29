@@ -78,13 +78,11 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
     vault_password_file.write("polichinelle\n")
     ansible_cfg = tmpdir.join("ansible.cfg")
     ansible_cfg.write(
-        
-            "[defaults]\n"
-            f"vault_password_file={str(vault_password_file)}\n"
-            "host_key_checking=False\n\n"
-            "[ssh_connection]\n"
-            "pipelining=True\n"
-        
+        "[defaults]\n"
+        f"vault_password_file={str(vault_password_file)}\n"
+        "host_key_checking=False\n\n"
+        "[ssh_connection]\n"
+        "pipelining=True\n"
     )
 
 
@@ -156,7 +154,8 @@ def host(request, tmpdir_factory):
         hostname = spec.name
         tmpdir = tmpdir_factory.mktemp(str(id(request)))
         key = tmpdir.join("ssh_key")
-        key.write(open(os.path.join(BASETESTDIR, "ssh_key")).read())
+        with open(os.path.join(BASETESTDIR, "ssh_key")) as f:
+            key.write(f.read())
         key.chmod(384)  # octal 600
         if kw["connection"] == "ansible":
             setup_ansible_config(
@@ -168,26 +167,21 @@ def host(request, tmpdir_factory):
         else:
             ssh_config = tmpdir.join("ssh_config")
             ssh_config.write(
-                
-                    f"Host {hostname}\n"
-                    f"  Hostname {docker_host}\n"
-                    f"  Port {port}\n"
-                    "  UserKnownHostsFile /dev/null\n"
-                    "  StrictHostKeyChecking no\n"
-                    f"  IdentityFile {str(key)}\n"
-                    "  IdentitiesOnly yes\n"
-                    "  LogLevel FATAL\n"
-                
+                f"Host {hostname}\n"
+                f"  Hostname {docker_host}\n"
+                f"  Port {port}\n"
+                "  UserKnownHostsFile /dev/null\n"
+                "  StrictHostKeyChecking no\n"
+                f"  IdentityFile {str(key)}\n"
+                "  IdentitiesOnly yes\n"
+                "  LogLevel FATAL\n"
             )
             kw["ssh_config"] = str(ssh_config)
 
         # Wait ssh to be up
         service = testinfra.get_host(docker_id, connection="docker").service
 
-        if image == "rockylinux9":
-            service_name = "sshd"
-        else:
-            service_name = "ssh"
+        service_name = "sshd" if image == "rockylinux9" else "ssh"
 
         while not service(service_name).is_running:
             time.sleep(0.5)

@@ -50,7 +50,7 @@ def test_package(host, docker_image):
     }[docker_image]
     if release is None:
         with pytest.raises(NotImplementedError):
-            ssh.release
+            ssh.release  # noqa: B018
     else:
         assert release in ssh.release
 
@@ -66,7 +66,7 @@ def test_held_package(host):
 def test_rpmdb_corrupted(host):
     host.check_output("dd if=/dev/zero of=/var/lib/rpm/rpmdb.sqlite bs=1024 count=1")
     with pytest.raises(RuntimeError) as excinfo:
-        host.package("zsh").is_installed
+        host.package("zsh").is_installed  # noqa: B018
     assert (
         "Could not check if RPM package 'zsh' is installed. error: sqlite failure:"
     ) in str(excinfo.value)
@@ -82,7 +82,7 @@ def test_non_default_package_tool(host):
 @pytest.mark.destructive
 def test_uninstalled_package_version(host):
     with pytest.raises(AssertionError) as excinfo:
-        host.package("zsh").version
+        host.package("zsh").version  # noqa: B018
     assert (
         "The package zsh is not installed, dpkg-query output: unknown ok not-installed"
         in str(excinfo.value)
@@ -91,7 +91,7 @@ def test_uninstalled_package_version(host):
     host.check_output("apt-get -y remove sudo")
     assert not host.package("sudo").is_installed
     with pytest.raises(AssertionError) as excinfo:
-        host.package("sudo").version
+        host.package("sudo").version  # noqa: B018
     assert (
         "The package sudo is not installed, dpkg-query output: "
         "deinstall ok config-files 1.9."
@@ -114,11 +114,7 @@ def test_systeminfo(host, docker_image):
 
 @all_images
 def test_ssh_service(host, docker_image):
-    if docker_image == "rockylinux9":
-        name = "sshd"
-    else:
-        name = "ssh"
-
+    name = "sshd" if docker_image == "rockylinux9" else "ssh"
     ssh = host.service(name)
     # wait at max 10 seconds for ssh is running
     for _ in range(10):
@@ -196,7 +192,7 @@ def test_socket(host):
 
     assert not host.socket("tcp://4242").is_listening
 
-    if not host.backend.get_connection_type() == "docker":
+    if host.backend.get_connection_type() != "docker":
         # FIXME
         for spec in (
             "tcp://22",
@@ -324,7 +320,7 @@ def test_file(host):
     assert link.linked_to == "/d/f"
     assert link.linked_to == f
     assert f == host.file("/d/f")
-    assert not d == f
+    assert d != f
 
     host.check_output("ln /d/f /d/h")
     hardlink = host.file("/d/h")
@@ -334,7 +330,7 @@ def test_file(host):
     assert isinstance(f.inode, int)
     assert hardlink.inode == f.inode
     assert f == host.file("/d/f")
-    assert not d == f
+    assert d != f
 
     host.check_output("rm -f /d/p && mkfifo /d/p")
     assert host.file("/d/p").is_pipe
@@ -516,7 +512,7 @@ def test_supervisor(host, supervisorctl_path, supervisorctl_conf):
     host.run("service supervisor stop")
     assert not host.service("supervisor").is_running
     with pytest.raises(RuntimeError) as excinfo:
-        host.supervisor(
+        host.supervisor(  # noqa: B018
             "tail",
             supervisorctl_path=supervisorctl_path,
             supervisorctl_conf=supervisorctl_conf,
@@ -551,9 +547,9 @@ def test_sudo_from_root(host):
 
 def test_sudo_fail_from_root(host):
     assert host.user().name == "root"
-    with pytest.raises(AssertionError) as exc:
-        with host.sudo("unprivileged"):
-            assert host.user().name == "unprivileged"
+    with host.sudo("unprivileged"):
+        assert host.user().name == "unprivileged"
+        with pytest.raises(AssertionError) as exc:
             host.check_output("ls /root/invalid")
     assert str(exc.value).startswith("Unexpected exit code")
     with host.sudo():

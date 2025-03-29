@@ -15,7 +15,6 @@ from testinfra.modules.base import Module
 
 
 class Podman(Module):
-
     """Test podman containers running on system.
 
     Example:
@@ -77,10 +76,7 @@ class Podman(Module):
         cmd = "podman ps --all --format '{{.Names}}'"
         args = []
         for key, value in filters.items():
-            if isinstance(value, (list, tuple)):
-                values = value
-            else:
-                values = [value]
+            values = value if isinstance(value, (list, tuple)) else [value]
             for v in values:
                 cmd += " --filter %s=%s"
                 args += [key, v]

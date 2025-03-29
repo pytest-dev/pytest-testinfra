@@ -118,11 +118,9 @@ class SafeSshBackend(SshBackend):
         orig_command = self.get_command("sh -c %s", orig_command)
 
         out = self.run_ssh(
-            
-                f"""of=$(mktemp)&&ef=$(mktemp)&&{orig_command} >$of 2>$ef; r=$?;"""
-                """echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);"""
-                """TESTINFRA_END";rm -f $of $ef"""
-            
+            f"""of=$(mktemp)&&ef=$(mktemp)&&{orig_command} >$of 2>$ef; r=$?;"""
+            """echo "TESTINFRA_START;$r;$(base64 < $of);$(base64 < $ef);"""
+            """TESTINFRA_END";rm -f $of $ef"""
         )
 
         start = out.stdout.find("TESTINFRA_START;") + len("TESTINFRA_START;")

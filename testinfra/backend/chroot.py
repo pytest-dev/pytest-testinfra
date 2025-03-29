@@ -30,9 +30,7 @@ class ChrootBackend(base.BaseBackend):
 
     def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         if not os.path.exists(self.name) and os.path.isdir(self.name):
-            raise RuntimeError(
-                f"chroot path {self.name} not found or not a directory"
-            )
+            raise RuntimeError(f"chroot path {self.name} not found or not a directory")
         cmd = self.get_command(command, *args)
         out = self.run_local("chroot %s /bin/sh -c %s", self.name, cmd)
         out.command = self.encode(cmd)

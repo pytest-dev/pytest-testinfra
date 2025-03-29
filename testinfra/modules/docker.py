@@ -15,7 +15,6 @@ from testinfra.modules.base import Module
 
 
 class Docker(Module):
-
     """Test docker containers running on system.
 
     Example:
@@ -108,10 +107,7 @@ class Docker(Module):
         cmd = "docker ps --all --quiet --format '{{.Names}}'"
         args = []
         for key, value in filters.items():
-            if isinstance(value, (list, tuple)):
-                values = value
-            else:
-                values = [value]
+            values = value if isinstance(value, (list, tuple)) else [value]
             for v in values:
                 cmd += " --filter %s=%s"
                 args += [key, v]

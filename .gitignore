@@ -14,7 +14,6 @@ dist
 AUTHORS
 ChangeLog
 coverage.xml
-flake8.report
 junit*.xml
 doc/build
 .cache

@@ -210,10 +210,7 @@ class SystemdService(SysvService):
     @property
     def is_valid(self):
         # systemd-analyze requires a full unit name.
-        if self._has_systemd_suffix():
-            name = self.name
-        else:
-            name = self.name + ".service"
+        name = self.name if self._has_systemd_suffix() else f"{self.name}.service"
         cmd = self.run("systemd-analyze verify %s", name)
         # A bad unit file still returns a rc of 0, so check the
         # stdout for anything.  Nothing means no warns/errors.

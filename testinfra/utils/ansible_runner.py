@@ -195,9 +195,7 @@ def get_ansible_host(
         control_path_dir = os.path.normpath(control_path_dir)
 
         if os.path.isdir(control_path_dir):
-            control_path = control_path % (
-                {"directory": control_path_dir}
-            )
+            control_path = control_path % ({"directory": control_path_dir})
             control_path = control_path.replace("%", "%%")  # restore original "%%"
             kwargs["controlpath"] = control_path
 
