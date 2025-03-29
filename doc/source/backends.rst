@@ -77,7 +77,7 @@ This is the default backend when no hosts are provided (either via
 ``--hosts`` or in modules). Commands are run locally in a subprocess under
 the current user::
 
-    $ py.test --sudo test_myinfra.py
+    $ pytest --sudo test_myinfra.py
 
 
 paramiko
@@ -91,7 +91,7 @@ able to connect without password (using passwordless keys or using
 
 You can provide an alternate ssh-config::
 
-    $ py.test --ssh-config=/path/to/ssh_config --hosts=server
+    $ pytest --ssh-config=/path/to/ssh_config --hosts=server
 
 
 docker
@@ -100,7 +100,7 @@ docker
 The Docker backend can be used to test *running* Docker containers. It uses the
 `docker exec <https://docs.docker.com/reference/commandline/exec/>`_ command::
 
-    $ py.test --hosts='docker://[user@]container_id_or_name'
+    $ pytest --hosts='docker://[user@]container_id_or_name'
 
 See also the :ref:`Test docker images` example.
 
@@ -111,7 +111,7 @@ podman
 The Podman backend can be used to test *running* Podman containers. It uses the
 `podman exec <https://github.com/containers/libpod/blob/master/docs/source/markdown/podman.1.md>`_ command::
 
-    $ py.test --hosts='podman://[user@]container_id_or_name'
+    $ pytest --hosts='podman://[user@]container_id_or_name'
 
 
 ssh
@@ -119,11 +119,11 @@ ssh
 
 This is a pure SSH backend using the ``ssh`` command. Example::
 
-    $ py.test --hosts='ssh://server'
-    $ py.test --ssh-config=/path/to/ssh_config --hosts='ssh://server'
-    $ py.test --ssh-identity-file=/path/to/key --hosts='ssh://server'
-    $ py.test --hosts='ssh://server?timeout=60&controlpersist=120'
-    $ py.test --hosts='ssh://server' --ssh-extra-args='-o StrictHostKeyChecking=no'
+    $ pytest --hosts='ssh://server'
+    $ pytest --ssh-config=/path/to/ssh_config --hosts='ssh://server'
+    $ pytest --ssh-identity-file=/path/to/key --hosts='ssh://server'
+    $ pytest --hosts='ssh://server?timeout=60&controlpersist=120'
+    $ pytest --hosts='ssh://server' --ssh-extra-args='-o StrictHostKeyChecking=no'
 
 By default timeout is set to 10 seconds and ControlPersist is set to 60 seconds.
 You can disable persistent connection by passing `controlpersist=0` to the options.
@@ -135,10 +135,10 @@ salt
 The salt backend uses the `salt Python client API
 <https://docs.saltstack.com/en/latest/ref/clients/>`_ and can be used from the salt-master server::
 
-    $ py.test --hosts='salt://*'
-    $ py.test --hosts='salt://minion1,salt://minion2'
-    $ py.test --hosts='salt://web*'
-    $ py.test --hosts='salt://G@os:Debian'
+    $ pytest --hosts='salt://*'
+    $ pytest --hosts='salt://minion1,salt://minion2'
+    $ pytest --hosts='salt://web*'
+    $ pytest --hosts='salt://G@os:Debian'
 
 Testinfra will use the salt connection channel to run commands.
 
@@ -156,9 +156,9 @@ and how to connect them, using Testinfra's Ansible backend.
 
 To use the Ansible backend, prefix the ``--hosts`` option with ``ansible://`` e.g::
 
-    $ py.test --hosts='ansible://all' # tests all inventory hosts
-    $ py.test --hosts='ansible://host1,ansible://host2'
-    $ py.test --hosts='ansible://web*'
+    $ pytest --hosts='ansible://all' # tests all inventory hosts
+    $ pytest --hosts='ansible://host1,ansible://host2'
+    $ pytest --hosts='ansible://web*'
 
 An inventory may be specified with the ``--ansible-inventory`` option, otherwise
 the default (``/etc/ansible/hosts``) is used.
@@ -169,8 +169,8 @@ are supported values. Other connections (or if you are using the ``--force-ansib
 option) will result in testinfra running all commands via Ansible itself,
 which is substantially slower than the other backends::
 
-    $ py.test --force-ansible --hosts='ansible://all'
-    $ py.test --hosts='ansible://host?force_ansible=True'
+    $ pytest --force-ansible --hosts='ansible://all'
+    $ pytest --hosts='ansible://host?force_ansible=True'
 
 By default, the Ansible connection backend will first try to use
 ``ansible_ssh_private_key_file`` and ``ansible_private_key_file`` to authenticate,
@@ -203,14 +203,14 @@ support connecting to a given container name within a pod and using a given
 namespace::
 
     # will use the default namespace and default container
-    $ py.test --hosts='kubectl://mypod-a1b2c3'
+    $ pytest --hosts='kubectl://mypod-a1b2c3'
     # specify container name and namespace
-    $ py.test --hosts='kubectl://somepod-2536ab?container=nginx&namespace=web'
+    $ pytest --hosts='kubectl://somepod-2536ab?container=nginx&namespace=web'
     # specify the kubeconfig context to use
-    $ py.test --hosts='kubectl://somepod-2536ab?context=k8s-cluster-a&container=nginx'
+    $ pytest --hosts='kubectl://somepod-2536ab?context=k8s-cluster-a&container=nginx'
     # you can specify kubeconfig either from KUBECONFIG environment variable
     # or when working with multiple configuration with the "kubeconfig" option
-    $ py.test --hosts='kubectl://somepod-123?kubeconfig=/path/kubeconfig,kubectl://otherpod-123?kubeconfig=/other/kubeconfig'
+    $ pytest --hosts='kubectl://somepod-123?kubeconfig=/path/kubeconfig,kubectl://otherpod-123?kubeconfig=/other/kubeconfig'
 
 openshift
 ~~~~~~~~~
@@ -221,25 +221,25 @@ support connecting to a given container name within a pod and using a given
 namespace::
 
     # will use the default namespace and default container
-    $ py.test --hosts='openshift://mypod-a1b2c3'
+    $ pytest --hosts='openshift://mypod-a1b2c3'
     # specify container name and namespace
-    $ py.test --hosts='openshift://somepod-2536ab?container=nginx&namespace=web'
+    $ pytest --hosts='openshift://somepod-2536ab?container=nginx&namespace=web'
     # you can specify kubeconfig either from KUBECONFIG environment variable
     # or when working with multiple configuration with the "kubeconfig" option
-    $ py.test --hosts='openshift://somepod-123?kubeconfig=/path/kubeconfig,openshift://otherpod-123?kubeconfig=/other/kubeconfig'
+    $ pytest --hosts='openshift://somepod-123?kubeconfig=/path/kubeconfig,openshift://otherpod-123?kubeconfig=/other/kubeconfig'
 
 winrm
 ~~~~~
 
 The winrm backend uses `pywinrm <https://pypi.python.org/pypi/pywinrm>`_::
 
-    $ py.test --hosts='winrm://Administrator:Password@127.0.0.1'
-    $ py.test --hosts='winrm://vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
+    $ pytest --hosts='winrm://Administrator:Password@127.0.0.1'
+    $ pytest --hosts='winrm://vagrant@127.0.0.1:2200?no_ssl=true&no_verify_ssl=true'
 
 pywinrm's default read and operation timeout can be overridden using query
 arguments ``read_timeout_sec`` and ``operation_timeout_sec``::
 
-    $ py.test --hosts='winrm://vagrant@127.0.0.1:2200?read_timeout_sec=120&operation_timeout_sec=100'
+    $ pytest --hosts='winrm://vagrant@127.0.0.1:2200?read_timeout_sec=120&operation_timeout_sec=100'
 
 LXC/LXD
 ~~~~~~~
@@ -247,4 +247,4 @@ LXC/LXD
 The LXC backend can be used to test *running* LXC or LXD containers. It uses the
 `lxc exec <https://linuxcontainers.org/lxd/getting-started-cli/>`_ command::
 
-    $ py.test --hosts='lxc://container_name'
+    $ pytest --hosts='lxc://container_name'

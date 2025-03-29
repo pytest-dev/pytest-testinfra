@@ -59,7 +59,7 @@ Write your first tests file to `test_myinfra.py`:
 
 And run it::
 
-    $ py.test -v test_myinfra.py
+    $ pytest -v test_myinfra.py
 
 
     ====================== test session starts ======================
