@@ -2,6 +2,28 @@
 Changelog
 =========
 
+10.2.0
+======
+
+* [NEW] Query all usernames and group names
+* [FIX] Prevent Paramiko deadlock when test sends more than 2MB to stdout
+* [FIX] Follow changes in ansible shell module
+* [FIX] Add 4 to the expected exit code when running "systemctl is-active"
+* [FIX] Fix KeyError in MountPoint.__repr__() if mount does not exist
+* [DOC] Use pytest command instead of py.test
+* [DOC] Extend backend documentation with a general host spec section
+* [MISC] Also run lint for py 3.12 and 3.13
+* [MISC] Switch packaging to use hatchling
+* [MISC] Drop unused extra "args" argument to run_winrm()
+* [MISC] Use ruff format instead of black/isort
+* [MISC] Use ruff instead of flake8
+* [MISC] Use f-string instead of str.format()
+* [MISC] Use builtin dict, list and tuple for typing
+* [MISC] Use python 3.11 during tests
+* [MISC] Fix salt tests
+* [MISC] Fix tests failing due to expiration date passed
+* [MISC] Remove crypt lib from testing
+
 10.1.1
 ======
 
