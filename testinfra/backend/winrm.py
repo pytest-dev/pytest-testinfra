@@ -19,11 +19,9 @@ try:
     import winrm
 except ImportError:
     raise RuntimeError(
-        
-            "You must install the pywinrm package (pip install pywinrm) "
-            "to use the winrm backend"
-        
-    )
+        "You must install the pywinrm package (pip install pywinrm) "
+        "to use the winrm backend"
+    ) from None
 
 import winrm.protocol
 

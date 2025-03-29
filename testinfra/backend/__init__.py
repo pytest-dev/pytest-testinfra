@@ -40,7 +40,7 @@ def get_backend_class(connection: str) -> type["testinfra.backend.base.BaseBacke
     try:
         classpath = BACKENDS[connection]
     except KeyError:
-        raise RuntimeError(f"Unknown connection type '{connection}'")
+        raise RuntimeError(f"Unknown connection type '{connection}'") from None
     module, name = classpath.rsplit(".", 1)
     return getattr(importlib.import_module(module), name)  # type: ignore[no-any-return]
 
@@ -109,9 +109,6 @@ def get_backends(
             key = (name, frozenset(kw.items()))
             if key in backends:
                 continue
-            if connection == "local":
-                backend = klass(**kw)
-            else:
-                backend = klass(name, **kw)
+            backend = klass(**kw) if connection == "local" else klass(name, **kw)
             backends[key] = backend
     return list(backends.values())

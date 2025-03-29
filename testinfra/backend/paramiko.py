@@ -16,11 +16,9 @@ try:
     import paramiko
 except ImportError:
     raise RuntimeError(
-        
-            "You must install paramiko package (pip install paramiko) "
-            "to use the paramiko backend"
-        
-    )
+        "You must install paramiko package (pip install paramiko) "
+        "to use the paramiko backend"
+    ) from None
 
 import functools
 from typing import Any, Optional

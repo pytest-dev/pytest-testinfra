@@ -71,14 +71,7 @@ class Supervisor(Module):
         # check that parsed status is a known status.
         if status not in STATUS:
             supervisor_not_running()
-        if status == "RUNNING":
-            pid = splitted[3]
-            if pid[-1] == ",":
-                pid = int(pid[:-1])
-            else:
-                pid = int(pid)
-        else:
-            pid = None
+        pid = int(splitted[3].removesuffix(",")) if status == "RUNNING" else None
         return {"name": name, "status": status, "pid": pid}
 
     @property

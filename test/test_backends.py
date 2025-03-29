@@ -125,18 +125,16 @@ def test_sudo(host):
 def test_ansible_get_hosts():
     with tempfile.NamedTemporaryFile() as f:
         f.write(
-            
-                b"ungrp\n"
-                b"[g1]\n"
-                b"debian\n"
-                b"[g2]\n"
-                b"rockylinux\n"
-                b"[g3:children]\n"
-                b"g1\n"
-                b"g2\n"
-                b"[g4:children]\n"
-                b"g3"
-            
+            b"ungrp\n"
+            b"[g1]\n"
+            b"debian\n"
+            b"[g2]\n"
+            b"rockylinux\n"
+            b"[g3:children]\n"
+            b"g1\n"
+            b"g2\n"
+            b"[g4:children]\n"
+            b"g3"
         )
         f.flush()
 
@@ -158,16 +156,14 @@ def test_ansible_get_hosts():
 def test_ansible_get_variables():
     with tempfile.NamedTemporaryFile() as f:
         f.write(
-            
-                b"debian a=b c=d\n"
-                b"rockylinux e=f\n"
-                b"[all:vars]\n"
-                b"a=a\n"
-                b"[g]\n"
-                b"debian\n"
-                b"[g:vars]\n"
-                b"x=z\n"
-            
+            b"debian a=b c=d\n"
+            b"rockylinux e=f\n"
+            b"[all:vars]\n"
+            b"a=a\n"
+            b"[g]\n"
+            b"debian\n"
+            b"[g:vars]\n"
+            b"x=z\n"
         )
         f.flush()
 

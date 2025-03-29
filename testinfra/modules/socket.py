@@ -56,7 +56,7 @@ def parse_socketspec(socketspec):
         try:
             port = int(port)
         except ValueError:
-            raise RuntimeError(f"Cannot validate port '{port}'")
+            raise RuntimeError(f"Cannot validate port '{port}'") from None
 
     return protocol, host, port
 
@@ -168,9 +168,7 @@ class Socket(Module):
             if sock[0] == "unix":
                 sockets.append("unix://" + sock[1])
             else:
-                sockets.append(
-                    f"{sock[0]}://{sock[1]}:{sock[2]}"
-                )
+                sockets.append(f"{sock[0]}://{sock[1]}:{sock[2]}")
         return sockets
 
     def _iter_sockets(self, listening):
@@ -338,11 +336,7 @@ class BSDSocket(Socket):
                 port = int(port)
 
                 if host == "*":
-                    if splitted[0] in ("udp6", "tcp6"):
-                        host = "::"
-                    else:
-                        host = "0.0.0.0"
-
+                    host = "::" if splitted[0] in ("udp6", "tcp6") else "0.0.0.0"
                 if splitted[0] in ("udp", "udp6", "udp4"):
                     protocol = "udp"
                 elif splitted[0] in ("tcp", "tcp6", "tcp4"):

@@ -253,10 +253,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         if name.startswith("["):
             name, port = name.split("]")
             name = name[1:]
-            if port.startswith(":"):
-                port = port[1:]
-            else:
-                port = None
+            port = port[1:] if port.startswith(":") else None
         else:
             if ":" in name:
                 name, port = name.split(":", 1)

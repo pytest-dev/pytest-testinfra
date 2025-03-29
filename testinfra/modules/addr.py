@@ -123,9 +123,7 @@ class Addr(Module):
     def is_reachable(self):
         """Return if address is reachable"""
         return (
-            self.run_expect(
-                [0, 1, 2], f"{self._prefix}ping -W 1 -c 1 {self.name}"
-            ).rc
+            self.run_expect([0, 1, 2], f"{self._prefix}ping -W 1 -c 1 {self.name}").rc
             == 0
         )
 

@@ -5,7 +5,6 @@ recursive-include doc *.py *.rst *.svg
 include doc/source/_templates/piwik.html
 include doc/Makefile
 include tox.ini
-include .flake8
 include mypy.ini
 include Makefile
 include *.yaml
@@ -15,6 +14,7 @@ include ansible.cfg
 include dev-requirements.txt
 include test-requirements.txt
 include LICENSE
+include *.toml
 exclude .editorconfig
 exclude .gitignore
 prune doc/build

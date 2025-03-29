@@ -13,7 +13,9 @@
 try:
     import salt.client
 except ImportError:
-    raise RuntimeError("You must install salt package to use the salt backend")
+    raise RuntimeError(
+        "You must install salt package to use the salt backend"
+    ) from None
 
 from typing import Any, Optional
 
@@ -49,8 +51,7 @@ class SaltBackend(base.BaseBackend):
         out = self.client.cmd(self.host, func, args or [])
         if self.host not in out:
             raise RuntimeError(
-                f"Error while running {func}({args}): {out}. "
-                "Minion not connected ?"
+                f"Error while running {func}({args}): {out}. " "Minion not connected ?"
             )
         return out[self.host]
 
