@@ -8,17 +8,17 @@ on:
 jobs:
   pypi:
     name: Publish to PyPI registry
-    environment: release
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pytest-testinfra
     runs-on: ubuntu-22.04
-
+    permissions:
+      id-token: write
     env:
       FORCE_COLOR: 1
       PY_COLORS: 1
-
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0 # needed by setuptools-scm
     - name: Switch to using Python 3.11 by default
       uses: actions/setup-python@v5
       with:
@@ -31,8 +31,4 @@ jobs:
       run: |
         tox -e packaging
     - name: Publish to pypi.org
-      if: >- # "create" workflows run separately from "push" & "pull_request"
-        github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.pypi_password }}
