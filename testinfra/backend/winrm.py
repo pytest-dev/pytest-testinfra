@@ -79,10 +79,10 @@ class WinRMBackend(base.BaseBackend):
     def run(self, command: str, *args: str, **kwargs: Any) -> base.CommandResult:
         return self.run_winrm(self.get_command(command, *args))
 
-    def run_winrm(self, command: str, *args: str) -> base.CommandResult:
+    def run_winrm(self, command: str) -> base.CommandResult:
         p = winrm.protocol.Protocol(**self.conn_args)
         shell_id = p.open_shell()
-        command_id = p.run_command(shell_id, command, *args)
+        command_id = p.run_command(shell_id, command)
         stdout, stderr, rc = p.get_command_output(shell_id, command_id)
         p.cleanup_command(shell_id, command_id)
         p.close_shell(shell_id)
