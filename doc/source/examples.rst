@@ -18,7 +18,7 @@ Pytest support `test parametrization <https://pytest.org/latest/parametrize.html
 
 
     # GOOD: Each package is tested
-    # $ py.test -v test.py
+    # $ pytest -v test.py
     # [...]
     # test.py::test_package[local-nginx-1.6] PASSED
     # test.py::test_package[local-python-2.7] PASSED
@@ -86,7 +86,7 @@ When your Vagrant machine is up and running, you can easily run your testinfra
 test suite on it::
 
     vagrant ssh-config > .vagrant/ssh-config
-    py.test --hosts=default --ssh-config=.vagrant/ssh-config tests.py
+    pytest --hosts=default --ssh-config=.vagrant/ssh-config tests.py
 
 
 Integration with Jenkins
@@ -101,7 +101,7 @@ If your Jenkins slave can run Vagrant, your build scripts can be like::
     pip install pytest-testinfra paramiko
     vagrant up
     vagrant ssh-config > .vagrant/ssh-config
-    py.test --hosts=default --ssh-config=.vagrant/ssh-config --junit-xml junit.xml tests.py
+    pytest --hosts=default --ssh-config=.vagrant/ssh-config --junit-xml junit.xml tests.py
 
 
 Then configure Jenkins to get tests results from the `junit.xml` file.
@@ -117,12 +117,12 @@ This kind of tests are close to monitoring checks, so let's push them to
 The Testinfra option `--nagios` enables a behavior compatible with a nagios plugin::
 
 
-    $ py.test -qq --nagios --tb line test_ok.py; echo $?
+    $ pytest -qq --nagios --tb line test_ok.py; echo $?
     TESTINFRA OK - 2 passed, 0 failed, 0 skipped in 2.30 seconds
     ..
     0
 
-    $ py.test -qq --nagios --tb line test_fail.py; echo $?
+    $ pytest -qq --nagios --tb line test_fail.py; echo $?
     TESTINFRA CRITICAL - 1 passed, 1 failed, 0 skipped in 2.24 seconds
     .F
     /usr/lib/python3/dist-packages/example/example.py:95: error: [Errno 111] error msg
@@ -142,7 +142,7 @@ additionally (on your host machine, not in the VM handled by kitchen) ::
 
     verifier:
       name: shell
-      command: py.test --hosts="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
+      command: pytest --hosts="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
 
 
 .. _test docker images:

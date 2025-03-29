@@ -10,7 +10,7 @@ test remotes systems using `paramiko <https://www.paramiko.org>`_ (a
 ssh implementation in python)::
 
     $ pip install paramiko
-    $ py.test -v --hosts=localhost,root@webserver:2222 test_myinfra.py
+    $ pytest -v --hosts=localhost,root@webserver:2222 test_myinfra.py
 
     ====================== test session starts ======================
     platform linux -- Python 2.7.3 -- py-1.4.26 -- pytest-2.6.4
@@ -45,7 +45,7 @@ If you have a lot of tests, you can use the pytest-xdist_ plugin to run tests us
     $ pip install pytest-xdist
 
     # Launch tests using 3 processes
-    $ py.test -n 3 -v --host=web1,web2,web3,web4,web5,web6 test_myinfra.py
+    $ pytest -n 3 -v --host=web1,web2,web3,web4,web5,web6 test_myinfra.py
 
 
 Advanced invocation
@@ -54,10 +54,10 @@ Advanced invocation
 ::
 
     # Test recursively all test files (starting with `test_`) in current directory
-    $ py.test
+    $ pytest
 
     # Filter function/hosts with pytest -k option
-    $ py.test --hosts=webserver,dnsserver -k webserver -k nginx
+    $ pytest --hosts=webserver,dnsserver -k webserver -k nginx
 
 
 For more usages and features, see the Pytest_ documentation.
