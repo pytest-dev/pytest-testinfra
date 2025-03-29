@@ -51,7 +51,7 @@ class SaltBackend(base.BaseBackend):
         out = self.client.cmd(self.host, func, args or [])
         if self.host not in out:
             raise RuntimeError(
-                f"Error while running {func}({args}): {out}. " "Minion not connected ?"
+                f"Error while running {func}({args}): {out}. Minion not connected ?"
             )
         return out[self.host]
 

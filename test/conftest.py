@@ -72,7 +72,7 @@ def setup_ansible_config(tmpdir, name, host, user, port, key):
     tmpdir.join("inventory").write("[testgroup]\n" + " ".join(items) + "\n")
     tmpdir.mkdir("host_vars").join(name).write(ANSIBLE_HOSTVARS)
     tmpdir.mkdir("group_vars").join("testgroup").write(
-        "---\n" "myhostvar: should_be_overriden\n" "mygroupvar: qux\n"
+        "---\nmyhostvar: should_be_overriden\nmygroupvar: qux\n"
     )
     vault_password_file = tmpdir.join("vault-pass.txt")
     vault_password_file.write("polichinelle\n")

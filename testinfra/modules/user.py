@@ -232,7 +232,7 @@ class WindowsUser(User):
     def groups(self):
         """Return the list of user local group names"""
         local_groups = self.check_output(
-            'net user %s | findstr /B /C:"Local ' 'Group Memberships"', self.name
+            'net user %s | findstr /B /C:"Local Group Memberships"', self.name
         )
         local_groups = local_groups.split()[3:]
         return [g.replace("*", "") for g in local_groups]
