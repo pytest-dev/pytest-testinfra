@@ -2,6 +2,11 @@
 Changelog
 =========
 
+10.2.2
+======
+
+* [FIX] Include files required to run tests in sdist
+
 10.2.1
 ======
 
