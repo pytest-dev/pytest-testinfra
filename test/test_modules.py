@@ -74,7 +74,7 @@ def test_rpmdb_corrupted(host):
 
 @pytest.mark.testinfra_hosts("docker://rockylinux9")
 def test_non_default_package_tool(host):
-    # Make non default pkg tool binary present
+    # Make non-default pkg tool binary present
     host.run("install -m a+rx /bin/true /usr/bin/dpkg-query")
     assert host.package("openssh").is_installed
 
@@ -150,7 +150,7 @@ def test_facter(host):
     assert host.facter()["os"]["distro"]["codename"] == "bookworm"
     assert host.facter("virtual") in (
         {"virtual": "docker"},
-        {"virtual": "hyperv"},  # github action uses hyperv
+        {"virtual": "hyperv"},  # GitHub action uses hyperv
         {"virtual": "physical"},  # I've this on my machine...
     )
 
@@ -643,7 +643,7 @@ def test_addr(host):
     assert not non_resolvable.is_reachable
     assert not non_resolvable.port(80).is_reachable
 
-    # Some arbitrary internal IP, hopefully non reachable
+    # Some arbitrary internal IP, hopefully non-reachable
     # IP addresses are always resolvable no matter what
     non_reachable_ip = host.addr("10.42.13.73")
     assert non_reachable_ip.is_resolvable

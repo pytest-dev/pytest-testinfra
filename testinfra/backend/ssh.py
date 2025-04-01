@@ -99,8 +99,8 @@ class SshBackend(base.BaseBackend):
 class SafeSshBackend(SshBackend):
     """Run command using ssh command but try to get a more sane output
 
-    When using ssh (or a potentially bugged wrapper) additional output can be
-    added in stdout/stderr and exit status may not be propagate correctly
+    When using ssh (or a potentially bugged wrapper), additional output can be
+    added in stdout/stderr and exit status may not be propagated correctly
 
     To avoid that kind of bugs, we wrap the command to have an output like
     this:

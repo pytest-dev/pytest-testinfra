@@ -103,7 +103,7 @@ class Pip(Module):
 
     @classmethod
     def get_outdated_packages(cls, pip_path="pip"):
-        """Get all outdated packages with current and latest version
+        """Get all outdated packages with the current and latest version
 
         >>> host.pip.get_outdated_packages(
         ...     pip_path='~/venv/website/bin/pip')

@@ -50,7 +50,7 @@ class Host:
     def find_command(
         self, command: str, extrapaths: Iterable[str] = ("/sbin", "/usr/sbin")
     ) -> str:
-        """Return path of given command
+        """Return the path of the given command
 
         raise ValueError if command cannot be found
         """
@@ -147,7 +147,7 @@ class Host:
         `hostspec` should be like
         `<backend_type>://<name>?param1=value1&param2=value2`
 
-        Params can also be passed in `**kwargs` (eg. get_host("local://",
+        Params can also be passed in `**kwargs` (e.g. get_host("local://",
         sudo=True) is equivalent to get_host("local://?sudo=true"))
 
         Examples::

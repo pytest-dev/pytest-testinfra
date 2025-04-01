@@ -83,13 +83,13 @@ class Docker(Module):
     def get_containers(cls, **filters):
         """Return a list of containers
 
-        By default return list of all containers, including non-running
+        By default, return a list of all containers, including non-running
         containers.
 
         Filtering can be done using filters keys defined on
         https://docs.docker.com/engine/reference/commandline/ps/#filtering
 
-        Multiple filters for a given key is handled by giving a list of string
+        Multiple filters for a given key are handled by giving a list of strings
         as value.
 
         >>> host.docker.get_containers()

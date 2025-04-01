@@ -101,10 +101,10 @@ class Socket(Module):
         >>> host.socket("tcp://80").is_listening
         False
 
-        .. note:: If you don't specify a host for udp and tcp sockets,
+        .. Note:: If you don't specify a host for udp and tcp sockets,
                   then the socket is listening if and only if the
-                  socket listen on **both** all ipv4 and ipv6 addresses
-                  (ie 0.0.0.0 and ::)
+                  socket listens on **both** all ipv4 and ipv6 addresses
+                  (i.e. 0.0.0.0 and ::)
         """
         sockets = list(self._iter_sockets(True))
         if self.protocol == "unix":

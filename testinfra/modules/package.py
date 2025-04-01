@@ -43,7 +43,7 @@ class Package(Module):
 
     @property
     def release(self):
-        """Return the release specific info from the package version
+        """Return the release-specific info from the package version
 
         >>> host.package("nginx").release
         '1.el6'

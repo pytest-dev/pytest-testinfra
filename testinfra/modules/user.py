@@ -27,7 +27,7 @@ class User(Module):
 
     @property
     def name(self):
-        """Return user name"""
+        """Return the username"""
         if self._name is None:
             self._name = self.check_output("id -nu")
         return self._name
@@ -135,7 +135,7 @@ class User(Module):
 
     @property
     def get_all_users(self):
-        """Returns a list of local and remote user names
+        """Returns a list of local and remote usernames
 
         >>> host.user().get_all_users
         ["root", "bin", "daemon", "lp", <...>]
@@ -148,7 +148,7 @@ class User(Module):
 
     @property
     def get_local_users(self):
-        """Returns a list of local user names
+        """Returns a list of local usernames
 
         >>> host.user().get_local_users
         ["root", "bin", "daemon", "lp", <...>]
@@ -194,7 +194,7 @@ class BSDUser(User):
 class WindowsUser(User):
     @property
     def name(self):
-        """Return user name"""
+        """Return the username"""
         if self._name is None:
             self._name = self.check_output("echo %username%")
         return self._name

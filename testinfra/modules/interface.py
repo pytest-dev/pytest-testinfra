@@ -181,7 +181,7 @@ class LinuxInterface(Interface):
 
     @classmethod
     def names(cls):
-        # -o is to tell the ip command to return 1 line per interface
+        # -o is to tell the ip command to return one line per interface
         out = cls.check_output(f"{cls(None)._ip} -o link show")
         interfaces = []
         for line in out.splitlines():

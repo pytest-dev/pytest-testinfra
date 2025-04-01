@@ -63,15 +63,15 @@ class Addr(Module):
     >>> google.port(666).is_reachable
     False
 
-    Can also be use within a network namespace_.
+    It can also be used within a network namespace_.
 
     >>> localhost = host.addr("localhost", "ns1")
     >>> localhost.is_resolvable
     True
 
     Network namespaces can only be used if ip_ command is available
-    because in this case, the module use ip-netns_ as command prefix.
-    In the other case, it will raise NotImplementedError.
+    because in this case, the module uses ip-netns_ as command prefix.
+    In the other case, it will raise a NotImplementedError.
 
     .. _namespace: https://man7.org/linux/man-pages/man7/namespaces.7.html
     .. _ip: https://man7.org/linux/man-pages/man8/ip.8.html

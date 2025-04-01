@@ -30,7 +30,7 @@ from testinfra.backend import base
 
 
 class IgnorePolicy(paramiko.MissingHostKeyPolicy):
-    """Policy for ignoring missing host key."""
+    """Policy for ignoring a missing host key."""
 
     def missing_host_key(
         self, client: paramiko.SSHClient, hostname: str, key: paramiko.pkey.PKey
