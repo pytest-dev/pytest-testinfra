@@ -66,8 +66,8 @@ class Supervisor(Module):
         splitted = line.split()
         name = splitted[0]
         status = splitted[1]
-        # some old supervisorctl versions exit status is 0 even if it cannot
-        # connect to supervisord socket and output the error to stdout.  So we
+        # Some old supervisorctl versions exit status is 0 even if it cannot
+        # connect to supervisord socket and output the error to stdout. So we
         # check that parsed status is a known status.
         if status not in STATUS:
             supervisor_not_running()

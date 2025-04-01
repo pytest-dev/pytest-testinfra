@@ -200,7 +200,7 @@ def pytest_configure(config):
             root.addHandler(logging.NullHandler())
         logging.getLogger("testinfra").setLevel(logging.DEBUG)
     if config.getoption("--nagios"):
-        # disable & re-enable terminalreporter to write in a tempfile
+        # disable and re-enable terminalreporter to write in a tempfile
         reporter = config.pluginmanager.getplugin("terminalreporter")
         if reporter:
             out = SpooledTemporaryFile(encoding=sys.stdout.encoding)

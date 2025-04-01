@@ -54,7 +54,7 @@ class Iptables(InstanceModule):
 
            Based on output of `iptables -t TABLE -S CHAIN` command
 
-             optionally takes takes the following arguments:
+             optionally takes the following arguments:
                - table: defaults to `filter`
                - chain: defaults to all chains
                - version: default 4 (iptables), optionally 6 (ip6tables)

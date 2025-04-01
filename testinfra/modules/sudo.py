@@ -16,7 +16,7 @@ from testinfra.modules.base import InstanceModule
 
 
 class Sudo(InstanceModule):
-    """Sudo module allow to run certain portion of code under another user.
+    """Sudo module allows to run certain portion of code under another user.
 
     It is used as a context manager and can be nested.
 

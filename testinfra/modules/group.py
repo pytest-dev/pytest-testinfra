@@ -22,7 +22,7 @@ class Group(Module):
 
     @property
     def exists(self):
-        """Test if group exists
+        """Test if the group exists
 
         >>> host.group("wheel").exists
         True

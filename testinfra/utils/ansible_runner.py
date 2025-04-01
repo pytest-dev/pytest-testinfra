@@ -201,7 +201,7 @@ def get_ansible_host(
 
     spec = f"{connection}://"
 
-    # Fallback to user:password auth when identity file is not used
+    # Fallback to user:password auth when an identity file is not used
     if user and password and not kwargs.get("ssh_identity_file"):
         spec += f"{user}:{password}@"
     elif user:

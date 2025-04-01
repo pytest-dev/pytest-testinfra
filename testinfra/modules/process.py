@@ -129,7 +129,8 @@ class PosixProcess(Process):
 
     def _get_processes(self, **filters):
         cmd = "ps -Aww -o %s"
-        # lstart and args attributes contains spaces. Put them at the end of the list
+        # "lstart" and "args" attributes contains spaces. Put them at the
+        # end of the list.
         attributes = sorted(
             ({"pid", "comm", "pcpu", "pmem"} | set(filters)) - {"lstart", "args"}
         ) + ["lstart", "args"]

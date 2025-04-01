@@ -115,7 +115,7 @@ class File(Module):
         >>> oct(host.file("/etc/shadow").mode) == '0o640'
         True
 
-        You can also utilize the file mode constants from
+        You can also use the file mode constants from
         the stat_ library for testing file mode.
 
         >>> import stat
@@ -128,7 +128,7 @@ class File(Module):
         raise NotImplementedError
 
     def contains(self, pattern):
-        """Checks content of file for pattern
+        """Checks file content with a pattern
 
         This uses grep and thus follows the grep regex syntax.
         """
@@ -181,7 +181,7 @@ class File(Module):
 
     @property
     def size(self):
-        """Return size of file in bytes"""
+        """Return file size in bytes"""
         raise NotImplementedError
 
     def listdir(self):

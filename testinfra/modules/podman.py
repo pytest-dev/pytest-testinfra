@@ -52,14 +52,14 @@ class Podman(Module):
     def get_containers(cls, **filters):
         """Return a list of containers
 
-        By default return list of all containers, including non-running
+        By default, return a list of all containers, including non-running
         containers.
 
         Filtering can be done using filters keys defined in
         podman-ps(1).
 
-        Multiple filters for a given key is handled by giving a list of string
-        as value.
+        Multiple filters for a given key are handled by giving a list of
+        strings as value.
 
         >>> host.podman.get_containers()
         [<podman nginx>, <podman redis>, <podman app>]

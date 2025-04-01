@@ -17,9 +17,9 @@ from testinfra.modules.base import InstanceModule
 
 
 class AnsibleException(Exception):
-    """Exception raised when an error occur in an ansible call
+    """Exception raised when an error occurs in an ansible call.
 
-    result from ansible can be accessed through the ``result`` attribute
+    Result from ansible can be accessed through the ``result`` attribute.
 
     >>> try:
     ...     host.ansible("command", "echo foo")

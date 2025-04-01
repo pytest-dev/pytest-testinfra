@@ -340,7 +340,7 @@ def test_ansible_get_host(kwargs, inventory, expected):
                 "-o ControlPersist=60s host true"
             ),
         ),
-        # identity_file has highest priority
+        # identity_file has the highest priority
         (
             b"host ansible_user=user ansible_ssh_pass=password ansible_ssh_private_key_file=some_file",
             (
@@ -475,8 +475,8 @@ def test_ansible_unknown_option():
 
 
 def test_backend_importables():
-    # just check that all declared backend are importable and NAME is set
-    # correctly
+    # check that all declared backends are importable and the backend name
+    # is set correctly
     for connection_type in testinfra.backend.BACKENDS:
         obj = testinfra.backend.get_backend_class(connection_type)
         assert obj.get_connection_type() == connection_type

@@ -16,11 +16,11 @@ from testinfra.modules.base import Module
 
 
 class BlockDevice(Module):
-    """Information for block device.
+    """Information for a block device.
 
     Should be used with sudo or under root.
 
-    If device is not a block device, RuntimeError is raised.
+    If the device is not a block device, RuntimeError is raised.
     """
 
     @property
@@ -90,7 +90,7 @@ class BlockDevice(Module):
 
     @property
     def is_writable(self):
-        """Return True if device is writable (have no RO status)
+        """Return True if the device is writable (have no RO status)
 
         >>> host.block_device("/dev/sda").is_writable
         True

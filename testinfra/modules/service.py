@@ -35,7 +35,7 @@ class Service(Module):
 
     @property
     def exists(self):
-        """Test if service is exists"""
+        """Test if the service exists"""
         raise NotImplementedError
 
     @property
@@ -53,7 +53,7 @@ class Service(Module):
         """Test if service is valid
 
         This method is only available in the systemd implementation,
-        it will raise ``NotImplementedError`` in others implementation
+        it will raise ``NotImplementedError`` in other implementations.
         """
         raise NotImplementedError
 
@@ -62,7 +62,7 @@ class Service(Module):
         """Test if service is masked
 
         This method is only available in the systemd implementation,
-        it will raise ``NotImplementedError`` in others implementations
+        it will raise ``NotImplementedError`` in other implementations.
         """
         raise NotImplementedError
 
@@ -78,7 +78,7 @@ class Service(Module):
         '/lib/systemd/system/ntp.service'
 
         This method is only available in the systemd implementation,
-        it will raise ``NotImplementedError`` in others implementations
+        it will raise ``NotImplementedError`` in other implementations.
 
         Note: based on `systemctl show`_
 

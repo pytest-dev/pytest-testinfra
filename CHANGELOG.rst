@@ -389,7 +389,7 @@ Changelog
 ======
 
 * package: fix is_installed and version behavior for uninstalled packages (#321 and #326)
-* ansible: Use predictibles test ordering when using pytest-xdist to fix random test collections errors (#316)
+* ansible: Use predictable test ordering when using pytest-xdist to fix random test collections errors (#316)
 
 1.13.0
 ======
@@ -436,7 +436,7 @@ Changelog
 1.9.0
 =====
 
-* Interface: allow to find 'ip' command ousite of PATH
+* Interface: allow to find 'ip' command outside of PATH
 * Fix --nagios option with python 3
 
 1.8.0
@@ -514,7 +514,7 @@ Changelog
 1.5.2
 =====
 
-* Honnor become_user when using the ansible backend
+* Honor become_user when using the ansible backend
 
 1.5.1
 =====
