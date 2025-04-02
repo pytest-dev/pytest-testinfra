@@ -21,6 +21,23 @@ class Package(Module):
         self.name = name
         super().__init__()
 
+    @classmethod
+    def get_packages(cls):
+        """Get all installed packages with name version number, release number (if available) and architecture
+
+        >>> host.package.get_packages()
+        {'acl.x86_64': {'arch': 'x86_64',
+                        'name': 'acl',
+                        'release': '4.3.1',
+                        'version': '2.2.52'},
+         <redacted>
+         'zypper.x86_64': {'arch': 'x86_64',
+                           'name': 'zypper',
+                           'release': '150200.39.1',
+                           'version': '1.14.57'}}
+        """
+        raise NotImplementedError
+
     @property
     def is_installed(self):
         """Test if the package is installed
@@ -102,6 +119,29 @@ class Package(Module):
 
 
 class DebianPackage(Package):
+    @classmethod
+    def get_packages(cls):
+        out = cls.run(r"dpkg-query -f '${Package}|${Version}|${Architecture}\n' -W")
+        assert not out.stderr
+        pkgs = {}
+        for line in out.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            name, version, arch = line.split("|")
+            pkg_key = f"{name}.{arch}"
+            assert pkg_key not in pkgs, (
+                f"Package {pkg_key} already added to package list. "
+                "Check for duplicate package in command output"
+            )
+            pkgs[pkg_key] = {
+                "name": name,
+                "version": version,
+                "release": None,
+                "arch": arch,
+            }
+        return pkgs
+
     @property
     def is_installed(self):
         result = self.run_test("dpkg-query -f '${Status}' -W %s", self.name)
@@ -161,6 +201,34 @@ class OpenBSDPackage(Package):
 
 
 class RpmPackage(Package):
+    @classmethod
+    def get_packages(cls):
+        out = cls.run(
+            r'rpm -qa --queryformat "%{NAME}|%{VERSION}|%{RELEASE}|%{ARCH}\n"'
+        )
+        assert not out.stderr
+        pkgs = {}
+        for line in out.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            name, version, release, arch = line.split("|")
+            # Ignore GPG keys imported with "rpm --import" e.g. "gpg-pubkey|50a3dd1c|50f35137|(none)"
+            if name == "gpg-pubkey" and arch == "(none)":
+                continue
+            pkg_key = f"{name}.{arch}"
+            assert pkg_key not in pkgs, (
+                f"Package {pkg_key} already added to package list. "
+                "Check for duplicate package in command output"
+            )
+            pkgs[pkg_key] = {
+                "name": name,
+                "version": version,
+                "release": release,
+                "arch": arch,
+            }
+        return pkgs
+
     @property
     def is_installed(self):
         result = self.run_test("rpm -q --quiet %s 2>&1", self.name)
@@ -199,6 +267,29 @@ class AlpinePackage(Package):
 
 
 class ArchPackage(Package):
+    @classmethod
+    def get_packages(cls):
+        out = cls.run(r'expac "%n|%v|%a"')
+        assert not out.stderr
+        pkgs = {}
+        for line in out.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            name, version, arch = line.split("|")
+            pkg_key = f"{name}.{arch}"
+            assert pkg_key not in pkgs, (
+                f"Package {pkg_key} already added to package list. "
+                "Check for duplicate package in command output"
+            )
+            pkgs[pkg_key] = {
+                "name": name,
+                "version": version,
+                "release": None,
+                "arch": arch,
+            }
+        return pkgs
+
     @property
     def is_installed(self):
         return self.run_test("pacman -Q %s", self.name).rc == 0

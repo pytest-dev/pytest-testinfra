@@ -33,26 +33,57 @@ all_images = pytest.mark.testinfra_hosts(
     ]
 )
 
+# content: ssh version, release shortcut,
+ssh_pkg_info = {
+    "rockylinux9": ("8.", ".el9"),
+    "debian_bookworm": ("1:9.2", None),
+}
+
+# content: distribution, codename, architecture, release_regex
+docker_image_info = {
+    "rockylinux9": ("rocky", None, "x86_64", r"^9.\d+$"),
+    "debian_bookworm": ("debian", "bookworm", "amd64", r"^12"),
+}
+
 
 @all_images
 def test_package(host, docker_image):
     assert not host.package("zsh").is_installed
     ssh = host.package("openssh-server")
-    version = {
-        "rockylinux9": "8.",
-        "debian_bookworm": "1:9.2",
-    }[docker_image]
+    ssh_version, sshd_release = ssh_pkg_info[docker_image]
     assert ssh.is_installed
-    assert ssh.version.startswith(version)
-    release = {
-        "rockylinux9": ".el9",
-        "debian_bookworm": None,
-    }[docker_image]
-    if release is None:
+    assert ssh.version.startswith(ssh_version)
+    if sshd_release is None:
         with pytest.raises(NotImplementedError):
             ssh.release  # noqa: B018
     else:
-        assert release in ssh.release
+        assert sshd_release in ssh.release
+
+
+@all_images
+def test_get_packages(host, docker_image):
+    arch = docker_image_info[docker_image][2]
+    sshd_release_number = ssh_pkg_info[docker_image][1]
+
+    package_ssh = host.package("openssh-server")
+    assert package_ssh.is_installed
+
+    all_pkgs = host.package.get_packages()
+    assert f"zsh.{arch}" not in all_pkgs
+
+    name_arch = f"openssh-server.{arch}"
+    assert name_arch in all_pkgs
+
+    pkg = all_pkgs[name_arch]
+    assert pkg["version"] == package_ssh.version
+    assert pkg["arch"] == arch
+    assert pkg["name"] == "openssh-server"
+    if sshd_release_number is None:
+        with pytest.raises(NotImplementedError):
+            package_ssh.release
+    else:
+        assert sshd_release_number in pkg["release"]
+        assert pkg["release"] == package_ssh.release
 
 
 def test_held_package(host):
@@ -102,14 +133,10 @@ def test_uninstalled_package_version(host):
 def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
-    release, distribution, codename, arch = {
-        "rockylinux9": (r"^9.\d+$", "rocky", None, "x86_64"),
-        "debian_bookworm": (r"^12", "debian", "bookworm", "x86_64"),
-    }[docker_image]
-
+    distribution, codename, unused_arch, release_regex = docker_image_info[docker_image]
     assert host.system_info.distribution == distribution
     assert host.system_info.codename == codename
-    assert re.match(release, host.system_info.release)
+    assert re.match(release_regex, host.system_info.release)
 
 
 @all_images
