@@ -107,6 +107,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         dest="nagios",
         help="Nagios plugin",
     )
+    group.addoption(
+        "--ansible-limit",
+        action="store_true",
+        dest="ansible_limit",
+        help="Limit to specific hosts using the same syntax as Ansible's --limit option.",
+    )
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
@@ -126,6 +132,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
             sudo_user=metafunc.config.option.sudo_user,
             ansible_inventory=metafunc.config.option.ansible_inventory,
             force_ansible=metafunc.config.option.force_ansible,
+            ansible_limit=metafunc.config.option.ansible_limit,
         )
         params = sorted(params, key=lambda x: x.backend.get_pytest_id())
         ids = [e.backend.get_pytest_id() for e in params]
