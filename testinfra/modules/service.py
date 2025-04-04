@@ -34,22 +34,22 @@ class Service(Module):
         super().__init__()
 
     @property
-    def exists(self):
+    def exists(self) -> bool:
         """Test if the service exists"""
         raise NotImplementedError
 
     @property
-    def is_running(self):
+    def is_running(self) -> bool:
         """Test if service is running"""
         raise NotImplementedError
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         """Test if service is enabled"""
         raise NotImplementedError
 
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """Test if service is valid
 
         This method is only available in the systemd implementation,
@@ -58,7 +58,7 @@ class Service(Module):
         raise NotImplementedError
 
     @property
-    def is_masked(self):
+    def is_masked(self) -> bool:
         """Test if service is masked
 
         This method is only available in the systemd implementation,
@@ -67,7 +67,7 @@ class Service(Module):
         raise NotImplementedError
 
     @functools.cached_property
-    def systemd_properties(self):
+    def systemd_properties(self) -> dict[str, str]:
         """Properties of the service (unit).
 
         Return service properties as a `dict`,
