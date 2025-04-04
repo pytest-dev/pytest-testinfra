@@ -34,22 +34,22 @@ class Service(Module):
         super().__init__()
 
     @property
-    def exists(self):
+    def exists(self) -> bool:
         """Test if the service exists"""
         raise NotImplementedError
 
     @property
-    def is_running(self):
+    def is_running(self) -> bool:
         """Test if service is running"""
         raise NotImplementedError
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         """Test if service is enabled"""
         raise NotImplementedError
 
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """Test if service is valid
 
         This method is only available in the systemd implementation,
@@ -58,7 +58,7 @@ class Service(Module):
         raise NotImplementedError
 
     @property
-    def is_masked(self):
+    def is_masked(self) -> bool:
         """Test if service is masked
 
         This method is only available in the systemd implementation,
@@ -67,7 +67,7 @@ class Service(Module):
         raise NotImplementedError
 
     @functools.cached_property
-    def systemd_properties(self):
+    def systemd_properties(self) -> dict[str, str]:
         """Properties of the service (unit).
 
         Return service properties as a `dict`,
@@ -169,19 +169,25 @@ class SystemdService(SysvService):
 
     def _has_systemd_suffix(self):
         """
-        Check if service name has a known systemd unit suffix
+        Check if the service name has a known systemd unit suffix
         """
         unit_suffix = self.name.split(".")[-1]
         return unit_suffix in self.suffix_list
 
     @property
     def exists(self):
-        cmd = self.run_test('systemctl list-unit-files | grep -q "^%s"', self.name)
-        return cmd.rc == 0
+        # systemctl return codes based on https://man7.org/linux/man-pages/man1/systemctl.1.html:
+        # 0: unit is active
+        # 1: unit not failed (used by is-failed)
+        # 2: unused
+        # 3: unit is not active
+        # 4: no such unit
+        cmd = self.run_expect([0, 1, 3, 4], "systemctl status %s", self.name)
+        return cmd.rc < 4
 
     @property
     def is_running(self):
-        # based on https://man7.org/linux/man-pages/man1/systemctl.1.html
+        # systemctl return codes based on https://man7.org/linux/man-pages/man1/systemctl.1.html:
         # 0: program running
         # 1: program is dead and pid file exists
         # 3: not running and pid file does not exists

@@ -33,26 +33,31 @@ all_images = pytest.mark.testinfra_hosts(
     ]
 )
 
+# content: ssh version, release shortcut, service name
+ssh_pkg_info = {
+    "rockylinux9": ("8.", ".el9", "sshd"),
+    "debian_bookworm": ("1:9.2", None, "ssh"),
+}
+
+# content: distribution, codename, architecture, release_regex
+docker_image_info = {
+    "rockylinux9": ("rocky", None, "x86_64", r"^9.\d+$"),
+    "debian_bookworm": ("debian", "bookworm", "amd64", r"^12"),
+}
+
 
 @all_images
 def test_package(host, docker_image):
     assert not host.package("zsh").is_installed
     ssh = host.package("openssh-server")
-    version = {
-        "rockylinux9": "8.",
-        "debian_bookworm": "1:9.2",
-    }[docker_image]
+    ssh_version, sshd_release = ssh_pkg_info[docker_image][:2]
     assert ssh.is_installed
-    assert ssh.version.startswith(version)
-    release = {
-        "rockylinux9": ".el9",
-        "debian_bookworm": None,
-    }[docker_image]
-    if release is None:
+    assert ssh.version.startswith(ssh_version)
+    if sshd_release is None:
         with pytest.raises(NotImplementedError):
             ssh.release  # noqa: B018
     else:
-        assert release in ssh.release
+        assert sshd_release in ssh.release
 
 
 def test_held_package(host):
@@ -102,38 +107,46 @@ def test_uninstalled_package_version(host):
 def test_systeminfo(host, docker_image):
     assert host.system_info.type == "linux"
 
-    release, distribution, codename, arch = {
-        "rockylinux9": (r"^9.\d+$", "rocky", None, "x86_64"),
-        "debian_bookworm": (r"^12", "debian", "bookworm", "x86_64"),
-    }[docker_image]
-
+    distribution, codename, unused_arch, release_regex = docker_image_info[docker_image]
     assert host.system_info.distribution == distribution
     assert host.system_info.codename == codename
-    assert re.match(release, host.system_info.release)
+    assert re.match(release_regex, host.system_info.release)
 
 
 @all_images
 def test_ssh_service(host, docker_image):
-    name = "sshd" if docker_image == "rockylinux9" else "ssh"
-    ssh = host.service(name)
+    service_name = ssh_pkg_info[docker_image][2]
+    ssh_svc = host.service(service_name)
     # wait at max 10 seconds for ssh is running
     for _ in range(10):
-        if ssh.is_running:
+        if ssh_svc.is_running:
             break
         time.sleep(1)
     else:
         raise AssertionError("ssh is not running")
 
-    assert ssh.is_enabled
+    assert ssh_svc.is_enabled
+
+
+@all_images
+def test_systemdservice_exists(host, docker_image):
+    service_name = ssh_pkg_info[docker_image][2]
+    for name in [service_name, f"{service_name}.service"]:
+        ssh_svc = host.service(name)
+        assert ssh_svc.exists
+
+    for name in ["non-existing", "non-existing.service", "non-existing.timer"]:
+        non_existing_service = host.service(name)
+        assert not non_existing_service.exists
 
 
 def test_service_systemd_mask(host):
-    ssh = host.service("ssh")
-    assert not ssh.is_masked
+    ssh_svc = host.service("ssh")
+    assert not ssh_svc.is_masked
     host.run("systemctl mask ssh")
-    assert ssh.is_masked
+    assert ssh_svc.is_masked
     host.run("systemctl unmask ssh")
-    assert not ssh.is_masked
+    assert not ssh_svc.is_masked
 
 
 def test_salt(host):
