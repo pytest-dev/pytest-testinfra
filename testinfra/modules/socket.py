@@ -325,7 +325,7 @@ class BSDSocket(Socket):
             splitted = line.split()
             # FreeBSD: tcp4/tcp6
             # OpeNBSD/NetBSD: tcp/tcp6
-            if splitted[0] in ("tcp", "udp", "udp4", "tcp4", "tcp6", "udp6"):
+            if splitted[0] in ("tcp", "tcp4", "tcp6", "udp", "udp4", "udp6"):
                 address = splitted[3]
                 if address == "*.*":
                     # On OpenBSD 6.3 (issue #338)
@@ -337,10 +337,7 @@ class BSDSocket(Socket):
 
                 if host == "*":
                     host = "::" if splitted[0] in ("udp6", "tcp6") else "0.0.0.0"
-                if splitted[0] in ("udp", "udp6", "udp4"):
-                    protocol = "udp"
-                elif splitted[0] in ("tcp", "tcp6", "tcp4"):
-                    protocol = "tcp"
+                protocol = "udp" if splitted[0] in ("udp", "udp6", "udp4") else "tcp"
 
                 remote = splitted[4]
                 if remote == "*.*" and listening:
