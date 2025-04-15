@@ -127,13 +127,61 @@ def test_ssh_service(host, docker_image):
     assert ssh.is_enabled
 
 
-def test_service_systemd_mask(host):
-    ssh = host.service("ssh")
+def test_service_systemd_mask(host, docker_image):
+    name = "sshd" if docker_image == "rockylinux9" else "ssh"
+    ssh = host.service(name)
     assert not ssh.is_masked
     host.run("systemctl mask ssh")
     assert ssh.is_masked
     host.run("systemctl unmask ssh")
     assert not ssh.is_masked
+
+
+@all_images
+def test_service_systemd_ssh(host, docker_image):
+    name = "sshd" if docker_image == "rockylinux9" else "ssh"
+    ssh = host.service(name)
+    assert ssh.exists
+    assert ssh.is_valid
+    assert ssh.is_enabled
+    assert ssh.is_running
+
+
+def test_service_systemd_root_mount(host):
+    root = host.service("-.mount")  # systemd unit for mounting /
+    assert root.exists
+    assert root.is_valid
+    assert root.is_running
+
+
+# is_enabled does not work in Rocky Linux 9
+# $ systemctl status -- -.mount
+# AssertionError: ● -.mount - Root Mount
+#      Loaded: loaded
+#      Active: active (mounted) since Wed 2025-04-16 21:03:04 UTC; 6s ago
+#       Until: Wed 2025-04-16 21:03:04 UTC; 6s ago
+#       Where: /
+#        What: overlay
+#
+# Notice: journal has been rotated since unit was started, output may be incomplete.
+#
+# $ systemctl is-enabled -- -.mount
+# Failed to get unit file state for -.mount: No such file or directory
+@pytest.mark.testinfra_hosts("docker://rockylinux9")
+@pytest.mark.xfail(
+    reason='"systemctl is-enabled -- -.mount" fails even if "systemctl status" succeeds'
+)
+def test_service_systemd_root_mount_is_enabled(host):
+    root = host.service("-.mount")  # systemd unit for mounting /
+    assert not root.is_enabled
+
+
+def test_service_systemd_tmp_mount(host):
+    tmp = host.service("tmp.mount")
+    assert tmp.exists
+    assert tmp.is_valid
+    assert not tmp.is_enabled
+    assert not tmp.is_running
 
 
 def test_salt(host):

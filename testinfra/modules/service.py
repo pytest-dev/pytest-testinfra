@@ -219,11 +219,28 @@ class SystemdService(SysvService):
         name = self.name if self._has_systemd_suffix() else f"{self.name}.service"
         cmd = self.run("systemd-analyze verify %s", name)
         # A bad unit file still returns a rc of 0, so check the
-        # stdout for anything.  Nothing means no warns/errors.
+        # stdout for anything. Nothing means no warns/errors.
         # Docs at https://www.freedesktop.org/software/systemd/man/systemd
         # -analyze.html#Examples%20for%20verify
-        assert (cmd.stdout, cmd.stderr) == ("", "")
-        return True
+
+        # Ignore non-relevant messages from the output of "systemd-analyze
+        # verify":
+        #   "Unit is bound to inactive unit"
+        #   "ssh.service: Command 'man sshd(8)' failed with code"
+        #      --man=no: suppress the man page existence check
+        #                implemented in Systemd 235 (2017-10-06)
+        #   "Suspicious symlink /etc/systemd/system/[...] treating as alias."
+        #    probably a bug in systemd https://github.com/systemd/systemd/issues/30166
+        stderr_lines = [
+            i
+            for i in cmd.stderr.splitlines()
+            if "Unit is bound to inactive unit" not in i
+            and ": Command 'man" not in i
+            and "Suspicious symlink /" not in i
+        ]
+
+        stderr = "".join(stderr_lines)
+        return (cmd.stdout, stderr) == ("", "")
 
     @property
     def is_masked(self):
