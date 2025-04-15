@@ -12,6 +12,15 @@ arguments of your test function to make it available within it.
         # [...]
 
 
+It is considered best practice to first check for the existence of a resource before accessing its properties. This ensures that the resource is available and prevents unexpected runtime errors, such as `RuntimeError` or `ValueError`, which can occur if it does not exist. By validating existence first, you make your code more robust and errors easier to understand.
+
+.. code-block:: python
+
+    svc = host.service('non-existing')
+    assert svc.exists
+    assert svc.is_running
+
+
 host
 ~~~~
 
