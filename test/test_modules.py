@@ -147,6 +147,7 @@ def test_service_systemd_ssh(host, docker_image):
     assert ssh.is_running
 
 
+@pytest.mark.testinfra_hosts("docker://rockylinux9")
 def test_service_systemd_root_mount(host):
     root = host.service("-.mount")  # systemd unit for mounting /
     assert root.exists
@@ -176,6 +177,7 @@ def test_service_systemd_root_mount_is_enabled(host):
     assert not root.is_enabled
 
 
+@pytest.mark.testinfra_hosts("docker://rockylinux9")
 def test_service_systemd_tmp_mount(host):
     tmp = host.service("tmp.mount")
     assert tmp.exists
