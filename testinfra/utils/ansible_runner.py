@@ -277,6 +277,42 @@ class AnsibleRunner:
         self._host_cache: dict[str, Optional[testinfra.host.Host]] = {}
         super().__init__()
 
+    def get_hosts_by_ansible(self, host_expression: str) -> list[str]:
+        """Evaluate ansible host expression to get host list.
+
+        Example of such expression:
+
+        'foo,&bar,!baz[2:],foobar[-3:-4],foofoo-*,~someth.+'
+
+        See https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html#common-patterns
+        """
+        from ansible.inventory.manager import InventoryManager
+        from ansible.parsing.dataloader import DataLoader
+
+        # We can't support 'group[1:2]', expressions 'as is',
+        # because urllib from python 3.13+ rejects hostnames with invalid
+        #  IPv6 addresses (in square brakets)
+        # E   ValueError: Invalid IPv6 URL
+        # We ask user to use round brakets in testinfra 'URL', and
+        # replace it back to ansible-compatible expression here.
+        host_expression = host_expression.replace("(", "[")
+        host_expression = host_expression.replace(")", "]")
+        if self.inventory_file:
+            sources = [self.inventory_file]
+        else:
+            # we search for other options only if inventory is not passed
+            # explicitely.
+            # Inside ansible, 'ANSIBLE_INVENTORY' is 'DEFAULT_HOST_LIST'
+            # We respect both ANSIBLE_INVENTORY env var and ansible.cfg
+            from ansible.config.manager import ConfigManager
+
+            sources = ConfigManager().get_config_value("DEFAULT_HOST_LIST")
+
+        loader = DataLoader()
+        inv = InventoryManager(loader=loader, sources=sources)
+        hosts = [h.name for h in inv.list_hosts(host_expression)]
+        return list(hosts)
+
     def get_hosts(self, pattern: str = "all") -> list[str]:
         inventory = self.inventory
         result = set()
@@ -290,13 +326,22 @@ class AnsibleRunner:
                     "only implicit localhost is available"
                 )
         else:
-            for group in inventory:
-                groupmatch = fnmatch.fnmatch(group, pattern)
-                if groupmatch:
-                    result |= set(itergroup(inventory, group))
-                for host in inventory[group].get("hosts", []):
-                    if fnmatch.fnmatch(host, pattern):
-                        result.add(host)
+            if "~" in pattern:
+                raise ValueError(
+                    "Regular expressions are not supported in host expression. "
+                    "Found '~' in the host expression."
+                )
+            special_char_list = "!&,:()"  # signs of host expression
+            if any(ch in special_char_list for ch in pattern):
+                result = result.union(self.get_hosts_by_ansible(pattern))
+            else:
+                for group in inventory:
+                    groupmatch = fnmatch.fnmatch(group, pattern)
+                    if groupmatch:
+                        result |= set(itergroup(inventory, group))
+                    for host in inventory[group].get("hosts", []):
+                        if fnmatch.fnmatch(host, pattern):
+                            result.add(host)
         return sorted(result)
 
     @functools.cached_property
