@@ -344,7 +344,7 @@ class WindowsFile(File):
         """
 
         return (
-            self.check_output(r"powershell -command \"Test-Path '%s'\"", self.path)
+            self.check_output("Test-Path %s", self.path)
             == "True"
         )
 
@@ -352,7 +352,7 @@ class WindowsFile(File):
     def is_file(self):
         return (
             self.check_output(
-                r"powershell -command \"(Get-Item '%s') -is [System.IO.FileInfo]\"",
+                "(Get-Item %s) -is [System.IO.FileInfo]",
                 self.path,
             )
             == "True"
@@ -362,7 +362,7 @@ class WindowsFile(File):
     def is_directory(self):
         return (
             self.check_output(
-                r"powershell -command \"(Get-Item '%s') -is [System.IO.DirectoryInfo]\"",
+                "(Get-Item %s) -is [System.IO.DirectoryInfo]",
                 self.path,
             )
             == "True"
@@ -380,7 +380,7 @@ class WindowsFile(File):
     def is_symlink(self):
         return (
             self.check_output(
-                r"powershell -command \"(Get-Item -Path '%s').Attributes -band [System.IO.FileAttributes]::ReparsePoint\"",
+                "(Get-Item -Path %s).Attributes -band [System.IO.FileAttributes]::ReparsePoint",
                 self.path,
             )
             == "True"
@@ -394,7 +394,7 @@ class WindowsFile(File):
         'C:/Program Files/lock'
         """
         return self.check_output(
-            r"powershell -command \"(Get-Item -Path '%s' -ReadOnly).FullName\"",
+            "(Get-Item -Path %s -ReadOnly).FullName",
             self.path,
         )
 
@@ -425,7 +425,7 @@ class WindowsFile(File):
         """
         return (
             self.run_test(
-                r"powershell -command \"Select-String -Path '%s' -Pattern '%s'\"",
+                "Select-String -Path %s -Pattern %s",
                 self.path,
                 pattern,
             ).stdout
@@ -441,7 +441,7 @@ class WindowsFile(File):
         raise NotImplementedError
 
     def _get_content(self, decode):
-        out = self.run_expect([0], r"powershell -command \"cat -- '%s'\"", self.path)
+        out = self.run_expect([0], "cat -- %s", self.path)
         if decode:
             return out.stdout
         return out.stdout_bytes
@@ -472,7 +472,7 @@ class WindowsFile(File):
         datetime.datetime(2015, 3, 15, 20, 25, 40)
         """
         date_time_str = self.check_output(
-            r"powershell -command \"Get-ChildItem -Path '%s' | Select-Object -ExpandProperty LastWriteTime\"",
+            "Get-ChildItem -Path %s | Select-Object -ExpandProperty LastWriteTime",
             self.path,
         )
         return datetime.datetime.strptime(
@@ -484,7 +484,7 @@ class WindowsFile(File):
         """Return size of file in bytes"""
         return int(
             self.check_output(
-                r"powershell -command \"Get-Item -Path '%s' | Select-Object -ExpandProperty Length\"",
+                "Get-Item -Path %s | Select-Object -ExpandProperty Length",
                 self.path,
             )
         )
@@ -496,7 +496,7 @@ class WindowsFile(File):
         ['foo_file', 'bar_dir']
         """
         out = self.check_output(
-            r"powershell -command \"Get-ChildItem -Path '%s' | Select-Object -ExpandProperty Name\"",
+            "Get-ChildItem -Path %s | Select-Object -ExpandProperty Name",
             self.path,
         )
         return [item.strip() for item in out.strip().split("\n")]
