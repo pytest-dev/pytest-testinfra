@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **Maintenance Notice**
+>
+> This project is currently **not actively maintained**, and responses to issues or pull requests may be delayed for **several months**. Please consider this when using the project and feel free to contribute via pull requests, which will be reviewed as time permits. Thank you for your understanding!
+
 ##################################
 Testinfra test your infrastructure
 ##################################
