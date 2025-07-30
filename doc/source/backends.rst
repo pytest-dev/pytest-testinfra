@@ -194,6 +194,51 @@ https://docs.ansible.com/ansible/latest/reference_appendices/config.html
 * ``ANSIBLE_BECOME_USER``
 * ``ANSIBLE_BECOME``
 
+Advanced hosts expressions for ansible
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible to use most of the
+`Ansible host expressions <https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html>`
+in Testinfra.
+
+Supported:
+
+* ``&``, ``!``, ``,``, ``:``
+* glob expressions (``server*`` with match server1, server2, etc)
+* ranges (``[x:y]``) are supported with replacement with round brackets.
+  ``mygroup[1:2]`` should be written as ``mygroup(1:2)``, this is due to limitation
+  of what is allowed in the host part of the URL.
+  When host expression is passed to ansible for parsing, ``()`` are replaced with
+  ``[]``.
+
+Regular expressions (starting with '~') are not supported due to limitations
+for allowed characters in the host part of the URL.
+
+When testinfra parses host expressions, it choose:
+
+* A simple resolver, if there is no host expression (e.g. a single group,
+  hostname, or glob pattern)
+* Ansible resolver, which covers most cases. It requires to have ansible-core
+  been present on the controller (host, where pytest is running). It imports
+  part of ansible to do expression evaluation, os it's slower.
+
+Examples of the simple host expression (Ansible is not used for parsing):
+
+* ``ansible://debian_bookworm``
+* ``ansible://user@debian_bookworm?force_ansible=True&sudo=True``
+* ``ansible://host*``
+
+Examples of the Ansible-parsed host expressions:
+
+* ``ansible://group1,!group3`` (hosts in group1 but not in group3)
+* ``ansible://group1(0)`` (the first host in the group). This can be used as a substitute
+  for run_once.
+* ``ansible://group1,&group3`` (hosts in both group1 and group2)
+* ``ansible://group1,group2,!group3,example*`` (hosts in group1 or group2 but not
+  in group3, and hosts matching regular expression ``(example1.*)``)
+* ``ansible://group1,group2,!group3,example*?force_ansible=True&sudo=True``
+  (the same, but forcing Ansible backend and adds sudo)
+
 kubectl
 ~~~~~~~
 
