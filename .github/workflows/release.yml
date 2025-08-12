@@ -18,7 +18,7 @@ jobs:
       FORCE_COLOR: 1
       PY_COLORS: 1
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Switch to using Python 3.11 by default
       uses: actions/setup-python@v5
       with:
