@@ -97,6 +97,7 @@ def get_backends(
     backends = {}
     for hostspec in hosts:
         host, kw = parse_hostspec(hostspec)
+        host = urllib.parse.unquote(host)
         for k, v in kwargs.items():
             kw.setdefault(k, v)
         connection = kw.get("connection")
