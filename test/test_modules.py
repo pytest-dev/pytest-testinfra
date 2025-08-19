@@ -127,12 +127,14 @@ def test_ssh_service(host, docker_image):
     assert ssh.is_enabled
 
 
-def test_service_systemd_mask(host):
-    ssh = host.service("ssh")
+@all_images
+def test_service_systemd_mask(host, docker_image):
+    name = "sshd" if docker_image == "rockylinux9" else "ssh"
+    ssh = host.service(name)
     assert not ssh.is_masked
-    host.run("systemctl mask ssh")
+    host.run(f"systemctl mask -- {name}")
     assert ssh.is_masked
-    host.run("systemctl unmask ssh")
+    host.run(f"systemctl unmask -- {name}")
     assert not ssh.is_masked
 
 
