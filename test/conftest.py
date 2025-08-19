@@ -146,6 +146,7 @@ def host(request, tmpdir_factory):
     fname = f"_docker_container_{spec.name}_{scope}"
     docker_id, docker_host, port = request.getfixturevalue(fname)
 
+    hostname = None
     if kw["connection"] == "docker":
         hostname = docker_id
     elif kw["connection"] in ("ansible", "ssh", "paramiko", "safe-ssh"):
@@ -154,7 +155,7 @@ def host(request, tmpdir_factory):
         key = tmpdir.join("ssh_key")
         with open(os.path.join(BASETESTDIR, "ssh_key")) as f:
             key.write(f.read())
-        key.chmod(384)  # octal 600
+        key.chmod(0o600)
         if kw["connection"] == "ansible":
             setup_ansible_config(
                 tmpdir, hostname, docker_host, spec.user or "root", port, str(key)
@@ -184,10 +185,10 @@ def host(request, tmpdir_factory):
         while not service(service_name).is_running:
             time.sleep(0.5)
 
-    if kw["connection"] != "ansible":
-        hostspec = (spec.user or "root") + "@" + hostname
-    else:
+    if kw["connection"] == "ansible":
         hostspec = spec.name
+    else:
+        hostspec = f"{spec.user or 'root'}@{hostname or spec.name}"
 
     b = testinfra.host.get_host(hostspec, **kw)
     b.backend.get_hostname = lambda: image
