@@ -17,6 +17,7 @@ import ipaddress
 import json
 import os
 import tempfile
+import urllib.parse
 from collections.abc import Iterator
 from typing import Any, Callable, Optional, Union
 
@@ -214,7 +215,7 @@ def get_ansible_host(
     if version == 6:
         spec += "[" + testinfra_host + "]"
     else:
-        spec += testinfra_host
+        spec += urllib.parse.quote(testinfra_host)
     if port:
         spec += f":{port}"
     return testinfra.get_host(spec, **kwargs)
