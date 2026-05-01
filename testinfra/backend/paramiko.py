@@ -68,7 +68,8 @@ class ParamikoBackend(base.BaseBackend):
             if key == "hostname":
                 cfg[key] = value
             elif key == "user":
-                cfg["username"] = value
+                if cfg.get("username") is None:
+                    cfg["username"] = value
             elif key == "port":
                 cfg[key] = int(value)
             elif key == "identityfile":

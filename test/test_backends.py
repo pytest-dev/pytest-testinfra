@@ -13,6 +13,7 @@
 import operator
 import os
 import tempfile
+from io import StringIO
 
 import pytest
 
@@ -619,6 +620,25 @@ def test_ssh_hostspec(hostspec, expected):
     cmd, cmd_args = backend._build_ssh_command("true")
     command = backend.quote(" ".join(cmd), *cmd_args)
     assert command == expected
+
+
+def test_paramiko_ssh_config_does_not_override_explicit_user():
+    import paramiko
+
+    from testinfra.backend.paramiko import ParamikoBackend
+
+    ssh_config = paramiko.SSHConfig()
+    ssh_config.parse(StringIO("Host *\n  User configuser\n"))
+
+    backend = ParamikoBackend("explicit@example.com")
+    cfg = {"username": backend.host.user}
+    backend._load_ssh_config(object(), cfg, ssh_config)  # type: ignore[arg-type]
+    assert cfg["username"] == "explicit"
+
+    backend = ParamikoBackend("example.com")
+    cfg = {"username": backend.host.user}
+    backend._load_ssh_config(object(), cfg, ssh_config)  # type: ignore[arg-type]
+    assert cfg["username"] == "configuser"
 
 
 def test_get_hosts():
