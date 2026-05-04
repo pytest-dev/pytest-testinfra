@@ -632,12 +632,12 @@ def test_paramiko_ssh_config_does_not_override_explicit_user():
 
     backend = ParamikoBackend("explicit@example.com")
     cfg = {"username": backend.host.user}
-    backend._load_ssh_config(object(), cfg, ssh_config)  # type: ignore[arg-type]
+    backend._load_ssh_config(paramiko.SSHClient(), cfg, ssh_config)
     assert cfg["username"] == "explicit"
 
     backend = ParamikoBackend("example.com")
     cfg = {"username": backend.host.user}
-    backend._load_ssh_config(object(), cfg, ssh_config)  # type: ignore[arg-type]
+    backend._load_ssh_config(paramiko.SSHClient(), cfg, ssh_config)
     assert cfg["username"] == "configuser"
 
 
