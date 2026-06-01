@@ -87,7 +87,8 @@ def test_encoding(host):
     elif host.backend.get_connection_type() == "ansible" and host.backend.force_ansible:
         # XXX: this encoding issue comes directly from ansible
         # not sure how to handle this...
-        assert (
+        assert cmd.failed
+        assert "surrogates not allowed" in cmd.stderr or (
             cmd.stderr
             == "ls: impossible d'acc\udce9der \udce0 '/é': Aucun fichier ou dossier de ce type"
         )

@@ -61,11 +61,16 @@ class AnsibleBackend(base.BaseBackend):
             data = json.loads(out["module_stdout"])
             stdout = data["stdout"]
             stderr = data["stderr"]
-        else:
+        elif "stdout" in out:
             # bw compat
             stdout = out["stdout"]
             stderr = out["stderr"]
-        return self.result(out["rc"], self.encode(command), stdout, stderr)
+        else:
+            # Ansible command failed (e.g. encoding error) with only a msg
+            stdout = ""
+            stderr = out.get("msg", "")
+        rc = out.get("rc", 1)
+        return self.result(rc, self.encode(command), stdout, stderr)
 
     def run_ansible(
         self, module_name: str, module_args: Optional[str] = None, **kwargs: Any

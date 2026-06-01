@@ -39,7 +39,7 @@ def test_package(host, docker_image):
     assert not host.package("zsh").is_installed
     ssh = host.package("openssh-server")
     version = {
-        "rockylinux9": "8.",
+        "rockylinux9": "9.",
         "debian_bookworm": "1:9.2",
     }[docker_image]
     assert ssh.is_installed
