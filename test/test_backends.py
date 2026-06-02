@@ -215,6 +215,13 @@ def test_ansible_get_variables():
         ),
         (
             {},
+            b"host ansible_host=vsock%555",
+            {
+                "host.name": "vsock%555",
+            },
+        ),
+        (
+            {},
             b"host ansible_connection=smart",
             {
                 "NAME": "ssh",
