@@ -21,7 +21,7 @@ except ImportError:
     ) from None
 
 import functools
-from typing import Any, Optional
+from typing import Any
 
 import paramiko.pkey
 import paramiko.ssh_exception
@@ -44,8 +44,8 @@ class ParamikoBackend(base.BaseBackend):
     def __init__(
         self,
         hostspec: str,
-        ssh_config: Optional[str] = None,
-        ssh_identity_file: Optional[str] = None,
+        ssh_config: str | None = None,
+        ssh_identity_file: str | None = None,
         timeout: int = 10,
         *args: Any,
         **kwargs: Any,

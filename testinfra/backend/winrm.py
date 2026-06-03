@@ -11,7 +11,7 @@
 # limitations under the License.
 
 import re
-from typing import Any, Optional
+from typing import Any
 
 from testinfra.backend import base
 
@@ -52,8 +52,8 @@ class WinRMBackend(base.BaseBackend):
         hostspec: str,
         no_ssl: bool = False,
         no_verify_ssl: bool = False,
-        read_timeout_sec: Optional[int] = None,
-        operation_timeout_sec: Optional[int] = None,
+        read_timeout_sec: int | None = None,
+        operation_timeout_sec: int | None = None,
         *args: Any,
         **kwargs: Any,
     ):

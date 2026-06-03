@@ -12,7 +12,6 @@
 
 import functools
 import socket
-from typing import Optional
 
 from testinfra.modules.base import Module
 
@@ -121,7 +120,7 @@ class Socket(Module):
         )
 
     @property
-    def clients(self) -> list[Optional[tuple[str, int]]]:
+    def clients(self) -> list[tuple[str, int] | None]:
         """Return a list of clients connected to a listening socket
 
         For tcp and udp sockets a list of pair (address, port) is returned.
@@ -134,7 +133,7 @@ class Socket(Module):
         [None, None, None]
 
         """
-        sockets: list[Optional[tuple[str, int]]] = []
+        sockets: list[tuple[str, int] | None] = []
         for sock in self._iter_sockets(False):
             if sock[0] != self.protocol:
                 continue

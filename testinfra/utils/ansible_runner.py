@@ -17,8 +17,8 @@ import ipaddress
 import json
 import os
 import tempfile
-from collections.abc import Iterator
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import testinfra
 import testinfra.host
@@ -50,7 +50,7 @@ Inventory = dict[str, Any]
 
 
 def get_ansible_inventory(
-    config: configparser.ConfigParser, inventory_file: Optional[str]
+    config: configparser.ConfigParser, inventory_file: str | None
 ) -> Inventory:
     # Disable ansible verbosity to avoid
     # https://github.com/ansible/ansible/issues/59973
@@ -66,9 +66,9 @@ def get_ansible_host(
     config: configparser.ConfigParser,
     inventory: Inventory,
     host: str,
-    ssh_config: Optional[str] = None,
-    ssh_identity_file: Optional[str] = None,
-) -> Optional[testinfra.host.Host]:
+    ssh_config: str | None = None,
+    ssh_identity_file: str | None = None,
+) -> testinfra.host.Host | None:
     if is_empty_inventory(inventory):
         if host == "localhost":
             return testinfra.get_host("local://")
@@ -139,9 +139,7 @@ def get_ansible_host(
         },
     }
 
-    def get_config(
-        name: str, default: Union[None, bool, str] = None
-    ) -> Union[None, bool, str]:
+    def get_config(name: str, default: None | bool | str = None) -> None | bool | str:
         value = default
         option = options.get(name, {})
 
@@ -164,7 +162,7 @@ def get_ansible_host(
     password = get_config("ansible_ssh_pass")
     port = get_config("ansible_port")
 
-    kwargs: dict[str, Union[None, str, bool]] = {}
+    kwargs: dict[str, None | str | bool] = {}
     if get_config("ansible_become", False):
         kwargs["sudo"] = True
     kwargs["sudo_user"] = get_config("ansible_become_user")
@@ -233,7 +231,7 @@ def is_empty_inventory(inventory: Inventory) -> bool:
 
 
 class AnsibleRunner:
-    _runners: dict[Optional[str], "AnsibleRunner"] = {}
+    _runners: dict[str | None, "AnsibleRunner"] = {}
     _known_options = {
         # Boolean arguments.
         "become": {
@@ -272,9 +270,9 @@ class AnsibleRunner:
         },
     }
 
-    def __init__(self, inventory_file: Optional[str] = None):
+    def __init__(self, inventory_file: str | None = None):
         self.inventory_file = inventory_file
-        self._host_cache: dict[str, Optional[testinfra.host.Host]] = {}
+        self._host_cache: dict[str, testinfra.host.Host | None] = {}
         super().__init__()
 
     def get_hosts(self, pattern: str = "all") -> list[str]:
@@ -327,7 +325,7 @@ class AnsibleRunner:
         hostvars.setdefault("groups", groups)
         return hostvars
 
-    def get_host(self, host: str, **kwargs: Any) -> Optional[testinfra.host.Host]:
+    def get_host(self, host: str, **kwargs: Any) -> testinfra.host.Host | None:
         try:
             return self._host_cache[host]
         except KeyError:
@@ -369,8 +367,8 @@ class AnsibleRunner:
         self,
         host: str,
         module_name: str,
-        module_args: Optional[str],
-        get_encoding: Optional[Callable[[], str]] = None,
+        module_args: str | None,
+        get_encoding: Callable[[], str] | None = None,
         **options: Any,
     ) -> Any:
         cmd, args = "ansible --tree %s", []
@@ -411,7 +409,7 @@ class AnsibleRunner:
                     return json.load(f)
 
     @classmethod
-    def get_runner(cls, inventory: Optional[str]) -> "AnsibleRunner":
+    def get_runner(cls, inventory: str | None) -> "AnsibleRunner":
         try:
             return cls._runners[inventory]
         except KeyError:

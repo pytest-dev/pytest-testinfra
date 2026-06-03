@@ -13,7 +13,7 @@
 import json
 import logging
 import pprint
-from typing import Any, Optional
+from typing import Any
 
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
@@ -28,9 +28,9 @@ class AnsibleBackend(base.BaseBackend):
     def __init__(
         self,
         host: str,
-        ansible_inventory: Optional[str] = None,
-        ssh_config: Optional[str] = None,
-        ssh_identity_file: Optional[str] = None,
+        ansible_inventory: str | None = None,
+        ssh_config: str | None = None,
+        ssh_identity_file: str | None = None,
         force_ansible: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -73,7 +73,7 @@ class AnsibleBackend(base.BaseBackend):
         return self.result(rc, self.encode(command), stdout, stderr)
 
     def run_ansible(
-        self, module_name: str, module_args: Optional[str] = None, **kwargs: Any
+        self, module_name: str, module_args: str | None = None, **kwargs: Any
     ) -> Any:
         def get_encoding() -> str:
             return self.encoding
