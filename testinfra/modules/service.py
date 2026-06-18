@@ -194,7 +194,7 @@ class SystemdService(SysvService):
 
     @property
     def is_enabled(self):
-        cmd = self.run_test("systemctl is-enabled %s", self.name)
+        cmd = self.run_expect([0, 1, 3, 4], "systemctl is-enabled %s", self.name)
         if cmd.rc == 0:
             return True
         if cmd.stdout.strip() == "disabled":
