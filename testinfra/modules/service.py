@@ -169,24 +169,30 @@ class SystemdService(SysvService):
 
     def _has_systemd_suffix(self):
         """
-        Check if service name has a known systemd unit suffix
+        Check if the service name has a known systemd unit suffix
         """
         unit_suffix = self.name.split(".")[-1]
         return unit_suffix in self.suffix_list
 
     @property
     def exists(self):
-        cmd = self.run_test('systemctl list-unit-files | grep -q "^%s"', self.name)
-        return cmd.rc == 0
+        # systemctl return codes based on https://man7.org/linux/man-pages/man1/systemctl.1.html:
+        # 0: unit is active
+        # 1: unit not failed (used by is-failed)
+        # 2: unused
+        # 3: unit is not active
+        # 4: no such unit
+        cmd = self.run_expect([0, 1, 3, 4], "systemctl status -- %s", self.name)
+        return cmd.rc < 4
 
     @property
     def is_running(self):
-        # based on https://man7.org/linux/man-pages/man1/systemctl.1.html
+        # systemctl return codes based on https://man7.org/linux/man-pages/man1/systemctl.1.html:
         # 0: program running
         # 1: program is dead and pid file exists
         # 3: not running and pid file does not exists
         # 4: Unable to determine status (no such unit)
-        out = self.run_expect([0, 1, 3, 4], "systemctl is-active %s", self.name)
+        out = self.run_expect([0, 1, 3, 4], "systemctl is-active -- %s", self.name)
         if out.rc == 1:
             # Failed to connect to bus: No such file or directory
             return super().is_running
@@ -194,7 +200,7 @@ class SystemdService(SysvService):
 
     @property
     def is_enabled(self):
-        cmd = self.run_test("systemctl is-enabled %s", self.name)
+        cmd = self.run_test("systemctl is-enabled -- %s", self.name)
         if cmd.rc == 0:
             return True
         if cmd.stdout.strip() == "disabled":
@@ -211,22 +217,39 @@ class SystemdService(SysvService):
     def is_valid(self):
         # systemd-analyze requires a full unit name.
         name = self.name if self._has_systemd_suffix() else f"{self.name}.service"
-        cmd = self.run("systemd-analyze verify %s", name)
+        cmd = self.run("systemd-analyze verify -- %s", name)
         # A bad unit file still returns a rc of 0, so check the
-        # stdout for anything.  Nothing means no warns/errors.
+        # stdout for anything. Nothing means no warns/errors.
         # Docs at https://www.freedesktop.org/software/systemd/man/systemd
         # -analyze.html#Examples%20for%20verify
-        assert (cmd.stdout, cmd.stderr) == ("", "")
-        return True
+
+        # Ignore non-relevant messages from the output of "systemd-analyze
+        # verify":
+        #   "Unit is bound to inactive unit"
+        #   "ssh.service: Command 'man sshd(8)' failed with code"
+        #      --man=no: suppress the man page existence check
+        #                implemented in Systemd 235 (2017-10-06)
+        #   "Suspicious symlink /etc/systemd/system/[...] treating as alias."
+        #    probably a bug in systemd https://github.com/systemd/systemd/issues/30166
+        stderr_lines = [
+            i
+            for i in cmd.stderr.splitlines()
+            if "Unit is bound to inactive unit" not in i
+            and ": Command 'man" not in i
+            and "Suspicious symlink /" not in i
+        ]
+
+        stderr = "".join(stderr_lines)
+        return (cmd.stdout, stderr) == ("", "")
 
     @property
     def is_masked(self):
-        cmd = self.run_test("systemctl is-enabled %s", self.name)
+        cmd = self.run_test("systemctl is-enabled -- %s", self.name)
         return cmd.stdout.strip() == "masked"
 
     @functools.cached_property
     def systemd_properties(self):
-        out = self.check_output("systemctl show %s", self.name)
+        out = self.check_output("systemctl show -- %s", self.name)
         out_d = {}
         if out:
             # maxsplit is required because values can contain `=`
