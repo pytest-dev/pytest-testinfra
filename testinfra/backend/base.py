@@ -14,6 +14,7 @@ import abc
 import dataclasses
 import locale
 import logging
+import platform
 import shlex
 import subprocess
 import urllib.parse
@@ -222,11 +223,17 @@ class BaseBackend(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     def run_local(self, command: str, *args: str) -> CommandResult:
-        command = self.quote(command, *args)
-        cmd = self.encode(command)
+        shell_command = self.quote(command, *args)
+        cmd = self.encode(shell_command)
+        shell = True
+        if platform.system() == "Windows":
+            # WindowsService and WindowsFile expect the shell to be PowerShell
+            # OpenSSH Server in Windows and WinRM use PowerShell as shell by default
+            shell_command = ["powershell", "-Command", command]
+            shell = False
         p = subprocess.Popen(
-            cmd,
-            shell=True,
+            shell_command,
+            shell=shell,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

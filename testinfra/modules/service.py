@@ -340,7 +340,8 @@ class WindowsService(Service):
     @property
     def exists(self):
         out = self.check_output(
-            f"Get-Service -Name {self.name} -ErrorAction SilentlyContinue"
+            "Get-Service -Name %s -ErrorAction SilentlyContinue",
+            self.name
         )
         return self.name in out
 
@@ -348,7 +349,7 @@ class WindowsService(Service):
     def is_running(self):
         return (
             self.check_output(
-                "Get-Service '%s' | Select -ExpandProperty Status",
+               "Get-Service %s | Select -ExpandProperty Status",
                 self.name,
             )
             == "Running"
@@ -358,7 +359,7 @@ class WindowsService(Service):
     def is_enabled(self):
         return (
             self.check_output(
-                "Get-Service '%s' | Select -ExpandProperty StartType",
+                "Get-Service %s | Select -ExpandProperty StartType",
                 self.name,
             )
             == "Automatic"
