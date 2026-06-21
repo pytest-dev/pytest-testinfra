@@ -27,6 +27,7 @@ modules = {
     "group": "group:Group",
     "interface": "interface:Interface",
     "iptables": "iptables:Iptables",
+    "iproute2": "iproute2:IProute2",
     "mount_point": "mountpoint:MountPoint",
     "package": "package:Package",
     "pip": "pip:Pip",
