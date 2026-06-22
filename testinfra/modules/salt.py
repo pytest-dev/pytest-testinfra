@@ -29,7 +29,7 @@ class Salt(InstanceModule):
     Run ``salt-call sys.doc`` to get a complete list of functions
     """
 
-    def __call__(self, function, args=None, local=False, config=None):
+    def __call__(self, function, args=None, local=False, config=None, expect_rc=None):
         args = args or []
         if isinstance(args, str):
             args = [args]
@@ -44,6 +44,8 @@ class Salt(InstanceModule):
             cmd_args.append(config)
         cmd += " %s" + len(args) * " %s"
         cmd_args += [function] + args
+        if expect_rc is not None:
+            return json.loads(self.run_expect(expect_rc, cmd, *cmd_args).stdout)
         return json.loads(self.check_output(cmd, *cmd_args))["local"]
 
     def __repr__(self):
