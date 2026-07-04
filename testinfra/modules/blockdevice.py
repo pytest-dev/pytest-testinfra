@@ -29,6 +29,7 @@ class BlockDevice(Module):
 
     def __init__(self, device):
         self.device = device
+        self._dev_name = device.replace("/dev/", "")
         super().__init__()
 
     @property
@@ -114,6 +115,49 @@ class BlockDevice(Module):
         """
         return self._data["read_ahead"]
 
+    @property
+    def is_zoned(self):
+        """Return True if it is a zoned block device
+
+        >>> host.block_device("/dev/sda").is_zoned
+        True
+        """
+        return self.zoned_type != "none"
+        
+    @property
+    def zoned(self):
+        """Legacy property for zoned support"""
+        return self.is_zoned
+
+    @property
+    def zoned_type(self):
+        """Return Zoned Block Device type
+
+         >>> host.block_device("/dev/sda").zoned_type
+         'host-managed'
+        """
+        return self._data.get("zoned_type", "none")
+
+    @property
+    def zoned_chunk_sectors(self):
+        return self._data.get("zoned_chunk_sectors", None)
+        
+    @property
+    def zoned_nr_zones(self):
+        return self._data.get("zoned_nr_zones", None)
+        
+    @property
+    def zone_append_max_bytes(self):
+        return self._data.get("zone_append_max_bytes", None)
+        
+    @property
+    def max_open_zones(self):
+        return self._data.get("max_open_zones", None)
+        
+    @property
+    def max_active_zones(self):
+        return self._data.get("max_active_zones", None)
+
     @classmethod
     def get_module_class(cls, host):
         if host.system_info.type == "linux":
@@ -125,6 +169,18 @@ class BlockDevice(Module):
 
 
 class LinuxBlockDevice(BlockDevice):
+    def _read_sysfs_attr(self, attr_name, convert=str):
+        path = f"/sys/block/{self._dev_name}/queue/{attr_name}"
+        f = self._host.file(path)
+        if f.exists:
+            val = f.content_string.strip()
+            if val and val != "none":
+                try:
+                    return convert(val)
+                except ValueError:
+                    return val
+        return None if convert != str else "none"
+
     @functools.cached_property
     def _data(self):
         header = ["RO", "RA", "SSZ", "BSZ", "StartSec", "Size", "Device"]
@@ -138,11 +194,38 @@ class LinuxBlockDevice(BlockDevice):
         if output[0].split() != header:
             raise RuntimeError(f"Unknown output of blockdev: {output[0]}")
         fields = output[1].split()
-        return {
+        
+        zoned_type = self._read_sysfs_attr("zoned") or "none"
+        
+        data = {
             "rw_mode": str(fields[0]),
             "read_ahead": int(fields[1]),
             "sector_size": int(fields[2]),
             "block_size": int(fields[3]),
             "start_sector": int(fields[4]),
             "size": int(fields[5]),
+            "zoned_type": zoned_type,
         }
+        
+        if zoned_type != "none":
+            chunk = self._read_sysfs_attr("chunk_sectors", int)
+            if chunk is not None:
+                data["zoned_chunk_sectors"] = chunk
+                
+            nr = self._read_sysfs_attr("nr_zones", int)
+            if nr is not None:
+                data["zoned_nr_zones"] = nr
+                
+            append = self._read_sysfs_attr("zone_append_max_bytes", int)
+            if append is not None:
+                data["zone_append_max_bytes"] = append
+                
+            open_z = self._read_sysfs_attr("max_open_zones", int)
+            if open_z is not None:
+                data["max_open_zones"] = open_z
+                
+            active_z = self._read_sysfs_attr("max_active_zones", int)
+            if active_z is not None:
+                data["max_active_zones"] = active_z
+
+        return data
