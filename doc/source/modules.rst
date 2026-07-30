@@ -48,6 +48,10 @@ host
 
     .. attribute:: interface
 
+       :class:`testinfra.modules.incus.Incus` class
+
+    .. attribute:: interface
+
        :class:`testinfra.modules.interface.Interface` class
 
     .. attribute:: iptables
@@ -166,6 +170,13 @@ Group
 .. autoclass:: testinfra.modules.group.Group
    :members:
    :undoc-members:
+
+
+Incus
+~~~~~~
+
+.. autoclass:: testinfra.modules.incus.Incus(name)
+   :members:
 
 
 Interface

@@ -248,3 +248,13 @@ The LXC backend can be used to test *running* LXC or LXD containers. It uses the
 `lxc exec <https://linuxcontainers.org/lxd/getting-started-cli/>`_ command::
 
     $ pytest --hosts='lxc://container_name'
+
+Incus
+~~~~~~~
+
+The Incus backend can be used to test *running* instances (containers and
+virtual machines). It uses the `incus exec
+<https://linuxcontainers.org/incus/docs/main/reference/manpages/incus/exec/>`_
+command::
+
+    $ pytest --hosts='incus://instance_name'

@@ -25,6 +25,7 @@ modules = {
     "environment": "environment:Environment",
     "file": "file:File",
     "group": "group:Group",
+    "incus": "incus:Incus",
     "interface": "interface:Interface",
     "iptables": "iptables:Iptables",
     "mount_point": "mountpoint:MountPoint",
