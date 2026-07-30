@@ -47,7 +47,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         dest="connection",
         help=(
             "Remote connection backend (paramiko, ssh, safe-ssh, "
-            "salt, docker, ansible, podman)"
+            "salt, docker, ansible, podman, incus)"
         ),
     )
     group.addoption(

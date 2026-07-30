@@ -30,6 +30,7 @@ BACKENDS = {
     "ansible": "testinfra.backend.ansible.AnsibleBackend",
     "kubectl": "testinfra.backend.kubectl.KubectlBackend",
     "winrm": "testinfra.backend.winrm.WinRMBackend",
+    "incus": "testinfra.backend.incus.IncusBackend",
     "lxc": "testinfra.backend.lxc.LxcBackend",
     "openshift": "testinfra.backend.openshift.OpenShiftBackend",
     "chroot": "testinfra.backend.chroot.ChrootBackend",
