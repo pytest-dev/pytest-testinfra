@@ -13,7 +13,7 @@
 import json
 import logging
 import pprint
-from typing import Any, Optional
+from typing import Any
 
 from testinfra.backend import base
 from testinfra.utils.ansible_runner import AnsibleRunner
@@ -28,9 +28,9 @@ class AnsibleBackend(base.BaseBackend):
     def __init__(
         self,
         host: str,
-        ansible_inventory: Optional[str] = None,
-        ssh_config: Optional[str] = None,
-        ssh_identity_file: Optional[str] = None,
+        ansible_inventory: str | None = None,
+        ssh_config: str | None = None,
+        ssh_identity_file: str | None = None,
         force_ansible: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -61,14 +61,19 @@ class AnsibleBackend(base.BaseBackend):
             data = json.loads(out["module_stdout"])
             stdout = data["stdout"]
             stderr = data["stderr"]
-        else:
+        elif "stdout" in out:
             # bw compat
             stdout = out["stdout"]
             stderr = out["stderr"]
-        return self.result(out["rc"], self.encode(command), stdout, stderr)
+        else:
+            # Ansible command failed (e.g. encoding error) with only a msg
+            stdout = ""
+            stderr = out.get("msg", "")
+        rc = out.get("rc", 1)
+        return self.result(rc, self.encode(command), stdout, stderr)
 
     def run_ansible(
-        self, module_name: str, module_args: Optional[str] = None, **kwargs: Any
+        self, module_name: str, module_args: str | None = None, **kwargs: Any
     ) -> Any:
         def get_encoding() -> str:
             return self.encoding

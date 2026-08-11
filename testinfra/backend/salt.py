@@ -17,7 +17,7 @@ except ImportError:
         "You must install salt package to use the salt backend"
     ) from None
 
-from typing import Any, Optional
+from typing import Any
 
 from testinfra.backend import base
 
@@ -28,7 +28,7 @@ class SaltBackend(base.BaseBackend):
 
     def __init__(self, host: str, *args: Any, **kwargs: Any):
         self.host = host
-        self._client: Optional[salt.client.LocalClient] = None
+        self._client: salt.client.LocalClient | None = None
         super().__init__(self.host, *args, **kwargs)
 
     @property

@@ -2,18 +2,18 @@
 Changelog
 =========
 
-10.2.2
-======
+10.2.2 (2025-03-30)
+===================
 
 * [FIX] Include files required to run tests in sdist
 
-10.2.1
-======
+10.2.1 (2025-03-29)
+===================
 
 * [FIX] Fix releasing to pypi
 
-10.2.0
-======
+10.2.0 (2025-03-29)
+===================
 
 * [NEW] Query all usernames and group names
 * [FIX] Prevent Paramiko deadlock when test sends more than 2MB to stdout
@@ -34,22 +34,22 @@ Changelog
 * [MISC] Fix tests failing due to expiration date passed
 * [MISC] Remove crypt lib from testing
 
-10.1.1
-======
+10.1.1 (2024-05-26)
+===================
 
 * [FIX] Add check for the existence of ssh control path directory
 * [FIX] Handle is_installed for rpm package when rpm database is corrupted
 * [FIX] Fix service.exists
 
-10.1.0
-======
+10.1.0 (2024-02-15)
+===================
 
 * [NEW] Add Interface.link property
 * [FIX] Make file properties follow symlinks
 * [FIX] Require pytest>=6 and use future annotations for pytest<7 compatibility
 
-10.0.0
-======
+10.0.0 (2023-11-13)
+===================
 
 * [FIX] Ansible: Fix for missing group names in get_variables()
 * [FIX] testinfra/modules/blockdevice: Don't fail on stderr
@@ -62,8 +62,8 @@ Changelog
 * [NEW] Add Service.exists
 * [MISC] Make CommandResult a dataclass
 
-9.0.0
-=====
+9.0.0 (2023-08-24)
+==================
 
 * [BREAKING] pytest-testinfra now require python >= 3.9
 * [BREAKING] Drop deprecated module PipPackage
@@ -72,14 +72,14 @@ Changelog
 * [FIX] List openSUSE Leap and Tumbleweed explicitly as rpm based distributions
 * [FIX] Make group name mandatory in group module
 
-8.1.0
-=====
+8.1.0 (2023-05-21)
+==================
 
 * [NEW] Add Windows support for File and Service modules
 * [NEW] Add File.is_executable property
 
-8.0.0
-=====
+8.0.0 (2023-05-19)
+==================
 
 * [NEW] Add Group.members attribute
 * [NEW] Add File.inode attribute
@@ -90,13 +90,13 @@ Changelog
 * [FIX] Fix possible KeyError in SysInfo module
 * [BREAKING] Drop support for python 3.7
 
-7.0.1
-=====
+7.0.1 (2022-12-06)
+==================
 
 * [FIX] Fix `command -v` compatibility with dash shell
 
-7.0.0
-=====
+7.0.0 (2022-12-01)
+==================
 
 * [NEW] Improved ssh config support in Paramiko backend
 * [NEW] Add chroot backend
@@ -105,20 +105,20 @@ Changelog
 * [BREAKING] Drop support for python 3.6 which is EOL
 
 
-6.8.0
-=====
+6.8.0 (2022-06-20)
+==================
 
 * [NEW] Add support for AlmaLinux and RockyLinux
 
-6.7.0
-=====
+6.7.0 (2022-04-12)
+==================
 
 * [NEW] Handle ansible_connection type community.docker.docker
 * [NEW] add ssh_extra_args option
 
 
-6.6.0
-=====
+6.6.0 (2022-02-10)
+==================
 
 * [NEW] Allow to test for user password expiration
 * [NEW] Handle ANSIBLE_SSH_COMMON_ARGS and ANSIBLE_SSH_EXTRA_ARGS environment variables for ansible connections
@@ -126,8 +126,8 @@ Changelog
 * [FIX] Fix AttributeError when "command" is not available and fallback to "which"
 
 
-6.5.0
-=====
+6.5.0 (2021-12-07)
+==================
 
 * Fallback to which when "command -v" fails
 * Use realpath by default to resolve symlinks instead of "readlink -f"
@@ -137,20 +137,20 @@ Changelog
 * Eventually decode ansible output when it's not ascii
 * Either use python3 or python to get remote encoding
 
-6.4.0
-=====
+6.4.0 (2021-06-20)
+==================
 
 * Implement Interface names and default (#615)
 * Implement Service.systemd_properties (#612)
 
-6.3.0
-=====
+6.3.0 (2021-04-18)
+==================
 
 * Fix #451 for use with pytest -p no:terminal
 * Add client_version() and server_version() and version() to docker module.
 
-6.2.0
-=====
+6.2.0 (2021-03-18)
+==================
 
 * Fix #590: Systeminfo doesn't resolve Windows correctly  (#592)
 * First implementation of network namespaces in addr module (#596)
@@ -158,8 +158,8 @@ Changelog
 * pip refactoring: implementation of installed and version (#606)
 * Allow to specify supervisorctl and supervisord.conf paths (#536)
 
-6.1.0
-=====
+6.1.0 (2020-11-12)
+==================
 
 * Fix wrong package module on CentOS having dpkg tools installed #570 (#575)
 * Deduplicate hosts returned by get_backends() (#572)
@@ -168,85 +168,85 @@ Changelog
 * Require python >= 3.6
 * Fix ValueError with python 3.8+ when using --nagios option.
 
-6.0.0
-=====
+6.0.0 (2020-11-01)
+==================
 
 * Breaking change: testinfra has moved to the https://github.com/pytest-dev/
   organization. Project on PyPi is renamed as pytest-testinfra. A dummy
   testinfra will make the transition, but you should rename to pytest-testinfra
   in your requirements files.
 
-5.3.1
-=====
+5.3.1 (2020-09-03)
+==================
 
 * Fix newly introduced is_masked property on systemd service https://github.com/philpep/testinfra/pull/569
 
-5.3.0
-=====
+5.3.0 (2020-09-02)
+==================
 
 * Add is_masked property on systemd service
 
-5.2.2
-=====
+5.2.2 (2020-07-21)
+==================
 
 * iptables: use -w option to wait for iptables lock when running in parallel
   with pytest-xdist.
 
-5.2.1
-=====
+5.2.1 (2020-06-12)
+==================
 
 * Fix documentation build
 
-5.2.0
-=====
+5.2.0 (2020-06-12)
+==================
 
 * Allow kubeconfig context to be supplied in kubernetes backend
 * Drop file.__ne__ implementation and require python >= 3.5
 
-5.1.0
-=====
+5.1.0 (2020-05-18)
+==================
 
 * Use remote_user and remote_port in ansible.cfg
 * Add `arch` (architecture) attribute to system_info module
 
-5.0.0
-=====
+5.0.0 (2020-03-05)
+==================
 
 * Breaking change:  host.file().listdir() is now a method
 
-4.1.0
-=====
+4.1.0 (2020-02-22)
+==================
 
 * Pass extra arguments to ansible CLI via host.ansible()
 * New method host.file.listdir() to list items in a directory.
 
-4.0.0
-=====
+4.0.0 (2020-01-05)
+==================
 
 * Drop python2 support
 
-3.4.0
-=====
+3.4.0 (2020-01-05)
+==================
 
 * Add podman backend and module
 * WARNING: this will be the latest testinfra version supporting python2, please
   upgrade to python3.
 
-3.3.0
-=====
+3.3.0 (2019-12-01)
+==================
 
 * Add extras for backend dependencies (#454)
 * Various enhancements of kitchen integration documentation
 * ansible backend now support "password" field from ansible inventory
 * New backend "openshift"
 
-3.2.1
-=====
+3.2.1 (2019-11-17)
+==================
 
 * Fix Process module when working with long strings (username, ...) #505
 
-3.2.0
-=====
+3.2.0 (2019-09-08)
+==================
 
 * New module "environment" for getting remote environment variables
 * New module "block_device" exposing block device information
@@ -254,8 +254,8 @@ Changelog
 * Raise an error in case of missing ansible inventory file
 * Fix an escape issue with ansible ssh args set inventory or configuration file
 
-3.1.0
-=====
+3.1.0 (2019-08-18)
+==================
 
 * ssh connections uses persistent connections by default. You can disable this
   by passing controlpersist=0 to the connections options.
@@ -267,48 +267,48 @@ Changelog
   connections which doesn't have a testinfra equivalent connection (for example
   "network_cli").
 
-3.0.6
-=====
+3.0.6 (2019-08-04)
+==================
 
 * Issue full command logging using DEBUG log level to avoid logging sensible data when log level is INFO.
 * Fix possible crash when parsing ansible inventories #470
 * Support using alternative kubeconfig file in kubectl connections #460
 * Support parsing ProxyCommand from ssh_config for paramiko connections
 
-3.0.5
-=====
+3.0.5 (2019-05-29)
+==================
 
 * Set default timeout to 10s on ssh/paramiko connections
 * Add support for ansible inventory parameter ansible_private_key_file
 
-3.0.4
-=====
+3.0.4 (2019-05-18)
+==================
 
 * Add support for ansible lxc and lxd connections
 
-3.0.3
-=====
+3.0.3 (2019-05-09)
+==================
 
 * Fix paramiko parsing RequestTTY from ssh configs
 * Re-add "groups" key from ansible.get_variables() to be backward compatible
   with testinfra 2.X
 
-3.0.2
-=====
+3.0.2 (2019-05-07)
+==================
 
 * Fix ansible with no inventory resolving to "localhost"
 * Fix support for ansible 2.8 with no inventory
 * Fix ansible/paramiko which wasn't reading hosts config from ~/.ssh/config
 * Allow to pass --ssh-config and --ssh-identity-file to ansible connection
 
-3.0.1
-=====
+3.0.1 (2019-05-06)
+==================
 
 * Fix parsing of ipv6 addresses for paramiko, ssh and ansible backends.
 * Fix --connection=ansible invocation when no hosts are provided
 
-3.0.0
-=====
+3.0.0 (2019-05-05)
+==================
 
 * New ansible backend fixing support for ansible 2.8 and license issue. See
   https://github.com/philpep/testinfra/issues/431 for details. This make
@@ -319,64 +319,64 @@ Changelog
   there's support for the "user" module.
 
 
-2.1.0
-======
+2.1.0 (2019-04-01)
+==================
 
 * docker: new get_containers() classmethod
 * socket: fix parsing of ipv6 addresses with new versions of ss
 * service: systemd fallback to sysv when "systemctl is-active" is not working
 
-2.0.0
-======
+2.0.0 (2019-03-02)
+==================
 
 * Add addr module, used to test network connectivity
 * Drop deprecated "testinfra" command, you should use "py.test" instead
 * Drop deprecated top level fixtures, access them through the fixture "host" instead.
 * Drop support for ansible <= 2.4
 
-1.19.0
-======
+1.19.0 (2019-01-19)
+===================
 
 * Add docker module
 * Fix pytest 4 compatibility
 
-1.18.0
-======
+1.18.0 (2018-11-25)
+===================
 
 * Allow to urlencode character in host specification "user:pass@host" (#387)
 * Fix double logging from both pytest and testinfra
 * Drop support for python 2.6
 * Allow to configure timeouts for winrm backend
 
-1.17.0
-======
+1.17.0 (2018-10-19)
+===================
 
 * Add support for ansible "become" user in ansible module
 * Add failed/succeeded property on run() output
 
-1.16.0
-======
+1.16.0 (2018-09-25)
+===================
 
 * packaging: Use setuptools_scm instead of pbr
 * iptables: add ip6tables support
 * sysctl: find sysctl outside of PATH (/sbin)
 
-1.15.0
-======
+1.15.0 (2018-09-13)
+===================
 
 * Fix finding ss and netstat command in "sbin" paths for Centos (359)
 * Add a workaround for https://github.com/pytest-dev/pytest/issues/3542
 * Handle "starting" status for Service module on Alpine linux
 * Fix no_ssl and no_verify_ssl options for WinRM backend
 
-1.14.1
-======
+1.14.1 (2018-07-23)
+===================
 
 * Fix multi-host test ordering (#347), regression introduced in 1.13.1
 * Fix Socket on OpenBSD hosts (#338)
 
-1.14.0
-======
+1.14.0 (2018-06-05)
+===================
 
 * Add a new lxc backend
 * Socket: fix is_listening for unix sockets
@@ -385,153 +385,153 @@ Changelog
 * Service: fix service detection on Centos 6 hosts
 * File: implement file comparison with string paths
 
-1.13.1
-======
+1.13.1 (2018-05-28)
+===================
 
 * package: fix is_installed and version behavior for uninstalled packages (#321 and #326)
 * ansible: Use predictable test ordering when using pytest-xdist to fix random test collections errors (#316)
 
-1.13.0
-======
+1.13.0 (2018-05-10)
+===================
 
 * socket: fix detection of udp listening sockets (#311)
 * ssh backend: Add support for GSSAPI
 
-1.12.0
-======
+1.12.0 (2018-04-24)
+===================
 
 * ansible: fix compatibility with ansible 2.5
 * pip: fix compatibility with pip 10 (#299)
 
-1.11.1
-======
+1.11.1 (2018-02-26)
+===================
 
 * Socket: fix error with old versions of ss without the --no-header option (#293)
 
-1.11.0
-======
+1.11.0 (2018-02-24)
+===================
 
 * Fix bad error reporting when using ansible module without ansible backend (#288)
 * Socket: add a new implementation using ss instead of netstat (#124)
 * Add service, process, and systeminfo support for Alpine (#283)
 
-1.10.1
-======
+1.10.1 (2017-12-03)
+===================
 
 * Fix get_variables() for ansible>=2.0,<2.4 (#274)
 * Paramiko: Use the RequireTTY setting if specified in a provided SSHConfig (#247)
 
-1.10.0
-======
+1.10.0 (2017-11-27)
+===================
 
 * New iptables module
 
-1.9.1
-=====
+1.9.1 (2017-11-22)
+==================
 
 * Fix running testinfra within a suite using doctest (#268)
 * Service: add is_valid method for systemd
 * Fix file.linked_to() for Mac OS
 
-1.9.0
-=====
+1.9.0 (2017-10-22)
+==================
 
 * Interface: allow to find 'ip' command outside of PATH
 * Fix --nagios option with python 3
 
-1.8.0
-=====
+1.8.0 (2017-09-29)
+==================
 
 * Deprecate testinfra command (will be dropped in 2.0), use py.test instead #135
 * Handle --nagios option when using py.test command
 
-1.7.1
-=====
+1.7.1 (2017-09-22)
+==================
 
 * Support for ansible 2.4 (#249)
 
-1.7.0
-=====
+1.7.0 (2017-09-09)
+==================
 
 * Salt: allow specify config directory (#230)
 * Add a WinRM backend
 * Socket: ipv6 sockets can handle ipv4 clients (#234)
 * Service: Enhance upstart detection (#243)
 
-1.6.5
-=====
+1.6.5 (2017-07-29)
+==================
 
 * Service: add is_enabled() support for OpenBSD
 * Add ssh identity file option for paramiko and ssh backends
 * Expand tilde (~) to user home directory for ssh-config, ssh-identity-file and
   ansible-inventory options
 
-1.6.4
-=====
+1.6.4 (2017-06-26)
+==================
 
 * Service: Allow to find 'service' command outside of $PATH #211
 * doc fixes
 
-1.6.3
-=====
+1.6.3 (2017-05-29)
+==================
 
 * Fix unwanted deprecation warning when running tests with pytest 3.1 #204
 
-1.6.2
-=====
+1.6.2 (2017-05-18)
+==================
 
 * Fix wheel package for 1.6.1
 
-1.6.1
-=====
+1.6.1 (2017-05-17)
+==================
 
 * Support ansible 2.3 with python 3 (#197)
 
-1.6.0
-=====
+1.6.0 (2017-04-21)
+==================
 
 * New 'host' fixture as a replacement for all other fixtures.
   See https://testinfra.readthedocs.io/en/latest/modules.html#host
   (Other fixtures are deprecated and will be removed in 2.0 release).
 
 
-1.5.5
-=====
+1.5.5 (2017-04-13)
+==================
 
 * backends: Fix ansible backend with ansible >= 2.3 (#195)
 
-1.5.4
-=====
+1.5.4 (2017-03-07)
+==================
 
 * backends: fallback to UTF-8 encoding when system encoding is ASCII.
 * Service: fix is_running() on systems using Upstart
 
-1.5.3
-=====
+1.5.3 (2017-01-26)
+==================
 
 * Sudo: restore backend command in case of exceptions
 
-1.5.2
-=====
+1.5.2 (2017-01-11)
+==================
 
 * Honor become_user when using the ansible backend
 
-1.5.1
-=====
+1.5.1 (2016-12-29)
+==================
 
 * Add dependency on importlib on python 2.6
 
 
-1.5.0
-=====
+1.5.0 (2016-12-28)
+==================
 
 * New kubectl backend
 * Command: check_output strip carriage return and newlines (#164)
 * Package: rpm improve getting version() and release()
 * User: add gecos (comment) field (#155)
 
-1.4.5
-=====
+1.4.5 (2016-12-04)
+==================
 
 * SystemInfo: detect codename from VERSION_CODENAME in /etc/os-release
   (fallback when lsb_release isn't installed).

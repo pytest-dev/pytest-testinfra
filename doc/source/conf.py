@@ -125,6 +125,7 @@ html_theme_options = {
     "github_user": "pytest-dev",
     "github_repo": "pytest-testinfra",
     "github_button": True,
+    "github_type": "star",
     "extra_nav_links": {
         "View on github": "https://github.com/pytest-dev/pytest-testinfra",
     },

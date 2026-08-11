@@ -1,4 +1,4 @@
-target-version = "py39"
+target-version = "py310"
 
 [lint]
 select = [

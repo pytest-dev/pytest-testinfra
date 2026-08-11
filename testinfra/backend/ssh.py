@@ -11,7 +11,7 @@
 # limitations under the License.
 
 import base64
-from typing import Any, Optional
+from typing import Any
 
 from testinfra.backend import base
 
@@ -24,12 +24,12 @@ class SshBackend(base.BaseBackend):
     def __init__(
         self,
         hostspec: str,
-        ssh_config: Optional[str] = None,
-        ssh_identity_file: Optional[str] = None,
+        ssh_config: str | None = None,
+        ssh_identity_file: str | None = None,
         timeout: int = 10,
-        controlpath: Optional[str] = None,
+        controlpath: str | None = None,
         controlpersist: int = 60,
-        ssh_extra_args: Optional[str] = None,
+        ssh_extra_args: str | None = None,
         *args: Any,
         **kwargs: Any,
     ):

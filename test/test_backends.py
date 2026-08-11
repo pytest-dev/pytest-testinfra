@@ -13,6 +13,7 @@
 import operator
 import os
 import tempfile
+from io import StringIO
 
 import pytest
 
@@ -86,7 +87,8 @@ def test_encoding(host):
     elif host.backend.get_connection_type() == "ansible" and host.backend.force_ansible:
         # XXX: this encoding issue comes directly from ansible
         # not sure how to handle this...
-        assert (
+        assert cmd.failed
+        assert "surrogates not allowed" in cmd.stderr or (
             cmd.stderr
             == "ls: impossible d'acc\udce9der \udce0 '/é': Aucun fichier ou dossier de ce type"
         )
@@ -619,6 +621,25 @@ def test_ssh_hostspec(hostspec, expected):
     cmd, cmd_args = backend._build_ssh_command("true")
     command = backend.quote(" ".join(cmd), *cmd_args)
     assert command == expected
+
+
+def test_paramiko_ssh_config_does_not_override_explicit_user():
+    import paramiko
+
+    from testinfra.backend.paramiko import ParamikoBackend
+
+    ssh_config = paramiko.SSHConfig()
+    ssh_config.parse(StringIO("Host *\n  User configuser\n"))
+
+    backend = ParamikoBackend("explicit@example.com")
+    cfg = {"username": backend.host.user}
+    backend._load_ssh_config(paramiko.SSHClient(), cfg, ssh_config)
+    assert cfg["username"] == "explicit"
+
+    backend = ParamikoBackend("example.com")
+    cfg = {"username": backend.host.user}
+    backend._load_ssh_config(paramiko.SSHClient(), cfg, ssh_config)
+    assert cfg["username"] == "configuser"
 
 
 def test_get_hosts():

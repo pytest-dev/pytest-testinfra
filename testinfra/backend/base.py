@@ -17,7 +17,7 @@ import logging
 import shlex
 import subprocess
 import urllib.parse
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import testinfra.host
@@ -28,9 +28,9 @@ logger = logging.getLogger("testinfra")
 @dataclasses.dataclass
 class HostSpec:
     name: str
-    port: Optional[str]
-    user: Optional[str]
-    password: Optional[str]
+    port: str | None
+    user: str | None
+    password: str | None
 
 
 @dataclasses.dataclass
@@ -55,8 +55,8 @@ class CommandResult:
     backend: "BaseBackend"
     exit_status: int
     command: bytes
-    _stdout: Union[str, bytes]
-    _stderr: Union[str, bytes]
+    _stdout: str | bytes
+    _stderr: str | bytes
 
     @property
     def succeeded(self) -> bool:
@@ -141,12 +141,12 @@ class BaseBackend(metaclass=abc.ABCMeta):
         self,
         hostname: str,
         sudo: bool = False,
-        sudo_user: Optional[str] = None,
+        sudo_user: str | None = None,
         *args: Any,
         **kwargs: Any,
     ):
-        self._encoding: Optional[str] = None
-        self._host: Optional[testinfra.host.Host] = None
+        self._encoding: str | None = None
+        self._host: testinfra.host.Host | None = None
         self.hostname = hostname
         self.sudo = sudo
         self.sudo_user = sudo_user
@@ -207,7 +207,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
             return command % tuple(shlex.quote(a) for a in args)
         return command
 
-    def get_sudo_command(self, command: str, sudo_user: Optional[str]) -> str:
+    def get_sudo_command(self, command: str, sudo_user: str | None) -> str:
         if sudo_user is None:
             return self.quote("sudo /bin/sh -c %s", command)
         return self.quote("sudo -u %s /bin/sh -c %s", sudo_user, command)
@@ -265,7 +265,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         return HostSpec(name, port, user, password)
 
     @staticmethod
-    def parse_containerspec(containerspec: str) -> tuple[str, Optional[str]]:
+    def parse_containerspec(containerspec: str) -> tuple[str, str | None]:
         name = containerspec
         user = None
         if "@" in name:
@@ -311,7 +311,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
             return data.encode(self.encoding)
 
     def result(
-        self, rc: int, cmd: bytes, stdout: Union[str, bytes], stderr: Union[str, bytes]
+        self, rc: int, cmd: bytes, stdout: str | bytes, stderr: str | bytes
     ) -> CommandResult:
         result = CommandResult(
             backend=self,
