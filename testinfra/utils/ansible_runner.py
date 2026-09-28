@@ -371,7 +371,21 @@ class AnsibleRunner:
         get_encoding: Callable[[], str] | None = None,
         **options: Any,
     ) -> Any:
-        cmd, args = "ansible --tree %s", []
+        callbacks_enabled = os.environ.get("ANSIBLE_CALLBACKS_ENABLED")
+        if callbacks_enabled is None:
+            callbacks_enabled = self.ansible_config.get(
+                "defaults", "callbacks_enabled", fallback=""
+            )
+        callbacks = [
+            callback.strip()
+            for callback in callbacks_enabled.split(",")
+            if callback.strip()
+        ]
+        if "tree" not in callbacks and "ansible.builtin.tree" not in callbacks:
+            callbacks.append("tree")
+
+        cmd = "ANSIBLE_CALLBACKS_ENABLED=%s ANSIBLE_CALLBACK_TREE_DIR=%s ansible"
+        args = [",".join(callbacks)]
         if self.inventory_file:
             cmd += " -i %s"
             args += [self.inventory_file]
@@ -387,7 +401,7 @@ class AnsibleRunner:
         cmd += " %s"
         args += [host]
         with tempfile.TemporaryDirectory() as d:
-            args.insert(0, d)
+            args.insert(1, d)
             out = local.run_expect([0, 2, 8], cmd, *args)
             files = os.listdir(d)
             if not files and "skipped" in out.stdout.lower():
