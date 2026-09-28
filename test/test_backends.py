@@ -476,6 +476,40 @@ def test_ansible_unknown_option():
         runner.options_to_cli({"unknown": True})
 
 
+def test_ansible_run_module_uses_tree_callback(monkeypatch):
+    runner = AnsibleRunner()
+    monkeypatch.setenv("ANSIBLE_CALLBACKS_ENABLED", "profile_tasks")
+
+    def run_expect(expected, cmd, *args):
+        assert expected == [0, 2, 8]
+        assert "--tree" not in cmd
+        assert cmd.startswith(
+            "ANSIBLE_CALLBACKS_ENABLED=%s "
+            "ANSIBLE_CALLBACK_TREE_DIR=%s ansible"
+        )
+        assert args[0] == "profile_tasks,tree"
+
+        tree_dir = args[1]
+        with open(
+            os.path.join(tree_dir, "host"), "w", encoding="ascii"
+        ) as result_file:
+            result_file.write('{"changed": false, "ping": "pong"}')
+
+        class Result:
+            stdout = ""
+
+        return Result()
+
+    monkeypatch.setattr(
+        "testinfra.utils.ansible_runner.local.run_expect", run_expect
+    )
+
+    assert runner.run_module("host", "ping", None) == {
+        "changed": False,
+        "ping": "pong",
+    }
+
+
 def test_backend_importables():
     # check that all declared backends are importable and the backend name
     # is set correctly
