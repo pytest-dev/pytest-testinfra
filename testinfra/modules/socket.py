@@ -203,6 +203,20 @@ class Socket(Module):
 
 
 class LinuxSocketSS(Socket):
+    @property
+    def is_listening(self):
+        # ss expands dual-stack '*' listeners into both address families in
+        # _iter_sockets(). A remaining '::' wildcard must not imply IPv4.
+        sockets = list(self._iter_sockets(True))
+        if self.protocol == "unix":
+            return ("unix", self.host) in sockets
+        allipv4 = (self.protocol, "0.0.0.0", self.port) in sockets
+        allipv6 = (self.protocol, "::", self.port) in sockets
+        if self.host is None:
+            return allipv4 and allipv6
+        wildcard = allipv6 if ":" in self.host else allipv4
+        return wildcard or (self.protocol, self.host, self.port) in sockets
+
     def _iter_sockets(self, listening):
         cmd = "%s --numeric"
         if listening:
