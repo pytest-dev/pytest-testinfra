@@ -194,6 +194,8 @@ class SpooledTemporaryFile(tempfile.SpooledTemporaryFile[AnyStr]):
 
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config):
+    if config.option.hosts == "":
+        raise pytest.UsageError("--hosts must not be empty")
     if config.getoption("--verbose", 0) > 1:
         root = logging.getLogger()
         if not root.handlers:
