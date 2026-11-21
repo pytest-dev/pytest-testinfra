@@ -10,7 +10,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 pytest_plugins = ["pytester"]
+
+
+@pytest.mark.parametrize("hosts_args", [("--hosts=",), ("--hosts", "")])
+@pytest.mark.parametrize(
+    "connection_args", [(), ("--connection=local",), ("--connection=ssh",)]
+)
+def test_empty_hosts(testdir, request, hosts_args, connection_args):
+    testdir.makepyfile("raise AssertionError('test module should not be collected')")
+    params = [*hosts_args, *connection_args]
+    if not request.config.pluginmanager.hasplugin("pytest11.testinfra"):
+        params.extend(["-p", "testinfra.plugin"])
+    result = testdir.runpytest(*params)
+    assert result.ret == pytest.ExitCode.USAGE_ERROR
+    result.stderr.fnmatch_lines(["ERROR: --hosts must not be empty"])
+
+
+@pytest.mark.parametrize(
+    "hosts_args",
+    [
+        (),
+        ("--connection=local",),
+        ("--hosts=local://",),
+        ("--hosts=local://,local://",),
+        ("--hosts=local://", "--connection=ssh"),
+    ],
+)
+def test_local_hosts(testdir, request, hosts_args):
+    testdir.makepyfile(
+        """
+        def test_local(host):
+            assert host.backend.NAME == 'local'
+            assert host.check_output('echo ok') == 'ok'
+        """
+    )
+    params = list(hosts_args)
+    if not request.config.pluginmanager.hasplugin("pytest11.testinfra"):
+        params.extend(["-p", "testinfra.plugin"])
+    result = testdir.runpytest(*params)
+    result.assert_outcomes(passed=1)
 
 
 def test_nagios_notest(testdir, request):
